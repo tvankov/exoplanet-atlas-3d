@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exoplanet Atlas 3D</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- No build step: three.js comes from a CDN via an import map. The version is pinned so the map does not break when three.js changes. -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <canvas id="map"></canvas>
+  <div id="hud">
+    <h1>Exoplanet Atlas 3D</h1>
+    <p id="count">Loading stars...</p>
+    <button id="scale" type="button">Scale: compressed</button>
+    <p class="hint">Drag to rotate, scroll to zoom, right drag to pan</p>
+    <h2 id="habitable-title">Habitable candidates</h2>
+    <ul id="habitable"></ul>
+  </div>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
