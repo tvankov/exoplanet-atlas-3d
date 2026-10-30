@@ -98,7 +98,9 @@ def main() -> None:
         row["planets"] = by_star[row["hostname"]]
         records.append(row)
 
-    payload = json.dumps({"source": source.name, "stars": records}, separators=(",", ":"))
+    # The web map shows the same rule as a zone around the star, so the numbers travel with the data.
+    rule = {"temp_min": HAB_TEMP_MIN, "temp_max": HAB_TEMP_MAX, "radius_max": HAB_RADIUS_MAX}
+    payload = json.dumps({"source": source.name, "rule": rule, "stars": records}, separators=(",", ":"))
     (OUT_DIR / "stars.json").write_text(payload, encoding="utf-8")
     # GitHub Pages only serves the web/ folder, so the map needs its own copy of the data.
     web_data = ROOT / "web" / "data"

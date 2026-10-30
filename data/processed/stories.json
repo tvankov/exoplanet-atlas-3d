@@ -1,0 +1,1032 @@
+[
+ {
+  "id": "earth",
+  "lang": "en",
+  "title": "Earth",
+  "paragraphs": [
+   "Earth is our reference point on this map. It is the only planet where we know that life exists.",
+   "It orbits the Sun at an average distance of one astronomical unit, about 150 million kilometres. Light from the Sun needs a little over eight minutes to reach it.",
+   "One year on Earth lasts about 365 days. Without any atmosphere, sunlight alone would warm Earth to an equilibrium temperature of about 255 Kelvin, which is minus 18 degrees Celsius. Thanks to its atmosphere, the real average surface temperature is around 15 degrees Celsius.",
+   "That difference is the reason the habitable candidates in this list should be read with care: their temperatures are calculated the same way, from starlight alone."
+  ]
+ },
+ {
+  "id": "earth",
+  "lang": "de",
+  "title": "Erde",
+  "paragraphs": [
+   "Die Erde ist der Bezugspunkt dieser Karte. Sie ist der einzige Planet, von dem wir wissen, dass es dort Leben gibt.",
+   "Sie umkreist die Sonne im Mittel in einer astronomischen Einheit Abstand, das sind rund 150 Millionen Kilometer. Das Licht der Sonne braucht gut acht Minuten bis zur Erde.",
+   "Ein Jahr auf der Erde dauert etwa 365 Tage. Ohne Atmosphäre würde allein das Sonnenlicht die Erde auf eine Gleichgewichtstemperatur von etwa 255 Kelvin erwärmen, das sind minus 18 Grad Celsius. Dank der Atmosphäre liegt die echte mittlere Oberflächentemperatur bei etwa 15 Grad Celsius.",
+   "Dieser Unterschied ist der Grund, warum man die Kandidaten in dieser Liste mit Vorsicht lesen sollte: Ihre Temperaturen sind auf dieselbe Weise nur aus dem Sternlicht berechnet."
+  ]
+ },
+ {
+  "id": "gj-1002-b",
+  "lang": "en",
+  "title": "GJ 1002 b",
+  "paragraphs": [
+   "GJ 1002 b is a candidate for a habitable world, 15.8 light years from the Sun. The light that reaches us from GJ 1002 today left the star about 15.8 years ago.",
+   "It was discovered in 2022, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, GJ 1002, is a red dwarf with a surface temperature of about 3024 Kelvin and 0.14 times the radius of the Sun.",
+   "The planet has a radius of 1.03 times that of Earth, a mass of at least 1.08 Earth masses and a year that lasts 10.3 Earth days.",
+   "Its equilibrium temperature is 231 Kelvin, or -42 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: GJ 1002 c.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "gj-1002-b",
+  "lang": "de",
+  "title": "GJ 1002 b",
+  "paragraphs": [
+   "GJ 1002 b ist ein Kandidat für eine bewohnbare Welt, 15,8 Lichtjahre von der Sonne entfernt. Das Licht, das heute von GJ 1002 bei uns ankommt, hat den Stern vor etwa 15,8 Jahren verlassen.",
+   "Der Planet wurde 2022 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern GJ 1002 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3024 Kelvin und dem 0,14-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,03-Fachen des Erdradius, eine Masse von mindestens 1,08 Erdmassen und ein Jahr, das 10,3 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 231 Kelvin, das sind -42 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: GJ 1002 c.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "gj-1002-c",
+  "lang": "en",
+  "title": "GJ 1002 c",
+  "paragraphs": [
+   "GJ 1002 c is a candidate for a habitable world, 15.8 light years from the Sun. The light that reaches us from GJ 1002 today left the star about 15.8 years ago.",
+   "It was discovered in 2022, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, GJ 1002, is a red dwarf with a surface temperature of about 3024 Kelvin and 0.14 times the radius of the Sun.",
+   "The planet has a radius of 1.1 times that of Earth, a mass of at least 1.36 Earth masses and a year that lasts 21.2 Earth days.",
+   "Its equilibrium temperature is 182 Kelvin, or -91 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: GJ 1002 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "gj-1002-c",
+  "lang": "de",
+  "title": "GJ 1002 c",
+  "paragraphs": [
+   "GJ 1002 c ist ein Kandidat für eine bewohnbare Welt, 15,8 Lichtjahre von der Sonne entfernt. Das Licht, das heute von GJ 1002 bei uns ankommt, hat den Stern vor etwa 15,8 Jahren verlassen.",
+   "Der Planet wurde 2022 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern GJ 1002 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3024 Kelvin und dem 0,14-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,1-Fachen des Erdradius, eine Masse von mindestens 1,36 Erdmassen und ein Jahr, das 21,2 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 182 Kelvin, das sind -91 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: GJ 1002 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "gj-1061-c",
+  "lang": "en",
+  "title": "GJ 1061 c",
+  "paragraphs": [
+   "GJ 1061 c is a candidate for a habitable world, 12.0 light years from the Sun. The light that reaches us from GJ 1061 today left the star about 12.0 years ago.",
+   "It was discovered in 2020, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, GJ 1061, is a red dwarf with a surface temperature of about 2953 Kelvin and 0.16 times the radius of the Sun.",
+   "The planet has a radius of 1.19 times that of Earth, a mass of at least 1.81 Earth masses and a year that lasts 6.7 Earth days.",
+   "Its equilibrium temperature is 304 Kelvin, or 31 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 2 other known planets in this system: GJ 1061 d, GJ 1061 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "gj-1061-c",
+  "lang": "de",
+  "title": "GJ 1061 c",
+  "paragraphs": [
+   "GJ 1061 c ist ein Kandidat für eine bewohnbare Welt, 12,0 Lichtjahre von der Sonne entfernt. Das Licht, das heute von GJ 1061 bei uns ankommt, hat den Stern vor etwa 12,0 Jahren verlassen.",
+   "Der Planet wurde 2020 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern GJ 1061 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2953 Kelvin und dem 0,16-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,19-Fachen des Erdradius, eine Masse von mindestens 1,81 Erdmassen und ein Jahr, das 6,7 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 304 Kelvin, das sind 31 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 2 weitere bekannte Planeten in diesem System: GJ 1061 d, GJ 1061 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "gj-1061-d",
+  "lang": "en",
+  "title": "GJ 1061 d",
+  "paragraphs": [
+   "GJ 1061 d is a candidate for a habitable world, 12.0 light years from the Sun. The light that reaches us from GJ 1061 today left the star about 12.0 years ago.",
+   "It was discovered in 2020, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, GJ 1061, is a red dwarf with a surface temperature of about 2953 Kelvin and 0.16 times the radius of the Sun.",
+   "The planet has a radius of 1.16 times that of Earth, a mass of at least 1.67 Earth masses and a year that lasts 13.1 Earth days.",
+   "Its equilibrium temperature is 242 Kelvin, or -31 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 2 other known planets in this system: GJ 1061 c, GJ 1061 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "gj-1061-d",
+  "lang": "de",
+  "title": "GJ 1061 d",
+  "paragraphs": [
+   "GJ 1061 d ist ein Kandidat für eine bewohnbare Welt, 12,0 Lichtjahre von der Sonne entfernt. Das Licht, das heute von GJ 1061 bei uns ankommt, hat den Stern vor etwa 12,0 Jahren verlassen.",
+   "Der Planet wurde 2020 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern GJ 1061 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2953 Kelvin und dem 0,16-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,16-Fachen des Erdradius, eine Masse von mindestens 1,67 Erdmassen und ein Jahr, das 13,1 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 242 Kelvin, das sind -31 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 2 weitere bekannte Planeten in diesem System: GJ 1061 c, GJ 1061 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "gj-1132-c",
+  "lang": "en",
+  "title": "GJ 1132 c",
+  "paragraphs": [
+   "GJ 1132 c is a candidate for a habitable world, 41.1 light years from the Sun. The light that reaches us from GJ 1132 today left the star about 41.1 years ago.",
+   "It was discovered in 2018, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, GJ 1132, is a red dwarf with a surface temperature of about 3229 Kelvin and 0.22 times the radius of the Sun.",
+   "The planet has a radius of 1.52 times that of Earth, a mass of at least 2.91 Earth masses and a year that lasts 8.9 Earth days.",
+   "Its equilibrium temperature is 300 Kelvin, or 27 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: GJ 1132 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "gj-1132-c",
+  "lang": "de",
+  "title": "GJ 1132 c",
+  "paragraphs": [
+   "GJ 1132 c ist ein Kandidat für eine bewohnbare Welt, 41,1 Lichtjahre von der Sonne entfernt. Das Licht, das heute von GJ 1132 bei uns ankommt, hat den Stern vor etwa 41,1 Jahren verlassen.",
+   "Der Planet wurde 2018 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern GJ 1132 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3229 Kelvin und dem 0,22-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,52-Fachen des Erdradius, eine Masse von mindestens 2,91 Erdmassen und ein Jahr, das 8,9 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 300 Kelvin, das sind 27 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: GJ 1132 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "gj-273-b",
+  "lang": "en",
+  "title": "GJ 273 b",
+  "paragraphs": [
+   "GJ 273 b is a candidate for a habitable world, 19.3 light years from the Sun. The light that reaches us from GJ 273 today left the star about 19.3 years ago.",
+   "It was discovered in 2017, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, GJ 273, is a red dwarf with a surface temperature of about 3382 Kelvin and 0.29 times the radius of the Sun.",
+   "The planet has a radius of 1.51 times that of Earth, a mass of at least 2.89 Earth masses and a year that lasts 18.6 Earth days.",
+   "Its equilibrium temperature is 292 Kelvin, or 19 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: GJ 273 c.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "gj-273-b",
+  "lang": "de",
+  "title": "GJ 273 b",
+  "paragraphs": [
+   "GJ 273 b ist ein Kandidat für eine bewohnbare Welt, 19,3 Lichtjahre von der Sonne entfernt. Das Licht, das heute von GJ 273 bei uns ankommt, hat den Stern vor etwa 19,3 Jahren verlassen.",
+   "Der Planet wurde 2017 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern GJ 273 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3382 Kelvin und dem 0,29-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,51-Fachen des Erdradius, eine Masse von mindestens 2,89 Erdmassen und ein Jahr, das 18,6 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 292 Kelvin, das sind 19 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: GJ 273 c.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "gj-3323-b",
+  "lang": "en",
+  "title": "GJ 3323 b",
+  "paragraphs": [
+   "GJ 3323 b is a candidate for a habitable world, 17.5 light years from the Sun. The light that reaches us from GJ 3323 today left the star about 17.5 years ago.",
+   "It was discovered in 2017, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, GJ 3323, is a red dwarf with a surface temperature of about 3159 Kelvin and 0.12 times the radius of the Sun.",
+   "The planet has a radius of 1.23 times that of Earth, a mass of at least 2.02 Earth masses and a year that lasts 5.4 Earth days.",
+   "Its equilibrium temperature is 290 Kelvin, or 17 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: GJ 3323 c.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "gj-3323-b",
+  "lang": "de",
+  "title": "GJ 3323 b",
+  "paragraphs": [
+   "GJ 3323 b ist ein Kandidat für eine bewohnbare Welt, 17,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von GJ 3323 bei uns ankommt, hat den Stern vor etwa 17,5 Jahren verlassen.",
+   "Der Planet wurde 2017 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern GJ 3323 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3159 Kelvin und dem 0,12-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,23-Fachen des Erdradius, eine Masse von mindestens 2,02 Erdmassen und ein Jahr, das 5,4 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 290 Kelvin, das sind 17 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: GJ 3323 c.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "gj-3378-b",
+  "lang": "en",
+  "title": "GJ 3378 b",
+  "paragraphs": [
+   "GJ 3378 b is a candidate for a habitable world, 25.2 light years from the Sun. The light that reaches us from GJ 3378 today left the star about 25.2 years ago.",
+   "It was discovered in 2026, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, GJ 3378, is a red dwarf with a surface temperature of about 3340 Kelvin and 0.28 times the radius of the Sun.",
+   "The planet has a radius of 1.32 times that of Earth, a mass of at least 2.30 Earth masses and a year that lasts 21.5 Earth days.",
+   "Its equilibrium temperature is 272 Kelvin, or -1 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "It is the only planet known in this system so far.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "gj-3378-b",
+  "lang": "de",
+  "title": "GJ 3378 b",
+  "paragraphs": [
+   "GJ 3378 b ist ein Kandidat für eine bewohnbare Welt, 25,2 Lichtjahre von der Sonne entfernt. Das Licht, das heute von GJ 3378 bei uns ankommt, hat den Stern vor etwa 25,2 Jahren verlassen.",
+   "Der Planet wurde 2026 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern GJ 3378 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3340 Kelvin und dem 0,28-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,32-Fachen des Erdradius, eine Masse von mindestens 2,30 Erdmassen und ein Jahr, das 21,5 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 272 Kelvin, das sind -1 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es ist bisher der einzige bekannte Planet in diesem System.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "k2-3-d",
+  "lang": "en",
+  "title": "K2-3 d",
+  "paragraphs": [
+   "K2-3 d is a candidate for a habitable world, 143.8 light years from the Sun. The light that reaches us from K2-3 today left the star about 143.8 years ago.",
+   "It was discovered in 2015, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, K2-3, is a red dwarf with a surface temperature of about 3844 Kelvin and 0.55 times the radius of the Sun.",
+   "The planet has a radius of 1.458 times that of Earth, a mass of about 2.20 Earth masses and a year that lasts 44.6 Earth days.",
+   "Its equilibrium temperature is 305 Kelvin, or 32 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 2 other known planets in this system: K2-3 b, K2-3 c.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "k2-3-d",
+  "lang": "de",
+  "title": "K2-3 d",
+  "paragraphs": [
+   "K2-3 d ist ein Kandidat für eine bewohnbare Welt, 143,8 Lichtjahre von der Sonne entfernt. Das Licht, das heute von K2-3 bei uns ankommt, hat den Stern vor etwa 143,8 Jahren verlassen.",
+   "Der Planet wurde 2015 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern K2-3 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3844 Kelvin und dem 0,55-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,458-Fachen des Erdradius, eine Masse von etwa 2,20 Erdmassen und ein Jahr, das 44,6 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 305 Kelvin, das sind 32 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 2 weitere bekannte Planeten in diesem System: K2-3 b, K2-3 c.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "k2-72-e",
+  "lang": "en",
+  "title": "K2-72 e",
+  "paragraphs": [
+   "K2-72 e is a candidate for a habitable world, 216.7 light years from the Sun. The light that reaches us from K2-72 today left the star about 216.7 years ago.",
+   "It was discovered in 2016, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, K2-72, is a red dwarf with a surface temperature of about 3360 Kelvin and 0.33 times the radius of the Sun.",
+   "The planet has a radius of 1.29 times that of Earth, a mass of about 2.21 Earth masses and a year that lasts 24.2 Earth days.",
+   "Its equilibrium temperature is 286 Kelvin, or 13 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 3 other known planets in this system: K2-72 c, K2-72 d, K2-72 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "k2-72-e",
+  "lang": "de",
+  "title": "K2-72 e",
+  "paragraphs": [
+   "K2-72 e ist ein Kandidat für eine bewohnbare Welt, 216,7 Lichtjahre von der Sonne entfernt. Das Licht, das heute von K2-72 bei uns ankommt, hat den Stern vor etwa 216,7 Jahren verlassen.",
+   "Der Planet wurde 2016 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern K2-72 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3360 Kelvin und dem 0,33-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,29-Fachen des Erdradius, eine Masse von etwa 2,21 Erdmassen und ein Jahr, das 24,2 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 286 Kelvin, das sind 13 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 3 weitere bekannte Planeten in diesem System: K2-72 c, K2-72 d, K2-72 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-1126-c",
+  "lang": "en",
+  "title": "Kepler-1126 c",
+  "paragraphs": [
+   "Kepler-1126 c is a candidate for a habitable world, 2073.5 light years from the Sun. The light that reaches us from Kepler-1126 today left the star about 2073.5 years ago.",
+   "It was discovered in 2023, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-1126, is a yellow star similar to the Sun with a surface temperature of about 5798 Kelvin and 0.93 times the radius of the Sun.",
+   "The planet has a radius of 1.45 times that of Earth, a mass of about 2.70 Earth masses and a year that lasts 200 Earth days.",
+   "Its equilibrium temperature is 305 Kelvin, or 32 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: Kepler-1126 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-1126-c",
+  "lang": "de",
+  "title": "Kepler-1126 c",
+  "paragraphs": [
+   "Kepler-1126 c ist ein Kandidat für eine bewohnbare Welt, 2073,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-1126 bei uns ankommt, hat den Stern vor etwa 2073,5 Jahren verlassen.",
+   "Der Planet wurde 2023 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-1126 ist ein gelber Stern ähnlich der Sonne mit einer Oberflächentemperatur von etwa 5798 Kelvin und dem 0,93-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,45-Fachen des Erdradius, eine Masse von etwa 2,70 Erdmassen und ein Jahr, das 200 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 305 Kelvin, das sind 32 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: Kepler-1126 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-1229-b",
+  "lang": "en",
+  "title": "Kepler-1229 b",
+  "paragraphs": [
+   "Kepler-1229 b is a candidate for a habitable world, 865.9 light years from the Sun. The light that reaches us from Kepler-1229 today left the star about 865.9 years ago.",
+   "It was discovered in 2016, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-1229, is a red dwarf with a surface temperature of about 3784 Kelvin and 0.51 times the radius of the Sun.",
+   "The planet has a radius of 1.4 times that of Earth, a mass of about 2.54 Earth masses and a year that lasts 86.8 Earth days.",
+   "Its equilibrium temperature is 212 Kelvin, or -61 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "It is the only planet known in this system so far.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-1229-b",
+  "lang": "de",
+  "title": "Kepler-1229 b",
+  "paragraphs": [
+   "Kepler-1229 b ist ein Kandidat für eine bewohnbare Welt, 865,9 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-1229 bei uns ankommt, hat den Stern vor etwa 865,9 Jahren verlassen.",
+   "Der Planet wurde 2016 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-1229 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3784 Kelvin und dem 0,51-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,4-Fachen des Erdradius, eine Masse von etwa 2,54 Erdmassen und ein Jahr, das 86,8 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 212 Kelvin, das sind -61 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es ist bisher der einzige bekannte Planet in diesem System.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-138-e",
+  "lang": "en",
+  "title": "Kepler-138 e",
+  "paragraphs": [
+   "Kepler-138 e is a candidate for a habitable world, 218.1 light years from the Sun. The light that reaches us from Kepler-138 today left the star about 218.1 years ago.",
+   "It was discovered in 2022, from small changes in the timing of transits, caused by the pull of other planets in the system.",
+   "Its star, Kepler-138, is a red dwarf with a surface temperature of about 3841 Kelvin and 0.54 times the radius of the Sun.",
+   "The planet has a radius of 0.797 times that of Earth, a mass of about 0.43 Earth masses and a year that lasts 38.2 Earth days.",
+   "Its equilibrium temperature is 292 Kelvin, or 19 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 3 other known planets in this system: Kepler-138 d, Kepler-138 c, Kepler-138 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-138-e",
+  "lang": "de",
+  "title": "Kepler-138 e",
+  "paragraphs": [
+   "Kepler-138 e ist ein Kandidat für eine bewohnbare Welt, 218,1 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-138 bei uns ankommt, hat den Stern vor etwa 218,1 Jahren verlassen.",
+   "Der Planet wurde 2022 entdeckt, aus kleinen Abweichungen im Zeitpunkt der Transits, verursacht durch die Anziehung anderer Planeten im System.",
+   "Sein Stern Kepler-138 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3841 Kelvin und dem 0,54-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 0,797-Fachen des Erdradius, eine Masse von etwa 0,43 Erdmassen und ein Jahr, das 38,2 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 292 Kelvin, das sind 19 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 3 weitere bekannte Planeten in diesem System: Kepler-138 d, Kepler-138 c, Kepler-138 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-1649-c",
+  "lang": "en",
+  "title": "Kepler-1649 c",
+  "paragraphs": [
+   "Kepler-1649 c is a candidate for a habitable world, 300.7 light years from the Sun. The light that reaches us from Kepler-1649 today left the star about 300.7 years ago.",
+   "It was discovered in 2020, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-1649, is a red dwarf with a surface temperature of about 3240 Kelvin and 0.23 times the radius of the Sun.",
+   "The planet has a radius of 1.06 times that of Earth, a mass of about 1.20 Earth masses and a year that lasts 19.5 Earth days.",
+   "Its equilibrium temperature is 234 Kelvin, or -39 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: Kepler-1649 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-1649-c",
+  "lang": "de",
+  "title": "Kepler-1649 c",
+  "paragraphs": [
+   "Kepler-1649 c ist ein Kandidat für eine bewohnbare Welt, 300,7 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-1649 bei uns ankommt, hat den Stern vor etwa 300,7 Jahren verlassen.",
+   "Der Planet wurde 2020 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-1649 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3240 Kelvin und dem 0,23-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,06-Fachen des Erdradius, eine Masse von etwa 1,20 Erdmassen und ein Jahr, das 19,5 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 234 Kelvin, das sind -39 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: Kepler-1649 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-1649-b",
+  "lang": "en",
+  "title": "Kepler-1649 b",
+  "paragraphs": [
+   "Kepler-1649 b is a candidate for a habitable world, 300.7 light years from the Sun. The light that reaches us from Kepler-1649 today left the star about 300.7 years ago.",
+   "It was discovered in 2017, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-1649, is a red dwarf with a surface temperature of about 3240 Kelvin and 0.23 times the radius of the Sun.",
+   "The planet has a radius of 1.017 times that of Earth, a mass of about 1.03 Earth masses and a year that lasts 8.7 Earth days.",
+   "Its equilibrium temperature is 307 Kelvin, or 34 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: Kepler-1649 c.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-1649-b",
+  "lang": "de",
+  "title": "Kepler-1649 b",
+  "paragraphs": [
+   "Kepler-1649 b ist ein Kandidat für eine bewohnbare Welt, 300,7 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-1649 bei uns ankommt, hat den Stern vor etwa 300,7 Jahren verlassen.",
+   "Der Planet wurde 2017 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-1649 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3240 Kelvin und dem 0,23-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,017-Fachen des Erdradius, eine Masse von etwa 1,03 Erdmassen und ein Jahr, das 8,7 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 307 Kelvin, das sind 34 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: Kepler-1649 c.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-1652-b",
+  "lang": "en",
+  "title": "Kepler-1652 b",
+  "paragraphs": [
+   "Kepler-1652 b is a candidate for a habitable world, 821.9 light years from the Sun. The light that reaches us from Kepler-1652 today left the star about 821.9 years ago.",
+   "It was discovered in 2017, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-1652, is a red dwarf with a surface temperature of about 3638 Kelvin and 0.38 times the radius of the Sun.",
+   "The planet has a radius of 1.6 times that of Earth, a mass of about 3.19 Earth masses and a year that lasts 38.1 Earth days.",
+   "Its equilibrium temperature is 268 Kelvin, or -5 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "It is the only planet known in this system so far.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-1652-b",
+  "lang": "de",
+  "title": "Kepler-1652 b",
+  "paragraphs": [
+   "Kepler-1652 b ist ein Kandidat für eine bewohnbare Welt, 821,9 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-1652 bei uns ankommt, hat den Stern vor etwa 821,9 Jahren verlassen.",
+   "Der Planet wurde 2017 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-1652 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3638 Kelvin und dem 0,38-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,6-Fachen des Erdradius, eine Masse von etwa 3,19 Erdmassen und ein Jahr, das 38,1 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 268 Kelvin, das sind -5 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es ist bisher der einzige bekannte Planet in diesem System.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-438-b",
+  "lang": "en",
+  "title": "Kepler-438 b",
+  "paragraphs": [
+   "Kepler-438 b is a candidate for a habitable world, 639.1 light years from the Sun. The light that reaches us from Kepler-438 today left the star about 639.1 years ago.",
+   "It was discovered in 2015, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-438, is a red dwarf with a surface temperature of about 3748 Kelvin and 0.52 times the radius of the Sun.",
+   "The planet has a radius of 1.12 times that of Earth, a mass of about 1.46 Earth masses and a year that lasts 35.2 Earth days.",
+   "Its equilibrium temperature is 288 Kelvin, or 15 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "It is the only planet known in this system so far.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-438-b",
+  "lang": "de",
+  "title": "Kepler-438 b",
+  "paragraphs": [
+   "Kepler-438 b ist ein Kandidat für eine bewohnbare Welt, 639,1 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-438 bei uns ankommt, hat den Stern vor etwa 639,1 Jahren verlassen.",
+   "Der Planet wurde 2015 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-438 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3748 Kelvin und dem 0,52-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,12-Fachen des Erdradius, eine Masse von etwa 1,46 Erdmassen und ein Jahr, das 35,2 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 288 Kelvin, das sind 15 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es ist bisher der einzige bekannte Planet in diesem System.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-442-b",
+  "lang": "en",
+  "title": "Kepler-442 b",
+  "paragraphs": [
+   "Kepler-442 b is a candidate for a habitable world, 1193.6 light years from the Sun. The light that reaches us from Kepler-442 today left the star about 1193.6 years ago.",
+   "It was discovered in 2015, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-442, is an orange dwarf with a surface temperature of about 4402 Kelvin and 0.60 times the radius of the Sun.",
+   "The planet has a radius of 1.34 times that of Earth, a mass of about 2.36 Earth masses and a year that lasts 112 Earth days.",
+   "Its equilibrium temperature is 241 Kelvin, or -32 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "It is the only planet known in this system so far.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-442-b",
+  "lang": "de",
+  "title": "Kepler-442 b",
+  "paragraphs": [
+   "Kepler-442 b ist ein Kandidat für eine bewohnbare Welt, 1193,6 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-442 bei uns ankommt, hat den Stern vor etwa 1193,6 Jahren verlassen.",
+   "Der Planet wurde 2015 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-442 ist ein oranger Zwerg mit einer Oberflächentemperatur von etwa 4402 Kelvin und dem 0,60-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,34-Fachen des Erdradius, eine Masse von etwa 2,36 Erdmassen und ein Jahr, das 112 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 241 Kelvin, das sind -32 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es ist bisher der einzige bekannte Planet in diesem System.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-445-d",
+  "lang": "en",
+  "title": "Kepler-445 d",
+  "paragraphs": [
+   "Kepler-445 d is a candidate for a habitable world, 414.9 light years from the Sun. The light that reaches us from Kepler-445 today left the star about 414.9 years ago.",
+   "It was discovered in 2015, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-445, is a red dwarf with a surface temperature of about 3157 Kelvin and 0.21 times the radius of the Sun.",
+   "The planet has a radius of 1.25 times that of Earth, a mass of about 2.10 Earth masses and a year that lasts 8.2 Earth days.",
+   "Its equilibrium temperature is 305 Kelvin, or 32 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 2 other known planets in this system: Kepler-445 b, Kepler-445 c.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-445-d",
+  "lang": "de",
+  "title": "Kepler-445 d",
+  "paragraphs": [
+   "Kepler-445 d ist ein Kandidat für eine bewohnbare Welt, 414,9 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-445 bei uns ankommt, hat den Stern vor etwa 414,9 Jahren verlassen.",
+   "Der Planet wurde 2015 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-445 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3157 Kelvin und dem 0,21-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,25-Fachen des Erdradius, eine Masse von etwa 2,10 Erdmassen und ein Jahr, das 8,2 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 305 Kelvin, das sind 32 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 2 weitere bekannte Planeten in diesem System: Kepler-445 b, Kepler-445 c.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "kepler-62-f",
+  "lang": "en",
+  "title": "Kepler-62 f",
+  "paragraphs": [
+   "Kepler-62 f is a candidate for a habitable world, 981.3 light years from the Sun. The light that reaches us from Kepler-62 today left the star about 981.3 years ago.",
+   "It was discovered in 2013, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, Kepler-62, is an orange dwarf with a surface temperature of about 4925 Kelvin and 0.64 times the radius of the Sun.",
+   "The planet has a radius of 1.41 times that of Earth, a mass of about 35.00 Earth masses and a year that lasts 267 Earth days.",
+   "Its equilibrium temperature is 208 Kelvin, or -65 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 4 other known planets in this system: Kepler-62 b, Kepler-62 d, Kepler-62 e, Kepler-62 c.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "kepler-62-f",
+  "lang": "de",
+  "title": "Kepler-62 f",
+  "paragraphs": [
+   "Kepler-62 f ist ein Kandidat für eine bewohnbare Welt, 981,3 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Kepler-62 bei uns ankommt, hat den Stern vor etwa 981,3 Jahren verlassen.",
+   "Der Planet wurde 2013 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern Kepler-62 ist ein oranger Zwerg mit einer Oberflächentemperatur von etwa 4925 Kelvin und dem 0,64-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,41-Fachen des Erdradius, eine Masse von etwa 35,00 Erdmassen und ein Jahr, das 267 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 208 Kelvin, das sind -65 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 4 weitere bekannte Planeten in diesem System: Kepler-62 b, Kepler-62 d, Kepler-62 e, Kepler-62 c.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "l-98-59-f",
+  "lang": "en",
+  "title": "L 98-59 f",
+  "paragraphs": [
+   "L 98-59 f is a candidate for a habitable world, 34.6 light years from the Sun. The light that reaches us from L 98-59 today left the star about 34.6 years ago.",
+   "It was discovered in 2025, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, L 98-59, is a red dwarf with a surface temperature of about 3415 Kelvin and 0.32 times the radius of the Sun.",
+   "The planet has a radius of 1.48 times that of Earth, a mass of at least 2.80 Earth masses and a year that lasts 23.1 Earth days.",
+   "Its equilibrium temperature is 285 Kelvin, or 12 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 4 other known planets in this system: L 98-59 b, L 98-59 c, L 98-59 d, L 98-59 e.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "l-98-59-f",
+  "lang": "de",
+  "title": "L 98-59 f",
+  "paragraphs": [
+   "L 98-59 f ist ein Kandidat für eine bewohnbare Welt, 34,6 Lichtjahre von der Sonne entfernt. Das Licht, das heute von L 98-59 bei uns ankommt, hat den Stern vor etwa 34,6 Jahren verlassen.",
+   "Der Planet wurde 2025 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern L 98-59 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3415 Kelvin und dem 0,32-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,48-Fachen des Erdradius, eine Masse von mindestens 2,80 Erdmassen und ein Jahr, das 23,1 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 285 Kelvin, das sind 12 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 4 weitere bekannte Planeten in diesem System: L 98-59 b, L 98-59 c, L 98-59 d, L 98-59 e.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "lp-890-9-c",
+  "lang": "en",
+  "title": "LP 890-9 c",
+  "paragraphs": [
+   "LP 890-9 c is a candidate for a habitable world, 105.8 light years from the Sun. The light that reaches us from LP 890-9 today left the star about 105.8 years ago.",
+   "It was discovered in 2022, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, LP 890-9, is a red dwarf with a surface temperature of about 2850 Kelvin and 0.16 times the radius of the Sun.",
+   "The planet has a radius of 1.367 times that of Earth, a mass of about 25.30 Earth masses and a year that lasts 8.5 Earth days.",
+   "Its equilibrium temperature is 272 Kelvin, or -1 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: LP 890-9 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "lp-890-9-c",
+  "lang": "de",
+  "title": "LP 890-9 c",
+  "paragraphs": [
+   "LP 890-9 c ist ein Kandidat für eine bewohnbare Welt, 105,8 Lichtjahre von der Sonne entfernt. Das Licht, das heute von LP 890-9 bei uns ankommt, hat den Stern vor etwa 105,8 Jahren verlassen.",
+   "Der Planet wurde 2022 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern LP 890-9 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2850 Kelvin und dem 0,16-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,367-Fachen des Erdradius, eine Masse von etwa 25,30 Erdmassen und ein Jahr, das 8,5 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 272 Kelvin, das sind -1 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: LP 890-9 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "proxima-cen-b",
+  "lang": "en",
+  "title": "Proxima Cen b",
+  "paragraphs": [
+   "Proxima Cen b is a candidate for a habitable world, 4.2 light years from the Sun. The light that reaches us from Proxima Cen today left the star about 4.2 years ago.",
+   "It was discovered in 2016, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, Proxima Cen, is a red dwarf with a surface temperature of about 2900 Kelvin and 0.14 times the radius of the Sun.",
+   "The planet has a radius of 1.02 times that of Earth, a mass of at least 1.06 Earth masses and a year that lasts 11.2 Earth days.",
+   "Its equilibrium temperature is 218 Kelvin, or -55 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: Proxima Cen d.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "proxima-cen-b",
+  "lang": "de",
+  "title": "Proxima Cen b",
+  "paragraphs": [
+   "Proxima Cen b ist ein Kandidat für eine bewohnbare Welt, 4,2 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Proxima Cen bei uns ankommt, hat den Stern vor etwa 4,2 Jahren verlassen.",
+   "Der Planet wurde 2016 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern Proxima Cen ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2900 Kelvin und dem 0,14-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,02-Fachen des Erdradius, eine Masse von mindestens 1,06 Erdmassen und ein Jahr, das 11,2 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 218 Kelvin, das sind -55 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: Proxima Cen d.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "proxima-cen-d",
+  "lang": "en",
+  "title": "Proxima Cen d",
+  "paragraphs": [
+   "Proxima Cen d is a candidate for a habitable world, 4.2 light years from the Sun. The light that reaches us from Proxima Cen today left the star about 4.2 years ago.",
+   "It was discovered in 2025, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, Proxima Cen, is a red dwarf with a surface temperature of about 2900 Kelvin and 0.14 times the radius of the Sun.",
+   "The planet has a radius of 0.692 times that of Earth, a mass of at least 0.26 Earth masses and a year that lasts 5.1 Earth days.",
+   "Its equilibrium temperature is 282 Kelvin, or 9 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: Proxima Cen b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "proxima-cen-d",
+  "lang": "de",
+  "title": "Proxima Cen d",
+  "paragraphs": [
+   "Proxima Cen d ist ein Kandidat für eine bewohnbare Welt, 4,2 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Proxima Cen bei uns ankommt, hat den Stern vor etwa 4,2 Jahren verlassen.",
+   "Der Planet wurde 2025 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern Proxima Cen ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2900 Kelvin und dem 0,14-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 0,692-Fachen des Erdradius, eine Masse von mindestens 0,26 Erdmassen und ein Jahr, das 5,1 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 282 Kelvin, das sind 9 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: Proxima Cen b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "ross-128-b",
+  "lang": "en",
+  "title": "Ross 128 b",
+  "paragraphs": [
+   "Ross 128 b is a candidate for a habitable world, 11.0 light years from the Sun. The light that reaches us from Ross 128 today left the star about 11.0 years ago.",
+   "It was discovered in 2017, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, Ross 128, is a red dwarf with a surface temperature of about 3192 Kelvin and 0.20 times the radius of the Sun.",
+   "The planet has a radius of 1.11 times that of Earth, a mass of at least 1.40 Earth masses and a year that lasts 9.9 Earth days.",
+   "Its equilibrium temperature is 301 Kelvin, or 28 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "It is the only planet known in this system so far.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "ross-128-b",
+  "lang": "de",
+  "title": "Ross 128 b",
+  "paragraphs": [
+   "Ross 128 b ist ein Kandidat für eine bewohnbare Welt, 11,0 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Ross 128 bei uns ankommt, hat den Stern vor etwa 11,0 Jahren verlassen.",
+   "Der Planet wurde 2017 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern Ross 128 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3192 Kelvin und dem 0,20-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,11-Fachen des Erdradius, eine Masse von mindestens 1,40 Erdmassen und ein Jahr, das 9,9 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 301 Kelvin, das sind 28 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es ist bisher der einzige bekannte Planet in diesem System.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "toi-2095-c",
+  "lang": "en",
+  "title": "TOI-2095 c",
+  "paragraphs": [
+   "TOI-2095 c is a candidate for a habitable world, 136.7 light years from the Sun. The light that reaches us from TOI-2095 today left the star about 136.7 years ago.",
+   "It was discovered in 2023, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, TOI-2095, is a red dwarf with a surface temperature of about 3759 Kelvin and 0.44 times the radius of the Sun.",
+   "The planet has a radius of 1.33 times that of Earth, a mass of about 7.40 Earth masses and a year that lasts 28.2 Earth days.",
+   "Its equilibrium temperature is 297 Kelvin, or 24 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There is 1 other known planet in this system: TOI-2095 b.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "toi-2095-c",
+  "lang": "de",
+  "title": "TOI-2095 c",
+  "paragraphs": [
+   "TOI-2095 c ist ein Kandidat für eine bewohnbare Welt, 136,7 Lichtjahre von der Sonne entfernt. Das Licht, das heute von TOI-2095 bei uns ankommt, hat den Stern vor etwa 136,7 Jahren verlassen.",
+   "Der Planet wurde 2023 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern TOI-2095 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3759 Kelvin und dem 0,44-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,33-Fachen des Erdradius, eine Masse von etwa 7,40 Erdmassen und ein Jahr, das 28,2 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 297 Kelvin, das sind 24 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt einen weiteren bekannten Planeten in diesem System: TOI-2095 b.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "toi-700-d",
+  "lang": "en",
+  "title": "TOI-700 d",
+  "paragraphs": [
+   "TOI-700 d is a candidate for a habitable world, 101.5 light years from the Sun. The light that reaches us from TOI-700 today left the star about 101.5 years ago.",
+   "It was discovered in 2020, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, TOI-700, is a red dwarf with a surface temperature of about 3459 Kelvin and 0.41 times the radius of the Sun.",
+   "The planet has a radius of 1.145 times that of Earth, a mass of about 1.58 Earth masses and a year that lasts 37.4 Earth days.",
+   "Its equilibrium temperature is 269 Kelvin, or -4 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 3 other known planets in this system: TOI-700 b, TOI-700 c, TOI-700 e.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "toi-700-d",
+  "lang": "de",
+  "title": "TOI-700 d",
+  "paragraphs": [
+   "TOI-700 d ist ein Kandidat für eine bewohnbare Welt, 101,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von TOI-700 bei uns ankommt, hat den Stern vor etwa 101,5 Jahren verlassen.",
+   "Der Planet wurde 2020 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern TOI-700 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3459 Kelvin und dem 0,41-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,145-Fachen des Erdradius, eine Masse von etwa 1,58 Erdmassen und ein Jahr, das 37,4 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 269 Kelvin, das sind -4 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 3 weitere bekannte Planeten in diesem System: TOI-700 b, TOI-700 c, TOI-700 e.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "toi-700-e",
+  "lang": "en",
+  "title": "TOI-700 e",
+  "paragraphs": [
+   "TOI-700 e is a candidate for a habitable world, 101.5 light years from the Sun. The light that reaches us from TOI-700 today left the star about 101.5 years ago.",
+   "It was discovered in 2023, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, TOI-700, is a red dwarf with a surface temperature of about 3459 Kelvin and 0.41 times the radius of the Sun.",
+   "The planet has a radius of 0.919 times that of Earth, a mass of about 0.72 Earth masses and a year that lasts 27.8 Earth days.",
+   "Its equilibrium temperature is 273 Kelvin, or -0 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 3 other known planets in this system: TOI-700 b, TOI-700 c, TOI-700 d.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "toi-700-e",
+  "lang": "de",
+  "title": "TOI-700 e",
+  "paragraphs": [
+   "TOI-700 e ist ein Kandidat für eine bewohnbare Welt, 101,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von TOI-700 bei uns ankommt, hat den Stern vor etwa 101,5 Jahren verlassen.",
+   "Der Planet wurde 2023 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern TOI-700 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3459 Kelvin und dem 0,41-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 0,919-Fachen des Erdradius, eine Masse von etwa 0,72 Erdmassen und ein Jahr, das 27,8 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 273 Kelvin, das sind -0 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 3 weitere bekannte Planeten in diesem System: TOI-700 b, TOI-700 c, TOI-700 d.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "toi-715-b",
+  "lang": "en",
+  "title": "TOI-715 b",
+  "paragraphs": [
+   "TOI-715 b is a candidate for a habitable world, 138.3 light years from the Sun. The light that reaches us from TOI-715 today left the star about 138.3 years ago.",
+   "It was discovered in 2023, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, TOI-715, is a red dwarf with a surface temperature of about 3075 Kelvin and 0.24 times the radius of the Sun.",
+   "The planet has a radius of 1.55 times that of Earth, a mass of about 3.02 Earth masses and a year that lasts 19.3 Earth days.",
+   "Its equilibrium temperature is 234 Kelvin, or -39 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "It is the only planet known in this system so far.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "toi-715-b",
+  "lang": "de",
+  "title": "TOI-715 b",
+  "paragraphs": [
+   "TOI-715 b ist ein Kandidat für eine bewohnbare Welt, 138,3 Lichtjahre von der Sonne entfernt. Das Licht, das heute von TOI-715 bei uns ankommt, hat den Stern vor etwa 138,3 Jahren verlassen.",
+   "Der Planet wurde 2023 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern TOI-715 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3075 Kelvin und dem 0,24-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,55-Fachen des Erdradius, eine Masse von etwa 3,02 Erdmassen und ein Jahr, das 19,3 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 234 Kelvin, das sind -39 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es ist bisher der einzige bekannte Planet in diesem System.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "trappist-1-d",
+  "lang": "en",
+  "title": "TRAPPIST-1 d",
+  "paragraphs": [
+   "TRAPPIST-1 d is a candidate for a habitable world, 40.5 light years from the Sun. The light that reaches us from TRAPPIST-1 today left the star about 40.5 years ago.",
+   "It was discovered in 2016, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, TRAPPIST-1, is a red dwarf with a surface temperature of about 2566 Kelvin and 0.12 times the radius of the Sun.",
+   "The planet has a radius of 0.788 times that of Earth, a mass of about 0.39 Earth masses and a year that lasts 4.0 Earth days.",
+   "Its equilibrium temperature is 286 Kelvin, or 13 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 6 other known planets in this system: TRAPPIST-1 b, TRAPPIST-1 c, TRAPPIST-1 e, TRAPPIST-1 f, TRAPPIST-1 g, TRAPPIST-1 h.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "trappist-1-d",
+  "lang": "de",
+  "title": "TRAPPIST-1 d",
+  "paragraphs": [
+   "TRAPPIST-1 d ist ein Kandidat für eine bewohnbare Welt, 40,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von TRAPPIST-1 bei uns ankommt, hat den Stern vor etwa 40,5 Jahren verlassen.",
+   "Der Planet wurde 2016 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern TRAPPIST-1 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2566 Kelvin und dem 0,12-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 0,788-Fachen des Erdradius, eine Masse von etwa 0,39 Erdmassen und ein Jahr, das 4,0 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 286 Kelvin, das sind 13 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 6 weitere bekannte Planeten in diesem System: TRAPPIST-1 b, TRAPPIST-1 c, TRAPPIST-1 e, TRAPPIST-1 f, TRAPPIST-1 g, TRAPPIST-1 h.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "trappist-1-e",
+  "lang": "en",
+  "title": "TRAPPIST-1 e",
+  "paragraphs": [
+   "TRAPPIST-1 e is a candidate for a habitable world, 40.5 light years from the Sun. The light that reaches us from TRAPPIST-1 today left the star about 40.5 years ago.",
+   "It was discovered in 2017, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, TRAPPIST-1, is a red dwarf with a surface temperature of about 2566 Kelvin and 0.12 times the radius of the Sun.",
+   "The planet has a radius of 0.92 times that of Earth, a mass of about 0.69 Earth masses and a year that lasts 6.1 Earth days.",
+   "Its equilibrium temperature is 250 Kelvin, or -23 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 6 other known planets in this system: TRAPPIST-1 b, TRAPPIST-1 c, TRAPPIST-1 d, TRAPPIST-1 f, TRAPPIST-1 g, TRAPPIST-1 h.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "trappist-1-e",
+  "lang": "de",
+  "title": "TRAPPIST-1 e",
+  "paragraphs": [
+   "TRAPPIST-1 e ist ein Kandidat für eine bewohnbare Welt, 40,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von TRAPPIST-1 bei uns ankommt, hat den Stern vor etwa 40,5 Jahren verlassen.",
+   "Der Planet wurde 2017 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern TRAPPIST-1 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2566 Kelvin und dem 0,12-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 0,92-Fachen des Erdradius, eine Masse von etwa 0,69 Erdmassen und ein Jahr, das 6,1 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 250 Kelvin, das sind -23 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 6 weitere bekannte Planeten in diesem System: TRAPPIST-1 b, TRAPPIST-1 c, TRAPPIST-1 d, TRAPPIST-1 f, TRAPPIST-1 g, TRAPPIST-1 h.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "trappist-1-f",
+  "lang": "en",
+  "title": "TRAPPIST-1 f",
+  "paragraphs": [
+   "TRAPPIST-1 f is a candidate for a habitable world, 40.5 light years from the Sun. The light that reaches us from TRAPPIST-1 today left the star about 40.5 years ago.",
+   "It was discovered in 2017, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, TRAPPIST-1, is a red dwarf with a surface temperature of about 2566 Kelvin and 0.12 times the radius of the Sun.",
+   "The planet has a radius of 1.045 times that of Earth, a mass of about 1.04 Earth masses and a year that lasts 9.2 Earth days.",
+   "Its equilibrium temperature is 218 Kelvin, or -55 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 6 other known planets in this system: TRAPPIST-1 b, TRAPPIST-1 c, TRAPPIST-1 d, TRAPPIST-1 e, TRAPPIST-1 g, TRAPPIST-1 h.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "trappist-1-f",
+  "lang": "de",
+  "title": "TRAPPIST-1 f",
+  "paragraphs": [
+   "TRAPPIST-1 f ist ein Kandidat für eine bewohnbare Welt, 40,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von TRAPPIST-1 bei uns ankommt, hat den Stern vor etwa 40,5 Jahren verlassen.",
+   "Der Planet wurde 2017 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern TRAPPIST-1 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2566 Kelvin und dem 0,12-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,045-Fachen des Erdradius, eine Masse von etwa 1,04 Erdmassen und ein Jahr, das 9,2 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 218 Kelvin, das sind -55 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 6 weitere bekannte Planeten in diesem System: TRAPPIST-1 b, TRAPPIST-1 c, TRAPPIST-1 d, TRAPPIST-1 e, TRAPPIST-1 g, TRAPPIST-1 h.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "trappist-1-g",
+  "lang": "en",
+  "title": "TRAPPIST-1 g",
+  "paragraphs": [
+   "TRAPPIST-1 g is a candidate for a habitable world, 40.5 light years from the Sun. The light that reaches us from TRAPPIST-1 today left the star about 40.5 years ago.",
+   "It was discovered in 2017, with the transit method: a telescope watches a star and sees its light dip slightly and regularly when the planet passes in front of it.",
+   "Its star, TRAPPIST-1, is a red dwarf with a surface temperature of about 2566 Kelvin and 0.12 times the radius of the Sun.",
+   "The planet has a radius of 1.129 times that of Earth, a mass of about 1.32 Earth masses and a year that lasts 12.4 Earth days.",
+   "Its equilibrium temperature is 197 Kelvin, or -76 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 6 other known planets in this system: TRAPPIST-1 b, TRAPPIST-1 c, TRAPPIST-1 d, TRAPPIST-1 e, TRAPPIST-1 f, TRAPPIST-1 h.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "trappist-1-g",
+  "lang": "de",
+  "title": "TRAPPIST-1 g",
+  "paragraphs": [
+   "TRAPPIST-1 g ist ein Kandidat für eine bewohnbare Welt, 40,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von TRAPPIST-1 bei uns ankommt, hat den Stern vor etwa 40,5 Jahren verlassen.",
+   "Der Planet wurde 2017 entdeckt, mit der Transitmethode: Ein Teleskop beobachtet einen Stern und sieht, wie sein Licht regelmäßig leicht abnimmt, wenn der Planet vor ihm vorbeizieht.",
+   "Sein Stern TRAPPIST-1 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 2566 Kelvin und dem 0,12-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,129-Fachen des Erdradius, eine Masse von etwa 1,32 Erdmassen und ein Jahr, das 12,4 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 197 Kelvin, das sind -76 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 6 weitere bekannte Planeten in diesem System: TRAPPIST-1 b, TRAPPIST-1 c, TRAPPIST-1 d, TRAPPIST-1 e, TRAPPIST-1 f, TRAPPIST-1 h.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "teegarden-s-star-b",
+  "lang": "en",
+  "title": "Teegarden's Star b",
+  "paragraphs": [
+   "Teegarden's Star b is a candidate for a habitable world, 12.5 light years from the Sun. The light that reaches us from Teegarden's Star today left the star about 12.5 years ago.",
+   "It was discovered in 2019, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, Teegarden's Star, is a red dwarf with a surface temperature of about 3034 Kelvin and 0.12 times the radius of the Sun.",
+   "The planet has a radius of 1.05 times that of Earth, a mass of at least 1.16 Earth masses and a year that lasts 4.9 Earth days.",
+   "Its equilibrium temperature is 277 Kelvin, or 4 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 2 other known planets in this system: Teegarden's Star c, Teegarden's Star d.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "teegarden-s-star-b",
+  "lang": "de",
+  "title": "Teegarden's Star b",
+  "paragraphs": [
+   "Teegarden's Star b ist ein Kandidat für eine bewohnbare Welt, 12,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Teegarden's Star bei uns ankommt, hat den Stern vor etwa 12,5 Jahren verlassen.",
+   "Der Planet wurde 2019 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern Teegarden's Star ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3034 Kelvin und dem 0,12-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,05-Fachen des Erdradius, eine Masse von mindestens 1,16 Erdmassen und ein Jahr, das 4,9 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 277 Kelvin, das sind 4 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 2 weitere bekannte Planeten in diesem System: Teegarden's Star c, Teegarden's Star d.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "teegarden-s-star-c",
+  "lang": "en",
+  "title": "Teegarden's Star c",
+  "paragraphs": [
+   "Teegarden's Star c is a candidate for a habitable world, 12.5 light years from the Sun. The light that reaches us from Teegarden's Star today left the star about 12.5 years ago.",
+   "It was discovered in 2019, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, Teegarden's Star, is a red dwarf with a surface temperature of about 3034 Kelvin and 0.12 times the radius of the Sun.",
+   "The planet has a radius of 1.02 times that of Earth, a mass of at least 1.05 Earth masses and a year that lasts 11.4 Earth days.",
+   "Its equilibrium temperature is 209 Kelvin, or -64 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "There are 2 other known planets in this system: Teegarden's Star b, Teegarden's Star d.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "teegarden-s-star-c",
+  "lang": "de",
+  "title": "Teegarden's Star c",
+  "paragraphs": [
+   "Teegarden's Star c ist ein Kandidat für eine bewohnbare Welt, 12,5 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Teegarden's Star bei uns ankommt, hat den Stern vor etwa 12,5 Jahren verlassen.",
+   "Der Planet wurde 2019 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern Teegarden's Star ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3034 Kelvin und dem 0,12-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,02-Fachen des Erdradius, eine Masse von mindestens 1,05 Erdmassen und ein Jahr, das 11,4 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 209 Kelvin, das sind -64 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es gibt 2 weitere bekannte Planeten in diesem System: Teegarden's Star b, Teegarden's Star d.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ },
+ {
+  "id": "wolf-1069-b",
+  "lang": "en",
+  "title": "Wolf 1069 b",
+  "paragraphs": [
+   "Wolf 1069 b is a candidate for a habitable world, 31.3 light years from the Sun. The light that reaches us from Wolf 1069 today left the star about 31.3 years ago.",
+   "It was discovered in 2023, with the radial velocity method: the pull of a planet makes its star wobble a little, which shows up as a tiny shift in the star's light.",
+   "Its star, Wolf 1069, is a red dwarf with a surface temperature of about 3158 Kelvin and 0.18 times the radius of the Sun.",
+   "The planet has a radius of 1.08 times that of Earth, a mass of at least 1.26 Earth masses and a year that lasts 15.6 Earth days.",
+   "Its equilibrium temperature is 250 Kelvin, or -23 degrees Celsius. That value is calculated from starlight alone and ignores any atmosphere, so the real surface could be warmer or colder.",
+   "It is the only planet known in this system so far.",
+   "It is on this list because its size and temperature fit a simple rule for worlds that could hold liquid water. Whether it has water, an atmosphere or life is unknown."
+  ]
+ },
+ {
+  "id": "wolf-1069-b",
+  "lang": "de",
+  "title": "Wolf 1069 b",
+  "paragraphs": [
+   "Wolf 1069 b ist ein Kandidat für eine bewohnbare Welt, 31,3 Lichtjahre von der Sonne entfernt. Das Licht, das heute von Wolf 1069 bei uns ankommt, hat den Stern vor etwa 31,3 Jahren verlassen.",
+   "Der Planet wurde 2023 entdeckt, mit der Radialgeschwindigkeitsmethode: Die Anziehung eines Planeten bringt seinen Stern leicht zum Wackeln, was sich als winzige Verschiebung im Licht des Sterns zeigt.",
+   "Sein Stern Wolf 1069 ist ein roter Zwerg mit einer Oberflächentemperatur von etwa 3158 Kelvin und dem 0,18-fachen Radius der Sonne.",
+   "Der Planet hat einen Radius vom 1,08-Fachen des Erdradius, eine Masse von mindestens 1,26 Erdmassen und ein Jahr, das 15,6 Erdtage dauert.",
+   "Seine Gleichgewichtstemperatur beträgt 250 Kelvin, das sind -23 Grad Celsius. Dieser Wert ist nur aus dem Sternlicht berechnet und ignoriert jede Atmosphäre, die echte Oberfläche kann also wärmer oder kälter sein.",
+   "Es ist bisher der einzige bekannte Planet in diesem System.",
+   "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt."
+  ]
+ }
+]
