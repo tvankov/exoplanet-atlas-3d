@@ -33,6 +33,14 @@ export const UI = {
       "Artistic picture: colours, patterns and clouds are invented, none of it is measured. Only the temperature decides which kind of world is drawn, molten, temperate or frozen.",
     look: { schematic: "Schematic", artistic: "Artistic" },
     lookLabel: "Exoplanet look",
+    mercuryNote:
+      "Enhanced colours: the map puts the 1000, 750 and 430 nanometre filters of MESSENGER on red, green and blue. The colours show differences in the rock, not what the eye would see.",
+    paintedNote:
+      "Painted by the program, not a map. The colours and the bands follow what telescopes and probes show, the fine pattern is invented. The clouds of a planet like this keep changing.",
+    speedTitle: "Time speed",
+    realTime: "Real time",
+    rate: (duration) => `1 second = ${duration}`,
+    elapsed: (duration) => `Time passed: ${duration}`,
   },
   de: {
     speech: "de-DE",
@@ -64,6 +72,14 @@ export const UI = {
       "Künstlerische Darstellung: Farben, Muster und Wolken sind erfunden, nichts davon ist gemessen. Nur die Temperatur bestimmt, welche Art von Welt gezeichnet wird, glühend, gemäßigt oder vereist.",
     look: { schematic: "Schematisch", artistic: "Künstlerisch" },
     lookLabel: "Aussehen der Exoplaneten",
+    mercuryNote:
+      "Verstärkte Farben: Die Karte legt die Filter von MESSENGER bei 1000, 750 und 430 Nanometern auf Rot, Grün und Blau. Die Farben zeigen Unterschiede im Gestein, nicht was das Auge sähe.",
+    paintedNote:
+      "Vom Programm gemalt, keine Karte. Die Farben und die Bänder folgen dem, was Teleskope und Sonden zeigen, das feine Muster ist erfunden. Die Wolken eines solchen Planeten ändern sich ständig.",
+    speedTitle: "Zeitgeschwindigkeit",
+    realTime: "Echtzeit",
+    rate: (duration) => `1 Sekunde = ${duration}`,
+    elapsed: (duration) => `Vergangene Zeit: ${duration}`,
   },
 };
 
@@ -89,6 +105,21 @@ function num(lang, value, digits) {
       ? { maximumFractionDigits: 3, useGrouping: false }
       : { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false };
   return value.toLocaleString(lang === "de" ? "de-DE" : "en-US", options);
+}
+
+// A length of time in words, for the speed display: "5 minutes", "3.2 days", "2 years".
+const DURATION_UNITS = {
+  en: [["second", "seconds"], ["minute", "minutes"], ["hour", "hours"], ["day", "days"], ["year", "years"]],
+  de: [["Sekunde", "Sekunden"], ["Minute", "Minuten"], ["Stunde", "Stunden"], ["Tag", "Tage"], ["Jahr", "Jahre"]],
+};
+export function duration(seconds, lang) {
+  const sizes = [1, 60, 3600, 86400, 365.25 * 86400];
+  let i = sizes.length - 1;
+  while (i > 0 && seconds < sizes[i]) i--;
+  const value = seconds / sizes[i];
+  const shown = value >= 10 ? Math.round(value) : Math.round(value * 10) / 10;
+  const [one, many] = DURATION_UNITS[lang][i];
+  return `${num(lang, shown, shown % 1 ? 1 : 0)} ${shown === 1 ? one : many}`;
 }
 
 const TEXT = {

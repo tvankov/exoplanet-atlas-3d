@@ -34,6 +34,31 @@ html, body {
   font-size: 13px;
 }
 
+#speed-box {
+  margin-top: 8px;
+}
+
+#speed-title {
+  display: block;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+#speed {
+  width: 100%;
+  margin: 4px 0 0;
+  accent-color: #7cffb2;
+}
+
+#speed-box p {
+  margin: 2px 0;
+  font-size: 12px;
+}
+
+#speed-elapsed {
+  opacity: 0.65;
+}
+
 #zone-legend {
   display: flex;
   align-items: center;

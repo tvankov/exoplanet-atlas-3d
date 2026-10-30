@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { buildStory, planetType, PLANET_TYPES, slug, UI } from "./story.js";
+import { buildStory, duration, planetType, PLANET_TYPES, slug, UI } from "./story.js";
 
 const DEFAULT_RADIUS = 1; // solar radii, display only, used where st_rad is missing
 
@@ -289,17 +289,65 @@ function starBody(color, name, radius) {
     })
   );
   star.add(corona);
+  star.userData.corona = corona;
+  corona.userData.radius = radius * CORONA_RATIO;
   return star;
+}
+
+// The corona is a sphere seen from the inside, so it only makes sense from outside. A camera
+// that sits within it (a close-up of Mercury is 0.16 units from the Sun, the corona reaches 0.18)
+// would see its inner wall everywhere, a yellow veil with a hard edge. Inside it is switched off.
+const coronaTmp = new THREE.Vector3();
+function updateCorona(star) {
+  const corona = star?.userData.corona;
+  if (!corona) return;
+  corona.visible = camera.position.distanceTo(star.getWorldPosition(coronaTmp)) > corona.userData.radius * 1.02;
 }
 
 // A glow around a star: a bright inner halo and a wide faint one. Both scale with the scene,
 // so they grow when we fly closer.
+// The glow is a flat square that always faces the camera. A plain sprite sits at the depth of its
+// star, and a planet close to the star (Mercury) is cut by that square: the half behind it got
+// covered by a hard edged yellow haze. These squares are pushed to the very back instead, so
+// everything solid is drawn in front of them and the glow only shows against empty sky.
+const GLOW_VERTEX = `
+  uniform float uSize;
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    vec4 mv = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    mv.xy += position.xy * uSize;
+    gl_Position = projectionMatrix * mv;
+    gl_Position.z = gl_Position.w * 0.9999;
+  }`;
+const GLOW_FRAGMENT = `
+  uniform sampler2D uMap;
+  uniform vec3 uColor;
+  uniform float uOpacity;
+  varying vec2 vUv;
+  void main() {
+    gl_FragColor = vec4(uColor, texture2D(uMap, vUv).a * uOpacity);
+    #include <colorspace_fragment>
+  }`;
 function starGlow(color, size) {
   const layer = (scale, opacity) => {
-    const glow = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: glowTexture(), color, opacity, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })
+    const glow = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uMap: { value: glowTexture() },
+          uColor: { value: new THREE.Color(color) },
+          uOpacity: { value: opacity },
+          uSize: { value: size * scale },
+        },
+        vertexShader: GLOW_VERTEX,
+        fragmentShader: GLOW_FRAGMENT,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        transparent: true,
+      })
     );
-    glow.scale.set(size * scale, size * scale, 1);
+    glow.frustumCulled = false; // the shader moves the square, the bounds of the plane would be wrong
     return glow;
   };
   const group = new THREE.Group();
@@ -326,8 +374,11 @@ const MIN_PLANET_PER_VIEW_DISTANCE = 0.006;
 // distance to the nearest star. Distances are not to scale, sizes are, up to the minimum above.
 // Values: mean orbit radius (AU), orbital period (years), radius (Earth radii).
 const PLANETS = [
-  { name: "Mercury", au: 0.387, years: 0.241, radius: 0.383, color: 0xb5a8a0 },
-  { name: "Venus", au: 0.723, years: 0.615, radius: 0.949, color: 0xe8c98a },
+  // Mercury: the MESSENGER colour mosaic (MD3, NASA/JHU APL/Carnegie Institution, USGS). Its colours are
+  // enhanced: three filters at 1000, 750 and 430 nanometres put on red, green and blue. The panel says so.
+  { name: "Mercury", au: 0.387, years: 0.241, radius: 0.383, color: 0xb5a8a0, texture: "textures/mercury.jpg", noteKey: "mercuryNote" },
+  // Venus, Saturn, Uranus and Neptune have no usable map, they are painted by the program (see SOLAR_LOOK_FRAGMENT).
+  { name: "Venus", au: 0.723, years: 0.615, radius: 0.949, color: 0xe8c98a, look: 0, noteKey: "paintedNote" },
   // Only Earth has a texture. For the other planets and for every exoplanet a picture would be invented.
   {
     name: "Earth",
@@ -335,16 +386,21 @@ const PLANETS = [
     years: 1.0,
     radius: 1.0,
     color: 0x4da3ff,
-    texture: "textures/earth.jpg",
+    earth: true, // drawn with the NASA maps, see earthMaterial
     // The Moon: 27.32 day orbit and 0.273 Earth radii are real. Its distance is not: in reality
     // it is about 60 Earth radii away, which would leave the picture, so it is drawn at 2.6.
     moon: { years: 27.32 / 365.25, size: 0.2727, orbit: 2.6, color: 0xb4b4b4, label: "Mond · Moon", texture: "textures/moon.jpg" },
   },
-  { name: "Mars", au: 1.524, years: 1.881, radius: 0.532, color: 0xd1603d },
-  { name: "Jupiter", au: 5.203, years: 11.86, radius: 10.97, color: 0xd9b38c },
-  { name: "Saturn", au: 9.537, years: 29.46, radius: 9.14, color: 0xe6d3a3, rings: true },
-  { name: "Uranus", au: 19.19, years: 84.01, radius: 3.98, color: 0x9fe3e8 },
-  { name: "Neptune", au: 30.07, years: 164.8, radius: 3.86, color: 0x4b70dd },
+  // Mars: the Viking Orbiter global colour mosaic (NASA/JPL/USGS), shrunk to 4096 x 2048. Its green is
+  // not a measurement, it was made up from the red and violet pictures, so the colour is close to
+  // what the eye would see and not exact.
+  { name: "Mars", au: 1.524, years: 1.881, radius: 0.532, color: 0xd1603d, texture: "textures/mars.jpg" },
+  // Jupiter: Cassini's global map of December 2000 (NASA/JPL/Space Science Institute). The clouds
+  // of a gas giant change, so it shows Jupiter as it looked then.
+  { name: "Jupiter", au: 5.203, years: 11.86, radius: 10.97, color: 0xd9b38c, texture: "textures/jupiter.jpg" },
+  { name: "Saturn", au: 9.537, years: 29.46, radius: 9.14, color: 0xe6d3a3, rings: true, look: 1, noteKey: "paintedNote" },
+  { name: "Uranus", au: 19.19, years: 84.01, radius: 3.98, color: 0x9fe3e8, look: 2, noteKey: "paintedNote" },
+  { name: "Neptune", au: 30.07, years: 164.8, radius: 3.86, color: 0x4b70dd, look: 3, noteKey: "paintedNote" },
 ];
 function labelSprite(text, width = 128) {
   const c = document.createElement("canvas");
@@ -638,7 +694,279 @@ function addMoon(planetMesh, planetRadius, moon) {
 
 const artUniform = { value: 0 }; // 0 schematic, 1 artistic
 
+// Earth is the one planet we have real pictures of, so it gets its own shader that uses them:
+//  - the day map (land, ocean colour, sea ice) as the colour, without any baked in shadows,
+//  - NASA's shaded topography map for the relief. That map is the same land surface with the
+//    mountains shaded by a light from the north west. Dividing it by the day map takes the colour
+//    out and leaves only that shading, which tells how much a slope tilts towards the north west.
+//    The shader tilts the surface normal that way, so mountains catch the light of the Sun from
+//    any side. It is an approximation of the relief, not a height map: NASA's small maps do not
+//    include one.
+//  - a water mask found from the blue of the ocean in the day map, for the glint of the Sun,
+//  - the night lights, which show on the side facing away from the Sun,
+//  - a blue glow at the edge: Earth's air is real, no guess needed.
+const EARTH_VERTEX = `
+  varying vec2 vUv;
+  varying vec3 vObj;
+  varying vec3 vN;
+  varying vec3 vWorld;
+  void main() {
+    vUv = uv;
+    vObj = normalize(position);
+    vN = normalize(mat3(modelMatrix) * normal); // the groups are only moved, never rotated
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    vWorld = world.xyz;
+    gl_Position = projectionMatrix * viewMatrix * world;
+  }`;
+const EARTH_FRAGMENT = `
+  uniform sampler2D uDay;
+  uniform sampler2D uTopo;
+  uniform sampler2D uLights;
+  uniform sampler2D uClouds;
+  uniform float uCloudRot;   // how far the cloud sphere has turned, in radians
+  uniform vec3 uLightDir;
+  varying vec2 vUv;
+  varying vec3 vObj;
+  varying vec3 vN;
+  varying vec3 vWorld;
+
+  void main() {
+    vec3 day = texture2D(uDay, vUv).rgb;
+    vec3 topo = texture2D(uTopo, vUv).rgb;
+    vec3 lum = vec3(0.3, 0.59, 0.11);
+
+    // Water: the ocean is bluer than the land and the ice.
+    float water = smoothstep(0.004, 0.03, day.b - max(day.r, day.g));
+
+    // Relief, only on land. Shade is 1 on flat ground, above 1 on slopes facing the north west.
+    float shade = dot(topo, lum) / max(dot(day, lum), 0.02);
+    float slope = clamp(shade - 1.0, -0.7, 0.7) * (1.0 - water);
+    vec3 n = normalize(vObj);
+    vec3 east = normalize(vec3(n.z, 0.0, -n.x) + vec3(1e-5));
+    vec3 north = normalize(vec3(0.0, 1.0, 0.0) - n * n.y + vec3(1e-5));
+    vec3 northWest = normalize(north - east);
+    vec3 N = normalize(vN);
+    vec3 relief = normalize(N + 1.1 * slope * northWest);
+
+    vec3 L = normalize(uLightDir);
+    vec3 V = normalize(cameraPosition - vWorld);
+    float sunUp = dot(N, L); // 1 when the Sun is overhead, 0 on the terminator, negative at night
+
+    float diffuse = clamp(dot(relief, L), 0.0, 1.0);
+
+    // Cloud shadows. A cloud shades the ground a little way away from the Sun, so the clouds are
+    // looked up a small step towards the Sun. The cloud sphere has turned by uCloudRot, the map
+    // is read with the same turn, otherwise shadow and cloud would drift apart.
+    vec2 towardsSun = vec2(dot(L, east), dot(L, north));
+    vec2 shadowUv = vec2(vUv.x - uCloudRot / 6.2831853, vUv.y) + vec2(towardsSun.x * 0.004, towardsSun.y * 0.008);
+    float shadow = texture2D(uClouds, shadowUv).g;
+
+    vec3 colour = day * (0.03 + 1.15 * diffuse);
+    colour *= 1.0 - 0.42 * shadow * smoothstep(0.0, 0.3, sunUp);
+
+    // Glint of the Sun on the sea. The smooth sea uses the plain normal, not the relief.
+    vec3 H = normalize(L + V);
+    float facing = clamp(sunUp, 0.0, 1.0);
+    float glint = pow(max(dot(N, H), 0.0), 160.0) * 0.9 + pow(max(dot(N, H), 0.0), 20.0) * 0.06;
+    colour += vec3(1.0, 0.95, 0.85) * glint * water * step(0.0, sunUp) * (0.3 + 0.7 * facing);
+
+    // Water turns into a mirror when seen at a flat angle (Fresnel). Near the edge of the globe the
+    // sea therefore shows the pale blue sky instead of its own dark blue.
+    float fresnel = pow(1.0 - max(dot(N, V), 0.0), 4.0);
+    colour += vec3(0.40, 0.62, 0.95) * fresnel * water * (0.1 + 0.9 * clamp(sunUp + 0.3, 0.0, 1.0)) * 0.7;
+
+    // Night lights on the dark side.
+    float night = 1.0 - smoothstep(-0.12, 0.1, sunUp);
+    colour += texture2D(uLights, vUv).rgb * night * 1.3;
+
+    // Blue glow of the air at the edge, stronger on the lit side.
+    float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+    colour += vec3(0.25, 0.5, 1.0) * rim * (0.15 + 0.85 * clamp(sunUp + 0.25, 0.0, 1.0)) * 0.7;
+
+    gl_FragColor = vec4(colour, 1.0);
+    #include <colorspace_fragment>
+  }`;
+
+function earthMaterial() {
+  const load = (file, srgb = true) => {
+    const map = textureLoader.load(file);
+    if (srgb) map.colorSpace = THREE.SRGBColorSpace;
+    return map;
+  };
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uDay: { value: load("textures/earth_day.jpg") },
+      uTopo: { value: load("textures/earth.jpg") },
+      uLights: { value: load("textures/earth_lights.jpg") },
+      uClouds: { value: load("textures/earth_clouds.jpg", false) }, // a mask, not a colour
+      uCloudRot: { value: 0 },
+      uLightDir: { value: new THREE.Vector3(0, 0, 1) }, // updated every frame from the orbit
+    },
+    vertexShader: EARTH_VERTEX,
+    fragmentShader: EARTH_FRAGMENT,
+  });
+}
+
+// Clouds on a sphere of their own, a little larger than Earth and see through. NASA's cloud map is
+// white where there are clouds and black elsewhere, which is used as the opacity. As a separate
+// sphere they can drift against the ground. They are lit by the same Sun direction as the ground,
+// with a floor of light: with the plain Lambert material the clouds at the edge of the globe turned
+// black on the dark side and drew a dark outline around the planet.
+const CLOUD_HEIGHT = 1.012;
+const CLOUD_FRAGMENT = `
+  uniform sampler2D uClouds;
+  uniform vec3 uLightDir;
+  varying vec2 vUv;
+  varying vec3 vN;
+  void main() {
+    float cloud = texture2D(uClouds, vUv).g;
+    float sunUp = dot(normalize(vN), normalize(uLightDir));
+    float light = 0.16 + 0.84 * smoothstep(-0.12, 0.45, sunUp);
+    vec3 colour = vec3(0.96, 0.98, 1.0) * light;
+    gl_FragColor = vec4(colour, clamp(cloud * 0.95, 0.0, 1.0));
+    #include <colorspace_fragment>
+  }`;
+const CLOUD_VERTEX = `
+  varying vec2 vUv;
+  varying vec3 vN;
+  void main() {
+    vUv = uv;
+    vN = normalize(mat3(modelMatrix) * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }`;
+function addClouds(planetMesh, planetRadius) {
+  const shared = planetMesh.material.uniforms; // same Sun direction and cloud map as the ground
+  const clouds = new THREE.Mesh(
+    new THREE.SphereGeometry(planetRadius * CLOUD_HEIGHT, 64, 48),
+    new THREE.ShaderMaterial({
+      uniforms: { uClouds: shared.uClouds, uLightDir: shared.uLightDir },
+      vertexShader: CLOUD_VERTEX,
+      fragmentShader: CLOUD_FRAGMENT,
+      transparent: true,
+      depthWrite: false,
+    })
+  );
+  planetMesh.add(clouds);
+  return clouds;
+}
+
+// The haze of the air beyond the edge of the globe, a sphere drawn from the inside so that only the
+// ring around the planet shows, like the corona of a star. Blue, brighter on the side of the Sun.
+const ATMOSPHERE_RATIO = 1.09;
+const ATMOSPHERE_FRAGMENT = `
+  uniform vec3 uLightDir;
+  varying vec3 vNormalView;
+  varying vec3 vView;
+  varying vec3 vNormalWorld;
+  void main() {
+    float mu = abs(dot(normalize(vNormalView), normalize(vView)));
+    float b = sqrt(max(0.0, 1.0 - mu * mu)) * ${ATMOSPHERE_RATIO.toFixed(2)}; // distance from the middle, in planet radii
+    if (b < 1.0) discard; // the planet covers this part
+    float falloff = exp(-(b - 1.0) * 42.0);
+    float sunSide = 0.2 + 0.8 * clamp(dot(normalize(vNormalWorld), normalize(uLightDir)) + 0.35, 0.0, 1.0);
+    gl_FragColor = vec4(vec3(0.25, 0.5, 1.0) * falloff * sunSide * 1.1, 1.0);
+    #include <colorspace_fragment>
+  }`;
+const ATMOSPHERE_VERTEX = `
+  varying vec3 vNormalView;
+  varying vec3 vView;
+  varying vec3 vNormalWorld;
+  void main() {
+    vNormalView = normalize(normalMatrix * normal);
+    vNormalWorld = normalize(mat3(modelMatrix) * normal);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vView = normalize(-mv.xyz);
+    gl_Position = projectionMatrix * mv;
+  }`;
+function addAtmosphere(planetMesh, planetRadius) {
+  const shell = new THREE.Mesh(
+    new THREE.SphereGeometry(planetRadius * ATMOSPHERE_RATIO, 64, 48),
+    new THREE.ShaderMaterial({
+      uniforms: { uLightDir: planetMesh.material.uniforms.uLightDir },
+      vertexShader: ATMOSPHERE_VERTEX,
+      fragmentShader: ATMOSPHERE_FRAGMENT,
+      side: THREE.BackSide,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  planetMesh.add(shell);
+  return shell;
+}
+
+// The planets of our own system that have no usable global map: Venus (a layer of cloud hides the
+// ground and radar maps do not show what the eye would see), Saturn, Uranus and Neptune (nobody has
+// a global picture of a gas giant that stays valid, their clouds change). They get a picture painted
+// by the program, in the colours and bands that telescopes and probes show. The overall look is
+// known, the fine pattern is invented, and the panel says so.
+const SOLAR_LOOK_FRAGMENT = `
+  uniform int uKind;        // 0 Venus, 1 Saturn, 2 Uranus, 3 Neptune
+  uniform float uSeed;
+  uniform vec3 uLightDir;   // from the planet towards the Sun
+  varying vec3 vPos;
+  varying vec3 vNormal;
+  varying vec3 vNormalView;
+  varying vec3 vView;
+  ${NOISE_GLSL}
+
+  void main() {
+    vec3 n = normalize(vPos);
+    vec3 p = n * 3.0 + seedOffset(uSeed);
+    float lat = n.y;
+    vec3 base;
+    if (uKind == 0) {
+      // Venus: from space a nearly featureless pale yellow veil. Only faint soft streaks show.
+      float w = lat * 3.0 + 0.9 * fbm(vec3(p.x * 0.9, p.y * 0.5, p.z * 0.9) * 1.3);
+      float streak = fbm(vec3(p.x * 0.6, p.y * 2.2, p.z * 0.6) + 4.0);
+      base = mix(vec3(0.93, 0.84, 0.60), vec3(0.97, 0.92, 0.78), 0.5 + 0.5 * sin(w * 3.0));
+      base = mix(base, vec3(0.80, 0.68, 0.42), smoothstep(0.55, 0.78, streak) * 0.35);
+    } else if (uKind == 1) {
+      // Saturn: pale gold with soft bands, the poles a little bluish grey.
+      float w = lat * 9.0 + 1.1 * fbm(vec3(p.x, p.y * 0.4, p.z));
+      base = mix(vec3(0.70, 0.58, 0.38), vec3(0.92, 0.84, 0.62), 0.5 + 0.5 * sin(w * 3.0));
+      base = mix(base, vec3(0.50, 0.56, 0.62), smoothstep(0.78, 0.98, abs(lat)) * 0.5);
+    } else if (uKind == 2) {
+      // Uranus: pale cyan green and almost smooth, only very faint bands.
+      float w = lat * 6.0 + 0.6 * fbm(p * 1.2);
+      base = mix(vec3(0.58, 0.82, 0.86), vec3(0.70, 0.90, 0.92), 0.5 + 0.5 * sin(w * 3.0));
+    } else {
+      // Neptune: deep azure with thin bright streaks of high cloud and one dark oval.
+      float w = lat * 7.0 + 1.0 * fbm(p * 1.1);
+      base = mix(vec3(0.13, 0.28, 0.72), vec3(0.28, 0.48, 0.90), 0.5 + 0.5 * sin(w * 3.0));
+      float cirrus = smoothstep(0.62, 0.82, noise(vec3(n.x * 3.0, n.y * 16.0, n.z * 3.0) + seedOffset(uSeed * 2.0)));
+      cirrus *= 1.0 - smoothstep(0.1, 0.7, abs(lat + 0.25));
+      base = mix(base, vec3(0.85, 0.92, 1.0), cirrus * 0.55);
+      float lon = atan(n.z, n.x);
+      float dLon = mod(lon - 1.2 + 3.14159, 6.28318) - 3.14159;
+      float spot = smoothstep(0.30, 0.0, length(vec2(dLon * 0.7, (lat + 0.35) * 1.6)));
+      base = mix(base, vec3(0.06, 0.14, 0.40), spot * 0.8);
+    }
+
+    float facing = dot(normalize(vNormal), normalize(uLightDir));
+    float light = 0.12 + 0.88 * smoothstep(-0.05, 0.6, facing);
+    // All four have a thick atmosphere, so a soft glow at the edge in their own colour is correct.
+    float rim = pow(1.0 - max(dot(normalize(vNormalView), normalize(vView)), 0.0), 3.0);
+    vec3 colour = base * light + base * 1.4 * rim * (0.25 + 0.75 * light) * 0.6;
+    gl_FragColor = vec4(pow(max(colour, vec3(0.0)), vec3(2.2)), 1.0); // the colours above are screen colours, see PLANET_FRAGMENT
+    #include <colorspace_fragment>
+  }`;
+
+function solarLookMaterial(p) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uKind: { value: p.look },
+      uSeed: { value: seedFrom(p.name) },
+      uLightDir: { value: new THREE.Vector3(0, 0, 1) }, // updated every frame from the orbit
+    },
+    vertexShader: PLANET_VERTEX,
+    fragmentShader: SOLAR_LOOK_FRAGMENT,
+  });
+}
+
 function planetMaterial(p) {
+  if (p.earth) return earthMaterial();
+  if (p.look !== undefined) return solarLookMaterial(p);
   if (p.type) {
     return new THREE.ShaderMaterial({
       uniforms: {
@@ -665,12 +993,14 @@ scene.add(new THREE.AmbientLight(0xffffff, 0.35)); // keeps the night side from 
 // One builder for every system view: central star, orbit rings, planets with name labels.
 // Orbit radii and sizes are already in map units, years are the real orbital periods.
 // Start angles are spread out for looks, they are not the real positions of today.
-function makeSystem({ starName, starColor, starRadius, planets, viewDistance, yearsPerSecond }) {
+function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) {
   const group = new THREE.Group();
   scene.add(group);
   group.add(labelSprite(starName));
+  let starMesh = null;
   if (starRadius) {
-    group.add(starBody(starColor, starName, starRadius));
+    starMesh = starBody(starColor, starName, starRadius);
+    group.add(starMesh);
     group.add(starGlow(starColor, starRadius * 7));
   }
 
@@ -687,7 +1017,9 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance, ye
     );
     const radius = Math.max(p.size, viewDistance * MIN_PLANET_PER_VIEW_DISTANCE);
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 24), planetMaterial(p));
-    mesh.add(labelSprite(p.name));
+    const label = labelSprite(p.name);
+    mesh.add(label);
+    mesh.userData.label = label; // the close-up hides it, it would lie on top of the planet
     // An invisible, larger sphere around the planet is what a click hits. A planet can be only a few
     // pixels wide, so a click on the planet itself would be too hard to land.
     const hit = new THREE.Mesh(
@@ -701,28 +1033,41 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance, ye
     }
     const moon = p.moon ? addMoon(mesh, radius, p.moon) : null;
     if (moon) mesh.userData.closeupRadii = 5; // far enough back that the Moon's orbit fits into the picture
+    const clouds = p.earth ? addClouds(mesh, radius) : null;
+    if (p.earth) addAtmosphere(mesh, radius);
     group.add(mesh);
-    return { ...p, mesh, hit, moon, start: i * 1.7 };
+    return { ...p, mesh, hit, moon, clouds, start: i * 1.7 };
   });
-  return { group, bodies, viewDistance, yearsPerSecond, time: 0 };
+  return { group, bodies, viewDistance, time: 0, starMesh };
 }
+
+// Time. The clock of every system counts real years of simulated time, and all periods are the
+// real ones (a planet's period from the NASA table, Earth 365 days, the Moon 27.3 days). One real
+// second is one simulated second, unless the user turns the speed up with the slider. At the start
+// (1x) nothing visibly moves, which is what real time looks like.
+const SECONDS_PER_YEAR = 365.25 * 86400;
+const CLOUD_DRIFT_YEARS = 20 / 365.25; // the clouds go once round the ground in 20 days, a look and not a measured wind
+let timeScale = 1; // simulated seconds per real second
 
 // Planets only move along their orbit around the star. They do not spin on their own axis.
 function stepSystem(system, dt) {
-  system.time += dt;
+  system.time += (dt * timeScale) / SECONDS_PER_YEAR;
   if (system.belt) {
     // The belt moves on the shader, it only needs the clock of its system.
     system.belt.material.uniforms.uTime.value = system.time;
-    system.belt.material.uniforms.uSpeed.value = system.yearsPerSecond;
   }
   for (const b of system.bodies) {
-    const a = b.start + (system.time * system.yearsPerSecond * Math.PI * 2) / b.years;
+    const a = b.start + (system.time * Math.PI * 2) / b.years;
     b.mesh.position.set(Math.cos(a) * b.orbit, 0, Math.sin(a) * b.orbit);
     // The star sits in the middle of the group, so the light comes from the opposite of the position.
     b.mesh.material.uniforms?.uLightDir.value.copy(b.mesh.position).negate().normalize();
+    if (b.clouds) {
+      b.clouds.rotation.y = (system.time * Math.PI * 2) / CLOUD_DRIFT_YEARS;
+      b.mesh.material.uniforms.uCloudRot.value = b.clouds.rotation.y; // the ground reads its cloud shadows with the same turn
+    }
     if (b.moon) {
       // Same clock as the planets, so the Moon's real 27 day period stays in proportion to the year.
-      const m = (system.time * system.yearsPerSecond * Math.PI * 2) / b.moon.years;
+      const m = (system.time * Math.PI * 2) / b.moon.years;
       b.moon.mesh.position.set(Math.cos(m) * b.moon.distance, 0, Math.sin(m) * b.moon.distance);
     }
   }
@@ -736,7 +1081,6 @@ const solar = makeSystem({
   starName: "Sun",
   starRadius: null, // the Sun already has its marker above, visible from far away too
   viewDistance: 1.5,
-  yearsPerSecond: 0.025, // Earth needs 40 seconds for one orbit
   planets: PLANETS.map((p) => ({
     name: p.name,
     years: p.years,
@@ -744,6 +1088,9 @@ const solar = makeSystem({
     size: (SUN_RADIUS * p.radius) / EARTH_RADII_PER_SUN,
     color: p.color,
     texture: p.texture,
+    noteKey: p.noteKey,
+    look: p.look,
+    earth: p.earth,
     rings: p.rings,
     moon: p.moon,
   })),
@@ -771,17 +1118,17 @@ const BELT_VERTEX = `
   attribute float aAngle0;
   attribute float aNode;
   attribute float aInc;
-  uniform float uTime;   // seconds on the system clock
-  uniform float uSpeed;  // years per second of that clock
+  uniform float uTime;   // years on the system clock
   uniform float uSize;
   varying float vShade;
   void main() {
     float years = pow(aAu, 1.5);                                // Kepler's third law
-    float angle = aAngle0 + uTime * uSpeed * 6.2831853 / years;
+    float angle = aAngle0 + uTime * 6.2831853 / years;
     float r = 0.3 * sqrt(aAu);                                  // same distance mapping as the planets
     vec3 p = vec3(cos(angle) * r, sin(aInc) * r * sin(angle - aNode), sin(angle) * r);
     vec4 mv = modelViewMatrix * vec4(p, 1.0);
-    gl_PointSize = max(1.5, uSize / -mv.z);
+    // Capped at 4 pixels: close to the belt the points grew into big white discs like snow.
+    gl_PointSize = clamp(uSize / -mv.z, 1.5, 4.0);
     gl_Position = projectionMatrix * mv;
     vShade = fract(aAngle0 * 7.3);
   }`;
@@ -840,7 +1187,7 @@ function asteroidBelt() {
   const belt = new THREE.Points(
     geometry,
     new THREE.ShaderMaterial({
-      uniforms: { uTime: { value: 0 }, uSpeed: { value: 0 }, uSize: { value: 3.0 } },
+      uniforms: { uTime: { value: 0 }, uSize: { value: 3.0 } },
       vertexShader: BELT_VERTEX,
       fragmentShader: BELT_FRAGMENT,
       transparent: true,
@@ -889,8 +1236,6 @@ function exoSystem(star) {
     starRadius: EXO_STAR_RADIUS,
     planets,
     viewDistance: Math.max(0.4, 2 * outer),
-    // The fastest planet takes 16 seconds per orbit, the others keep their real ratios.
-    yearsPerSecond: planets.length ? Math.min(...planets.map((p) => p.years)) / 16 : 1,
   });
 
   // The zone is drawn with the same distance mapping as the orbits, so a planet that sits
@@ -1004,6 +1349,7 @@ function leaveCloseup() {
   // The green zone is a flat disc through the orbit plane. Close to a planet it would cut through
   // the planet and tint half of it, so it is only shown in the system view.
   if (current?.system.zoneMesh) current.system.zoneMesh.visible = true;
+  if (current?.follow?.userData.label) current.follow.userData.label.visible = true;
 }
 
 function showSystem(star, planet) {
@@ -1066,6 +1412,7 @@ const CLOSEUP_RADII = 3; // camera distance in planet radii
 function enterCloseup() {
   closeup = true;
   if (current.system.zoneMesh) current.system.zoneMesh.visible = false;
+  if (current.follow.userData.label) current.follow.userData.label.visible = false;
   const radius = current.follow.geometry.parameters.radius;
   const follow = current.follow;
   // The camera comes in from the side of the star, a little from above. Seen from there the planet
@@ -1153,8 +1500,11 @@ function showStory(star, planet) {
   // photograph, so it needs no "schematic" warning.
   const typeLine = document.getElementById("story-type");
   const noType = !!star.solarSystem || !!planet.solarOther;
-  typeLine.hidden = noType;
-  if (!noType) {
+  const note = planet.noteKey ? UI[lang][planet.noteKey] : null; // a planet of ours whose map needs a word of explanation
+  typeLine.hidden = noType && !note;
+  if (note) {
+    typeLine.textContent = note;
+  } else if (!noType) {
     const t = UI[lang];
     typeLine.textContent = `${t.typeLine(t.types[planetType(planet.pl_rade)])} ${look === "artistic" ? t.artistic : t.schematic}`;
   }
@@ -1218,7 +1568,7 @@ function selectBody(system, body) {
     if (body.name === "Earth") ({ star, planet } = EARTH);
     else {
       star = EARTH.star; // the Sun, at the origin
-      planet = { pl_name: body.name, solarOther: true };
+      planet = { pl_name: body.name, solarOther: true, noteKey: body.noteKey };
     }
   } else {
     star = system.star;
@@ -1262,6 +1612,8 @@ function applyLanguage() {
   const t = UI[lang];
   document.documentElement.lang = lang;
   document.getElementById("hint").textContent = t.hint;
+  document.getElementById("speed-title").textContent = t.speedTitle;
+  updateSpeedText();
   lookSelect.title = t.lookLabel;
   lookSelect.setAttribute("aria-label", t.lookLabel);
   lookSelect.options[0].textContent = t.look.schematic;
@@ -1330,6 +1682,30 @@ function buildHabitableMenu() {
   }
 }
 
+// The speed slider. The left end is real time. Each step to the right is a little faster, over
+// eight powers of ten, up to a hundred million times (one second is about three years).
+const speedSlider = document.getElementById("speed");
+const speedText = document.getElementById("speed-text");
+const speedElapsed = document.getElementById("speed-elapsed");
+
+function updateSpeedText() {
+  const t = UI[lang];
+  speedText.textContent = timeScale < 1.5 ? t.realTime : t.rate(duration(timeScale, lang));
+}
+speedSlider.addEventListener("input", () => {
+  timeScale = 10 ** ((speedSlider.value / 100) * 8);
+  updateSpeedText();
+});
+
+// How much time has passed in the system on screen, written out a few times per second.
+let elapsedShownAt = 0;
+function updateElapsed(now) {
+  if (now - elapsedShownAt < 0.4) return;
+  elapsedShownAt = now;
+  const system = current?.system ?? solar;
+  speedElapsed.textContent = UI[lang].elapsed(duration(system.time * SECONDS_PER_YEAR, lang));
+}
+
 document.getElementById("scale").addEventListener("click", (e) => {
   compressed = !compressed;
   e.target.textContent = compressed ? UI[lang].scaleCompressed : UI[lang].scaleLinear;
@@ -1351,6 +1727,9 @@ function animate() {
   lastFrame = now;
   stepSystem(solar, dt);
   if (activeExo) stepSystem(activeExo, dt);
+  updateCorona(sun);
+  updateCorona(activeExo?.starMesh);
+  updateElapsed(now);
   // Planets live inside a group that sits at the star, so the world position is needed.
   // A system without any usable planet falls back to the star itself.
   if (current) (current.follow ?? current.system.group).getWorldPosition(ring.position);

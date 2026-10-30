@@ -42,13 +42,32 @@ python src/make_audio.py --voices <folder with the .onnx files> --de-speaker 2
   This project is not affiliated with or endorsed by NASA. The archive asks to cite Christiansen et al. (2025),
   Planetary Science Journal. The individual parameters in the table come from published literature, see the references
   on the archive's planet pages.
-- Earth texture: NASA Visible Earth, "Blue Marble: Land Surface, Shallow Water, and Shaded Topography"
-  (`web/textures/earth.jpg`). NASA says its imagery, including texture maps, is generally not subject to copyright and may be
-  used if NASA is acknowledged as the source and no endorsement is implied. Only Earth is textured, a picture of an exoplanet
-  would be invented.
+- Earth maps, all from the NASA Earth Observatory "Blue Marble" set, 2048 x 1024:
+  `web/textures/earth.jpg` (Land Surface, Shallow Water, and Shaded Topography), `earth_day.jpg` (Land Surface, Ocean Color,
+  and Sea Ice), `earth_clouds.jpg` (Clouds) and `earth_lights.jpg` (night lights). NASA says its imagery, including texture
+  maps, is generally not subject to copyright and may be used if NASA is acknowledged as the source and no endorsement is
+  implied. The mountain relief is an approximation made from the shaded topography map, not a height map. Exoplanets have no
+  such pictures, their looks are invented and labelled as such.
 - Moon texture: NASA Scientific Visualization Studio, "CGI Moon Kit" by Ernie Wright, built from Lunar Reconnaissance
   Orbiter data (`web/textures/moon.jpg`, `lroc_color_2k.jpg`). Same NASA terms as the Earth texture: acknowledge NASA as the
   source, imply no endorsement. The Moon's distance from Earth is not to scale (see the code comment).
+- Jupiter map: Cassini's global colour map (PIA07782, NASA/JPL/Space Science Institute, 3601 x 1801), taken in December
+  2000. The clouds of a gas giant change, so it shows Jupiter as it looked then (`web/textures/jupiter.jpg`).
+- Mars map: Viking Orbiter global colour mosaic at 925 m per pixel, NASA/JPL/USGS Astrogeology Science Center, access
+  constraint "public domain". The original is 23,059 x 11,530 pixels (798 MB), it was shrunk to 4096 x 2048 by averaging
+  (`web/textures/mars.jpg`). The green layer of the mosaic was made up from the red and violet pictures, so the colours are
+  close to natural and not exact.
+- Mercury map: MESSENGER MDIS 3-colour global mosaic (MD3, 665 m per pixel), NASA/Johns Hopkins University Applied Physics
+  Laboratory/Carnegie Institution of Washington, distributed by the USGS Astrogeology Science Center. The USGS asks to cite the
+  authors, see Denevi, B.W. et al., "Final calibration and multispectral map products from the Mercury Dual Imaging System
+  Wide-Angle Camera on MESSENGER", Lunar and Planetary Science 47, abstract 1264. The colours are enhanced: the 1000, 750 and
+  430 nm filters are put on red, green and blue, so they show differences in the rock and are not what the eye would see. The
+  original (23,040 x 11,520, 797 MB) was shrunk to 4096 x 2048. The mosaic has no data near the poles (about 5 % of the map), that
+  part is filled with the average grey of the map, which is invented and not a measurement (`web/textures/mercury.jpg`).
+- Venus, Saturn, Uranus and Neptune have no map file. They are painted by the program in the colours and bands that
+  telescopes and probes show, the fine pattern is invented (`SOLAR_LOOK_FRAGMENT` in `web/main.js`), and the panel says so.
+  No usable global map was found: Venus is hidden by clouds and radar maps do not show what the eye would see, and the clouds
+  of the gas giants change all the time.
 - Saturn's rings use the known ring boundaries; the fine streaks inside them are schematic.
 - 3D: [three.js](https://threejs.org/) r160 (MIT), served from `web/vendor/three/` with its licence file, so no
   visitor data goes to a CDN.
