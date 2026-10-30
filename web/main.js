@@ -468,6 +468,7 @@ const PLANET_FRAGMENT = `
   varying vec3 vNormal;
   varying vec3 vNormalView;
   varying vec3 vView;
+  uniform int uForce;       // -1 for none, otherwise the number of the world kind to draw
   ${NOISE_GLSL}
 
   void main() {
@@ -504,20 +505,22 @@ const PLANET_FRAGMENT = `
     // They are switched on by the user and labelled as such in the panel.
     vec3 emit = vec3(0.0);     // light the planet gives off itself, like lava
     float reliefAmount = 0.3;  // how strongly the invented terrain bends the light
+    float gloss = 0.0;         // 0 dull, 1 shiny: a soft highlight of the star on the surface
     if (uArt > 0.5) {
       float rA = rnd(uSeed, 11.0);
       float rFreq = rnd(uSeed, 5.0);
       float jitter = rnd(uSeed, 12.0) - 0.5;
 
       if (uType == 0) {
-        // Kinds of rocky world: 0 lava, 1 rust desert, 2 ocean, 3 ash, 4 sand desert, 5 ice, 6 olive.
+        // Kinds of rocky world: 0 lava, 1 rust desert, 2 slate, 3 ash, 4 sand desert, 5 dusty ice, 6 umber.
         // How often each kind comes up is a choice of looks. The dark ash world is the rarest one,
         // seven in a row of them made the whole set look dull.
         int arch;
         if (uTemp >= 900.0) arch = 0;                                                  // molten
         else if (uTemp > 0.0 && uTemp < 230.0) arch = rA < 0.35 ? 5 : (rA < 0.5 ? 3 : (rA < 0.75 ? 1 : 4));  // cold: ice, ash, rust, sand
         else if (uTemp >= 450.0) arch = rA < 0.45 ? 4 : (rA < 0.8 ? 1 : 3);            // hot: sand, rust, ash
-        else arch = rA < 0.25 ? 1 : (rA < 0.5 ? 2 : (rA < 0.6 ? 3 : (rA < 0.8 ? 4 : 6)));  // temperate: rust, ocean, ash, sand, olive
+        else arch = rA < 0.25 ? 1 : (rA < 0.5 ? 2 : (rA < 0.6 ? 3 : (rA < 0.8 ? 4 : 6)));  // temperate: rust, slate, ash, sand, umber
+        if (uForce >= 0) arch = uForce;  // a few planets are set to a look by hand, see FORCED_LOOK
 
         // Shared building blocks: a bent coordinate, then large, medium and fine structure.
         vec3 warp = vec3(fbm(p * 1.2), fbm(p * 1.2 + 5.2), fbm(p * 1.2 + 9.7));
@@ -541,13 +544,13 @@ const PLANET_FRAGMENT = `
           base = mix(base, vec3(0.92, 0.58, 0.46), smoothstep(0.55, 0.8, mid) * 0.5);
           base *= 0.9 + 0.2 * fine;
         } else if (arch == 2) {
-          // Ocean world: teal sea, a few muted land masses, thin pale clouds.
-          vec3 sea = mix(vec3(0.12, 0.5, 0.5), vec3(0.22, 0.68, 0.58), mid);
-          vec3 land = mix(vec3(0.45, 0.55, 0.38), vec3(0.72, 0.70, 0.58), fine);
+          // Slate world: grey blue plains and lighter grey brown highlands, no clouds. It was a blue ocean
+          // world with clouds first (and teal and green before that), but nothing says a planet like this
+          // has water, so a strong blue was claiming too much.
+          vec3 sea = mix(vec3(0.34, 0.37, 0.43), vec3(0.48, 0.51, 0.57), mid);
+          vec3 land = mix(vec3(0.50, 0.48, 0.45), vec3(0.68, 0.64, 0.58), fine);
           float isLand = smoothstep(0.52, 0.58, large);
           base = mix(sea, land, isLand);
-          float cloud = smoothstep(0.64, 0.84, noise(vec3(n.x * 3.0, n.y * mix(8.0, 14.0, rFreq), n.z * 3.0) + seedOffset(uSeed * 2.0)));
-          base = mix(base, vec3(0.78, 0.88, 0.88), cloud * 0.45);
           reliefAmount = 0.05 + 0.25 * isLand; // the sea stays smooth
         } else if (arch == 3) {
           // Ash world: dark charcoal with faint lighter wisps.
@@ -555,20 +558,32 @@ const PLANET_FRAGMENT = `
           float wisp = smoothstep(0.6, 0.85, noise(vec3(n.x * 2.5, n.y * 10.0, n.z * 2.5) + seedOffset(uSeed * 3.0)));
           base = mix(base, vec3(0.62, 0.66, 0.72), wisp * 0.35);
         } else if (arch == 4) {
-          // Sand desert: tan with dune streaks and darker rock.
-          float dunes = 0.5 + 0.5 * sin(n.y * 30.0 + 6.0 * fbm(q * 2.0) + n.x * 4.0);
+          // Sand desert: tan with darker rock and soft mottling. It had regular dune stripes first (a sine),
+          // they looked like a faint zebra, so the mottling is plain noise now.
+          float mottle = fbm(q * 2.5 + 13.0);
           base = mix(vec3(0.76, 0.60, 0.36), vec3(0.45, 0.32, 0.22), smoothstep(0.5, 0.7, large));
-          base *= (0.85 + 0.2 * dunes) * (0.9 + 0.2 * fine);
+          base *= (0.88 + 0.16 * mottle) * (0.9 + 0.2 * fine);
         } else if (arch == 5) {
-          // Ice world: pale blue with dark blue cracks. Not white, a light blue.
-          base = mix(vec3(0.50, 0.64, 0.80), vec3(0.74, 0.84, 0.93), mid);
+          // Dusty ice world: dark teal slate ice with faint cracks and torn patches of ochre dust, thickest
+          // around one region, the patches stretched diagonally. It was pale blue with cracks first.
+          // The slate is a muted grey blue, a little glossy like wet ice; the ochre patches are small.
+          base = mix(vec3(0.17, 0.22, 0.27), vec3(0.28, 0.34, 0.40), mid);
           float crack = pow(1.0 - abs(2.0 * fbm(q * 6.0 + 23.0) - 1.0), 8.0);
-          base = mix(base, vec3(0.22, 0.38, 0.60), crack * 0.7);
+          base = mix(base, vec3(0.09, 0.12, 0.17), crack * 0.5);
+          float region = smoothstep(0.2, 0.75, fbm(q * 1.1 + 31.0));
+          vec3 along = vec3(n.x * 14.0 + n.y * 8.0, n.y * 34.0 - n.x * 10.0, n.z * 14.0);
+          float streak = fbm(along + seedOffset(uSeed * 3.0));
+          float grit = fbm(n * 60.0 + seedOffset(uSeed * 5.0));
+          float dust = smoothstep(0.60, 0.70, streak + 0.22 * region) * smoothstep(0.42, 0.66, grit + 0.3 * region);
+          dust *= 0.4 + 0.6 * region;
+          base = mix(base, mix(vec3(0.92, 0.64, 0.30), vec3(1.0, 0.80, 0.44), grit), dust);
+          gloss = 1.0 - dust; // only the slate shines, the dust is dull
           reliefAmount = 0.15;
         } else {
-          // Olive world: green brown ground with darker patches.
-          base = mix(vec3(0.38, 0.48, 0.22), vec3(0.62, 0.56, 0.30), large) * (0.85 + 0.3 * mid);
-          base = mix(base, vec3(0.22, 0.30, 0.16), smoothstep(0.58, 0.72, mid) * 0.5);
+          // Umber world: cool grey brown ground with darker patches. It was olive green first, which
+          // looked bad on the several planets that got it.
+          base = mix(vec3(0.38, 0.30, 0.26), vec3(0.60, 0.50, 0.42), large) * (0.85 + 0.3 * mid);
+          base = mix(base, vec3(0.22, 0.17, 0.15), smoothstep(0.58, 0.72, mid) * 0.5);
         }
         // A little hue shift per planet, so two planets of the same kind are still not the same.
         base *= vec3(1.0 + 0.16 * jitter, 1.0, 1.0 - 0.16 * jitter);
@@ -634,6 +649,9 @@ const PLANET_FRAGMENT = `
     // the result into screen colours once more in the last line, so here it is first turned into
     // linear light. Without this step every colour came out too pale and washed towards white.
     vec3 colour = base * light + nightGlow + atmosphere + emit * (0.7 + 0.5 * light);
+    // Soft highlight where the star is mirrored, only on the shiny surfaces.
+    vec3 halfway = normalize(normalize(uLightDir) + normalize(vView));
+    colour += vec3(0.7, 0.8, 0.95) * pow(max(dot(nrm, halfway), 0.0), 40.0) * gloss * 0.45 * smoothstep(0.0, 0.2, facing);
     gl_FragColor = vec4(pow(max(colour, vec3(0.0)), vec3(2.2)), 1.0);
     #include <colorspace_fragment>
   }`;
@@ -1191,6 +1209,10 @@ function gasMaterial(p) {
   });
 }
 
+// Planets whose invented look was chosen by hand instead of by temperature and name: the kind of
+// world as numbered in PLANET_FRAGMENT (5 is the dusty ice world).
+const FORCED_LOOK = { "Teegarden's Star b": 5, "Teegarden's Star c": 5 };
+
 function planetMaterial(p) {
   if (p.earth) return earthMaterial();
   if (p.flatten && p.texture) return gasMaterial(p);
@@ -1203,6 +1225,7 @@ function planetMaterial(p) {
         uAtmosphere: { value: ["miniNeptune", "neptune", "gasGiant"].includes(p.type) ? 1 : 0 },
         uArt: artUniform, // one shared object, so the switch changes every planet at once
         uSeed: { value: seedFrom(p.name) },
+        uForce: { value: FORCED_LOOK[p.name] ?? -1 },
         uLightDir: { value: new THREE.Vector3(0, 0, 1) }, // updated every frame from the orbit
       },
       vertexShader: PLANET_VERTEX,
@@ -1606,6 +1629,9 @@ function showSystem(star, planet) {
   } else {
     if (activeExo) disposeSystem(activeExo);
     activeExo = system = exoSystem(star);
+    // Put the planets on their orbits right away. Before the first frame they all sit in the middle, and a
+    // close-up started now would look from the wrong side (the night side) of the planet.
+    stepSystem(system, 0);
     follow = system.bodies.find((b) => b.name === planet.pl_name)?.mesh;
   }
   current = { star, system, follow, planet };
