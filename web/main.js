@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { buildStory, duration, planetType, PLANET_TYPES, slug, UI } from "./story.js";
+import { buildStory, duration, planetType, PLANET_TYPES, slug, solarName, UI } from "./story.js";
 
 const DEFAULT_RADIUS = 1; // solar radii, display only, used where st_rad is missing
 
@@ -376,7 +376,7 @@ const MIN_PLANET_PER_VIEW_DISTANCE = 0.006;
 const PLANETS = [
   // Mercury: the MESSENGER colour mosaic (MD3, NASA/JHU APL/Carnegie Institution, USGS). Its colours are
   // enhanced: three filters at 1000, 750 and 430 nanometres put on red, green and blue. The panel says so.
-  { name: "Mercury", au: 0.387, years: 0.241, radius: 0.383, color: 0xb5a8a0, texture: "textures/mercury.jpg", noteKey: "mercuryNote" },
+  { name: "Mercury", au: 0.387, years: 0.241, radius: 0.383, color: 0xb5a8a0, texture: "textures/mercury.jpg", bump: 10, noteKey: "mercuryNote" },
   // Venus, Saturn, Uranus and Neptune have no usable map, they are painted by the program (see SOLAR_LOOK_FRAGMENT).
   { name: "Venus", au: 0.723, years: 0.615, radius: 0.949, color: 0xe8c98a, look: 0, noteKey: "paintedNote" },
   // Only Earth has a texture. For the other planets and for every exoplanet a picture would be invented.
@@ -394,14 +394,28 @@ const PLANETS = [
   // Mars: the Viking Orbiter global colour mosaic (NASA/JPL/USGS), shrunk to 4096 x 2048. Its green is
   // not a measurement, it was made up from the red and violet pictures, so the colour is close to
   // what the eye would see and not exact.
-  { name: "Mars", au: 1.524, years: 1.881, radius: 0.532, color: 0xd1603d, texture: "textures/mars.jpg" },
+  { name: "Mars", au: 1.524, years: 1.881, radius: 0.532, color: 0xd1603d, texture: "textures/mars.jpg", bump: 8 },
   // Jupiter: Cassini's global map of December 2000 (NASA/JPL/Space Science Institute). The clouds
   // of a gas giant change, so it shows Jupiter as it looked then.
-  { name: "Jupiter", au: 5.203, years: 11.86, radius: 10.97, color: 0xd9b38c, texture: "textures/jupiter.jpg" },
-  { name: "Saturn", au: 9.537, years: 29.46, radius: 9.14, color: 0xe6d3a3, rings: true, look: 1, noteKey: "paintedNote" },
-  { name: "Uranus", au: 19.19, years: 84.01, radius: 3.98, color: 0x9fe3e8, look: 2, noteKey: "paintedNote" },
-  { name: "Neptune", au: 30.07, years: 164.8, radius: 3.86, color: 0x4b70dd, look: 3, noteKey: "paintedNote" },
+  { name: "Jupiter", au: 5.203, years: 11.86, radius: 10.97, color: 0xd9b38c, texture: "textures/jupiter.jpg", flatten: 0.935 },
+  { name: "Saturn", au: 9.537, years: 29.46, radius: 9.14, color: 0xe6d3a3, rings: true, flatten: 0.902, look: 1, noteKey: "paintedNote" },
+  { name: "Uranus", au: 19.19, years: 84.01, radius: 3.98, color: 0x9fe3e8, flatten: 0.977, rings: "uranus", look: 2, noteKey: "paintedNote" },
+  { name: "Neptune", au: 30.07, years: 164.8, radius: 3.86, color: 0x4b70dd, flatten: 0.983, rings: "neptune", look: 3, noteKey: "paintedNote" },
 ];
+// Sidereal rotation periods in hours, from the NASA Planetary Fact Sheet (nssdc.gsfc.nasa.gov, metric,
+// rounded as printed there; Earth and Mars from their own sheets). A minus sign means the planet turns
+// the other way, as Venus and Uranus do. The axis tilts are not applied yet, every planet spins about
+// its own up axis (Saturn's and its rings' tilt aside).
+const ROTATION_HOURS = {
+  Mercury: 1407.6,
+  Venus: -5832.5,
+  Earth: 23.9345,
+  Mars: 24.6229,
+  Jupiter: 9.9,
+  Saturn: 10.7,
+  Uranus: -17.2,
+  Neptune: 16.1,
+};
 function labelSprite(text, width = 128) {
   const c = document.createElement("canvas");
   c.width = width;
@@ -678,6 +692,73 @@ function saturnRings(planetRadius) {
   return tilted;
 }
 
+// The rings of Uranus: ten narrow, dark rings. Radii are the mid radii from the NASA PDS Rings Node
+// "Vital Statistics for Uranus's Rings" (Showalter & Lissauer 2006), ring 6 from arXiv 1307.3230
+// (Dynamics of the dust rings and satellites of Uranus), divided by Uranus's equatorial radius of 25,559 km. The real rings
+// are only a few kilometres wide, far too thin to see at this scale, so every line is drawn about 100
+// times wider than it is. The tilt is the same display tilt as Saturn's, the real axis lies almost
+// in the orbit plane (98 degrees), which would show the rings edge on from our camera.
+// Each entry: radius in planet radii, half width as drawn, brightness.
+const URANUS_RINGS = [
+  [41837, 0.5], [42234, 0.5], [42571, 0.5], [44718, 0.6], [45661, 0.6],
+  [47176, 0.4], [47627, 0.5], [48300, 0.5], [50024, 0.5], [51149, 1.0],
+].map(([km, strength]) => [km / 25559, km === 51149 ? 0.012 : 0.005, strength]);
+
+// The rings of Neptune, from the NASA NSSDC Neptunian Rings Fact Sheet and the PDS Rings Node
+// "Vital Statistics for Neptune's Rings", divided by Neptune's equatorial radius of 24,764 km:
+// Galle 41,900 km (a faint wide band, about 2,000 km), Le Verrier 53,200 km (narrow), Lassell as a
+// faint band from 53,200 to 57,200 km (centre 55,200 km, width 4,000 km), Arago 57,200 km (narrow)
+// and Adams 62,933 km (narrow). The narrow ones are drawn wider than they are, Galle and Lassell as
+// they are. Neptune's rings are even fainter than Uranus's. Adams really has bright arcs, which are
+// not drawn here, it is shown as an even ring.
+const NEPTUNE_RINGS = [
+  [41900, 1000 / 24764, 0.25], [53200, 0.006, 0.55], [55200, 2000 / 24764, 0.2], [57200, 0.006, 0.5], [62933, 0.007, 0.8],
+].map(([km, halfWidth, strength]) => [km / 24764, Math.max(halfWidth, 0.006), strength]);
+
+const THIN_RING_MAX = 10; // size of the shader array, the lists above are not longer
+const THIN_RING_FRAGMENT = `
+  uniform float uPlanetRadius;
+  uniform vec3 uRings[${THIN_RING_MAX}]; // radius in planet radii, half width, brightness
+  uniform int uCount;
+  varying vec3 vPos;
+  void main() {
+    float r = length(vPos.xy) / uPlanetRadius;
+    float alpha = 0.0;
+    for (int i = 0; i < ${THIN_RING_MAX}; i++) {
+      if (i >= uCount) break;
+      alpha = max(alpha, uRings[i].z * (1.0 - smoothstep(0.0, uRings[i].y, abs(r - uRings[i].x))));
+    }
+    // dark grey as the real rings are, written in linear light because the line below encodes it
+    gl_FragColor = vec4(vec3(0.12, 0.12, 0.13), alpha * 0.9);
+    #include <colorspace_fragment>
+  }`;
+
+function thinRings(planetRadius, rings) {
+  const outer = Math.max(...rings.map((r) => r[0] + r[1])) + 0.05;
+  const inner = Math.min(...rings.map((r) => r[0] - r[1])) - 0.05;
+  const flat = new THREE.Mesh(
+    new THREE.RingGeometry(inner * planetRadius, outer * planetRadius, 128, 1),
+    new THREE.ShaderMaterial({
+      uniforms: {
+        uPlanetRadius: { value: planetRadius },
+        // padded to the length the shader declares
+        uRings: { value: Array.from({ length: THIN_RING_MAX }, (_, i) => new THREE.Vector3(...(rings[i] ?? [0, 0, 0]))) },
+        uCount: { value: rings.length },
+      },
+      vertexShader: RING_VERTEX,
+      fragmentShader: THIN_RING_FRAGMENT,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    })
+  );
+  flat.rotation.x = -Math.PI / 2;
+  const tilted = new THREE.Group();
+  tilted.rotation.z = SATURN_TILT;
+  tilted.add(flat);
+  return tilted;
+}
+
 // A moon on a circular orbit around its planet. The planet mesh is the parent, so the moon
 // travels with it. It is not part of the click targets, only planets are.
 function addMoon(planetMesh, planetRadius, moon) {
@@ -723,7 +804,8 @@ const EARTH_FRAGMENT = `
   uniform sampler2D uTopo;
   uniform sampler2D uLights;
   uniform sampler2D uClouds;
-  uniform float uCloudRot;   // how far the cloud sphere has turned, in radians
+  uniform float uCloudRot;   // how far the clouds have drifted over the ground, in radians
+  uniform float uSpin;       // how far the ground has turned, in radians
   uniform vec3 uLightDir;
   varying vec2 vUv;
   varying vec3 vObj;
@@ -731,8 +813,10 @@ const EARTH_FRAGMENT = `
   varying vec3 vWorld;
 
   void main() {
-    vec3 day = texture2D(uDay, vUv).rgb;
-    vec3 topo = texture2D(uTopo, vUv).rgb;
+    // The ground turns eastward, so the map is read a bit further west at the same spot of the sphere.
+    vec2 uvg = vec2(vUv.x - uSpin / 6.2831853, vUv.y);
+    vec3 day = texture2D(uDay, uvg).rgb;
+    vec3 topo = texture2D(uTopo, uvg).rgb;
     vec3 lum = vec3(0.3, 0.59, 0.11);
 
     // Water: the ocean is bluer than the land and the ice.
@@ -758,7 +842,7 @@ const EARTH_FRAGMENT = `
     // looked up a small step towards the Sun. The cloud sphere has turned by uCloudRot, the map
     // is read with the same turn, otherwise shadow and cloud would drift apart.
     vec2 towardsSun = vec2(dot(L, east), dot(L, north));
-    vec2 shadowUv = vec2(vUv.x - uCloudRot / 6.2831853, vUv.y) + vec2(towardsSun.x * 0.004, towardsSun.y * 0.008);
+    vec2 shadowUv = vec2(uvg.x - uCloudRot / 6.2831853, uvg.y) + vec2(towardsSun.x * 0.004, towardsSun.y * 0.008);
     float shadow = texture2D(uClouds, shadowUv).g;
 
     vec3 colour = day * (0.03 + 1.15 * diffuse);
@@ -777,7 +861,7 @@ const EARTH_FRAGMENT = `
 
     // Night lights on the dark side.
     float night = 1.0 - smoothstep(-0.12, 0.1, sunUp);
-    colour += texture2D(uLights, vUv).rgb * night * 1.3;
+    colour += texture2D(uLights, uvg).rgb * night * 1.3;
 
     // Blue glow of the air at the edge, stronger on the lit side.
     float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0);
@@ -791,10 +875,12 @@ function earthMaterial() {
   const load = (file, srgb = true) => {
     const map = textureLoader.load(file);
     if (srgb) map.colorSpace = THREE.SRGBColorSpace;
+    map.wrapS = THREE.RepeatWrapping; // the maps are read past their seam while the ground turns
     return map;
   };
   return new THREE.ShaderMaterial({
     uniforms: {
+      uSpin: { value: 0 },
       uDay: { value: load("textures/earth_day.jpg") },
       uTopo: { value: load("textures/earth.jpg") },
       uLights: { value: load("textures/earth_lights.jpg") },
@@ -916,31 +1002,90 @@ const SOLAR_LOOK_FRAGMENT = `
     float lat = n.y;
     vec3 base;
     if (uKind == 0) {
-      // Venus: from space a nearly featureless pale yellow veil. Only faint soft streaks show.
-      float w = lat * 3.0 + 0.9 * fbm(vec3(p.x * 0.9, p.y * 0.5, p.z * 0.9) * 1.3);
-      float streak = fbm(vec3(p.x * 0.6, p.y * 2.2, p.z * 0.6) + 4.0);
-      base = mix(vec3(0.93, 0.84, 0.60), vec3(0.97, 0.92, 0.78), 0.5 + 0.5 * sin(w * 3.0));
-      base = mix(base, vec3(0.80, 0.68, 0.42), smoothstep(0.55, 0.78, streak) * 0.35);
+      // Venus as the ultraviolet pictures of probes show it: cream white cloud with streaks that the
+      // wind stretches along the latitude, peach orange patches near the equator, and a swirl at the
+      // poles. The overall look is known, the exact pattern is invented.
+      vec3 q = n * 2.0 + seedOffset(uSeed);
+      float warp = fbm(q * 1.5);
+      vec3 pw = vec3(n.x * 2.2 + warp * 0.9, n.y * 7.0 + warp * 1.6, n.z * 2.2 - warp * 0.9) + seedOffset(uSeed * 1.7);
+      float streaks = fbm(pw);
+      float fine = fbm(pw * 3.0 + 7.0);
+      float patches = fbm(n * 1.6 + warp * 0.8 + seedOffset(uSeed * 3.1));
+      patches *= 1.0 - 0.5 * smoothstep(0.3, 0.9, abs(lat));
+      vec3 cream = vec3(0.93, 0.89, 0.80);
+      vec3 white = vec3(0.98, 0.97, 0.95);
+      vec3 orange = vec3(0.93, 0.62, 0.40);
+      float finer = fbm(pw * 7.0 + 3.0);
+      base = mix(cream, white, smoothstep(0.38, 0.6, streaks));
+      base = mix(base, orange, smoothstep(0.36, 0.6, patches) * (0.5 + 0.5 * smoothstep(0.3, 0.65, streaks)) * 0.95);
+      // thin dark and bright filaments, stretched with the wind, give the cloud its fine structure
+      base *= 0.8 + 0.4 * fine;
+      base = mix(base, white, smoothstep(0.55, 0.75, finer) * 0.45);
+      base = mix(base, orange * 0.9, smoothstep(0.6, 0.8, 1.0 - finer) * 0.18 * smoothstep(0.3, 0.6, patches));
+      float r = 1.0 - abs(lat); // distance from the pole
+      float spiral = sin(atan(n.z, n.x) * 2.0 + r * 16.0 + warp * 3.0);
+      base = mix(base, mix(cream, white, 0.5 + 0.5 * spiral), smoothstep(0.35, 0.05, r) * 0.7);
     } else if (uKind == 1) {
-      // Saturn: pale gold with soft bands, the poles a little bluish grey.
-      float w = lat * 9.0 + 1.1 * fbm(vec3(p.x, p.y * 0.4, p.z));
-      base = mix(vec3(0.70, 0.58, 0.38), vec3(0.92, 0.84, 0.62), 0.5 + 0.5 * sin(w * 3.0));
-      base = mix(base, vec3(0.50, 0.56, 0.62), smoothstep(0.78, 0.98, abs(lat)) * 0.5);
+      // Saturn as the Cassini pictures show it: cream and tan bands, orange brown belts with wavy edges,
+      // and a bluish grey north. The band edges are pushed sideways by noise, which gives the wavy look.
+      // No regular stripes: a few broad zones, soft at the edges, with cloud mottling inside them.
+      float wob = fbm(vec3(p.x * 0.8, p.y * 0.3, p.z * 0.8));
+      float latW = lat + 0.12 * (wob - 0.5);
+      float soft = fbm(vec3(n.x * 1.4, n.y * 3.2 + wob * 0.8, n.z * 1.4) + seedOffset(uSeed));
+      float mott = fbm(vec3(p.x * 1.6, p.y * 6.0, p.z * 1.6) + 5.0);
+      vec3 cream = vec3(0.94, 0.87, 0.70);
+      vec3 tan = vec3(0.76, 0.60, 0.42);
+      vec3 brown = vec3(0.70, 0.40, 0.20);
+      vec3 grey = vec3(0.55, 0.59, 0.64);
+      base = mix(tan, cream, smoothstep(0.3, 0.7, soft));
+      float brownZone = exp(-pow((latW - 0.05) / 0.34, 2.0));
+      base = mix(base, brown, clamp(brownZone * (0.5 + 1.1 * mott), 0.0, 0.95));
+      base = mix(base, grey, smoothstep(0.5, 0.85, latW) * 0.7 + smoothstep(0.8, 0.97, -latW) * 0.35);
+      float grain = fbm(vec3(p.x * 3.0, p.y * 16.0, p.z * 3.0) + 9.0);
+      base *= 0.92 + 0.16 * grain;
     } else if (uKind == 2) {
-      // Uranus: pale cyan green and almost smooth, only very faint bands.
-      float w = lat * 6.0 + 0.6 * fbm(p * 1.2);
-      base = mix(vec3(0.58, 0.82, 0.86), vec3(0.70, 0.90, 0.92), 0.5 + 0.5 * sin(w * 3.0));
+      // Uranus: turquoise with soft, darker teal bands. Real Uranus is much
+      // plainer from space (the bands only show in processed pictures), so this is an artistic look.
+      float wob = fbm(vec3(p.x * 0.8, p.y * 0.3, p.z * 0.8));
+      float soft = fbm(vec3(n.x * 1.4, n.y * 4.0 + wob * 0.8, n.z * 1.4) + seedOffset(uSeed));
+      // The sine gives the loose band order, the noise breaks it up so no even stripes appear.
+      float v = 0.3 * (0.5 + 0.5 * sin((lat * 4.0 + 2.2 * wob) * 3.0)) + 0.7 * smoothstep(0.25, 0.75, soft);
+      vec3 light = vec3(0.64, 0.90, 0.92);
+      vec3 teal = vec3(0.30, 0.68, 0.74);
+      vec3 deep = vec3(0.16, 0.46, 0.58);
+      base = mix(teal, light, v);
+      base = mix(base, deep, smoothstep(0.5, 0.95, 1.0 - v) * 0.45);
+      base = mix(base, light, smoothstep(0.7, 0.95, lat) * 0.5);
+      float grain = fbm(vec3(p.x * 3.0, p.y * 14.0, p.z * 3.0) + 9.0);
+      base *= 0.93 + 0.14 * grain;
     } else {
-      // Neptune: deep azure with thin bright streaks of high cloud and one dark oval.
-      float w = lat * 7.0 + 1.0 * fbm(p * 1.1);
-      base = mix(vec3(0.13, 0.28, 0.72), vec3(0.28, 0.48, 0.90), 0.5 + 0.5 * sin(w * 3.0));
-      float cirrus = smoothstep(0.62, 0.82, noise(vec3(n.x * 3.0, n.y * 16.0, n.z * 3.0) + seedOffset(uSeed * 2.0)));
-      cirrus *= 1.0 - smoothstep(0.1, 0.7, abs(lat + 0.25));
-      base = mix(base, vec3(0.85, 0.92, 1.0), cirrus * 0.55);
+      // Neptune as Voyager 2 saw it: saturated royal blue, very soft faint bands, a bright band in the
+      // north, one big dark oval with bright streaks of high cloud beside it. The pattern is invented.
+      float wob = fbm(vec3(p.x * 0.8, p.y * 0.3, p.z * 0.8));
+      float soft = fbm(vec3(n.x * 1.4, n.y * 4.0 + wob * 0.8, n.z * 1.4) + seedOffset(uSeed));
+      float v = 0.25 * (0.5 + 0.5 * sin((lat * 5.0 + 1.5 * wob) * 3.0)) + 0.75 * smoothstep(0.25, 0.75, soft);
+      vec3 royal = vec3(0.20, 0.36, 0.88);
+      vec3 pale = vec3(0.36, 0.55, 0.97);
+      vec3 deep = vec3(0.11, 0.22, 0.68);
+      base = mix(royal, pale, v * 0.7);
+      base = mix(base, deep, smoothstep(0.55, 0.95, 1.0 - v) * 0.35);
+      base = mix(base, pale, exp(-pow((lat - 0.62) / 0.1, 2.0)) * 0.35); // the bright band in the north
+      float grain = fbm(vec3(p.x * 3.0, p.y * 14.0, p.z * 3.0) + 9.0);
+      base *= 0.95 + 0.1 * grain;
       float lon = atan(n.z, n.x);
-      float dLon = mod(lon - 1.2 + 3.14159, 6.28318) - 3.14159;
-      float spot = smoothstep(0.30, 0.0, length(vec2(dLon * 0.7, (lat + 0.35) * 1.6)));
-      base = mix(base, vec3(0.06, 0.14, 0.40), spot * 0.8);
+      // The oval is at one longitude of the planet and travels round with the spin (16.1 hours).
+      float dLon = mod(lon - 2.1 + 3.14159, 6.28318) - 3.14159;
+      float lat0 = 0.3; // the close-up camera looks from about 35 degrees above the equator, so this lands in the middle of the disc
+      // the dark oval, wider than high
+      float spot = smoothstep(1.0, 0.35, length(vec2(dLon / 0.42, (lat - lat0) / 0.15)));
+      base = mix(base, vec3(0.06, 0.13, 0.45), spot * 0.85);
+      // bright, stretched cloud streaks along the lower edge of the oval and a few thin ones around it
+      float breakup = 0.55 + 0.9 * noise(vec3(n.x * 6.0, n.y * 30.0, n.z * 6.0) + seedOffset(uSeed * 2.0));
+      float streak1 = smoothstep(1.0, 0.2, length(vec2((dLon - 0.1) / 0.14, (lat - lat0 + 0.12) / 0.012)));
+      float streak2 = smoothstep(1.0, 0.2, length(vec2((dLon + 0.3) / 0.1, (lat - lat0 + 0.18) / 0.01)));
+      base = mix(base, vec3(0.88, 0.94, 1.0), clamp((streak1 + 0.7 * streak2) * breakup, 0.0, 1.0) * 0.85);
+      float thin = smoothstep(0.66, 0.85, noise(vec3(n.x * 3.0, n.y * 22.0, n.z * 3.0) + seedOffset(uSeed * 3.0)));
+      base = mix(base, vec3(0.7, 0.82, 1.0), thin * 0.1 * (1.0 - smoothstep(0.1, 0.7, abs(lat + 0.2))));
     }
 
     float facing = dot(normalize(vNormal), normalize(uLightDir));
@@ -957,15 +1102,98 @@ function solarLookMaterial(p) {
     uniforms: {
       uKind: { value: p.look },
       uSeed: { value: seedFrom(p.name) },
+      uFlatten: { value: p.flatten ?? 1 },
+      uTilt: { value: p.rings ? SATURN_TILT : 0 },
+      uSpin: { value: 0 }, // updated every frame from the clock of the system
       uLightDir: { value: new THREE.Vector3(0, 0, 1) }, // updated every frame from the orbit
     },
-    vertexShader: PLANET_VERTEX,
+    vertexShader: GAS_VERTEX,
     fragmentShader: SOLAR_LOOK_FRAGMENT,
+  });
+}
+
+// A gas giant with a real map (Jupiter). It differs from a rocky planet in two ways: it is
+// flattened at the poles because it spins so fast (the real 6.5 %), and its edge fades and glows
+// because we look through a thick atmosphere there. The map itself stands still, a drifting
+// texture was tried and dropped.
+const GAS_VERTEX = `
+  uniform float uFlatten;   // polar radius divided by equatorial radius
+  uniform float uTilt;      // tilt of the planet's axis about z, the same as the one of its rings
+  uniform float uSpin;      // how far the planet has turned about its own axis, in radians
+  varying vec3 vPos;        // the round position in the planet's own frame, painted planets read their pattern from it
+  varying vec3 vNormal;
+  varying vec3 vNormalView;
+  varying vec3 vView;
+  varying vec2 vUv;
+  vec3 turn(vec3 v, float a) {
+    float c = cos(a);
+    float s = sin(a);
+    return vec3(c * v.x - s * v.y, s * v.x + c * v.y, v.z);
+  }
+  void main() {
+    vUv = vec2(uv.x - uSpin / 6.2831853, uv.y); // a map turns eastward with the planet, it is read further west
+    // Everything is done in the planet's own frame (axis up), then turned into the tilted one. That way
+    // the bands and the flattening stay parallel to the rings.
+    vec3 q = turn(position, -uTilt);
+    // The planet spins about its axis (up in this frame). The pattern is what turns, the shape and the
+    // light stay, so the pattern is read from a point turned back by the spin.
+    float cs = cos(-uSpin);
+    float sn = sin(-uSpin);
+    vPos = vec3(cs * q.x + sn * q.z, q.y, -sn * q.x + cs * q.z);
+    vec3 pos = turn(vec3(q.x, q.y * uFlatten, q.z), uTilt);
+    // The normal of a squashed sphere leans away from the axis, so the light follows the new shape.
+    vec3 qn = turn(normal, -uTilt);
+    vec3 n = turn(normalize(vec3(qn.x, qn.y / uFlatten, qn.z)), uTilt);
+    vNormal = normalize(mat3(modelMatrix) * n);
+    vNormalView = normalize(normalMatrix * n);
+    vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+    vView = normalize(-mv.xyz);
+    gl_Position = projectionMatrix * mv;
+  }`;
+
+const GAS_FRAGMENT = `
+  uniform sampler2D uMap;
+  uniform vec3 uLightDir;
+  uniform vec3 uHaze;       // colour of the glow at the edge
+  varying vec3 vNormal;
+  varying vec3 vNormalView;
+  varying vec3 vView;
+  varying vec2 vUv;
+  void main() {
+    vec3 map = texture2D(uMap, vUv).rgb;
+
+    vec3 n = normalize(vNormal);
+    float facing = dot(n, normalize(uLightDir));
+    float light = 0.1 + 0.9 * smoothstep(-0.05, 0.6, facing);
+    float mu = max(dot(normalize(vNormalView), normalize(vView)), 0.0);
+    float darkening = mix(0.55, 1.0, pow(mu, 0.5));   // the edge shows higher, thinner cloud
+    float rim = pow(1.0 - mu, 3.0);
+    vec3 colour = map * light * darkening + uHaze * rim * (0.25 + 0.75 * light) * 0.5;
+    gl_FragColor = vec4(colour, 1.0);
+    #include <colorspace_fragment>
+  }`;
+
+function gasMaterial(p) {
+  const map = textureLoader.load(p.texture);
+  map.colorSpace = THREE.SRGBColorSpace;
+  map.wrapS = THREE.RepeatWrapping; // the map is read past its seam while the planet turns
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uMap: { value: map },
+      uFlatten: { value: p.flatten },
+      uTilt: { value: 0 },
+      uSpin: { value: 0 }, // updated every frame from the clock of the system
+      uLightDir: { value: new THREE.Vector3(0, 0, 1) }, // updated every frame from the orbit
+      uHaze: { value: new THREE.Color(0xd9b38c).convertSRGBToLinear() },
+    },
+    vertexShader: GAS_VERTEX,
+    fragmentShader: GAS_FRAGMENT,
   });
 }
 
 function planetMaterial(p) {
   if (p.earth) return earthMaterial();
+  if (p.flatten && p.texture) return gasMaterial(p);
   if (p.look !== undefined) return solarLookMaterial(p);
   if (p.type) {
     return new THREE.ShaderMaterial({
@@ -986,7 +1214,10 @@ function planetMaterial(p) {
   if (!p.texture) return new THREE.MeshLambertMaterial({ color: p.color });
   const map = textureLoader.load(p.texture);
   map.colorSpace = THREE.SRGBColorSpace;
-  return new THREE.MeshLambertMaterial({ map });
+  map.wrapS = THREE.RepeatWrapping; // the spin moves the map sideways through texture.offset
+  // Relief for Mercury: the brightness of the map is used as a height guess, so craters and ridges
+  // catch the light. It is not a measured height map (the map has enhanced colours), see README.
+  return new THREE.MeshLambertMaterial(p.bump ? { map, bumpMap: map, bumpScale: p.bump } : { map });
 }
 scene.add(new THREE.AmbientLight(0xffffff, 0.35)); // keeps the night side from turning fully black
 
@@ -1028,8 +1259,9 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
     );
     mesh.add(hit);
     if (p.rings) {
-      mesh.add(saturnRings(radius));
-      mesh.userData.closeupRadii = 7; // the rings reach 2.3 radii out, the default distance would cut them off
+      const thin = { uranus: URANUS_RINGS, neptune: NEPTUNE_RINGS }[p.rings];
+      mesh.add(thin ? thinRings(radius, thin) : saturnRings(radius));
+      mesh.userData.closeupRadii = thin ? 5 : 7; // the rings reach 2.3 radii out, the default distance would cut them off
     }
     const moon = p.moon ? addMoon(mesh, radius, p.moon) : null;
     if (moon) mesh.userData.closeupRadii = 5; // far enough back that the Moon's orbit fits into the picture
@@ -1047,7 +1279,7 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
 // (1x) nothing visibly moves, which is what real time looks like.
 const SECONDS_PER_YEAR = 365.25 * 86400;
 const CLOUD_DRIFT_YEARS = 20 / 365.25; // the clouds go once round the ground in 20 days, a look and not a measured wind
-let timeScale = 1; // simulated seconds per real second
+let timeScale = 4 * 3600; // simulated seconds per real second, the start value is one second = four hours
 
 // Planets only move along their orbit around the star. They do not spin on their own axis.
 function stepSystem(system, dt) {
@@ -1060,10 +1292,19 @@ function stepSystem(system, dt) {
     const a = b.start + (system.time * Math.PI * 2) / b.years;
     b.mesh.position.set(Math.cos(a) * b.orbit, 0, Math.sin(a) * b.orbit);
     // The star sits in the middle of the group, so the light comes from the opposite of the position.
-    b.mesh.material.uniforms?.uLightDir.value.copy(b.mesh.position).negate().normalize();
+    b.mesh.material.uniforms?.uLightDir.value.copy(b.mesh.position).negate().normalize();    if (b.rotHours) {
+      // Turns so far, only the fraction matters. The clock counts years, a year has 8766 hours.
+      const turns = (system.time * 8766) / b.rotHours;
+      const spin = (turns - Math.floor(turns)) * Math.PI * 2;
+      const uniforms = b.mesh.material.uniforms;
+      if (uniforms?.uSpin) uniforms.uSpin.value = spin;
+      else if (b.mesh.material.map) b.mesh.material.map.offset.x = -spin / (Math.PI * 2); // a plain textured ball
+      b.spin = spin;
+    }
     if (b.clouds) {
-      b.clouds.rotation.y = (system.time * Math.PI * 2) / CLOUD_DRIFT_YEARS;
-      b.mesh.material.uniforms.uCloudRot.value = b.clouds.rotation.y; // the ground reads its cloud shadows with the same turn
+      const drift = (system.time * Math.PI * 2) / CLOUD_DRIFT_YEARS;
+      b.clouds.rotation.y = drift + b.spin; // the clouds are carried along by the ground and drift on top of that
+      b.mesh.material.uniforms.uCloudRot.value = drift; // the ground reads its cloud shadows with the drift alone
     }
     if (b.moon) {
       // Same clock as the planets, so the Moon's real 27 day period stays in proportion to the year.
@@ -1088,6 +1329,9 @@ const solar = makeSystem({
     size: (SUN_RADIUS * p.radius) / EARTH_RADII_PER_SUN,
     color: p.color,
     texture: p.texture,
+    bump: p.bump,
+    flatten: p.flatten,
+    rotHours: ROTATION_HOURS[p.name],
     noteKey: p.noteKey,
     look: p.look,
     earth: p.earth,
@@ -1358,7 +1602,7 @@ function showSystem(star, planet) {
   let follow;
   if (star.solarSystem) {
     system = solar;
-    follow = earthMesh;
+    follow = solar.bodies.find((b) => b.name === planet.pl_name)?.mesh ?? earthMesh;
   } else {
     if (activeExo) disposeSystem(activeExo);
     activeExo = system = exoSystem(star);
@@ -1379,15 +1623,15 @@ let storyParagraphs = [];
 function updateCloseupButton() {
   closeupButton.hidden = !current?.follow; // a system without a placed planet has nothing to zoom to
   closeupButton.textContent = closeup ? UI[lang].back : UI[lang].closeup;
-  // The legend only makes sense while a drawn zone is on screen.
-  const legend = document.getElementById("zone-legend");
-  legend.hidden = !current?.system.zone;
-  if (rule) document.getElementById("zone-text").textContent = UI[lang].zone(rule.temp_min, rule.temp_max);
-  // The belt note is shown while the Solar System is the system on screen.
-  const beltNote = document.getElementById("belt-note");
-  beltNote.hidden = current?.system !== solar;
-  beltNote.textContent = UI[lang].beltNote;
+  updateInfoTexts();
   layoutView();
+}
+
+// The zone and belt notes always stay in the info window (burger button), so they can be read
+// before the zone or the belt is on screen.
+function updateInfoTexts() {
+  if (rule) document.getElementById("zone-text").textContent = UI[lang].zone(rule.temp_min, rule.temp_max);
+  document.getElementById("belt-note").textContent = UI[lang].beltNote;
 }
 
 // The panels lie on top of the canvas. The camera looks at the middle of the free space between
@@ -1420,6 +1664,7 @@ function enterCloseup() {
   // looked like a black ball. The planet keeps moving, so the view slowly turns towards the night.
   const planetPos = follow.getWorldPosition(new THREE.Vector3());
   const toStar = current.system.group.getWorldPosition(new THREE.Vector3()).sub(planetPos).normalize();
+  if (toStar.lengthSq() === 0) toStar.set(0, 0, 1); // the star itself is the target, there is no star direction
   const direction = toStar.multiplyScalar(0.75).add(new THREE.Vector3(0, 0.55, 0)).normalize();
   startFlight(() => follow.getWorldPosition(new THREE.Vector3()), radius * (follow.userData.closeupRadii ?? CLOSEUP_RADII), direction);
   ring.visible = false; // the ring would sit on top of the planet we are looking at
@@ -1579,7 +1824,20 @@ function selectBody(system, body) {
   enterCloseup(); // the camera goes straight to the planet that was clicked
   showStory(star, planet);
   buildHabitableMenu(); // moves the highlight, or clears it when the planet is not a candidate
+  buildSolarMenu();
 }
+
+// The burger button at the top right opens the hints and the credits.
+const burger = document.getElementById("burger");
+const infoPanel = document.getElementById("info");
+function toggleInfo(open = infoPanel.hidden) {
+  infoPanel.hidden = !open;
+  burger.setAttribute("aria-expanded", String(open));
+}
+burger.addEventListener("click", () => toggleInfo());
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !infoPanel.hidden) toggleInfo(false);
+});
 
 const langSelect = document.getElementById("lang");
 langSelect.value = lang;
@@ -1623,6 +1881,7 @@ function applyLanguage() {
     ? t.count(stars.length, stars.reduce((n, s) => n + s.planets.length, 0))
     : t.loading;
   buildHabitableMenu();
+  buildSolarMenu();
   stopSpeaking();
   if (current) showStory(current.star, current.planet);
 }
@@ -1661,23 +1920,82 @@ function buildHabitableMenu() {
   const list = document.getElementById("habitable");
   list.replaceChildren();
   for (const { star, planet } of items) {
-    const button = document.createElement("button");
-    button.type = "button";
-    if (current?.planet === planet) button.classList.add("active");
     const name = document.createElement("span");
     name.textContent = star.solarSystem ? UI[lang].earth : planet.pl_name;
     // No planet type here: every candidate comes out as "rocky" by the radius rule, so the label would
     // say the same thing 37 times. The type is shown in the panel under the title instead.
     const info = document.createElement("small");
     info.textContent = `${star.dist_ly.toFixed(1)} ly · ${planet.pl_rade} R⊕ · ${Math.round(planet.pl_eqt)} K`;
-    button.append(name, info);
-    button.addEventListener("click", () => {
-      list.querySelector(".active")?.classList.remove("active");
-      button.classList.add("active");
-      showSystem(star, planet);
-    });
+    const label = document.createElement("div");
+    label.append(name, info);
+    const row = document.createElement("div");
+    row.className = "row";
+    if (current?.planet === planet) row.classList.add("active");
+    row.append(label, viewButtons(star, planet));
     const li = document.createElement("li");
-    li.append(button);
+    li.append(row);
+    list.append(li);
+  }
+}
+
+// The three views of a body: the planet itself, its star, the whole system. A plain click on the
+// name used to jump to the system view, which looked like nothing had happened to the planet.
+function viewButtons(star, planet) {
+  const views = document.createElement("div");
+  views.className = "views";
+  const actions = [
+    ["viewPlanet", () => current.follow && enterCloseup()],
+    [star.solarSystem ? "viewSun" : "viewStar", () => focusStar()],
+    ["viewSystem", () => {}],
+  ];
+  for (const [key, run] of actions) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = UI[lang][key];
+    b.addEventListener("click", () => {
+      showSystem(star, planet);
+      run();
+      updateCloseupButton();
+      buildSolarMenu(); // Earth is in both lists, so each one has to follow the other
+      buildHabitableMenu();
+    });
+    views.append(b);
+  }
+  return views;
+}
+
+// Close-up of the star of the system on screen. Its story stays the one of the chosen planet, a star has no text.
+function focusStar() {
+  current.follow = current.system === solar ? sun : current.system.starMesh;
+  if (current.follow) enterCloseup();
+}
+
+// The eight planets of the Solar System, in order from the Sun. Every click shows the Solar System
+// and flies to that planet, the same way the candidate list does for an exoplanet system.
+function buildSolarMenu() {
+  document.getElementById("solar-title").textContent = UI[lang].solarTitle;
+  document.getElementById("credits-title").textContent = UI[lang].creditsTitle;
+  document.getElementById("hints-title").textContent = UI[lang].hintsTitle;
+  updateInfoTexts();
+  const list = document.getElementById("solar-list");
+  list.replaceChildren();
+  for (const body of solar.bodies) {
+    if (!PLANETS.some((p) => p.name === body.name)) continue; // the Moon is a body too
+    const isEarth = body.name === "Earth";
+    const planet = isEarth ? EARTH.planet : { pl_name: body.name, solarOther: true, noteKey: body.noteKey };
+    const name = document.createElement("span");
+    name.textContent = isEarth ? UI[lang].earthShort : solarName(body.name, lang);
+    const au = PLANETS.find((p) => p.name === body.name).au;
+    const info = document.createElement("small");
+    info.textContent = `${au} AU`;
+    const label = document.createElement("div");
+    label.append(name, info);
+    const row = document.createElement("div");
+    row.className = "row";
+    if (current?.system === solar && current.planet.pl_name === body.name) row.classList.add("active");
+    row.append(label, viewButtons(EARTH.star, planet));
+    const li = document.createElement("li");
+    li.append(row);
     list.append(li);
   }
 }

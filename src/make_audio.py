@@ -39,7 +39,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--voices", type=Path, required=True)
     parser.add_argument("--out", type=Path, default=ROOT / "web" / "audio")
-    parser.add_argument("--only", help="build just this story id, for listening tests")
+    parser.add_argument("--only", nargs="+", help="build just these story ids, so existing clips stay untouched")
     parser.add_argument("--format", default="MP3", choices=["MP3", "OGG"])
     parser.add_argument("--de-speaker", type=int, default=0, help="speaker id of the German MLS voice")
     args = parser.parse_args()
@@ -48,7 +48,7 @@ def main() -> None:
     voices = {lang: PiperVoice.load(args.voices / f"{name}.onnx") for lang, name in VOICES.items()}
 
     for story in stories:
-        if args.only and story["id"] != args.only:
+        if args.only and story["id"] not in args.only:
             continue
         speaker = args.de_speaker if story["lang"] == "de" else None
         audio, rate = synthesize(voices[story["lang"]], story["paragraphs"], speaker)

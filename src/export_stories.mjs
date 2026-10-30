@@ -3,7 +3,7 @@
 //
 // Run from the project root:  node src/export_stories.mjs
 import { readFileSync, writeFileSync } from "node:fs";
-import { buildStory, slug } from "../web/story.js";
+import { buildStory, slug, SOLAR_PLANET_NAMES } from "../web/story.js";
 
 const { stars } = JSON.parse(readFileSync(new URL("../web/data/stars.json", import.meta.url), "utf-8"));
 
@@ -16,6 +16,8 @@ const add = (id, star, planet) => {
 };
 
 add("earth", { solarSystem: true }, { pl_name: "Earth" });
+// The other seven planets of the Solar System have a story of their own as well.
+for (const name of SOLAR_PLANET_NAMES) add(slug(name), { solarSystem: true }, { pl_name: name, solarOther: true });
 for (const star of stars) {
   for (const planet of star.planets) if (planet.habitable) add(slug(planet.pl_name), star, planet);
 }

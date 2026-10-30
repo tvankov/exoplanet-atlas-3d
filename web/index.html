@@ -30,24 +30,35 @@
       <option value="artistic" selected>Artistic</option>
     </select>
     <button id="scale" type="button">Scale: compressed</button>
-    <p class="hint" id="hint">Drag to rotate, scroll to zoom, right drag to pan</p>
     <div id="speed-box">
       <label id="speed-title" for="speed">Time speed</label>
-      <input id="speed" type="range" min="0" max="100" value="0">
+      <input id="speed" type="range" min="0" max="100" step="any" value="51.97">
       <p id="speed-text"></p>
       <p id="speed-elapsed"></p>
     </div>
-    <p id="zone-legend" hidden><span class="swatch"></span><span id="zone-text"></span></p>
-    <p id="belt-note" class="hint" hidden></p>
-    <h2 id="habitable-title">Habitable candidates</h2>
-    <ul id="habitable"></ul>
+    <details class="menu">
+      <summary id="solar-title">Solar System</summary>
+      <ul id="solar-list" class="planet-list"></ul>
+    </details>
+    <details class="menu">
+      <summary id="habitable-title">Habitable candidates</summary>
+      <ul id="habitable" class="planet-list"></ul>
+    </details>
   </div>
-  <footer id="credits">
+  <button id="burger" type="button" aria-expanded="false" aria-controls="info">&#9776;</button>
+  <div id="info" hidden>
+    <h2 id="hints-title">Hints</h2>
+    <p class="hint" id="hint">Drag to rotate, scroll to zoom, right drag to pan</p>
+    <p id="zone-legend"><span class="swatch"></span><span id="zone-text"></span></p>
+    <p id="belt-note" class="hint"></p>
+    <h2 id="credits-title">Credits</h2>
+    <p id="credits">
     This research has made use of the NASA Exoplanet Archive, which is operated by the California Institute of Technology,
     under contract with the National Aeronautics and Space Administration under the Exoplanet Exploration Program.
     Not affiliated with or endorsed by NASA. Earth maps (surface, clouds, night lights): NASA Earth Observatory and Visible Earth, Blue Marble. Moon texture: NASA Scientific Visualization Studio, CGI Moon Kit (Ernie Wright), LRO data. Jupiter map: NASA/JPL/Space Science Institute (Cassini). Mars map: NASA/JPL/USGS (Viking Orbiter). Mercury map: NASA/JHU APL/Carnegie (MESSENGER, Denevi et al.), USGS. Voices: Piper, trained on LJ Speech (public domain) and Multilingual LibriSpeech
     (Pratap et al., CC BY 4.0). 3D: three.js.
-  </footer>
+    </p>
+  </div>
   <section id="story" hidden>
     <h2 id="story-title"></h2>
     <p id="story-type" class="type" hidden></p>

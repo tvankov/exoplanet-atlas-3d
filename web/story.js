@@ -12,6 +12,14 @@ export const UI = {
     count: (stars, planets) => `${stars} host stars, ${planets} planets`,
     candidates: (n) => `Habitable candidates (${n} + Earth)`,
     earth: "Earth (reference)",
+    solarTitle: "Solar System",
+    creditsTitle: "Credits",
+    hintsTitle: "Hints",
+    earthShort: "Earth",
+    viewPlanet: "Planet",
+    viewSun: "Sun",
+    viewStar: "Star",
+    viewSystem: "System",
     listen: "Listen",
     stop: "Stop",
     closeup: "Close-up",
@@ -51,6 +59,14 @@ export const UI = {
     count: (stars, planets) => `${stars} Muttersterne, ${planets} Planeten`,
     candidates: (n) => `Bewohnbare Kandidaten (${n} + Erde)`,
     earth: "Erde (Referenz)",
+    solarTitle: "Sonnensystem",
+    creditsTitle: "Quellen und Lizenzen",
+    hintsTitle: "Hinweise",
+    earthShort: "Erde",
+    viewPlanet: "Planet",
+    viewSun: "Sonne",
+    viewStar: "Stern",
+    viewSystem: "System",
     listen: "Vorlesen",
     stop: "Stopp",
     closeup: "Nahansicht",
@@ -226,10 +242,159 @@ function classIndex(star) {
   return 4;
 }
 
+// Stories for the other seven planets of our own system. The numbers (width, distance, orbit, day,
+// temperature) are from the NASA Planetary Fact Sheet, the light travel times are worked out from the
+// distances. The rest is well established history and science. Anything that can change (the number of
+// moons, which spacecraft is working today) is left out or put in the past tense.
+const SOURCE_EN = "The figures come from the NASA Planetary Fact Sheet.";
+const SOURCE_DE = "Die Zahlen stammen aus dem Planetary Fact Sheet der NASA.";
+const SOLAR_STORIES = {
+  Mercury: {
+    title: { en: "Mercury", de: "Merkur" },
+    en: [
+      "Mercury is the smallest planet in our Solar System and the closest to the Sun. It is only about 4,880 kilometres wide, a little more than a third of the width of Earth. Light from the Sun needs about three minutes to reach it.",
+      "A year on Mercury lasts just 88 Earth days, but the planet turns slowly: one turn takes about 59 Earth days, and from one sunrise to the next 176 Earth days pass. A day on Mercury therefore lasts two Mercury years.",
+      "Mercury has almost no atmosphere, so heat escapes quickly after sunset. The temperature climbs to about 430 degrees Celsius by day and drops to about minus 180 at night. Even so, ice has been found in craters at the poles that never see sunlight.",
+      "It is very dense, second only to Earth, with a large core of iron. Long cliffs on its surface are a sign that it has shrunk as its inside cooled.",
+      "Two spacecraft have studied it up close: Mariner 10 flew past three times in 1974 and 1975, and MESSENGER orbited the planet from 2011 to 2015 and mapped its whole surface.",
+      SOURCE_EN,
+    ],
+    de: [
+      "Merkur ist der kleinste Planet unseres Sonnensystems und der Sonne am nächsten. Er ist nur etwa 4.880 Kilometer breit, etwas mehr als ein Drittel so breit wie die Erde. Das Licht der Sonne braucht rund drei Minuten bis zu ihm.",
+      "Ein Jahr auf Merkur dauert nur 88 Erdtage, aber der Planet dreht sich langsam: Eine Drehung dauert etwa 59 Erdtage, und von einem Sonnenaufgang bis zum nächsten vergehen 176 Erdtage. Ein Tag auf Merkur dauert also zwei Merkurjahre.",
+      "Merkur hat fast keine Atmosphäre, die Wärme verschwindet deshalb nach Sonnenuntergang schnell. Am Tag steigt die Temperatur auf etwa 430 Grad Celsius, in der Nacht fällt sie auf etwa minus 180 Grad. Trotzdem hat man Eis in Kratern an den Polen gefunden, in die nie Sonnenlicht fällt.",
+      "Er ist sehr dicht, nach der Erde der dichteste Planet, mit einem großen Kern aus Eisen. Lange Steilstufen auf seiner Oberfläche sind ein Zeichen dafür, dass er geschrumpft ist, als sein Inneres abkühlte.",
+      "Zwei Raumsonden haben ihn aus der Nähe untersucht: Mariner 10 flog 1974 und 1975 dreimal vorbei, und MESSENGER umkreiste den Planeten von 2011 bis 2015 und kartierte seine gesamte Oberfläche.",
+      SOURCE_DE,
+    ],
+  },
+  Venus: {
+    title: { en: "Venus", de: "Venus" },
+    en: [
+      "Venus is almost as big as Earth, 12,100 kilometres wide, and the second planet from the Sun. Sunlight needs about six minutes to get there.",
+      "It is the hottest planet. The average temperature at the surface is about 464 degrees Celsius, hot enough to melt lead, because a thick atmosphere of carbon dioxide traps the heat. The air pressure on the ground is about 92 times that on Earth.",
+      "Clouds of sulfuric acid cover the whole planet, so the ground cannot be seen from space in ordinary light. From above, Venus looks like a pale yellow ball.",
+      "Compared with most planets, Venus turns backwards, and very slowly: one turn takes 243 Earth days, longer than its year of 225 days. The Sun rises in the west there.",
+      "Probes have looked at the ground anyway: the Soviet Venera landers sent data from the surface in the 1970s and 1980s and lasted at most a little over two hours, and the spacecraft Magellan mapped almost the whole surface with radar between 1990 and 1994.",
+      SOURCE_EN,
+    ],
+    de: [
+      "Venus ist fast so groß wie die Erde, 12.100 Kilometer breit, und der zweite Planet von der Sonne. Das Sonnenlicht braucht etwa sechs Minuten bis dorthin.",
+      "Sie ist der heißeste Planet. Die mittlere Temperatur an der Oberfläche beträgt etwa 464 Grad Celsius, heiß genug, um Blei zu schmelzen, weil eine dichte Atmosphäre aus Kohlendioxid die Wärme festhält. Der Luftdruck am Boden ist etwa 92 Mal so hoch wie auf der Erde.",
+      "Wolken aus Schwefelsäure bedecken den ganzen Planeten, deshalb sieht man den Boden aus dem All im normalen Licht nicht. Von oben wirkt Venus wie eine blassgelbe Kugel.",
+      "Im Vergleich zu den meisten Planeten dreht sich Venus rückwärts, und sehr langsam: Eine Drehung dauert 243 Erdtage, länger als ihr Jahr mit 225 Tagen. Die Sonne geht dort im Westen auf.",
+      "Sonden haben den Boden trotzdem gesehen: Die sowjetischen Venera-Lander funkten in den 1970er und 1980er Jahren von der Oberfläche und hielten höchstens gut zwei Stunden durch, und die Sonde Magellan kartierte zwischen 1990 und 1994 fast die gesamte Oberfläche mit Radar.",
+      SOURCE_DE,
+    ],
+  },
+  Mars: {
+    title: { en: "Mars", de: "Mars" },
+    en: [
+      "Mars is about half as wide as Earth, 6,800 kilometres, and the fourth planet from the Sun. Sunlight needs about 13 minutes to reach it.",
+      "A day on Mars lasts about 24 hours and 37 minutes, almost like on Earth, and a year lasts 687 Earth days. Its axis is tilted by about 25 degrees, so it has seasons.",
+      "The thin air is mostly carbon dioxide, and the pressure is about one hundredth of that on Earth. The average temperature is about minus 65 degrees Celsius. The red colour comes from iron oxide, which is rust, in the dust.",
+      "Mars has the tallest known volcano in the Solar System, Olympus Mons, about 22 kilometres high, and a canyon system, Valles Marineris, about 4,000 kilometres long. Dry river valleys show that liquid water once flowed there.",
+      "Two small moons, Phobos and Deimos, orbit Mars. Many spacecraft have studied the planet. Viking 1 and 2 landed in 1976, and since 1997 rovers have driven across the surface: Sojourner, Spirit, Opportunity, Curiosity and Perseverance. In 2021 the helicopter Ingenuity made the first powered flight on another planet.",
+      SOURCE_EN,
+    ],
+    de: [
+      "Mars ist etwa halb so breit wie die Erde, 6.800 Kilometer, und der vierte Planet von der Sonne. Das Sonnenlicht braucht etwa 13 Minuten bis dorthin.",
+      "Ein Tag auf dem Mars dauert etwa 24 Stunden und 37 Minuten, fast wie auf der Erde, und ein Jahr dauert 687 Erdtage. Seine Achse ist um etwa 25 Grad geneigt, deshalb gibt es dort Jahreszeiten.",
+      "Die dünne Luft besteht hauptsächlich aus Kohlendioxid, und der Druck ist etwa ein Hundertstel so hoch wie auf der Erde. Die mittlere Temperatur liegt bei etwa minus 65 Grad Celsius. Die rote Farbe kommt von Eisenoxid, also Rost, im Staub.",
+      "Auf dem Mars steht der höchste bekannte Vulkan des Sonnensystems, der Olympus Mons mit etwa 22 Kilometern Höhe, und ein Canyonsystem, die Valles Marineris, etwa 4.000 Kilometer lang. Trockene Flusstäler zeigen, dass dort früher flüssiges Wasser floss.",
+      "Zwei kleine Monde, Phobos und Deimos, umkreisen den Mars. Viele Raumsonden haben den Planeten untersucht. Viking 1 und 2 landeten 1976, und seit 1997 sind Rover über die Oberfläche gefahren: Sojourner, Spirit, Opportunity, Curiosity und Perseverance. 2021 gelang dem Hubschrauber Ingenuity der erste Motorflug auf einem anderen Planeten.",
+      SOURCE_DE,
+    ],
+  },
+  Jupiter: {
+    title: { en: "Jupiter", de: "Jupiter" },
+    en: [
+      "Jupiter is the biggest planet in the Solar System: about 143,000 kilometres wide, more than eleven times the width of Earth. It has more than 300 times the mass of Earth and about two and a half times the mass of all the other planets together.",
+      "It is a gas giant without a solid surface, made mostly of hydrogen and helium. It orbits 5.2 times farther from the Sun than Earth does, sunlight needs about 43 minutes to get there, and one year lasts almost 12 Earth years.",
+      "Despite its size, Jupiter turns faster than any other planet: a day lasts only about 10 hours. Fast winds pull its clouds apart into bright and dark bands.",
+      "The Great Red Spot is a storm that has been watched for at least 150 years. It is about as wide as Earth, or a little wider, and it has been shrinking.",
+      "Galileo Galilei discovered its four large moons in 1610: Io, Europa, Ganymede and Callisto. Ganymede is the largest moon in the Solar System, larger than the planet Mercury. The spacecraft Galileo studied Jupiter from orbit between 1995 and 2003, and the probe Juno began to orbit it in 2016.",
+      SOURCE_EN,
+    ],
+    de: [
+      "Jupiter ist der größte Planet des Sonnensystems: etwa 143.000 Kilometer breit, mehr als elfmal so breit wie die Erde. Er hat mehr als 300 Mal die Masse der Erde und etwa zweieinhalb Mal so viel Masse wie alle anderen Planeten zusammen.",
+      "Er ist ein Gasriese ohne feste Oberfläche und besteht hauptsächlich aus Wasserstoff und Helium. Er umkreist die Sonne in 5,2 Mal so großem Abstand wie die Erde, das Sonnenlicht braucht etwa 43 Minuten bis dorthin, und ein Jahr dauert fast 12 Erdjahre.",
+      "Trotz seiner Größe dreht sich Jupiter schneller als jeder andere Planet: Ein Tag dauert nur etwa 10 Stunden. Schnelle Winde ziehen seine Wolken zu hellen und dunklen Bändern auseinander.",
+      "Der Große Rote Fleck ist ein Sturm, der seit mindestens 150 Jahren beobachtet wird. Er ist etwa so breit wie die Erde oder etwas breiter und wird kleiner.",
+      "Galileo Galilei entdeckte 1610 die vier großen Monde: Io, Europa, Ganymed und Kallisto. Ganymed ist der größte Mond des Sonnensystems, größer als der Planet Merkur. Die Raumsonde Galileo erforschte Jupiter zwischen 1995 und 2003 aus der Umlaufbahn, und die Sonde Juno begann 2016, ihn zu umkreisen.",
+      SOURCE_DE,
+    ],
+  },
+  Saturn: {
+    title: { en: "Saturn", de: "Saturn" },
+    en: [
+      "Saturn is the second largest planet, about 120,500 kilometres wide, nine times the width of Earth, and the sixth from the Sun, about 9.6 times as far away as Earth. Sunlight needs about an hour and twenty minutes to get there.",
+      "It is the planet with the lowest density, lower than that of water. It is made mostly of hydrogen and helium.",
+      "Its rings are the best known feature. They are mostly water ice, from tiny grains to pieces as big as houses. The main rings reach about 140,000 kilometres from the planet, yet in many places they are only about ten metres thick.",
+      "A day on Saturn lasts about ten and a half hours. Its axis is tilted by 27 degrees, so it has seasons, and at its north pole a six sided stream of wind circles the pole.",
+      "The spacecraft Cassini orbited Saturn from 2004 to 2017 and ended its mission on purpose by diving into the planet's atmosphere. The probe Huygens landed on the moon Titan in 2005. Cassini also found jets of water ice shooting out of the small moon Enceladus.",
+      SOURCE_EN,
+    ],
+    de: [
+      "Saturn ist der zweitgrößte Planet, etwa 120.500 Kilometer breit, neunmal so breit wie die Erde, und der sechste von der Sonne, etwa 9,6 Mal so weit entfernt wie die Erde. Das Sonnenlicht braucht rund eine Stunde und zwanzig Minuten bis dorthin.",
+      "Er ist der Planet mit der geringsten Dichte, sie liegt unter der von Wasser. Er besteht hauptsächlich aus Wasserstoff und Helium.",
+      "Am bekanntesten sind seine Ringe. Sie bestehen hauptsächlich aus Wassereis, von winzigen Körnern bis zu hausgroßen Brocken. Die Hauptringe reichen etwa 140.000 Kilometer weit vom Planeten weg, sind aber an vielen Stellen nur etwa zehn Meter dick.",
+      "Ein Tag auf Saturn dauert etwa zehneinhalb Stunden. Seine Achse ist um 27 Grad geneigt, deshalb gibt es Jahreszeiten, und am Nordpol kreist ein sechseckiger Windstrom um den Pol.",
+      "Die Raumsonde Cassini umkreiste Saturn von 2004 bis 2017 und beendete ihre Mission absichtlich mit einem Sturz in die Atmosphäre des Planeten. Die Sonde Huygens landete 2005 auf dem Mond Titan. Cassini fand außerdem Fontänen aus Wassereis am kleinen Mond Enceladus.",
+      SOURCE_DE,
+    ],
+  },
+  Uranus: {
+    title: { en: "Uranus", de: "Uranus" },
+    en: [
+      "Uranus is the seventh planet, about 51,100 kilometres wide, four times the width of Earth. It is about 19 times as far from the Sun as Earth, sunlight needs about two hours and forty minutes to get there, and one year lasts 84 Earth years.",
+      "It was the first planet found with a telescope: William Herschel discovered it in 1781.",
+      "Uranus turns on its side. Its axis is tilted by 98 degrees, so during its long seasons one pole points almost straight at the Sun for decades.",
+      "Its blue green colour comes from methane in the atmosphere, which swallows red light. It has the coldest atmosphere measured in the Solar System, down to about minus 224 degrees Celsius, and 13 known rings.",
+      "The spacecraft Voyager 2 flew past in January 1986 and is so far the only one that has been there.",
+      SOURCE_EN,
+    ],
+    de: [
+      "Uranus ist der siebte Planet, etwa 51.100 Kilometer breit, viermal so breit wie die Erde. Er ist etwa 19 Mal so weit von der Sonne entfernt wie die Erde, das Sonnenlicht braucht etwa zwei Stunden und vierzig Minuten bis dorthin, und ein Jahr dauert 84 Erdjahre.",
+      "Er war der erste Planet, der mit einem Teleskop entdeckt wurde: William Herschel fand ihn 1781.",
+      "Uranus dreht sich auf der Seite. Seine Achse ist um 98 Grad geneigt, deshalb zeigt in seinen langen Jahreszeiten ein Pol jahrzehntelang fast direkt zur Sonne.",
+      "Seine blaugrüne Farbe kommt vom Methan in der Atmosphäre, das rotes Licht verschluckt. Er hat die kälteste Atmosphäre, die im Sonnensystem gemessen wurde, bis zu etwa minus 224 Grad Celsius, und 13 bekannte Ringe.",
+      "Die Raumsonde Voyager 2 flog im Januar 1986 vorbei und ist bisher die einzige Sonde, die dort war.",
+      SOURCE_DE,
+    ],
+  },
+  Neptune: {
+    title: { en: "Neptune", de: "Neptun" },
+    en: [
+      "Neptune is the planet farthest from the Sun, about 49,500 kilometres wide and about 30 times as far from the Sun as Earth. Sunlight needs more than four hours to get there, and one year lasts almost 165 Earth years. In 2011 it finished its first full orbit since its discovery.",
+      "Neptune was found by calculation before anyone saw it. Irregularities in the orbit of Uranus made astronomers predict where an unknown planet should be, and Johann Galle found it there in 1846.",
+      "It is a deep blue ice giant, and methane gives it its colour. The winds are the fastest in the Solar System, up to about 2,000 kilometres per hour, and the mean temperature is about minus 200 degrees Celsius.",
+      "Its largest moon Triton orbits the planet backwards, which points to it having been captured from the outer Solar System.",
+      "Voyager 2 is the only spacecraft that has visited. It flew past in August 1989 and saw a huge dark storm, the Great Dark Spot. It had gone when the Hubble Space Telescope looked again in 1994.",
+      SOURCE_EN,
+    ],
+    de: [
+      "Neptun ist der von der Sonne am weitesten entfernte Planet, etwa 49.500 Kilometer breit und rund 30 Mal so weit von der Sonne entfernt wie die Erde. Das Sonnenlicht braucht mehr als vier Stunden bis dorthin, und ein Jahr dauert fast 165 Erdjahre. 2011 beendete er seinen ersten vollen Umlauf seit seiner Entdeckung.",
+      "Neptun wurde durch Rechnung gefunden, bevor ihn jemand sah. Unregelmäßigkeiten in der Bahn von Uranus ließen Astronomen vorhersagen, wo ein unbekannter Planet stehen müsste, und Johann Galle fand ihn dort 1846.",
+      "Er ist ein tiefblauer Eisriese, Methan gibt ihm die Farbe. Die Winde sind die schnellsten im Sonnensystem, bis zu etwa 2.000 Kilometer pro Stunde, und die mittlere Temperatur liegt bei etwa minus 200 Grad Celsius.",
+      "Sein größter Mond Triton umkreist den Planeten rückwärts, das spricht dafür, dass er aus dem äußeren Sonnensystem eingefangen wurde.",
+      "Voyager 2 ist die einzige Sonde, die ihn besucht hat. Sie flog im August 1989 vorbei und sah einen riesigen dunklen Sturm, den Großen Dunklen Fleck. Er war verschwunden, als das Weltraumteleskop Hubble 1994 wieder hinschaute.",
+      SOURCE_DE,
+    ],
+  },
+};
+export const SOLAR_PLANET_NAMES = Object.keys(SOLAR_STORIES);
+
+// Name of a Solar System planet in the menu. Earth has its own text in UI, the others reuse the story titles.
+export const solarName = (name, lang) => SOLAR_STORIES[name]?.title[lang] ?? name;
+
 export function buildStory(star, planet, lang) {
   const t = TEXT[lang];
-  // The other planets of our own system have no story yet, only their name is shown.
-  if (planet.solarOther) return { title: planet.pl_name, paragraphs: [] };
+  // The other planets of our own system. One that has no text of its own shows only its name.
+  if (planet.solarOther) {
+    const story = SOLAR_STORIES[planet.pl_name];
+    return story ? { title: story.title[lang], paragraphs: story[lang] } : { title: planet.pl_name, paragraphs: [] };
+  }
   if (star.solarSystem) return { title: UI[lang].earth.replace(/ \(.*\)/, ""), paragraphs: t.earth };
 
   const n = (value, digits) => num(lang, value, digits);
