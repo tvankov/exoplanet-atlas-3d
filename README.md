@@ -25,6 +25,10 @@ python src/transform.py
 python -m http.server 8000 --directory web
 ```
 
+Controls: drag with the mouse to rotate, scroll to zoom, right drag to pan. Keyboard: W and S fly forward and back, A and D sideways,
+Q and E down and up, the arrow keys look around, Shift is four times faster. The speed follows the distance between camera and target,
+so it is slow near a planet and fast on the overview; a close-up that follows a planet ends when you fly.
+
 ## Audio
 
 Voices are made with [Piper](https://github.com/OHF-Voice/piper1-gpl). Only voices trained from scratch on freely licensed
@@ -34,6 +38,192 @@ data are used: `en_US-ljspeech-high` (LJ Speech, public domain) and `de_DE-mls-m
 node src/export_stories.mjs
 python src/make_audio.py --voices <folder with the .onnx files> --de-speaker 2
 ```
+
+## Real orbits: planets, comets, interstellar objects, spacecraft
+
+All of it comes from JPL (NASA), https://ssd.jpl.nasa.gov, credit "JPL/Caltech/NASA". I could not find the terms of use of these
+services (SBDB API, Horizons API, the page of approximate planet positions) when this was built; the data are free to fetch, and the
+credit is given in the app and here. If you publish this, check the terms first.
+
+```bash
+python src/fetch_jpl.py      # JPL -> data/raw/jpl_*.json and jpl_planets_*.html (170 KB)
+python src/build_orbits.py   # -> web/data/orbits.json (67 KB)
+```
+
+- **Planets:** the eight planets sit where their Keplerian elements put them on the day the page is opened (JPL, "Keplerian Elements for
+  Approximate Positions of the Major Planets", Table 1, valid 1800 to 2050; Earth is the Earth-Moon barycentre). The orbit lines are the
+  real ellipses. The clock of the page starts on today's date and runs with the time slider. The map is still squeezed: a distance of r AU
+  is drawn as 0.3 times the square root of r, in the direction it really has. The ecliptic is the flat plane of the Solar System view and is
+  not tilted against the equatorial coordinates of the star map.
+- **Status:** the visitors (comets, interstellar objects, spacecraft) are switched off for now, until the 3D models of the spacecraft
+  are ready: `SHOW_VISITORS` in `web/main.js` is `false` and the menu in `web/index.html` is `hidden`. The planets use the real
+  positions all the same. Everything below is what the visitors do when they are switched on.
+- **Comets and interstellar objects:** Halley, Hale-Bopp, 67P, Swift-Tuttle, Encke and NEOWISE, and 'Oumuamua, Borisov and 3I/ATLAS.
+  Their positions are computed from the elements of the Small-Body Database (ellipses for the comets, hyperbolas for the interstellar
+  objects, cut at 60 AU from the Sun in the drawing). They are the elements of the day of the download, without the small pushes of the
+  planets or the gas of a comet, so a position far from that day gets less exact.
+- **Spacecraft:** Voyager 1 and 2, New Horizons, Juno, Parker Solar Probe and JWST. The flight paths are from Horizons (sun centred,
+  ecliptic J2000) up to the day of the download. For the day on the screen the Voyagers and New Horizons fly on in a straight line at the
+  speed of their last two points, Juno moves with Jupiter, JWST sits at the point L2 (1 % further from the Sun than Earth, which is about
+  1.5 million km behind Earth), and Parker Solar Probe stays where the data put it on the day of the download, which is a rough place
+  because it goes round the Sun in 88 days.
+- The texts of the visitors use these numbers (distance, light time, period, perihelion dates, speed) plus one well known sentence per
+  object; they have no recording, the browser voice reads them.
+
+## Search, filter and honest radii
+
+- **Search:** a field above the menus finds any star or planet of the NASA list by name (two letters are enough), nearest star first,
+  with the buttons planet, star and system. The index is built on the first key press.
+- **Discovered by:** a drop-down list of the telescopes and observatories that found at least 30 planets (Kepler, TESS, K2, ...,
+  from the column `disc_facility`). The stars of their planets stay bright, all others are dimmed. The column comes from
+  `src/fetch_nasa_extras.py`, which also fetches the second extra table below.
+- **Calculated radii:** for 1,529 planets of the map the archive has no measured radius, it fills in one that is worked out from the mass
+  (reference "Calculated Value"). The list is `data/raw/nasa_radius_calculated_*.csv` (`src/fetch_nasa_extras.py`), `src/transform.py`
+  writes it as `radius_calculated` into `stars.json`. Of the 36 candidates 16 are such planets (GJ 1002 b and c, GJ 1061 c and d, GJ 1132 c,
+  GJ 273 b, GJ 3323 b, GJ 3378 b, Kepler-138 e, L 98-59 f, Proxima Cen b and d, Ross 128 b, Teegarden's Star b and c, Wolf 1069 b).
+  For them the text says "about ... but nobody has measured it, it is worked out from the mass", the type line says the type comes from a
+  calculated radius, and the list shows "≈". The recordings of these 16 stories were made again with the new text.
+
+## Legal
+
+`LICENSE` (MIT for the code, not for third party material), `THIRD_PARTY_NOTICES.md` (every source with its terms and the
+places where terms could not be found) and `web/legal.html` (imprint, privacy notice, licences; linked in the panel behind the burger
+button). **The imprint holds placeholders** for name, address and e-mail, and for the hosting provider in the privacy notice: they need
+the real data of the person who publishes the site, nothing was invented.
+
+## Picture quality: bloom and tone mapping
+
+The scene is drawn into a float image with 4x smoothing of the edges, a soft bloom (strength 0.3, radius 0.5, threshold 0.92) lights up
+the brightest parts (Sun, bright stars, the glint on the sea), and the last pass applies the film like ACES tone curve (exposure 1.0)
+and turns the result into screen colours. The shaders that wrote screen colours themselves (the star dots) convert to linear light
+first (`pow(colour, 2.2)`), all the others already did it through `colorspace_fragment`. The passes come from the three.js examples
+(`web/vendor/three/addons/postprocessing/` and `shaders/`, version r160, MIT licence like three.js itself): EffectComposer, RenderPass,
+UnrealBloomPass, OutputPass, ShaderPass, Pass, MaskPass, CopyShader, LuminosityHighPassShader and OutputShader.
+
+## Shadows and depth
+
+- **Saturn:** the planet throws a dark wedge on its rings, and the rings throw a band of shadow on the planet. Both are computed from
+  the real direction of the Sun (a ray is followed from each point towards the Sun, to the ring plane or past the planet), with the
+  ring edges of `RING_FRAGMENT`. Uranus and Neptune have no ring shadow, their rings are too thin to show one.
+- **Dust disc:** a very faint, swirled disc in the plane of the planets (`dustDisc` in `web/main.js`). The Solar System does hold a flat
+  cloud of dust (the zodiacal dust), but its thickness and swirls are not drawn from data, it is a schematic mood.
+- The planets do not shade each other: in this map they are too small and too far apart for that to be visible.
+
+## Polish
+
+- **Labels:** the names above bodies have a soft dark edge and fade out when they would lie on top of a nearer name
+  (`declutterLabels`). **Orbit lines** are thin light lines that fade with the distance from the camera (`orbitLineMaterial`).
+- **Sun and other stars:** soft streamers on a sheet that faces the camera (`makeStarRays`), in the colour of the star, for the Sun and
+  the star of the system that is open. They are an illustration of the look, not data.
+- **Candidate zone:** a soft band that fades in and out at its edges (only in the drawing, the limits of the rule are sharp). The faint
+  dust disc around the Sun is dimmer and fades out sooner than before. Planets are drawn a bit bigger and a bit lighter on their
+  night side so that they do not vanish in the overview.
+- **Names:** the width of a label follows the length of the name. The names of the Gaia stars show only near the star or on the
+  overview of the neighbourhood, not in between (`nearOnly`).
+- **Nebula colours:** very faint painted clouds of purple, pink and blue near the plane of the Galaxy are added to the Milky Way photo
+  (`uNebula` in the Milky Way shader, 0 switches them off). They are an illustration, no real nebulae.
+- **Interface:** blurred glass panels, smoother buttons, focus rings, panels that fade in, thin scrollbars and a start screen. No
+  extra font was downloaded, the font is the system font of the visitor (Segoe UI, Inter or the system default).
+
+## Brightness of the host stars
+
+The stars of the NASA list are drawn with a brightness from physics, like the Gaia layer: the luminosity comes from the radius and
+the temperature, L = R^2 (T / 5772 K)^4 in solar units, and the absolute magnitude is M = 4.74 - 2.5 log10 L. In the shader the
+apparent magnitude seen from the camera follows from M and the distance, so a bright giant stands out and a faint dwarf is a dim
+dot, and far stars fade with the square of the distance. The exposure starts at magnitude 13.5 at the Sun and opens up with the distance
+from the Sun (`uMagRef`), because the hosts reach out to 28,000 light years. A floor keeps every host visible. A star without a
+radius or a temperature is treated like the Sun (flagged in the data). The colour is still from the temperature only.
+
+## Far stars fade
+
+The grid-like patch in one corner of the sky is the Kepler field: the Kepler telescope watched one small patch, more than 2,000
+planet hosts stand there, and the gaps between the sensors of its camera show as a grid. It is real data, a selection effect of the
+survey. So that it does not look like a pattern on the screen, the stars of the NASA list (without the glowing candidates) fade with
+their distance, which is now part of the physical brightness above (`fade` in the star shader, with a floor of 18 %). Flying close to
+such a star makes it clear again.
+
+## Gaia layer (optional)
+
+A switch in the panel shows the stars closer than 326 light years from ESA Gaia DR3 at their real positions (246,020 stars),
+without the hosts of the NASA planets, which are taken out by their Gaia source ID. The layer is off at the start and
+the file is only read when it is switched on.
+
+```bash
+python src/fetch_gaia.py     # Gaia archive -> data/raw/gaia_near_stars.csv (24 MB, not in Git)
+python src/build_gaia.py     # + NASA host IDs -> web/data/gaia_stars.bin (3.8 MB, in the project)
+```
+
+- Selection: parallax above 10 mas with a measurement good to 5 % (parallax over error above 20), RUWE below 1.4 (Gaia's own quality
+  limit), and a brightness. The first version used 10 % and no RUWE and had 372,226 stars, with a cloud of false near stars towards the
+  centre of the Milky Way, where crowded fields spoil the parallax. In a test patch there (right ascension 250 to 280 degrees,
+  declination -45 to -20) the counts were 47,949 without any cut, 15,277 with RUWE below 1.4 and 4,272 with the 5 % cut as well, which
+  is about what a quiet sky gives for that patch (4,100). The 5 % cut costs about 7 % of the stars. 173 stars without a brightness are
+  left out.
+- The colours come from a temperature: for 101,299 stars the temperature that Gaia's own pipeline gives (`teff_gspphot`), for the
+  other 144,721 estimated from the colour index (bp_rp) with a rough table for main sequence stars. Where both exist they agree
+  well (the Gaia value is 0.95 to 1.02 times the table value for 80 % of the stars), so the colours barely changed. 4,034 stars
+  with neither get a sun-like colour. The brightness of a dot follows physics: the shader works out the apparent magnitude from the
+  absolute magnitude of the star and its distance from the camera in real light years, so stars fade when you fly away and the truly
+  bright ones stand out. The brightness is limited softly so nothing burns out, and the size of a dot depends only on its brightness
+  (a fine dot for a faint star, a few pixels for a bright one). Seen from the Sun the layer shows stars down to about magnitude 8.5
+  (a bit fainter than the naked eye, which reaches 6); the limit moves up with the distance from the Sun so that the layer stays
+  visible on the overview. These two numbers are looks, set in `GAIA_MAG_BASE` and in `updateGaiaCamera`.
+- Licence: Gaia data come under the ESA terms, CC BY-NC 3.0 IGO, credit "ESA/Gaia/DPAC" is required (shown with the switch and in
+  the credits), and commercial use needs the permission of ESA. Do not use this layer in a commercial product without asking ESA.
+  Everything else in the project does not depend on it.
+
+The named stars are also a list in the panel ("Named stars"), nearest first with their distance in light years. A click switches the
+Gaia layer on and flies the camera to the star.
+
+### Milky Way background
+
+The Milky Way behind the stars is the panorama "The Milky Way panorama" by ESO/S. Brunier
+(https://www.eso.org/public/images/eso0932a/, credit "ESO/S. Brunier"). ESO states that its images are licensed under
+CC BY 4.0 unless noted otherwise (https://www.eso.org/public/outreach/copyright/), which allows reuse, also commercial, with the credit
+shown and changes indicated; the image page itself names no separate licence. The ESO logo is not covered, and the project must
+not suggest that ESO endorses it. Changes made here: the 6000 x 3000 pixel JPEG was shrunk to 4096 x 2048 pixels
+(`web/textures/milkyway.jpg`, 2.5 MB), it is read through the viewing direction as galactic longitude and latitude, and it is
+brightened by a factor of 1.1. The panorama is an equirectangular photo in galactic coordinates: the Galactic centre is in the middle,
+the longitude grows to the left, the latitude runs from -90 degrees at the bottom to +90 at the top (checked against the Large
+Magellanic Cloud, which sits at longitude 280 degrees and latitude -33 degrees). The shader turns the viewing direction of the
+map (equatorial axes) into galactic ones with the standard J2000 rotation.
+
+As a fallback the shader also paints a Milky Way of its own (`MILKY_WAY_FRAGMENT` in `web/main.js`), used until the photo has loaded
+or if it cannot be loaded. It is an illustration: only the position of its band and of its centre are real, dust lanes, clouds,
+colours and specks are invented.
+
+### Deep Gaia layer (about a million bright stars)
+
+A second switch, "Deep stars", shows 992,065 bright Gaia stars (G < 11, parallax over error above 5, RUWE below 1.4, parallax above
+0.2 mas, so up to 16,300 light years away) at their real positions. They give the depth: stars at all distances around the camera.
+The stars that are already in the near layer (and the NASA planet hosts) are taken out by their Gaia source ID (34,259 of the 1,026,324
+downloaded).
+
+```bash
+python src/fetch_gaia_bright.py          # 12 minutes, resumable, slices in data/raw/gaia_bright/, 105 MB CSV, not in Git
+cd src && python build_gaia_bright.py    # -> web/data/gaia_deep.bin (15 MB), sorted brightest first
+```
+
+- Brightness as for the near layer (real, from the camera distance), with an own material: a lower gain and an exposure that hardly
+  opens up with the distance from the Sun, otherwise a million stars add up to a white wall on the overview.
+- Speed: on the integrated graphics of the development machine the page runs at 111 frames per second without the layer and at about
+  23 to 34 with it. The file is sorted brightest first, and every 8 frames the page looks at the frame time: slower than 33 ms takes away half of the
+  stars (the faintest), down to 100,000. Switching it on again starts with all of them.
+- Not offered on touch devices and narrow screens (under 700 pixels): a million points would be too heavy there.
+- Licence as for the near layer: ESA terms, CC BY-NC 3.0 IGO, credit ESA/Gaia/DPAC, no commercial use without ESA's permission. Far
+  stars are not corrected for dust on the way.
+
+### Star names in the Gaia layer
+
+The 16 stars of the layer that have a proper name (Luyten's star, van Maanen's star, Yildun, Zibal and so on) get a label when the layer
+is on. Barnard's star and Kapteyn's star, which are planet hosts in the NASA list, are on the map as hosts and are not
+in the Gaia layer. The names come from SIMBAD (CDS, Strasbourg), a one-off extract of the names that have a Gaia DR3 ID, saved as
+`data/raw/simbad_star_names.csv`. The main SIMBAD server could not be reached when it was fetched, so the copy at
+`simbad.cfa.harvard.edu` was used, the data are the same. A name counts as proper when it has no digits and no asterisk, which
+leaves out catalogue names like "GR* 112A". Famous names such as Sirius are missing, probably because the quality cuts drop very
+bright stars. CDS asks for this acknowledgement, which is in the credits: "This research has made use of the SIMBAD database,
+operated at CDS, Strasbourg, France", Wenger et al. 2000, A&AS 143, 9. I could not find the full terms of use of SIMBAD, a
+third party source calls its licence ODbL, which CDS has not confirmed.
 
 ## Credits
 

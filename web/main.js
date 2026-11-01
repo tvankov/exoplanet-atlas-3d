@@ -1,5 +1,9 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { buildStory, duration, planetType, PLANET_TYPES, slug, solarName, UI } from "./story.js";
 
 const DEFAULT_RADIUS = 1; // solar radii, display only, used where st_rad is missing
@@ -12,6 +16,21 @@ const scene = new THREE.Scene();
 // The near plane is small because the planet close-up puts the camera a few hundredths of a unit away.
 const camera = new THREE.PerspectiveCamera(60, 1, 0.01, 100000);
 camera.position.set(0, 0, 60);
+
+// The picture goes through a small chain: the scene is drawn into a float image (with 4x smoothing of the
+// edges), a bloom pass adds a soft glow around the bright parts (Sun, bright stars, the sun glint on the
+// sea), and the last pass applies a film like tone curve and turns the result into screen colours. The
+// shaders that write screen colours themselves (the star dots) convert to linear light first, see there.
+const composer = new EffectComposer(
+  renderer,
+  new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 })
+);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.5, 0.92); // strength, radius, threshold
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
@@ -35,19 +54,37 @@ const material = new THREE.ShaderMaterial({
   transparent: true,
   depthWrite: false,
   blending: THREE.AdditiveBlending,
+  uniforms: {
+    uCamera: { value: new THREE.Vector3() }, // the camera in real light years, updated every frame
+    uMagRef: { value: 14 },
+  },
   vertexShader: `
+    uniform vec3 uCamera;
     attribute float size;
     attribute float glow;
     attribute vec3 color;
+    attribute vec3 truePos; // the real position in light years
+    attribute float match;  // 1 normally, below 1 for the stars that a filter leaves out
+    attribute float absmag; // how bright the star really is (absolute magnitude), from its radius and temperature
+    uniform float uMagRef;  // the apparent magnitude that shows at about 60 % brightness, see updateCameraReal
     varying vec3 vColor;
     varying float vGlow;
     void main() {
-      vColor = color;
+      // Real brightness, as for the Gaia stars: the apparent magnitude m = M + 5 log10(d / 10 pc) tells how bright
+      // the star looks from the camera, so a bright giant stands out and a faint dwarf is a dim dot, and far
+      // stars fade with the square of the distance. A far crowd like the Kepler field (more than 2,000 hosts in
+      // one small patch of sky, with the gaps between the sensors of its camera) becomes a soft shimmer instead
+      // of a crisp grid. The floor keeps every host of the map visible as a faint dot.
+      float dpc = max(length(truePos - uCamera), 0.3) / 3.2616;
+      float m = absmag + 5.0 * log(dpc) / log(10.0) - 5.0;
+      float fade = max(1.0 - exp(-pow(10.0, -0.4 * (m - uMagRef))), 0.18);
+      float shown = mix(0.1, 1.0, match);   // a star that the filter leaves out is dimmed a lot, not removed
+      vColor = (glow > 0.5 ? color : color * fade) * shown;
       vGlow = glow;
       vec4 mv = modelViewMatrix * vec4(position, 1.0);
       // A glowing star gets a larger sprite, because the halo needs room to fade out.
       // Every other star stays a small plain dot.
-      gl_PointSize = glow > 0.5 ? max(8.0, size * 260.0 / -mv.z) : max(2.5, size * 100.0 / -mv.z);
+      gl_PointSize = glow > 0.5 ? max(8.0, size * 260.0 / -mv.z) : max(mix(1.6, 2.5, fade), size * 100.0 / -mv.z);
       gl_Position = projectionMatrix * mv;
     }`,
   fragmentShader: `
@@ -58,15 +95,18 @@ const material = new THREE.ShaderMaterial({
       if (d > 1.0) discard;
       if (vGlow < 0.5) {
         // Plain star: a small dot with a soft edge and no halo, so it stays quiet in the background.
-        gl_FragColor = vec4(vColor * smoothstep(1.0, 0.4, d), 1.0);
+        gl_FragColor = vec4(pow(vColor * smoothstep(1.0, 0.4, d), vec3(2.2)), 1.0);
         return;
       }
       float halo = pow(1.0 - d, 1.8);              // soft glow in the star colour
       float core = smoothstep(0.3, 0.0, d);        // small white hot centre
-      // Additive blending: the colour is added as it is, so the brightness is set here.
-      gl_FragColor = vec4(vColor * halo * 1.3 + vec3(core * 0.8), 1.0);
+      // Additive blending: the colour is added as it is, so the brightness is set here. The colours are
+      // written as screen colours, the pow turns them into linear light for the post-processing chain.
+      gl_FragColor = vec4(pow(vColor * halo * 1.3 + vec3(core * 0.8), vec3(2.2)), 1.0);
     }`,
 });
+
+const BACKGROUND_WHITENING = 0.65; // how far the quiet stars are pulled towards white, 0 keeps the colour, 1 is white
 
 let stars = [];
 let points;
@@ -76,21 +116,39 @@ function buildPoints() {
   const colors = new Float32Array(stars.length * 3);
   const sizes = new Float32Array(stars.length);
   const glows = new Float32Array(stars.length);
+  const truePositions = new Float32Array(stars.length * 3);
+  const matches = new Float32Array(stars.length).fill(1);
+  const absmags = new Float32Array(stars.length);
   const tmp = new THREE.Vector3();
   const color = new THREE.Color();
 
   stars.forEach((s, i) => {
     toMapPosition(s, tmp).toArray(positions, i * 3);
-    color.set(s.color).toArray(colors, i * 3);
-    // Square root keeps giant stars from hiding their neighbours.
-    sizes[i] = 0.5 + 0.5 * Math.sqrt(Math.min(s.st_rad ?? DEFAULT_RADIUS, 25));
+    truePositions.set([s.x, s.y, s.z], i * 3);
+    // Luminosity in solar units L = R^2 (T / 5772 K)^4, then the absolute magnitude M = 4.74 - 2.5 log10 L. A star
+    // without a radius or a temperature gets the values of the Sun, which is flagged in the data (rad_missing).
+    const luminosity = (s.st_rad ?? 1) ** 2 * ((s.st_teff ?? 5772) / 5772) ** 4;
+    absmags[i] = 4.74 - 2.5 * Math.log10(luminosity);
+    color.set(s.color);
     // Only the hosts of habitable candidates glow, so they stand out from thousands of other stars.
     glows[i] = s.planets.some((p) => p.habitable) ? 1 : 0;
+    if (!glows[i]) {
+      // Most stars are red and orange dwarfs, which made the whole background orange. Real stars look
+      // whitish to the eye, so the quiet ones keep only a third of their colour and are a bit dimmer.
+      const m = Math.max(color.r, color.g, color.b);
+      color.lerp(new THREE.Color(m, m, m), BACKGROUND_WHITENING);
+    }
+    color.toArray(colors, i * 3);
+    // Square root keeps giant stars from hiding their neighbours.
+    sizes[i] = 0.5 + 0.5 * Math.sqrt(Math.min(s.st_rad ?? DEFAULT_RADIUS, 25));
   });
 
   points = new THREE.Points(new THREE.BufferGeometry(), material);
   points.geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   points.geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  points.geometry.setAttribute("truePos", new THREE.BufferAttribute(truePositions, 3));
+  points.geometry.setAttribute("match", new THREE.BufferAttribute(matches, 1));
+  points.geometry.setAttribute("absmag", new THREE.BufferAttribute(absmags, 1));
   points.geometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
   points.geometry.setAttribute("glow", new THREE.BufferAttribute(glows, 1));
   scene.add(points);
@@ -104,7 +162,174 @@ function updatePositions() {
     attr.setXYZ(i, tmp.x, tmp.y, tmp.z);
   });
   attr.needsUpdate = true;
+  if (gaia) placeGaia();
+  if (deep) placeDeep();
 }
+
+// Gaia layer: the stars closer than 326 light years from ESA Gaia DR3, made by src/build_gaia.py, without
+// the hosts of the NASA planets (those are in the list above, with their glow). The file is only read when
+// the user switches the layer on. Gaia data come under the ESA terms (CC BY-NC 3.0 IGO) and need the
+// credit "ESA/Gaia/DPAC", which is shown with the switch and in the credits.
+const gaiaMaterial = new THREE.ShaderMaterial({
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  uniforms: {
+    uCamera: { value: new THREE.Vector3() }, // where the camera is, in real light years, updated every frame
+    uMagRef: { value: 6 }, // the apparent magnitude that shows at about 60 % brightness, see updateGaiaCamera
+    uGain: { value: 0.85 }, // how bright a fully lit star is drawn
+  },
+  vertexShader: `
+    uniform vec3 uCamera;
+    uniform float uMagRef;
+    uniform float uGain;
+    attribute vec3 truePos;   // the real position in light years
+    attribute float absmag;   // absolute magnitude: how bright the star really is
+    attribute vec3 color;
+    varying vec3 vColor;
+    void main() {
+      // Real brightness: the apparent magnitude m = M + 5 log10(d / 10 pc) shows how bright the star looks
+      // from the camera. The light drops with the square of the distance, so stars fade when we fly away
+      // and the truly bright ones (Sirius, Alpha Centauri) stand out from the many faint red dwarfs.
+      float dpc = max(length(truePos - uCamera), 0.3) / 3.2616;
+      float m = absmag + 5.0 * log(dpc) / log(10.0) - 5.0;
+      float flux = pow(10.0, -0.4 * (m - uMagRef));
+      float b = 1.0 - exp(-flux);                // soft limit, so nothing burns out to a white blob
+      vColor = color * b * uGain;
+      // The size depends on the brightness only: a faint star is a fine dot, a bright one a few pixels.
+      // (It grew with the distance first and was a big soft disc up close.)
+      gl_PointSize = 1.6 + 3.2 * b;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }`,
+  fragmentShader: `
+    varying vec3 vColor;
+    void main() {
+      float d = length(gl_PointCoord - 0.5) * 2.0;
+      if (d > 1.0) discard;
+      gl_FragColor = vec4(pow(vColor * smoothstep(1.0, 0.3, d), vec3(2.2)), 1.0); // screen colours to linear light
+    }`,
+});
+// Faintest magnitude that shows up clearly when the camera sits at the Sun. 6 is the naked eye and was too
+// sparse, 12 (a telescope) was a mass of dots, 8.5 is in between.
+const GAIA_MAG_BASE = 8.5;
+const GAIA_MAG_MIN = -2; // absolute magnitudes stored in one byte, same range as MAG_MIN and MAG_MAX in src/build_gaia.py
+const GAIA_MAG_MAX = 18;
+let gaia = null; // { points, xyz } once the file has been read
+
+// The camera in real light years, so the shader can work out how far each star is. The map is squeezed
+// (a distance r is drawn as the square root of r) or divided by ten, this undoes it.
+const gaiaCameraTmp = new THREE.Vector3();
+function updateCameraReal() {
+  const m = camera.position;
+  const s = compressed ? m.length() : 10; // compressed: the real distance is the drawn distance squared
+  gaiaCameraTmp.set(m.x * s, -m.z * s, m.y * s); // back from the three.js axes to the data axes
+  material.uniforms.uCamera.value.copy(gaiaCameraTmp); // the stars of the NASA list use it for their brightness too
+  // The hosts reach out to 28,000 light years, so their exposure starts higher than the Gaia layer's and also
+  // opens up with the distance from the Sun, otherwise the far ones would vanish on the overview.
+  material.uniforms.uMagRef.value = Math.min(19, 13.5 + 2.2 * Math.log10(1 + gaiaCameraTmp.length() / 3));
+  gaiaMaterial.uniforms.uCamera.value.copy(gaiaCameraTmp);
+  if (deepMaterial) {
+    deepMaterial.uniforms.uCamera.value.copy(gaiaCameraTmp);
+    deepMaterial.uniforms.uMagRef.value = Math.min(10.5, 8 + 0.8 * Math.log10(1 + gaiaCameraTmp.length() / 3));
+  }
+  // The "exposure". Seen from the Sun the layer shows what the eye would see, stars to about magnitude 6,
+  // which are some thousands. A telescope view (magnitude 12) would be a mass of dots. When we fly out the
+  // sky is seen from far away, where almost nothing would be visible at all, so the limit moves up with the
+  // distance from the Sun, otherwise the layer would simply vanish on the overview.
+  gaiaMaterial.uniforms.uMagRef.value = Math.min(12, GAIA_MAG_BASE + 2.2 * Math.log10(1 + gaiaCameraTmp.length() / 3));
+}
+
+// The few stars of the Gaia layer that have a proper name, from src/build_gaia.py. They are read at the start,
+// because the list of named stars in the panel needs them before the layer is switched on.
+const GAIA_NAMES = await (await fetch("data/gaia_names.json")).json();
+
+async function loadGaia() {
+  const response = await fetch("data/gaia_stars.bin");
+  if (!response.ok) throw new Error(`Gaia file: ${response.status}`);
+  const buffer = await response.arrayBuffer();
+  const count = buffer.byteLength / 16; // 12 bytes of position, then 4 bytes of colour and brightness
+  const xyz = new Float32Array(buffer, 0, count * 3);
+  const attributes = new Uint8Array(buffer, count * 12, count * 4);
+  const colors = new Float32Array(count * 3);
+  const absmag = new Float32Array(count);
+  const color = new THREE.Color();
+  for (let i = 0; i < count; i++) {
+    color.setRGB(attributes[i * 4] / 255, attributes[i * 4 + 1] / 255, attributes[i * 4 + 2] / 255);
+    // The same quiet, whitish colour as the other background stars.
+    const m = Math.max(color.r, color.g, color.b);
+    color.lerp(new THREE.Color(m, m, m), BACKGROUND_WHITENING).multiplyScalar(0.9);
+    color.toArray(colors, i * 3);
+    absmag[i] = GAIA_MAG_MIN + (attributes[i * 4 + 3] / 255) * (GAIA_MAG_MAX - GAIA_MAG_MIN); // the byte scale of build_gaia.py
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+  geometry.setAttribute("truePos", new THREE.BufferAttribute(xyz, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute("absmag", new THREE.BufferAttribute(absmag, 1));
+  const layer = new THREE.Points(geometry, gaiaMaterial);
+  layer.frustumCulled = false; // the bounding box is not computed, and the layer surrounds the Sun anyway
+  scene.add(layer);
+  // Labels of the few stars with a proper name (SIMBAD, see build_gaia.py), shown and hidden with the layer.
+  const labels = GAIA_NAMES.map((s) => {
+    const sprite = labelSprite(s.name, 192);
+    sprite.userData.gaiaStar = s; // declutterLabels shows it only close to the star or on the overview
+    scene.add(sprite);
+    return { sprite, star: s };
+  });
+  gaia = { points: layer, xyz, count, labels };
+  placeGaia();
+}
+
+function placeGaia() {
+  const attr = gaia.points.geometry.getAttribute("position");
+  const tmp = new THREE.Vector3();
+  const star = { x: 0, y: 0, z: 0 };
+  for (let i = 0; i < gaia.count; i++) {
+    star.x = gaia.xyz[i * 3];
+    star.y = gaia.xyz[i * 3 + 1];
+    star.z = gaia.xyz[i * 3 + 2];
+    toMapPosition(star, tmp);
+    attr.setXYZ(i, tmp.x, tmp.y, tmp.z);
+  }
+  attr.needsUpdate = true;
+  for (const { sprite, star: s } of gaia.labels) toMapPosition(s, sprite.position);
+}
+
+function setGaiaVisible(visible) {
+  gaia.points.visible = visible;
+  for (const { sprite } of gaia.labels) sprite.visible = visible;
+}
+
+let gaiaOn = false;
+const gaiaButton = document.getElementById("gaia");
+function showGaiaState(state = gaiaOn ? "on" : "off") {
+  const t = UI[lang];
+  gaiaButton.textContent = { on: t.gaiaOn, off: t.gaiaOff, loading: t.gaiaLoading, failed: t.gaiaFailed }[state];
+  gaiaButton.setAttribute("aria-pressed", String(gaiaOn));
+  const note = document.getElementById("gaia-note");
+  note.hidden = !(gaiaOn && gaia);
+  if (gaia) note.textContent = t.gaiaNote(gaia.count.toLocaleString(lang));
+}
+gaiaButton.addEventListener("click", async () => {
+  if (gaiaOn) {
+    gaiaOn = false;
+    if (gaia) setGaiaVisible(false);
+    return showGaiaState();
+  }
+  gaiaOn = true;
+  try {
+    if (!gaia) {
+      showGaiaState("loading");
+      await loadGaia();
+    }
+    setGaiaVisible(true);
+    showGaiaState();
+  } catch (error) {
+    console.error(error);
+    gaiaOn = false;
+    showGaiaState("failed");
+  }
+});
 
 // Star surface without any image file. The pattern is computed in the shader from 3D noise at
 // the point on the sphere, so there is no seam and it stays sharp however close we get. It has
@@ -183,6 +408,101 @@ const NOISE_GLSL = `
 // That is how false colour images of the Sun look. Heat comes from granules, soft mottling,
 // bright active regions with thin streaks inside them, and a few cool dark spots. The noise is
 // warped by itself first, which bends the patterns into filaments instead of round blobs.
+// The Milky Way behind everything. It is the panorama by ESO/S. Brunier (CC BY 4.0), a photo of the whole
+// sky in galactic coordinates (the Galactic centre in the middle, longitude growing to the left, latitude
+// from -90 to +90 degrees from bottom to top), shrunk to 4096 x 2048. The shader turns the viewing
+// direction into galactic longitude and latitude and reads the photo there. Until the photo is there, or
+// if it cannot be loaded, the shader paints a Milky Way of its own instead, which is an illustration: only
+// the position of its band and of its centre are real (the standard J2000 rotation), dust lanes, clouds,
+// colours and specks are invented. The sphere follows the camera, so it never comes closer.
+const MILKY_WAY_FRAGMENT = `
+  uniform sampler2D uPhoto;
+  uniform float uPhotoMix;   // 0 while there is no photo, 1 when it has loaded
+  uniform float uNebula;     // strength of the painted colour clouds
+  varying vec3 vDir;
+  ${NOISE_GLSL}
+  void main() {
+    vec3 d = normalize(vDir);
+    vec3 e = vec3(d.x, -d.z, d.y); // from the three.js axes back to the data axes (equatorial)
+    // Equatorial to galactic (the standard J2000 rotation).
+    vec3 g = vec3(
+      -0.0548755604 * e.x - 0.8734370902 * e.y - 0.4838350155 * e.z,
+       0.4941094279 * e.x - 0.4448296300 * e.y + 0.7469822445 * e.z,
+      -0.8676661490 * e.x - 0.1980763734 * e.y + 0.4559837762 * e.z);
+    float lon = atan(g.y, g.x);   // 0 towards the Galactic centre
+    float lat = asin(clamp(g.z, -1.0, 1.0));
+    float away = lon * lon;       // grows towards the direction away from the centre
+
+    // The disc: a band that is brightest and thickest towards the centre, patchy.
+    float cloudy = 0.7 + 0.6 * fbm(d * 4.0 + 3.0);
+    float disc = exp(-pow(lat / 0.15, 2.0)) * (0.3 + 0.7 * exp(-away / 1.8)) * cloudy * 0.8;
+    float core = exp(-pow(lat / 0.05, 2.0)) * 0.4 * exp(-away / 1.0);
+    float bulge = 0.7 * exp(-away / 0.08 - (lat * lat) / 0.03);
+    float light = disc + core + bulge;
+
+    // Dark lanes of dust, close to the plane and mostly towards the centre.
+    float lanes = smoothstep(0.5, 0.72, fbm(vec3(g.x * 5.0, g.y * 5.0, g.z * 15.0) + 11.0));
+    float dust = lanes * exp(-pow((lat - 0.02) / 0.07, 2.0)) * (0.4 + 0.6 * exp(-away / 3.0));
+    light *= 1.0 - 0.85 * dust;
+
+    // Warm light near the centre, bluer further out, the dust makes it redder.
+    vec3 warm = vec3(1.0, 0.78, 0.52);
+    vec3 cool = vec3(0.62, 0.72, 1.0);
+    vec3 col = mix(cool, warm, 0.1 + 0.8 * exp(-away / 0.9)) * light * 0.9;
+    col *= mix(vec3(1.0), vec3(1.0, 0.82, 0.62), dust);
+
+    // Fine specks of unresolved stars, more of them in the band.
+    float density = 0.2 + 0.8 * clamp(light * 1.4, 0.0, 1.0);
+    float specks = smoothstep(0.84, 0.97, noise(d * 300.0 + 5.0)) + smoothstep(0.86, 0.98, noise(d * 620.0 + 9.0)) * 0.7;
+    col += vec3(0.9, 0.93, 1.0) * specks * density * 0.45;
+
+    col += vec3(0.004, 0.005, 0.008); // the sky is not quite black
+    vec3 painted = pow(max(col, vec3(0.0)), vec3(2.2)); // authored as screen colours, see PLANET_FRAGMENT
+
+    // The photo. The texture is read as sRGB, so the value is already in linear light. It is brightened a
+    // little (the factor is also named in the README).
+    vec2 uv = vec2(0.5 - lon / 6.2831853, 0.5 + lat / 3.1415927);
+    vec3 photo = texture2D(uPhoto, uv).rgb * 1.1;
+
+    // Clouds of colour like in pictures of nebulae, painted, very faint, close to the plane of the Galaxy. They
+    // are an illustration and not real objects, uNebula = 0 switches them off.
+    float cloudA = fbm(d * 2.2 + 7.0);
+    float cloudB = fbm(d * 4.0 + 19.0);
+    vec3 cloudColour = mix(vec3(0.55, 0.2, 0.45), vec3(0.15, 0.25, 0.65), smoothstep(0.35, 0.65, cloudB));
+    float cloudMask = smoothstep(0.5, 0.78, cloudA) * exp(-pow(lat / 0.55, 2.0));
+    vec3 nebula = pow(cloudColour, vec3(2.2)) * cloudMask * uNebula;
+
+    gl_FragColor = vec4(mix(painted, photo, uPhotoMix) + nebula, 1.0);
+    #include <colorspace_fragment>
+  }`;
+const milkyWayPhoto = new THREE.TextureLoader().load("textures/milkyway.jpg", () => {
+  milkyWay.material.uniforms.uPhotoMix.value = 1;
+});
+milkyWayPhoto.colorSpace = THREE.SRGBColorSpace;
+// No mipmaps: the seam of the photo (longitude 180 degrees) would show as a line, and the photo is about
+// as fine as the screen, so it needs none.
+milkyWayPhoto.generateMipmaps = false;
+milkyWayPhoto.minFilter = THREE.LinearFilter;
+const milkyWay = new THREE.Mesh(
+  new THREE.SphereGeometry(50000, 48, 32),
+  new THREE.ShaderMaterial({
+    uniforms: { uPhoto: { value: milkyWayPhoto }, uPhotoMix: { value: 0 }, uNebula: { value: 0.4 } },
+    vertexShader: `
+      varying vec3 vDir;
+      void main() {
+        vDir = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: MILKY_WAY_FRAGMENT,
+    side: THREE.BackSide,
+    depthWrite: false,
+    depthTest: false,
+  })
+);
+milkyWay.renderOrder = -100; // before everything else
+milkyWay.frustumCulled = false;
+scene.add(milkyWay);
+
 const STAR_FRAGMENT = `
   uniform vec3 uColor;
   uniform float uSeed;
@@ -360,13 +680,57 @@ const SUN_RADIUS = 0.08; // map units
 const SUN_COLOR = 0xffd166;
 const sun = starBody(SUN_COLOR, "Sun", SUN_RADIUS);
 scene.add(sun);
+
+// Streamers of the corona: soft rays that fan out from the Sun, drawn on a flat sheet that always faces the
+// camera. They flicker slowly. The rays are an illustration of the look of the corona, not data. The sheet is
+// hidden when the camera is inside the corona, where it would only be a veil.
+function makeStarRays(color, size) {
+const rays = new THREE.Mesh(
+  new THREE.PlaneGeometry(1, 1),
+  new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uColor: { value: new THREE.Color(color) } },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv - 0.5;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: `
+      uniform float uTime;
+      uniform vec3 uColor;
+      varying vec2 vUv;
+      ${NOISE_GLSL}
+      void main() {
+        float r = length(vUv) * 2.0;
+        if (r > 1.0) discard;
+        float a = atan(vUv.y, vUv.x);
+        vec2 dir = vec2(cos(a), sin(a));
+        // The noise is read on a circle, so the rays close up all the way round.
+        float rays = noise(vec3(dir * 3.0, uTime * 0.04)) * 0.6 + noise(vec3(dir * 8.0 + 4.0, uTime * 0.07)) * 0.4;
+        rays = pow(smoothstep(0.35, 0.85, rays), 1.6);
+        float fall = pow(1.0 - r, 2.2) * smoothstep(0.05, 0.16, r);
+        // The colour of the star, a little lighter near the star and warmer further out (uColor is already linear).
+        vec3 col = mix(mix(uColor, vec3(1.0), 0.3), uColor * vec3(1.0, 0.8, 0.65), r);
+        gl_FragColor = vec4(col, rays * fall * 0.55);
+        #include <colorspace_fragment>
+      }`,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  })
+);
+rays.scale.setScalar(size);
+return rays;
+}
+const sunRays = makeStarRays(SUN_COLOR, SUN_RADIUS * 16);
+scene.add(sunRays);
 scene.add(starGlow(SUN_COLOR, SUN_RADIUS * 7));
 
 // Sizes inside a system view: the star has a fixed size, a planet has its real size
 // relative to its star (the Sun is about 109 Earth radii wide). That would make most planets
 // invisible, so no planet is drawn smaller than a few pixels at the default view distance.
 const EARTH_RADII_PER_SUN = 109.1;
-const MIN_PLANET_PER_VIEW_DISTANCE = 0.006;
+const MIN_PLANET_PER_VIEW_DISTANCE = 0.009; // a planet is drawn at least this big (relative to the view), 0.006 was too small to see
 
 // Our own solar system. The map is in light years, where all of it (Neptune is 0.0005 ly out)
 // would be a single point, so this is a separate display that is only drawn up close.
@@ -389,7 +753,7 @@ const PLANETS = [
     earth: true, // drawn with the NASA maps, see earthMaterial
     // The Moon: 27.32 day orbit and 0.273 Earth radii are real. Its distance is not: in reality
     // it is about 60 Earth radii away, which would leave the picture, so it is drawn at 2.6.
-    moon: { years: 27.32 / 365.25, size: 0.2727, orbit: 2.6, color: 0xb4b4b4, label: "Mond · Moon", texture: "textures/moon.jpg" },
+    moon: { years: 27.32 / 365.25, size: 0.2727, orbit: 2.6, color: 0xb4b4b4, label: "Moon", texture: "textures/moon.jpg" },
   },
   // Mars: the Viking Orbiter global colour mosaic (NASA/JPL/USGS), shrunk to 4096 x 2048. Its green is
   // not a measurement, it was made up from the red and violet pictures, so the colour is close to
@@ -416,20 +780,187 @@ const ROTATION_HOURS = {
   Uranus: -17.2,
   Neptune: 16.1,
 };
-function labelSprite(text, width = 128) {
+// Real orbits, from JPL (NASA), made by src/fetch_jpl.py and src/build_orbits.py. The eight planets sit where
+// their Keplerian elements put them on the day of the visit (JPL "Approximate Positions of the Major Planets",
+// good to a few arc minutes to hours of arc over 1800 to 2050), the comets and interstellar objects are
+// computed from the elements of the Small-Body Database, the spacecraft come from the flight paths of
+// Horizons. The clock of the page starts on today's date and runs with the time slider. The map is still the
+// squeezed one: a distance r in AU is drawn as 0.3 * sqrt(r) in the direction it really has.
+// The ecliptic is the flat plane of the Solar System view, it is not tilted against the star coordinates.
+const ORBITS = await (await fetch("data/orbits.json")).json();
+const DEG = Math.PI / 180;
+const JD_AT_LOAD = Date.now() / 86400000 + 2440587.5; // the Julian day of this moment
+const GAUSS_K = 0.01720209895; // rad per day, for a body of one AU
+const LIGHT_MINUTES_PER_AU = 8.31675;
+
+function solveKepler(M, e) {
+  let E = e < 0.8 ? M : Math.PI;
+  for (let i = 0; i < 80; i++) {
+    const d = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+    E -= d;
+    if (Math.abs(d) < 1e-12) break;
+  }
+  return E;
+}
+function solveHyperbolic(M, e) {
+  let H = Math.asinh(M / e);
+  for (let i = 0; i < 80; i++) {
+    const d = (e * Math.sinh(H) - H - M) / (e * Math.cosh(H) - 1);
+    H -= d;
+    if (Math.abs(d) < 1e-12) break;
+  }
+  return H;
+}
+// A point in the plane of the orbit (xp towards the perihelion) turned into ecliptic coordinates in AU.
+function orbitToEcliptic(xp, yp, incl, node, peri) {
+  const cw = Math.cos(peri * DEG), sw = Math.sin(peri * DEG);
+  const cO = Math.cos(node * DEG), sO = Math.sin(node * DEG);
+  const ci = Math.cos(incl * DEG), si = Math.sin(incl * DEG);
+  return {
+    x: (cw * cO - sw * sO * ci) * xp + (-sw * cO - cw * sO * ci) * yp,
+    y: (cw * sO + sw * cO * ci) * xp + (-sw * sO + cw * cO * ci) * yp,
+    z: sw * si * xp + cw * si * yp,
+  };
+}
+// The row of the table at a time: element = value + rate * centuries since J2000.
+function planetElements(row, jd) {
+  const T = (jd - 2451545) / 36525;
+  const el = {};
+  for (const k of Object.keys(row.value)) el[k] = row.value[k] + row.rate[k] * T;
+  return el;
+}
+function planetPosition(row, jd) {
+  const el = planetElements(row, jd);
+  const peri = el.peri - el.node; // the argument of the perihelion
+  let M = (el.L - el.peri) % 360;
+  if (M > 180) M -= 360;
+  if (M < -180) M += 360;
+  const E = solveKepler(M * DEG, el.e);
+  return orbitToEcliptic(el.a * (Math.cos(E) - el.e), el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E), el.I, el.node, peri);
+}
+// A small body from the elements of the Small-Body Database (a, e, i, om, w in degrees, tp the Julian day of the perihelion).
+function bodyPosition(el, jd) {
+  const n = el.n !== undefined ? el.n * DEG : GAUSS_K / Math.sqrt(Math.abs(el.a) ** 3); // rad per day
+  const M = n * (jd - el.tp);
+  if (el.e < 1) {
+    const Mn = ((((M + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
+    const E = solveKepler(Mn, el.e);
+    return orbitToEcliptic(el.a * (Math.cos(E) - el.e), el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E), el.i, el.om, el.w);
+  }
+  const H = solveHyperbolic(M, el.e);
+  return orbitToEcliptic(el.a * (Math.cosh(H) - el.e), -el.a * Math.sqrt(el.e * el.e - 1) * Math.sinh(H), el.i, el.om, el.w);
+}
+// Points of the whole orbit in ecliptic AU. An ellipse is one full turn, a hyperbola is cut at 60 AU from the Sun.
+function orbitCurve(el, count = 160) {
+  const out = [];
+  if (el.e < 1) {
+    for (let k = 0; k <= count; k++) {
+      const E = (k / count) * 2 * Math.PI;
+      out.push(orbitToEcliptic(el.a * (Math.cos(E) - el.e), el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E), el.i, el.om, el.w));
+    }
+  } else {
+    const hMax = Math.acosh(Math.max(1, (60 / Math.abs(el.a) + 1) / el.e));
+    for (let k = 0; k <= count; k++) {
+      const H = (-1 + (2 * k) / count) * hMax;
+      out.push(orbitToEcliptic(el.a * (Math.cosh(H) - el.e), -el.a * Math.sqrt(el.e * el.e - 1) * Math.sinh(H), el.i, el.om, el.w));
+    }
+  }
+  return out;
+}
+// Ecliptic AU to the map of the Solar System view. The plane of the ecliptic is the flat plane, the north is up.
+function mapEcliptic(p, out) {
+  const r = Math.hypot(p.x, p.y, p.z);
+  const k = r > 0 ? (0.3 * Math.sqrt(r)) / r : 0;
+  return out.set(p.x * k, p.z * k, -p.y * k);
+}
+// The rows of the planet table for our names; Earth has the Earth-Moon barycentre.
+const ELEMENT_ROW = { Mercury: "Mercury", Venus: "Venus", Earth: "EM Bary", Mars: "Mars", Jupiter: "Jupiter", Saturn: "Saturn", Uranus: "Uranus", Neptune: "Neptune" };
+const jdToDate = (jd) => new Date((jd - 2440587.5) * 86400000);
+
+// Every name above a body. declutterLabels fades out the ones that would lie on top of a nearer one.
+const allLabels = new Set();
+const labelPoint = new THREE.Vector3();
+// true when the label and everything above it is visible, false when something is hidden, null when it is no
+// longer in the scene (its system was taken down)
+function labelShown(sprite) {
+  let shown = true;
+  let o = sprite;
+  for (; o.parent; o = o.parent) if (!o.visible) shown = false;
+  if (o !== scene) return null;
+  return shown;
+}
+// The name of a star of the Gaia layer is wanted when the camera is near that star (up to about 20 light years)
+// or far out on the overview of the neighbourhood (more than about 150 light years from the Sun), and not
+// in between, where it would hang in the middle of the Solar System. 1 shown, 0 hidden.
+function nearOnly(sprite) {
+  const star = sprite.userData.gaiaStar;
+  if (!star) return 1;
+  const cam = gaiaCameraTmp; // the camera in real light years, see updateCameraReal
+  const toStar = Math.hypot(star.x - cam.x, star.y - cam.y, star.z - cam.z);
+  const near = 1 - THREE.MathUtils.smoothstep(toStar, 8, 20);
+  const far = THREE.MathUtils.smoothstep(cam.length(), 120, 250);
+  return Math.max(near, far);
+}
+
+function declutterLabels() {
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const entries = [];
+  for (const s of allLabels) {
+    const shown = labelShown(s);
+    if (shown === null) {
+      allLabels.delete(s);
+      continue;
+    }
+    if (!shown) continue;
+    if (nearOnly(s) < 0.02) {
+      s.material.opacity = 0; // out of range, and it must not keep other names away either
+      continue;
+    }
+    s.getWorldPosition(labelPoint);
+    const distance = camera.position.distanceTo(labelPoint);
+    labelPoint.project(camera);
+    if (labelPoint.z > 1 || Math.abs(labelPoint.x) > 1.2 || Math.abs(labelPoint.y) > 1.2) continue;
+    entries.push({ s, x: (labelPoint.x * 0.5 + 0.5) * W, y: (0.5 - labelPoint.y * 0.5) * H, distance });
+  }
+  entries.sort((a, b) => a.distance - b.distance); // the nearer name wins
+  const taken = [];
+  for (const { s, x, y } of entries) {
+    const w = s.scale.x * H;
+    const h = s.scale.y * H;
+    const box = { x0: x - w / 2, x1: x + w / 2, y0: y - 1.3 * h, y1: y - 0.3 * h }; // the text sits above its point
+    const covered = taken.some((t) => box.x0 < t.x1 && box.x1 > t.x0 && box.y0 < t.y1 && box.y1 > t.y0);
+    s.userData.fade += ((covered ? 0 : 1) - s.userData.fade) * 0.2;
+    s.material.opacity = s.userData.fade * nearOnly(s);
+    if (!covered) taken.push(box);
+  }
+}
+
+function labelSprite(text, width = Math.max(128, Math.ceil((text.length * 11 + 20) / 32) * 32)) {
+  // The canvas is as wide as the text needs, a long name (Teegarden's Star b) was cut at both ends in 128 pixels.
   const c = document.createElement("canvas");
   c.width = width;
   c.height = 32;
   const g = c.getContext("2d");
   g.fillStyle = "#dfe6f3";
-  g.font = "20px system-ui, sans-serif";
+  g.font = "500 19px system-ui, 'Segoe UI', sans-serif";
   g.textAlign = "center";
+  g.shadowColor = "rgba(0, 0, 0, 0.85)"; // a soft dark edge keeps the letters readable on bright ground
+  g.shadowBlur = 5;
   g.fillText(text, width / 2, 22);
   const sprite = new THREE.Sprite(
     new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), sizeAttenuation: false, depthTest: false, transparent: true })
   );
   sprite.scale.set(0.16 * (width / 128), 0.04, 1);
   sprite.center.set(0.5, -0.3); // the text sits above the planet
+  sprite.userData.fade = 1; // 1 shown, 0 hidden because another label is in the way, see declutterLabels
+  allLabels.add(sprite);
+  // The text can be changed later, the labels of our own system follow the language of the page.
+  sprite.userData.setText = (next) => {
+    g.clearRect(0, 0, width, 32);
+    g.fillText(next, width / 2, 22);
+    sprite.material.map.needsUpdate = true;
+  };
   return sprite;
 }
 
@@ -634,7 +1165,7 @@ const PLANET_FRAGMENT = `
 
     // The side facing the star is lit, the other side is dark. A hot planet glows a little there.
     float facing = dot(nrm, normalize(uLightDir));
-    float light = 0.18 + 0.82 * smoothstep(-0.05, 0.6, facing);
+    float light = 0.3 + 0.7 * smoothstep(-0.05, 0.6, facing);
     vec3 nightGlow = hot * (1.0 - smoothstep(-0.1, 0.3, facing)) * vec3(0.9, 0.25, 0.08) * 0.5;
 
     // A soft glow at the edge. In the schematic look only for the gas planets: from their radius
@@ -671,8 +1202,22 @@ const RING_VERTEX = `
   }`;
 const RING_FRAGMENT = `
   uniform float uPlanetRadius;
+  uniform vec3 uLightDir;   // from the planet towards the Sun, updated every frame
+  uniform float uTilt;      // the tilt of the ring plane, to get the Sun into the planet's own frame
   varying vec3 vPos;
   ${NOISE_GLSL}
+  // The shadow of the planet: seen from a point of the rings the planet hides the Sun when the line to the Sun
+  // passes within one planet radius of the centre and the planet lies on the Sun's side of the point.
+  float planetShadow() {
+    float c = cos(-uTilt);
+    float s = sin(-uTilt);
+    vec3 L = normalize(vec3(c * uLightDir.x - s * uLightDir.y, s * uLightDir.x + c * uLightDir.y, uLightDir.z));
+    vec3 H = vec3(vPos.x, 0.0, -vPos.y); // the ring geometry lies in the xy plane before it is laid flat
+    float along = dot(H, L);
+    if (along >= 0.0) return 0.0; // the point is on the Sun's side of the planet
+    float miss = sqrt(max(dot(H, H) - along * along, 0.0)) / uPlanetRadius;
+    return 1.0 - smoothstep(0.96, 1.04, miss);
+  }
   float band(float r, float a, float b) {
     return smoothstep(a - 0.006, a + 0.006, r) * (1.0 - smoothstep(b - 0.006, b + 0.006, r));
   }
@@ -687,6 +1232,7 @@ const RING_FRAGMENT = `
     float streaks = noise(vec3(r * 70.0, 3.0, 0.0));
     alpha *= 0.65 + 0.7 * streaks;
     vec3 colour = mix(vec3(0.50, 0.45, 0.40), vec3(0.88, 0.80, 0.66), clamp(0.3 * c + b + a * 0.8, 0.0, 1.0));
+    colour *= 1.0 - 0.9 * planetShadow(); // the dark wedge that Saturn throws on its rings
     gl_FragColor = vec4(colour, clamp(alpha, 0.0, 1.0));
     #include <colorspace_fragment>
   }`;
@@ -695,7 +1241,11 @@ function saturnRings(planetRadius) {
   const flat = new THREE.Mesh(
     new THREE.RingGeometry(RING_INNER * planetRadius, RING_OUTER * planetRadius, 128, 1),
     new THREE.ShaderMaterial({
-      uniforms: { uPlanetRadius: { value: planetRadius } },
+      uniforms: {
+        uPlanetRadius: { value: planetRadius },
+        uLightDir: { value: new THREE.Vector3(0, 0, 1) }, // updated every frame from the orbit, see stepSystem
+        uTilt: { value: SATURN_TILT },
+      },
       vertexShader: RING_VERTEX,
       fragmentShader: RING_FRAGMENT,
       transparent: true,
@@ -707,6 +1257,7 @@ function saturnRings(planetRadius) {
   const tilted = new THREE.Group();
   tilted.rotation.z = SATURN_TILT;
   tilted.add(flat);
+  tilted.userData.material = flat.material; // stepSystem gives it the direction of the Sun
   return tilted;
 }
 
@@ -786,7 +1337,9 @@ function addMoon(planetMesh, planetRadius, moon) {
     new THREE.SphereGeometry(planetRadius * moon.size, 32, 24),
     new THREE.MeshLambertMaterial(map ? { map } : { color: moon.color })
   );
-  mesh.add(labelSprite(moon.label));
+  const moonLabel = labelSprite(moon.label);
+  mesh.userData.label = moonLabel; // kept for the language switch, see updateSolarLabels
+  mesh.add(moonLabel);
   planetMesh.add(mesh);
   return { mesh, years: moon.years, distance: planetRadius * moon.orbit };
 }
@@ -1008,11 +1561,34 @@ const SOLAR_LOOK_FRAGMENT = `
   uniform int uKind;        // 0 Venus, 1 Saturn, 2 Uranus, 3 Neptune
   uniform float uSeed;
   uniform vec3 uLightDir;   // from the planet towards the Sun
+  uniform float uTilt;      // the tilt of the planet's axis, the same as in the vertex shader
+  uniform float uRingShadow; // 1 where the planet has big rings that shade it (Saturn)
   varying vec3 vPos;
+  varying vec3 vFrame;
   varying vec3 vNormal;
   varying vec3 vNormalView;
   varying vec3 vView;
   ${NOISE_GLSL}
+
+  // How much of the Sun's light the rings of Saturn stop at a place of the planet: the ray towards the Sun
+  // is followed to the plane of the rings (y = 0 in the planet's own frame), and the density of the ring
+  // there is the shadow. Ring edges as in RING_FRAGMENT: C ring from 1.239, B from 1.527, the Cassini
+  // Division from 1.951, A from 2.027 to 2.269, in planet radii.
+  float ringShadow() {
+    float c = cos(-uTilt);
+    float s = sin(-uTilt);
+    vec3 L = normalize(vec3(c * uLightDir.x - s * uLightDir.y, s * uLightDir.x + c * uLightDir.y, uLightDir.z));
+    if (abs(L.y) < 0.002) return 0.0;
+    float t = -vFrame.y / L.y;
+    if (t <= 0.0) return 0.0; // the ray leaves the ring plane, nothing above or below is in the way
+    vec3 H = vFrame + t * L;
+    float r = length(H.xz) / length(vFrame);
+    float ring = 0.2 * smoothstep(1.233, 1.245, r) * (1.0 - smoothstep(1.521, 1.533, r))
+      + 0.92 * smoothstep(1.521, 1.533, r) * (1.0 - smoothstep(1.945, 1.957, r))
+      + 0.04 * smoothstep(1.945, 1.957, r) * (1.0 - smoothstep(2.021, 2.033, r))
+      + 0.62 * smoothstep(2.021, 2.033, r) * (1.0 - smoothstep(2.263, 2.275, r));
+    return ring;
+  }
 
   void main() {
     vec3 n = normalize(vPos);
@@ -1107,7 +1683,8 @@ const SOLAR_LOOK_FRAGMENT = `
     }
 
     float facing = dot(normalize(vNormal), normalize(uLightDir));
-    float light = 0.12 + 0.88 * smoothstep(-0.05, 0.6, facing);
+    float shade = uRingShadow > 0.5 ? ringShadow() : 0.0;
+    float light = 0.22 + 0.78 * smoothstep(-0.05, 0.6, facing) * (1.0 - 0.85 * shade);
     // All four have a thick atmosphere, so a soft glow at the edge in their own colour is correct.
     float rim = pow(1.0 - max(dot(normalize(vNormalView), normalize(vView)), 0.0), 3.0);
     vec3 colour = base * light + base * 1.4 * rim * (0.25 + 0.75 * light) * 0.6;
@@ -1122,6 +1699,7 @@ function solarLookMaterial(p) {
       uSeed: { value: seedFrom(p.name) },
       uFlatten: { value: p.flatten ?? 1 },
       uTilt: { value: p.rings ? SATURN_TILT : 0 },
+      uRingShadow: { value: p.rings === true ? 1 : 0 }, // only Saturn has rings that are broad enough to shade it
       uSpin: { value: 0 }, // updated every frame from the clock of the system
       uLightDir: { value: new THREE.Vector3(0, 0, 1) }, // updated every frame from the orbit
     },
@@ -1139,6 +1717,7 @@ const GAS_VERTEX = `
   uniform float uTilt;      // tilt of the planet's axis about z, the same as the one of its rings
   uniform float uSpin;      // how far the planet has turned about its own axis, in radians
   varying vec3 vPos;        // the round position in the planet's own frame, painted planets read their pattern from it
+  varying vec3 vFrame;      // the same without the spin, for the shadow of the rings
   varying vec3 vNormal;
   varying vec3 vNormalView;
   varying vec3 vView;
@@ -1153,6 +1732,7 @@ const GAS_VERTEX = `
     // Everything is done in the planet's own frame (axis up), then turned into the tilted one. That way
     // the bands and the flattening stay parallel to the rings.
     vec3 q = turn(position, -uTilt);
+    vFrame = q;
     // The planet spins about its axis (up in this frame). The pattern is what turns, the shape and the
     // light stay, so the pattern is read from a point turned back by the spin.
     float cs = cos(-uSpin);
@@ -1182,7 +1762,7 @@ const GAS_FRAGMENT = `
 
     vec3 n = normalize(vNormal);
     float facing = dot(n, normalize(uLightDir));
-    float light = 0.1 + 0.9 * smoothstep(-0.05, 0.6, facing);
+    float light = 0.2 + 0.8 * smoothstep(-0.05, 0.6, facing);
     float mu = max(dot(normalize(vNormalView), normalize(vView)), 0.0);
     float darkening = mix(0.55, 1.0, pow(mu, 0.5));   // the edge shows higher, thinner cloud
     float rim = pow(1.0 - mu, 3.0);
@@ -1242,7 +1822,28 @@ function planetMaterial(p) {
   // catch the light. It is not a measured height map (the map has enhanced colours), see README.
   return new THREE.MeshLambertMaterial(p.bump ? { map, bumpMap: map, bumpScale: p.bump } : { map });
 }
-scene.add(new THREE.AmbientLight(0xffffff, 0.35)); // keeps the night side from turning fully black
+scene.add(new THREE.AmbientLight(0xffffff, 0.7)); // keeps the night side from turning fully black, and the small planets of the overview readable
+
+// The orbit lines are thin and soft: they fade with the distance from the camera, so the ones far away do not
+// weigh as much as the ones near, and they are drawn as light (additive), not as a solid line.
+const orbitLineMaterial = new THREE.ShaderMaterial({
+  vertexShader: `
+    varying float vDistance;
+    void main() {
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      vDistance = length(mv.xyz);
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: `
+    varying float vDistance;
+    void main() {
+      float a = 0.22 * clamp(2.0 / vDistance, 0.3, 1.0);
+      gl_FragColor = vec4(vec3(0.8, 0.85, 1.0), a);
+      #include <colorspace_fragment>
+    }`,
+  transparent: true,
+  depthWrite: false,
+});
 
 // One builder for every system view: central star, orbit rings, planets with name labels.
 // Orbit radii and sizes are already in map units, years are the real orbital periods.
@@ -1252,21 +1853,27 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
   scene.add(group);
   group.add(labelSprite(starName));
   let starMesh = null;
+  let rays = null;
   if (starRadius) {
     starMesh = starBody(starColor, starName, starRadius);
     group.add(starMesh);
     group.add(starGlow(starColor, starRadius * 7));
+    rays = makeStarRays(starColor, starRadius * 9); // smaller than the Sun's: the stars of the systems are drawn big
+    group.add(rays);
   }
 
   const bodies = planets.map((p, i) => {
-    const points = Array.from({ length: 129 }, (_, k) => {
-      const a = (k / 128) * Math.PI * 2;
-      return new THREE.Vector3(Math.cos(a) * p.orbit, 0, Math.sin(a) * p.orbit);
-    });
+    // The Solar System has the real orbits (ellipses), exoplanet systems have circles.
+    const points =
+      p.orbitPoints ??
+      Array.from({ length: 129 }, (_, k) => {
+        const a = (k / 128) * Math.PI * 2;
+        return new THREE.Vector3(Math.cos(a) * p.orbit, 0, Math.sin(a) * p.orbit);
+      });
     group.add(
       new THREE.Line(
         new THREE.BufferGeometry().setFromPoints(points),
-        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.18 })
+        orbitLineMaterial
       )
     );
     const radius = Math.max(p.size, viewDistance * MIN_PLANET_PER_VIEW_DISTANCE);
@@ -1283,7 +1890,9 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
     mesh.add(hit);
     if (p.rings) {
       const thin = { uranus: URANUS_RINGS, neptune: NEPTUNE_RINGS }[p.rings];
-      mesh.add(thin ? thinRings(radius, thin) : saturnRings(radius));
+      const ringObject = thin ? thinRings(radius, thin) : saturnRings(radius);
+      mesh.add(ringObject);
+      mesh.userData.ringMaterial = ringObject.userData.material; // only Saturn's rings have one that needs the light
       mesh.userData.closeupRadii = thin ? 5 : 7; // the rings reach 2.3 radii out, the default distance would cut them off
     }
     const moon = p.moon ? addMoon(mesh, radius, p.moon) : null;
@@ -1293,7 +1902,7 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
     group.add(mesh);
     return { ...p, mesh, hit, moon, clouds, start: i * 1.7 };
   });
-  return { group, bodies, viewDistance, time: 0, starMesh };
+  return { group, bodies, viewDistance, time: 0, starMesh, rays };
 }
 
 // Time. The clock of every system counts real years of simulated time, and all periods are the
@@ -1311,11 +1920,21 @@ function stepSystem(system, dt) {
     // The belt moves on the shader, it only needs the clock of its system.
     system.belt.material.uniforms.uTime.value = system.time;
   }
+  const jd = JD_AT_LOAD + system.time * 365.25; // the date in the system, only the Solar System uses it
   for (const b of system.bodies) {
-    const a = b.start + (system.time * Math.PI * 2) / b.years;
-    b.mesh.position.set(Math.cos(a) * b.orbit, 0, Math.sin(a) * b.orbit);
+    if (b.visitor) {
+      mapEcliptic(b.visitor.at(jd), b.mesh.position); // a comet, an interstellar object or a spacecraft
+      continue;
+    }
+    if (b.elements) {
+      mapEcliptic(planetPosition(b.elements, jd), b.mesh.position); // a planet of ours, where it really is
+    } else {
+      const a = b.start + (system.time * Math.PI * 2) / b.years;
+      b.mesh.position.set(Math.cos(a) * b.orbit, 0, Math.sin(a) * b.orbit);
+    }
     // The star sits in the middle of the group, so the light comes from the opposite of the position.
-    b.mesh.material.uniforms?.uLightDir.value.copy(b.mesh.position).negate().normalize();    if (b.rotHours) {
+    b.mesh.material.uniforms?.uLightDir.value.copy(b.mesh.position).negate().normalize();
+    b.mesh.userData.ringMaterial?.uniforms.uLightDir.value.copy(b.mesh.position).negate().normalize();    if (b.rotHours) {
       // Turns so far, only the fraction matters. The clock counts years, a year has 8766 hours.
       const turns = (system.time * 8766) / b.rotHours;
       const spin = (turns - Math.floor(turns)) * Math.PI * 2;
@@ -1338,7 +1957,14 @@ function stepSystem(system, dt) {
   // Up close it is useful, from far away it is clutter around the star. The limit is small on
   // purpose: a system is only a few map units wide, and from another star, say 143 light years
   // away, its belt and labels would hang in the sky like something that belongs there.
-  system.group.visible = camera.position.distanceTo(system.group.position) < 4;
+  // The Solar System is shown from further away: the comets and the far spacecraft reach out to 4 map units.
+  system.group.visible = camera.position.distanceTo(system.group.position) < (system === solar ? 9 : 4);
+}
+
+function planetOrbitPoints(name) {
+  const el = planetElements(ORBITS.planets[ELEMENT_ROW[name]], JD_AT_LOAD);
+  const curve = orbitCurve({ a: el.a, e: el.e, i: el.I, om: el.node, w: el.peri - el.node }, 128);
+  return curve.map((p) => mapEcliptic(p, new THREE.Vector3()));
 }
 
 const solar = makeSystem({
@@ -1354,6 +1980,8 @@ const solar = makeSystem({
     texture: p.texture,
     bump: p.bump,
     flatten: p.flatten,
+    elements: ORBITS.planets[ELEMENT_ROW[p.name]],
+    orbitPoints: planetOrbitPoints(p.name),
     rotHours: ROTATION_HOURS[p.name],
     noteKey: p.noteKey,
     look: p.look,
@@ -1363,6 +1991,160 @@ const solar = makeSystem({
   })),
 });
 solar.group.add(new THREE.PointLight(0xffffff, 3, 0, 0)); // the Sun, no falloff so all textured planets are lit
+
+// A faint disc of dust in the plane of the planets. The Solar System does hold such a flat cloud (the
+// zodiacal dust, which makes the zodiacal light), but how thick it is and its swirls are not drawn from
+// data: it is a schematic mood, kept very faint and swirled with noise. It gives the flat plane of the
+// orbits some depth, and the credits and README say it is schematic.
+const dustDisc = new THREE.Mesh(
+  new THREE.RingGeometry(0.12, 2.4, 160, 1),
+  new THREE.ShaderMaterial({
+    vertexShader: `
+      varying vec3 vPos;
+      void main() {
+        vPos = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: `
+      varying vec3 vPos;
+      ${NOISE_GLSL}
+      void main() {
+        float r = length(vPos.xy);
+        float angle = atan(vPos.y, vPos.x);
+        // Swirled coordinates: the noise is read along spiral arms, so the dust flows around the Sun.
+        vec2 swirl = vec2(cos(angle + r * 1.6), sin(angle + r * 1.6)) * r;
+        float cloud = fbm(vec3(swirl * 2.2, 1.7));
+        float density = smoothstep(0.12, 0.45, r) * (1.0 - smoothstep(0.5, 1.7, r));
+        float alpha = density * (0.25 + 0.9 * cloud) * 0.07;
+        vec3 colour = mix(vec3(1.0, 0.88, 0.7), vec3(0.8, 0.78, 0.76), smoothstep(0.2, 1.2, r));
+        gl_FragColor = vec4(pow(colour, vec3(2.2)), alpha);
+        #include <colorspace_fragment>
+      }`,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  })
+);
+dustDisc.rotation.x = -Math.PI / 2; // lay it into the orbit plane
+solar.group.add(dustDisc);
+
+// Visitors of the Solar System: comets, interstellar objects and spacecraft (JPL data, see ORBITS). Each one is
+// a small marker with a name and its orbit or flight path, and an entry in solar.bodies so that it can be
+// clicked and flown to like a planet; stepSystem sets its place from visitor.at(jd).
+const VISITOR_NAMES = [
+  { key: "halley", label: "Halley" },
+  { key: "hale-bopp", label: "Hale-Bopp" },
+  { key: "67p", label: "67P" },
+  { key: "swift-tuttle", label: "Swift-Tuttle" },
+  { key: "encke", label: "Encke" },
+  { key: "neowise", label: "NEOWISE" },
+  { key: "oumuamua", label: "ʻOumuamua" },
+  { key: "borisov", label: "Borisov" },
+  { key: "3i-atlas", label: "3I/ATLAS" },
+];
+const SPACECRAFT_NAMES = {
+  "Voyager 1": { key: "voyager-1", label: "Voyager 1", motion: "escape" },
+  "Voyager 2": { key: "voyager-2", label: "Voyager 2", motion: "escape" },
+  "New Horizons": { key: "new-horizons", label: "New Horizons", motion: "escape" },
+  Juno: { key: "juno", label: "Juno", motion: "jupiter" }, // circles Jupiter, so it travels with Jupiter
+  "Parker Solar Probe": { key: "parker", label: "Parker Solar Probe", motion: "frozen" },
+  "James Webb Space Telescope": { key: "jwst", label: "JWST", motion: "l2" },
+};
+const VISITOR_COLORS = { comet: 0x9fd8ff, interstellar: 0xff7ad9, spacecraft: 0xffd166 };
+
+function spacecraftPosition(sc, motion, jd) {
+  const path = sc.path;
+  const last = path[path.length - 1];
+  const here = { x: last[1], y: last[2], z: last[3] };
+  if (motion === "frozen") return here; // an orbit of 88 days around the Sun, it stays where the data say
+  if (motion === "l2") {
+    const earth = planetPosition(ORBITS.planets["EM Bary"], jd);
+    return { x: earth.x * 1.01, y: earth.y * 1.01, z: earth.z * 1.01 }; // the point L2, about 1.5 million km behind Earth
+  }
+  if (motion === "jupiter") {
+    const jupiter = ORBITS.planets.Jupiter;
+    const then = planetPosition(jupiter, last[0]);
+    const now = planetPosition(jupiter, jd);
+    return { x: now.x + here.x - then.x, y: now.y + here.y - then.y, z: now.z + here.z - then.z };
+  }
+  // escape: it flies on in a nearly straight line at the speed of its last two points
+  const before = path[path.length - 2];
+  const dt = last[0] - before[0];
+  const t = jd - last[0];
+  return {
+    x: here.x + ((last[1] - before[1]) / dt) * t,
+    y: here.y + ((last[2] - before[2]) / dt) * t,
+    z: here.z + ((last[3] - before[3]) / dt) * t,
+  };
+}
+
+// Off until the 3D models of the spacecraft are ready: nothing of the visitors is drawn or can be clicked.
+// Set it to true together with removing "hidden" from the menu in index.html to show them again.
+const SHOW_VISITORS = false;
+
+function addVisitor({ key, label, kind, at, curve, color }) {
+  if (!SHOW_VISITORS) return;
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.008, 12, 8), new THREE.MeshBasicMaterial({ color }));
+  const sprite = labelSprite(label, label.length > 10 ? 192 : 128);
+  mesh.add(sprite);
+  mesh.userData.label = sprite;
+  mesh.userData.closeupRadii = 60; // the marker is a dot, not a body: the close-up stays well back so that its surroundings show
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
+  mesh.add(hit);
+  solar.group.add(mesh);
+  const line = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(curve.map((p) => mapEcliptic(p, new THREE.Vector3()))),
+    new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.4 })
+  );
+  solar.group.add(line);
+  solar.bodies.push({ name: label, mesh, hit, visitor: { key, label, kind, at } });
+}
+
+ORBITS.bodies.forEach((body, i) => {
+  const info = VISITOR_NAMES[i];
+  addVisitor({ ...info, kind: body.kind, color: VISITOR_COLORS[body.kind], at: (jd) => bodyPosition(body.el, jd), curve: orbitCurve(body.el) });
+});
+for (const sc of ORBITS.spacecraft) {
+  const info = SPACECRAFT_NAMES[sc.name];
+  const curve = info.motion === "l2" ? [] : sc.path.map((r) => ({ x: r[1], y: r[2], z: r[3] }));
+  addVisitor({ ...info, kind: "spacecraft", color: VISITOR_COLORS.spacecraft, at: (jd) => spacecraftPosition(sc, info.motion, jd), curve });
+}
+
+// What the story panel gets for a visitor: its name and the facts of this moment.
+function visitorPlanet(body) {
+  return { pl_name: body.name, solarOther: true, solarObject: visitorFacts(body.visitor, JD_AT_LOAD + solar.time * 365.25) };
+}
+
+// The numbers for the text of a visitor, worked out from the JPL data for the day on the screen.
+function visitorFacts(visitor, jd) {
+  const earth = planetPosition(ORBITS.planets["EM Bary"], jd);
+  const here = visitor.at(jd);
+  const facts = {
+    key: visitor.key,
+    kind: visitor.kind,
+    sunAU: Math.hypot(here.x, here.y, here.z),
+    earthAU: Math.hypot(here.x - earth.x, here.y - earth.y, here.z - earth.z),
+    retrieved: ORBITS.retrieved,
+  };
+  const body = ORBITS.bodies[VISITOR_NAMES.findIndex((n) => n.key === visitor.key)];
+  if (body) {
+    const el = body.el;
+    facts.q = el.q;
+    facts.e = el.e;
+    facts.incl = el.i;
+    facts.perihelion = jdToDate(el.tp);
+    if (el.e < 1) {
+      facts.Q = el.a * (1 + el.e);
+      facts.periodYears = el.per / 365.25;
+      facts.nextPerihelion = jdToDate(el.tp + (el.tp < jd ? el.per : 0));
+    } else {
+      // The speed far away from the Sun, from the size of the hyperbola: v = k / sqrt(|a|), 1 AU per day is 1731.46 km/s.
+      facts.vInf = (GAUSS_K / Math.sqrt(Math.abs(el.a))) * 1731.46;
+    }
+  }
+  return facts;
+}
 const earthMesh = solar.bodies.find((b) => b.name === "Earth").mesh;
 
 // The main asteroid belt between Mars and Jupiter. It is schematic: the thousands of points
@@ -1467,7 +2249,7 @@ function asteroidBelt() {
 
 solar.belt = asteroidBelt();
 solar.group.add(solar.belt);
-const beltLabel = labelSprite("Asteroidengürtel · Asteroid belt", 288);
+const beltLabel = labelSprite("Asteroid belt", 288);
 beltLabel.position.set(0.3 * Math.sqrt(2.7) * Math.cos(2.5), 0, 0.3 * Math.sqrt(2.7) * Math.sin(2.5));
 solar.group.add(beltLabel);
 
@@ -1533,9 +2315,32 @@ function zoneAu(star) {
 
 function addZone(system, inner, outer) {
   if (outer <= inner) return; // the whole band is beyond the drawn area
+  // A soft band: it fades in and out at the edges, so it reads as a hint and not as a solid ring. The edges are
+  // soft only in the drawing, the zone itself has sharp limits (the temperatures of the candidate rule).
   const band = new THREE.Mesh(
     new THREE.RingGeometry(inner, outer, 128),
-    new THREE.MeshBasicMaterial({ color: 0x4caf7a, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false })
+    new THREE.ShaderMaterial({
+      uniforms: { uInner: { value: inner }, uOuter: { value: outer } },
+      vertexShader: `
+        varying vec3 vPos;
+        void main() {
+          vPos = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: `
+        uniform float uInner;
+        uniform float uOuter;
+        varying vec3 vPos;
+        void main() {
+          float t = (length(vPos.xy) - uInner) / (uOuter - uInner);
+          float a = 0.11 * smoothstep(0.0, 0.3, t) * (1.0 - smoothstep(0.7, 1.0, t));
+          gl_FragColor = vec4(pow(vec3(0.3, 0.8, 0.55), vec3(2.2)), a);
+          #include <colorspace_fragment>
+        }`,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    })
   );
   band.rotation.x = -Math.PI / 2; // a ring is born standing up, the orbits lie flat
   system.group.add(band);
@@ -1554,6 +2359,8 @@ function disposeSystem(system) {
 
 function resize() {
   renderer.setSize(window.innerWidth, window.innerHeight, false);
+  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.setSize(window.innerWidth, window.innerHeight);
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
 }
@@ -1656,6 +2463,7 @@ function updateCloseupButton() {
 // The zone and belt notes always stay in the info window (burger button), so they can be read
 // before the zone or the belt is on screen.
 function updateInfoTexts() {
+  document.getElementById("legal-link").textContent = UI[lang].legalLink;
   if (rule) document.getElementById("zone-text").textContent = UI[lang].zone(rule.temp_min, rule.temp_max);
   document.getElementById("belt-note").textContent = UI[lang].beltNote;
 }
@@ -1762,10 +2570,10 @@ let hasClip = false; // only the candidates and Earth have a recording, the rest
 function showStory(star, planet) {
   stopSpeaking();
   storyId = slug(planet.pl_name);
-  hasClip = !!(planet.habitable || star.solarSystem);
+  hasClip = !!(planet.habitable || star.solarSystem) && !planet.solarObject; // the visitors have no recording
   const story = buildStory(star, planet, lang);
   storyParagraphs = story.paragraphs;
-  listenButton.hidden = storyParagraphs.length === 0; // the other Solar System planets have no text yet
+  listenButton.hidden = storyParagraphs.length === 0;
   document.getElementById("story-title").textContent = story.title;
   // The type line is shown, not read aloud, so the recorded clips stay valid. Earth is a real
   // photograph, so it needs no "schematic" warning.
@@ -1777,7 +2585,7 @@ function showStory(star, planet) {
     typeLine.textContent = note;
   } else if (!noType) {
     const t = UI[lang];
-    typeLine.textContent = `${t.typeLine(t.types[planetType(planet.pl_rade)])} ${look === "artistic" ? t.artistic : t.schematic}`;
+    typeLine.textContent = `${(planet.radius_calculated ? t.typeLineCalc : t.typeLine)(t.types[planetType(planet.pl_rade)])} ${look === "artistic" ? t.artistic : t.schematic}`;
   }
   document.getElementById("story-text").replaceChildren(
     ...storyParagraphs.map((text) => {
@@ -1839,7 +2647,7 @@ function selectBody(system, body) {
     if (body.name === "Earth") ({ star, planet } = EARTH);
     else {
       star = EARTH.star; // the Sun, at the origin
-      planet = { pl_name: body.name, solarOther: true, noteKey: body.noteKey };
+      planet = body.visitor ? visitorPlanet(body) : { pl_name: body.name, solarOther: true, noteKey: body.noteKey };
     }
   } else {
     star = system.star;
@@ -1908,6 +2716,10 @@ function applyLanguage() {
     : t.loading;
   buildHabitableMenu();
   buildSolarMenu();
+  updateSolarLabels();
+  showGaiaState();
+  showDeepState();
+  showBackgroundState();
   stopSpeaking();
   if (current) showStory(current.star, current.planet);
 }
@@ -1951,7 +2763,7 @@ function buildHabitableMenu() {
     // No planet type here: every candidate comes out as "rocky" by the radius rule, so the label would
     // say the same thing 37 times. The type is shown in the panel under the title instead.
     const info = document.createElement("small");
-    info.textContent = `${star.dist_ly.toFixed(1)} ly · ${planet.pl_rade} R⊕ · ${Math.round(planet.pl_eqt)} K`;
+    info.textContent = `${star.dist_ly.toFixed(1)} ly · ${planet.radius_calculated ? "≈" : ""}${planet.pl_rade} R⊕ · ${Math.round(planet.pl_eqt)} K`;
     const label = document.createElement("div");
     label.append(name, info);
     const row = document.createElement("div");
@@ -1996,6 +2808,16 @@ function focusStar() {
   if (current.follow) enterCloseup();
 }
 
+// The names above the bodies of our own system are written in the language of the page: Merkur and
+// Mond in German, Mercury and Moon in English. Exoplanets keep their catalogue names.
+function updateSolarLabels() {
+  for (const b of solar.bodies) {
+    b.mesh.userData.label?.userData.setText(b.name === "Earth" ? UI[lang].earthShort : solarName(b.name, lang));
+    b.moon?.mesh.userData.label.userData.setText(lang === "de" ? "Mond" : "Moon");
+  }
+  beltLabel.userData.setText(lang === "de" ? "Asteroidengürtel" : "Asteroid belt");
+}
+
 // The eight planets of the Solar System, in order from the Sun. Every click shows the Solar System
 // and flies to that planet, the same way the candidate list does for an exoplanet system.
 function buildSolarMenu() {
@@ -2023,6 +2845,275 @@ function buildSolarMenu() {
     const li = document.createElement("li");
     li.append(row);
     list.append(li);
+  }
+  buildVisitorMenu();
+  buildStarMenu();
+}
+
+// The deep Gaia layer: about a million bright stars (G < 11, up to 16,000 light years away) from src/fetch_gaia_bright.py and
+// src/build_gaia_bright.py, without the stars of the near layer and the planet hosts. It gives the depth: stars at all distances
+// around the camera, so near ones sweep past while far ones stay put when we fly. It uses the same material as the near layer (real
+// brightness from the camera distance). A separate switch and file: it is only read when switched on, and it is not offered on
+// touch devices and narrow screens, where a million points would be too heavy.
+const DEEP_MAG_MIN = -8; // absolute magnitude range of the byte, same as MAG_MIN and MAG_MAX in build_gaia_bright.py
+const DEEP_MAG_MAX = 12;
+const IS_MOBILE = window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 700;
+let deep = null;
+let deepOn = false;
+// Its own copy of the material: a million stars need a lower gain and an exposure that does not open up on the overview, or they
+// add up to a white wall (see updateCameraReal).
+const deepMaterial = gaiaMaterial.clone();
+deepMaterial.uniforms.uGain.value = 0.4;
+const deepButton = document.getElementById("gaia-deep");
+const deepNote = document.getElementById("gaia-deep-note");
+if (IS_MOBILE) deepButton.hidden = true;
+
+async function loadDeep() {
+  const response = await fetch("data/gaia_deep.bin");
+  if (!response.ok) throw new Error(`Deep Gaia file: ${response.status}`);
+  const buffer = await response.arrayBuffer();
+  const count = buffer.byteLength / 16;
+  const xyz = new Float32Array(buffer, 0, count * 3);
+  const attributes = new Uint8Array(buffer, count * 12, count * 4);
+  const colors = new Float32Array(count * 3);
+  const absmag = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    const r = attributes[i * 4] / 255;
+    const g = attributes[i * 4 + 1] / 255;
+    const b = attributes[i * 4 + 2] / 255;
+    const peak = Math.max(r, g, b);
+    // The same quiet colour as the other background stars: pulled towards white.
+    colors[i * 3] = r + (peak - r) * BACKGROUND_WHITENING;
+    colors[i * 3 + 1] = g + (peak - g) * BACKGROUND_WHITENING;
+    colors[i * 3 + 2] = b + (peak - b) * BACKGROUND_WHITENING;
+    absmag[i] = DEEP_MAG_MIN + (attributes[i * 4 + 3] / 255) * (DEEP_MAG_MAX - DEEP_MAG_MIN);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+  geometry.setAttribute("truePos", new THREE.BufferAttribute(xyz, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute("absmag", new THREE.BufferAttribute(absmag, 1));
+  const layer = new THREE.Points(geometry, deepMaterial);
+  layer.frustumCulled = false;
+  scene.add(layer);
+  deep = { points: layer, xyz, count, drawn: count, slow: 0, frames: 0, timeSum: 0 };
+  placeDeep();
+}
+
+// Quality that follows the speed of the computer. The file is sorted brightest first, so drawing fewer stars drops the faintest.
+// Every 8 frames the average frame time is looked at: slower than 33 ms (under 30 frames per second) takes away half of the
+// stars, down to 100,000, so a slow computer is back to a smooth picture within a few seconds. It does not come back up by itself, a new switch-on starts again with all of them.
+function adaptDeepQuality(dt) {
+  if (!deep || !deep.points.visible) return;
+  deep.timeSum += dt;
+  if (++deep.frames < 8) return;
+  const average = deep.timeSum / deep.frames;
+  deep.frames = 0;
+  deep.timeSum = 0;
+  if (average > 0.033 && deep.drawn > 100000) {
+    deep.drawn = Math.max(100000, Math.floor(deep.drawn * 0.5));
+    deep.points.geometry.setDrawRange(0, deep.drawn);
+  }
+}
+
+function placeDeep() {
+  const attr = deep.points.geometry.getAttribute("position");
+  const tmp = new THREE.Vector3();
+  const star = { x: 0, y: 0, z: 0 };
+  for (let i = 0; i < deep.count; i++) {
+    star.x = deep.xyz[i * 3];
+    star.y = deep.xyz[i * 3 + 1];
+    star.z = deep.xyz[i * 3 + 2];
+    toMapPosition(star, tmp);
+    attr.setXYZ(i, tmp.x, tmp.y, tmp.z);
+  }
+  attr.needsUpdate = true;
+}
+
+// The picture of the Milky Way behind everything can be switched off, the sky is then black with the stars only.
+const backgroundButton = document.getElementById("bg-toggle");
+function showBackgroundState() {
+  const on = milkyWay.visible;
+  backgroundButton.textContent = on ? UI[lang].backgroundOn : UI[lang].backgroundOff;
+  backgroundButton.setAttribute("aria-pressed", String(on));
+}
+backgroundButton.addEventListener("click", () => {
+  milkyWay.visible = !milkyWay.visible;
+  showBackgroundState();
+});
+
+function showDeepState(state = deepOn ? "on" : "off") {
+  const t = UI[lang];
+  deepButton.textContent = { on: t.deepOn, off: t.deepOff, loading: t.deepLoading, failed: t.deepFailed }[state];
+  deepButton.setAttribute("aria-pressed", String(deepOn));
+  deepNote.hidden = !(deepOn && deep);
+  if (deep) deepNote.textContent = t.deepNote(deep.count.toLocaleString(lang));
+}
+deepButton.addEventListener("click", async () => {
+  if (deepOn) {
+    deepOn = false;
+    if (deep) deep.points.visible = false;
+    return showDeepState();
+  }
+  deepOn = true;
+  try {
+    if (!deep) {
+      showDeepState("loading");
+      await loadDeep();
+    }
+    deep.points.visible = true;
+    deep.drawn = deep.count; // start with all of them again
+    deep.points.geometry.setDrawRange(0, deep.count);
+    showDeepState();
+  } catch (error) {
+    console.error(error);
+    deepOn = false;
+    showDeepState("failed");
+  }
+});
+
+// Filter by discoverer: the stars of the planets that one telescope or observatory found stay bright, all
+// others are dimmed. The list holds the places that found at least 30 planets, the most successful first.
+const facilitySelect = document.getElementById("facility");
+const facilityNote = document.getElementById("facility-note");
+function buildFacilityMenu() {
+  const counts = new Map();
+  for (const star of stars) for (const p of star.planets) if (p.disc_facility) counts.set(p.disc_facility, (counts.get(p.disc_facility) ?? 0) + 1);
+  const options = [...counts].filter(([, n]) => n >= 30).sort((a, b) => b[1] - a[1]);
+  facilitySelect.replaceChildren(new Option(UI[lang].facilityAll, ""));
+  for (const [name, n] of options) facilitySelect.append(new Option(`${name} (${n})`, name));
+}
+facilitySelect.addEventListener("change", () => {
+  const facility = facilitySelect.value;
+  const match = points.geometry.getAttribute("match");
+  let hosts = 0;
+  let planets = 0;
+  stars.forEach((s, i) => {
+    const hits = facility ? s.planets.filter((p) => p.disc_facility === facility).length : 0;
+    match.setX(i, !facility || hits > 0 ? 1 : 0);
+    if (hits > 0) {
+      hosts++;
+      planets += hits;
+    }
+  });
+  match.needsUpdate = true;
+  facilityNote.hidden = !facility;
+  facilityNote.textContent = facility ? UI[lang].facilityNote(planets, hosts) : "";
+});
+
+// Search over all stars and planets of the NASA list: type a name, get up to ten hits, nearest star first, with the
+// same three buttons as the lists (planet, star, system). The index is made on the first key press.
+let searchIndex = null;
+const searchInput = document.getElementById("search");
+const searchResults = document.getElementById("search-results");
+function runSearch() {
+  const query = searchInput.value.trim().toLowerCase();
+  searchResults.replaceChildren();
+  searchResults.hidden = query.length < 2;
+  if (query.length < 2) return;
+  searchIndex ??= stars.flatMap((star) =>
+    star.planets.map((planet) => ({ key: `${planet.pl_name} ${star.hostname}`.toLowerCase(), star, planet }))
+  );
+  const hits = searchIndex
+    .filter((e) => e.key.includes(query))
+    .sort((a, b) => {
+      const starts = Number(b.key.startsWith(query)) - Number(a.key.startsWith(query));
+      return starts || a.star.dist_ly - b.star.dist_ly;
+    })
+    .slice(0, 10);
+  if (hits.length === 0) {
+    const none = document.createElement("li");
+    none.className = "none";
+    none.textContent = UI[lang].noResults;
+    searchResults.append(none);
+    return;
+  }
+  for (const { star, planet } of hits) {
+    const name = document.createElement("span");
+    name.textContent = planet.pl_name;
+    const info = document.createElement("small");
+    info.textContent = `${star.hostname} · ${star.dist_ly.toFixed(1)} ${UI[lang].lightYears}`;
+    const label = document.createElement("div");
+    label.append(name, info);
+    const row = document.createElement("div");
+    row.className = "row";
+    row.append(label, viewButtons(star, planet));
+    const li = document.createElement("li");
+    li.append(row);
+    searchResults.append(li);
+  }
+}
+searchInput.addEventListener("input", runSearch);
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    searchInput.value = "";
+    runSearch();
+  }
+});
+
+// The named stars of the Gaia layer as a list: a click switches the layer on (so the star and its name are
+// there) and flies to the star, nearest first.
+function buildStarMenu() {
+  document.getElementById("stars-title").textContent = UI[lang].starsTitle;
+  searchInput.placeholder = UI[lang].searchPlaceholder;
+  const keep = facilitySelect.value;
+  buildFacilityMenu();
+  facilitySelect.value = keep;
+  if (keep) facilitySelect.dispatchEvent(new Event("change"));
+  if (searchInput.value.trim().length >= 2) runSearch(); // the language changed, the hits get their words again
+  const list = document.getElementById("star-list");
+  list.replaceChildren();
+  const byDistance = [...GAIA_NAMES].sort((a, b) => Math.hypot(a.x, a.y, a.z) - Math.hypot(b.x, b.y, b.z));
+  for (const s of byDistance) {
+    const name = document.createElement("span");
+    name.textContent = s.name;
+    const info = document.createElement("small");
+    info.textContent = `${Math.hypot(s.x, s.y, s.z).toFixed(0)} ${UI[lang].lightYears}`;
+    const label = document.createElement("div");
+    label.append(name, info);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = UI[lang].flyTo;
+    button.addEventListener("click", () => {
+      if (!gaiaOn) gaiaButton.click();
+      leaveCloseup(); // a close-up that follows a planet would pull the camera back
+      updateCloseupButton();
+      const target = toMapPosition(s, new THREE.Vector3());
+      startFlight(() => target, 0.4);
+    });
+    const views = document.createElement("div");
+    views.className = "views";
+    views.append(button);
+    const row = document.createElement("div");
+    row.className = "row";
+    row.append(label, views);
+    const li = document.createElement("li");
+    li.append(row);
+    list.append(li);
+  }
+}
+
+// The spacecraft, comets and interstellar objects, with the same three buttons as the planets.
+function buildVisitorMenu() {
+  document.getElementById("visitors-title").textContent = UI[lang].visitorsTitle;
+  const list = document.getElementById("visitors");
+  list.replaceChildren();
+  for (const kind of ["spacecraft", "comet", "interstellar"]) {
+    for (const body of solar.bodies.filter((b) => b.visitor?.kind === kind)) {
+      const name = document.createElement("span");
+      name.textContent = body.name;
+      const info = document.createElement("small");
+      info.textContent = UI[lang].visitorKinds[kind];
+      const label = document.createElement("div");
+      label.append(name, info);
+      const row = document.createElement("div");
+      row.className = "row";
+      if (current?.system === solar && current.planet.pl_name === body.name) row.classList.add("active");
+      row.append(label, viewButtons(EARTH.star, visitorPlanet(body)));
+      const li = document.createElement("li");
+      li.append(row);
+      list.append(li);
+    }
   }
 }
 
@@ -2071,6 +3162,17 @@ function animate() {
   lastFrame = now;
   stepSystem(solar, dt);
   if (activeExo) stepSystem(activeExo, dt);
+  milkyWay.position.copy(camera.position);
+  sunRays.quaternion.copy(camera.quaternion); // the sheet faces the camera
+  sunRays.material.uniforms.uTime.value = now;
+  sunRays.visible = camera.position.length() > SUN_RADIUS * 2.5;
+  if (activeExo?.rays) {
+    // The streamers of the star of the system that is open, the same sheet as the Sun's
+    activeExo.rays.quaternion.copy(camera.quaternion);
+    activeExo.rays.material.uniforms.uTime.value = now;
+    activeExo.rays.visible = camera.position.distanceTo(activeExo.group.position) > activeExo.starMesh.geometry.parameters.radius * 2.5;
+  }
+  updateCameraReal();
   updateCorona(sun);
   updateCorona(activeExo?.starMesh);
   updateElapsed(now);
@@ -2085,9 +3187,80 @@ function animate() {
     camera.position.add(delta);
     controls.target.add(delta);
   }
+  stepKeys(dt);
   controls.update();
-  renderer.render(scene, camera);
+  declutterLabels();
+  adaptDeepQuality(dt);
+  composer.render();
 }
+
+// Keyboard: W and S fly forward and back, A and D sideways, Q and E down and up, the arrow keys turn the
+// view on the spot, Shift is four times faster. The speed follows the distance between camera and target,
+// so it is slow close to a planet and fast on the overview. It moves camera and target together, the
+// orbit controls of the mouse keep working. A flight or a close-up that is following a planet is ended by it.
+const keys = new Set();
+const KEY_TURN_SPEED = 1.2; // radians per second
+const MOVE_KEYS = new Set(["KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE"]);
+const TURN_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]);
+const keyForward = new THREE.Vector3();
+const keyRight = new THREE.Vector3();
+const keyMove = new THREE.Vector3();
+
+window.addEventListener("keydown", (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  // Not while the user types or chooses in a form control, the arrow keys belong to it then.
+  if (e.target instanceof HTMLElement && e.target.matches("input, select, textarea, [contenteditable]")) return;
+  if (!MOVE_KEYS.has(e.code) && !TURN_KEYS.has(e.code)) return;
+  keys.add(e.code);
+  e.preventDefault(); // otherwise the arrow keys also scroll the panel
+});
+window.addEventListener("keyup", (e) => keys.delete(e.code));
+window.addEventListener("blur", () => keys.clear());
+
+function stepKeys(dt) {
+  if (keys.size === 0) return;
+  if (flight) flight = null;
+  if (closeup) {
+    leaveCloseup(); // the close-up follows the planet and would pull the camera back
+    updateCloseupButton();
+  }
+  const offset = controls.target.clone().sub(camera.position);
+  const distance = Math.max(offset.length(), 1e-4);
+  keyForward.copy(offset).divideScalar(distance);
+
+  // Turning: the camera stays where it is and the target swings around it.
+  const yaw = ((keys.has("ArrowLeft") ? 1 : 0) - (keys.has("ArrowRight") ? 1 : 0)) * KEY_TURN_SPEED * dt;
+  const pitch = ((keys.has("ArrowUp") ? 1 : 0) - (keys.has("ArrowDown") ? 1 : 0)) * KEY_TURN_SPEED * dt;
+  if (yaw !== 0 || pitch !== 0) {
+    keyRight.crossVectors(keyForward, camera.up).normalize();
+    const dir = keyForward.clone();
+    dir.applyAxisAngle(camera.up, yaw);
+    // Stop short of looking straight up or down, where the view would flip over.
+    const turned = dir.clone().applyAxisAngle(keyRight, pitch);
+    if (Math.abs(turned.y) < 0.995) dir.copy(turned);
+    controls.target.copy(camera.position).addScaledVector(dir, distance);
+    keyForward.copy(dir);
+  }
+
+  // Moving: camera and target together.
+  keyMove.set(0, 0, 0);
+  keyRight.crossVectors(keyForward, camera.up).normalize();
+  if (keys.has("KeyW")) keyMove.add(keyForward);
+  if (keys.has("KeyS")) keyMove.sub(keyForward);
+  if (keys.has("KeyD")) keyMove.add(keyRight);
+  if (keys.has("KeyA")) keyMove.sub(keyRight);
+  if (keys.has("KeyE")) keyMove.add(camera.up);
+  if (keys.has("KeyQ")) keyMove.sub(camera.up);
+  if (keyMove.lengthSq() > 0) {
+    const speed = Math.max(distance * 0.4, 0.02) * (shiftHeld ? 4 : 1);
+    keyMove.normalize().multiplyScalar(speed * dt);
+    camera.position.add(keyMove);
+    controls.target.add(keyMove);
+  }
+}
+let shiftHeld = false;
+window.addEventListener("keydown", (e) => (shiftHeld = e.shiftKey));
+window.addEventListener("keyup", (e) => (shiftHeld = e.shiftKey));
 
 const res = await fetch("data/stars.json");
 const data = await res.json();
@@ -2099,3 +3272,5 @@ addZone(solar, 0.3 * Math.sqrt(sunZone.inner), 0.3 * Math.sqrt(sunZone.outer));
 buildPoints();
 applyLanguage();
 animate();
+// The start screen goes away once the first frame is on its way.
+requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));

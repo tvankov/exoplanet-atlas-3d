@@ -18,6 +18,7 @@
 </head>
 <body>
   <canvas id="map"></canvas>
+  <div id="loading" role="status"><span>Exoplanet Atlas 3D</span><small>Loading the sky ...</small></div>
   <div id="hud">
     <h1>Exoplanet Atlas 3D</h1>
     <p id="count">Loading stars...</p>
@@ -30,15 +31,35 @@
       <option value="artistic" selected>Artistic</option>
     </select>
     <button id="scale" type="button">Scale: compressed</button>
+    <button id="gaia" type="button" aria-pressed="false">Gaia stars: off</button>
+    <p id="gaia-note" class="hint" hidden></p>
+    <button id="gaia-deep" type="button" aria-pressed="false">Deep stars: off</button>
+    <p id="gaia-deep-note" class="hint" hidden></p>
+    <button id="bg-toggle" type="button" aria-pressed="true">Background: on</button>
     <div id="speed-box">
       <label id="speed-title" for="speed">Time speed</label>
       <input id="speed" type="range" min="0" max="100" step="any" value="51.97">
       <p id="speed-text"></p>
       <p id="speed-elapsed"></p>
     </div>
+    <div id="search-box">
+      <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
+      <ul id="search-results" class="planet-list" hidden></ul>
+    </div>
+    <select id="facility" aria-label="Discovered by"></select>
+    <p id="facility-note" class="hint" hidden></p>
     <details class="menu">
       <summary id="solar-title">Solar System</summary>
       <ul id="solar-list" class="planet-list"></ul>
+    </details>
+    <details class="menu">
+      <summary id="stars-title">Named stars</summary>
+      <ul id="star-list" class="planet-list"></ul>
+    </details>
+    <!-- Hidden until the 3D models of the spacecraft are ready. Remove "hidden" to show the menu again. -->
+    <details class="menu" hidden>
+      <summary id="visitors-title">Spacecraft, comets, visitors</summary>
+      <ul id="visitors" class="planet-list"></ul>
     </details>
     <details class="menu">
       <summary id="habitable-title">Habitable candidates</summary>
@@ -51,12 +72,28 @@
     <p class="hint" id="hint">Drag to rotate, scroll to zoom, right drag to pan</p>
     <p id="zone-legend"><span class="swatch"></span><span id="zone-text"></span></p>
     <p id="belt-note" class="hint"></p>
+    <p><a id="legal-link" href="legal.html" target="_blank" rel="noopener">Imprint, privacy, licences</a></p>
     <h2 id="credits-title">Credits</h2>
     <p id="credits">
     This research has made use of the NASA Exoplanet Archive, which is operated by the California Institute of Technology,
     under contract with the National Aeronautics and Space Administration under the Exoplanet Exploration Program.
     Not affiliated with or endorsed by NASA. Earth maps (surface, clouds, night lights): NASA Earth Observatory and Visible Earth, Blue Marble. Moon texture: NASA Scientific Visualization Studio, CGI Moon Kit (Ernie Wright), LRO data. Jupiter map: NASA/JPL/Space Science Institute (Cassini). Mars map: NASA/JPL/USGS (Viking Orbiter). Mercury map: NASA/JHU APL/Carnegie (MESSENGER, Denevi et al.), USGS. Voices: Piper, trained on LJ Speech (public domain) and Multilingual LibriSpeech
     (Pratap et al., CC BY 4.0). 3D: three.js.
+    Gaia layer (optional): This work has made use of data from the European Space Agency (ESA) mission Gaia
+    (https://www.cosmos.esa.int/gaia), processed by the Gaia Data Processing and Analysis Consortium (DPAC,
+    https://www.cosmos.esa.int/web/gaia/dpac/consortium). The data are used under the ESA terms, CC BY-NC 3.0 IGO,
+    not for commercial use. Colours are estimated from the Gaia temperature or colour index.
+    Milky Way background: panorama by ESO/S. Brunier (https://www.eso.org/public/images/eso0932a/), licensed under
+    CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes: shrunk to 4096 x 2048 pixels, mapped onto the
+    sky sphere of this map and brightened. ESO does not endorse this project. If the photo cannot be loaded, a painted
+    Milky Way takes its place, which is an illustration.
+    Orbits and positions in the Solar System (planets, comets, interstellar objects, spacecraft): NASA/JPL (Solar System
+    Dynamics: Small-Body Database, Horizons, approximate planet positions), https://ssd.jpl.nasa.gov, credit JPL/Caltech/NASA.
+    The positions are worked out from orbital elements and are approximate.
+    The faint dust disc around the Sun, the streamers of the Sun's corona and the faint colour clouds of the background are
+    illustrations, not data.
+    Star names of the Gaia layer: This research has made use of the SIMBAD database, operated at CDS, Strasbourg,
+    France (Wenger et al. 2000, A&amp;AS 143, 9).
     </p>
   </div>
   <section id="story" hidden>

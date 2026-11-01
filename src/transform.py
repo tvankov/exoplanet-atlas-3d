@@ -87,7 +87,23 @@ def main() -> None:
 
     stars = build_stars(planets)
 
-    planet_cols = ["pl_name", "pl_rade", "pl_bmasse", "pl_orbper", "pl_eqt", "discoverymethod", "disc_year", "habitable"]
+    # The archive fills in a radius for planets that nobody has measured, worked out from the mass (marked
+    # "Calculated Value" in its reference column). That file comes from src/fetch_nasa_extras.py. Such a
+    # radius is an estimate, so the app says so.
+    calculated = sorted(RAW_DIR.glob("nasa_radius_calculated_*.csv"))
+    names = set(pd.read_csv(calculated[-1])["pl_name"]) if calculated else set()
+    planets["radius_calculated"] = planets["pl_name"].isin(names) & planets["pl_rade"].notna()
+    print(f"{planets['radius_calculated'].sum()} planets have a radius that is only calculated from the mass")
+
+    # The telescope or observatory that found each planet, from the same extras (src/fetch_nasa_extras.py).
+    facilities = sorted(RAW_DIR.glob("nasa_facility_*.csv"))
+    if facilities:
+        facility = pd.read_csv(facilities[-1]).drop_duplicates("pl_name").set_index("pl_name")["disc_facility"]
+        planets["disc_facility"] = planets["pl_name"].map(facility)
+    else:
+        planets["disc_facility"] = None
+
+    planet_cols = ["pl_name", "pl_rade", "pl_bmasse", "pl_orbper", "pl_eqt", "discoverymethod", "disc_year", "disc_facility", "habitable", "radius_calculated"]
     by_star = {
         host: grp[planet_cols].astype(object).where(grp[planet_cols].notna(), None).to_dict("records")
         for host, grp in planets.groupby("hostname")

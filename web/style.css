@@ -274,3 +274,156 @@ html, body {
   font-size: 11px;
 }
 
+
+/* Polish: a smoother feel for the panels, buttons and the first moments of the page. */
+html, body {
+  font-family: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#hud,
+#story,
+#info {
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+#hud button,
+#hud select,
+#story button,
+#burger {
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+}
+
+#hud button:active,
+#story button:active,
+#burger:active {
+  transform: scale(0.96);
+}
+
+#hud button:focus-visible,
+#hud select:focus-visible,
+#story button:focus-visible,
+#burger:focus-visible,
+.menu > summary:focus-visible {
+  outline: 2px solid #7cffb2;
+  outline-offset: 2px;
+}
+
+.menu > summary {
+  transition: color 0.18s ease;
+}
+
+.menu > summary:hover {
+  color: #ffffff;
+}
+
+/* A panel that opens fades in and slides up a little. */
+#story:not([hidden]),
+#info:not([hidden]) {
+  animation: panel-in 0.28s ease-out;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Thin scrollbars that match the panels. */
+#hud,
+#story,
+#info,
+.planet-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+/* The start screen, fades out when the sky is ready. */
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-content: center;
+  gap: 6px;
+  text-align: center;
+  background: radial-gradient(ellipse at center, #0b1020 0%, #05060a 70%);
+  transition: opacity 0.9s ease;
+}
+
+#loading span {
+  font-size: 22px;
+  letter-spacing: 0.08em;
+}
+
+#loading small {
+  opacity: 0.6;
+  letter-spacing: 0.12em;
+}
+
+#loading.done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #story:not([hidden]),
+  #info:not([hidden]) {
+    animation: none;
+  }
+  #loading {
+    transition: none;
+  }
+}
+
+/* Search field above the menus. */
+#search-box {
+  margin: 10px 0 2px;
+}
+
+#search {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 7px 10px;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+
+#search::placeholder {
+  color: rgba(223, 230, 243, 0.55);
+}
+
+#search:focus {
+  outline: 2px solid #7cffb2;
+  outline-offset: 1px;
+}
+
+#search-results {
+  margin-top: 6px;
+}
+
+#search-results .none {
+  opacity: 0.6;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+/* The discoverer list is as wide as the panel, its long names are cut instead of widening the panel. */
+#facility {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 8px;
+  text-overflow: ellipsis;
+}

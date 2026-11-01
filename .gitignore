@@ -4,3 +4,7 @@ __pycache__/
 node_modules/
 dist/
 *.sqlite
+
+# Gaia data stays local, see README (licence CC BY-NC 3.0 IGO)
+data/raw/gaia_*
+data/raw/gaia_bright*

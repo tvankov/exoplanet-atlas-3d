@@ -5,7 +5,7 @@
 export const UI = {
   en: {
     speech: "en-US",
-    hint: "Drag to rotate, scroll to zoom, right drag to pan",
+    hint: "Drag to rotate, scroll to zoom, right drag to pan. Keyboard: W A S D fly, Q and E down and up, arrow keys look around, Shift is faster",
     scaleCompressed: "Scale: compressed",
     scaleLinear: "Scale: linear",
     loading: "Loading stars...",
@@ -13,7 +13,30 @@ export const UI = {
     candidates: (n) => `Habitable candidates (${n} + Earth)`,
     earth: "Earth (reference)",
     solarTitle: "Solar System",
+    starsTitle: "Named stars",
+    facilityAll: "Discovered by: anyone",
+    facilityNote: (planets, hosts) => `${planets} planets around ${hosts} stars. The other stars are dimmed.`,
+    legalLink: "Imprint, privacy, licences",
+    searchPlaceholder: "Search a star or planet",
+    noResults: "Nothing found",
+    flyTo: "Fly to",
+    lightYears: "ly",
+    visitorsTitle: "Spacecraft, comets, visitors",
+    visitorKinds: { spacecraft: "Spacecraft", comet: "Comet", interstellar: "Interstellar object" },
     creditsTitle: "Credits",
+    backgroundOn: "Background: on",
+    backgroundOff: "Background: off",
+    deepOff: "Deep stars: off",
+    deepOn: "Deep stars: on",
+    deepLoading: "Deep stars: loading ...",
+    deepFailed: "Deep stars: could not be loaded",
+    deepNote: (n) => `${n} bright stars from ESA Gaia, up to 16,000 light years away, at their real positions. Credit: ESA/Gaia/DPAC.`,
+    gaiaOff: "Gaia stars: off",
+    gaiaOn: "Gaia stars: on",
+    gaiaLoading: "Gaia stars: loading...",
+    gaiaFailed: "Gaia stars: could not be loaded",
+    gaiaNote: (n) =>
+      `${n} nearby stars (closer than 326 light years) from ESA Gaia, at their real positions, without the hosts of the planets already on the map. Colours are estimated. Credit: ESA/Gaia/DPAC.`,
     hintsTitle: "Hints",
     earthShort: "Earth",
     viewPlanet: "Planet",
@@ -35,6 +58,7 @@ export const UI = {
       unknown: "Type unknown",
     },
     typeLine: (name) => `Type: ${name}, derived from its radius.`,
+    typeLineCalc: (name) => `Type: ${name}, derived from a radius that is only worked out from its mass.`,
     schematic:
       "Schematic picture: colour and surface follow radius and temperature. What the surface really looks like is unknown.",
     artistic:
@@ -52,7 +76,7 @@ export const UI = {
   },
   de: {
     speech: "de-DE",
-    hint: "Ziehen zum Drehen, Scrollen zum Zoomen, rechts ziehen zum Verschieben",
+    hint: "Ziehen zum Drehen, Scrollen zum Zoomen, rechts ziehen zum Verschieben. Tastatur: W A S D fliegen, Q und E runter und hoch, Pfeiltasten umschauen, Shift ist schneller",
     scaleCompressed: "Skala: gestaucht",
     scaleLinear: "Skala: linear",
     loading: "Sterne werden geladen...",
@@ -60,7 +84,30 @@ export const UI = {
     candidates: (n) => `Bewohnbare Kandidaten (${n} + Erde)`,
     earth: "Erde (Referenz)",
     solarTitle: "Sonnensystem",
+    starsTitle: "Benannte Sterne",
+    facilityAll: "Entdeckt von: allen",
+    facilityNote: (planets, hosts) => `${planets} Planeten bei ${hosts} Sternen. Die übrigen Sterne sind abgedunkelt.`,
+    legalLink: "Impressum, Datenschutz, Lizenzen",
+    searchPlaceholder: "Stern oder Planet suchen",
+    noResults: "Nichts gefunden",
+    flyTo: "Hinfliegen",
+    lightYears: "Lj",
+    visitorsTitle: "Raumsonden, Kometen, Besucher",
+    visitorKinds: { spacecraft: "Raumsonde", comet: "Komet", interstellar: "Interstellares Objekt" },
     creditsTitle: "Quellen und Lizenzen",
+    backgroundOn: "Hintergrund: an",
+    backgroundOff: "Hintergrund: aus",
+    deepOff: "Tiefe Sterne: aus",
+    deepOn: "Tiefe Sterne: an",
+    deepLoading: "Tiefe Sterne: lädt ...",
+    deepFailed: "Tiefe Sterne: konnten nicht geladen werden",
+    deepNote: (n) => `${n} helle Sterne von ESA Gaia, bis zu 16.000 Lichtjahre entfernt, an ihren echten Positionen. Quelle: ESA/Gaia/DPAC.`,
+    gaiaOff: "Gaia-Sterne: aus",
+    gaiaOn: "Gaia-Sterne: an",
+    gaiaLoading: "Gaia-Sterne: lädt ...",
+    gaiaFailed: "Gaia-Sterne: konnten nicht geladen werden",
+    gaiaNote: (n) =>
+      `${n} nahe Sterne (näher als 326 Lichtjahre) von ESA Gaia an ihren echten Positionen, ohne die Wirtssterne der Planeten, die schon auf der Karte sind. Die Farben sind geschätzt. Quelle: ESA/Gaia/DPAC.`,
     hintsTitle: "Hinweise",
     earthShort: "Erde",
     viewPlanet: "Planet",
@@ -82,6 +129,7 @@ export const UI = {
       unknown: "Typ unbekannt",
     },
     typeLine: (name) => `Typ: ${name}, abgeleitet aus dem Radius.`,
+    typeLineCalc: (name) => `Typ: ${name}, abgeleitet aus einem Radius, der nur aus der Masse berechnet ist.`,
     schematic:
       "Schematische Darstellung: Farbe und Oberfläche folgen Radius und Temperatur. Wie die Oberfläche wirklich aussieht, ist unbekannt.",
     artistic:
@@ -173,6 +221,7 @@ const TEXT = {
     star: (host, cls, teff, rad) =>
       `Its star, ${host}, is ${cls}${teff ? ` with a surface temperature of about ${teff} Kelvin` : ""}${rad ? ` and ${rad} times the radius of the Sun` : ""}.`,
     radius: (r) => `a radius of ${r} times that of Earth`,
+    radiusCalc: (r) => `a radius of about ${r} times that of Earth, but nobody has measured it, it is worked out from the mass`,
     // Radial velocity only gives a lower limit for the mass, because the tilt of the orbit is unknown.
     mass: (m, atLeast) => `a mass of ${atLeast ? "at least" : "about"} ${m} Earth masses`,
     yearFact: (y) => `a year that lasts ${y}`,
@@ -218,6 +267,7 @@ const TEXT = {
     star: (host, cls, teff, rad) =>
       `Sein Stern ${host} ist ${cls}${teff ? ` mit einer Oberflächentemperatur von etwa ${teff} Kelvin` : ""}${rad ? ` und dem ${rad}-fachen Radius der Sonne` : ""}.`,
     radius: (r) => `einen Radius vom ${r}-Fachen des Erdradius`,
+    radiusCalc: (r) => `einen Radius vom etwa ${r}-Fachen des Erdradius, der aber nicht gemessen, sondern aus der Masse berechnet ist`,
     mass: (m, atLeast) => `eine Masse von ${atLeast ? "mindestens" : "etwa"} ${m} Erdmassen`,
     yearFact: (y) => `ein Jahr, das ${y} dauert`,
     has: (list) => `Der Planet hat ${list}.`,
@@ -385,12 +435,152 @@ const SOLAR_STORIES = {
 };
 export const SOLAR_PLANET_NAMES = Object.keys(SOLAR_STORIES);
 
+// Stories of the visitors of the Solar System: comets, interstellar objects and spacecraft. The numbers come from
+// the JPL data (see visitorFacts in main.js), the sentence about each object is a plain fact that is well known.
+const VISITOR_BLURB = {
+  halley: {
+    en: "Halley is the best known comet. It comes back about every 76 years and has been recorded since antiquity.",
+    de: "Halley ist der bekannteste Komet. Er kommt etwa alle 76 Jahre wieder und ist seit der Antike überliefert.",
+  },
+  "hale-bopp": {
+    en: "Hale-Bopp was one of the brightest comets of recent decades and could be seen with the naked eye for months in 1997.",
+    de: "Hale-Bopp war einer der hellsten Kometen der letzten Jahrzehnte und war 1997 monatelang mit bloßem Auge zu sehen.",
+  },
+  "67p": {
+    en: "67P was visited by the ESA spacecraft Rosetta, which orbited it from 2014 to 2016 and set the lander Philae down on it.",
+    de: "Zu 67P flog die ESA-Raumsonde Rosetta, die ihn von 2014 bis 2016 umkreiste und den Lander Philae auf ihm absetzte.",
+  },
+  "swift-tuttle": {
+    en: "Swift-Tuttle is the parent comet of the Perseid meteor shower, the dust it leaves behind burns up in our air every August.",
+    de: "Swift-Tuttle ist der Mutterkomet des Perseiden-Meteorstroms, der Staub, den er hinterlässt, verglüht jeden August in unserer Luft.",
+  },
+  encke: {
+    en: "Encke has one of the shortest periods of the known comets, it comes round again in only a few years.",
+    de: "Encke hat eine der kürzesten Umlaufzeiten der bekannten Kometen, er kommt schon nach wenigen Jahren wieder.",
+  },
+  neowise: {
+    en: "NEOWISE was found in March 2020 and could be seen with the naked eye in July 2020.",
+    de: "NEOWISE wurde im März 2020 entdeckt und war im Juli 2020 mit bloßem Auge zu sehen.",
+  },
+  oumuamua: {
+    en: "ʻOumuamua was found in October 2017. It was the first known object from another star system that passed through ours.",
+    de: "ʻOumuamua wurde im Oktober 2017 entdeckt. Es war das erste bekannte Objekt aus einem anderen Sternsystem, das durch unseres zog.",
+  },
+  borisov: {
+    en: "Borisov was found by the amateur astronomer Gennady Borisov in August 2019. It is the first interstellar comet.",
+    de: "Borisov wurde im August 2019 vom Amateurastronomen Gennadi Borisow entdeckt. Er ist der erste interstellare Komet.",
+  },
+  "3i-atlas": {
+    en: "3I/ATLAS was found on 1 July 2025 by the ATLAS survey. It is the third known object from another star system.",
+    de: "3I/ATLAS wurde am 1. Juli 2025 vom ATLAS-Suchprogramm entdeckt. Es ist das dritte bekannte Objekt aus einem anderen Sternsystem.",
+  },
+  "voyager-1": {
+    launched: "1977-09-05",
+    en: "Voyager 1 flew past Jupiter and Saturn. It is the most distant human-made object and has been in interstellar space since 2012. It carries a golden record with sounds and pictures of Earth.",
+    de: "Voyager 1 flog an Jupiter und Saturn vorbei. Sie ist das am weitesten entfernte Objekt von Menschenhand und seit 2012 im interstellaren Raum. Sie trägt eine goldene Schallplatte mit Klängen und Bildern der Erde.",
+  },
+  "voyager-2": {
+    launched: "1977-08-20",
+    en: "Voyager 2 is the only spacecraft that has visited Uranus (1986) and Neptune (1989). It has been in interstellar space since 2018.",
+    de: "Voyager 2 ist die einzige Raumsonde, die Uranus (1986) und Neptun (1989) besucht hat. Sie ist seit 2018 im interstellaren Raum.",
+  },
+  "new-horizons": {
+    launched: "2006-01-19",
+    en: "New Horizons flew past Pluto on 14 July 2015 and past the small object Arrokoth on 1 January 2019, and has gone on into the outer Solar System.",
+    de: "New Horizons flog am 14. Juli 2015 an Pluto und am 1. Januar 2019 am kleinen Objekt Arrokoth vorbei und fliegt weiter durch das äußere Sonnensystem.",
+  },
+  juno: {
+    launched: "2011-08-05",
+    en: "Juno has orbited Jupiter since 4 July 2016 and studies its atmosphere, its magnetic field and its inside.",
+    de: "Juno umkreist Jupiter seit dem 4. Juli 2016 und erforscht seine Atmosphäre, sein Magnetfeld und sein Inneres.",
+  },
+  parker: {
+    launched: "2018-08-12",
+    en: "Parker Solar Probe flies closer to the Sun than any other spacecraft and dives through the Sun's outer atmosphere, the corona.",
+    de: "Parker Solar Probe fliegt näher an die Sonne als jede andere Raumsonde und taucht durch ihre äußere Atmosphäre, die Korona.",
+  },
+  jwst: {
+    launched: "2021-12-25",
+    en: "The James Webb Space Telescope looks at the sky in infrared light. It sits at the Lagrange point L2, about 1.5 million kilometres from Earth on the side away from the Sun.",
+    de: "Das James-Webb-Weltraumteleskop betrachtet den Himmel im Infrarotlicht. Es steht im Lagrange-Punkt L2, etwa 1,5 Millionen Kilometer von der Erde entfernt auf der sonnenabgewandten Seite.",
+  },
+};
+
+const fmtDate = (d, lang) => d.toLocaleDateString(lang === "de" ? "de-DE" : "en-GB", { year: "numeric", month: "long", day: "numeric" });
+const fmtNum = (x, lang, digits = 1) => x.toLocaleString(lang === "de" ? "de-DE" : "en-GB", { maximumFractionDigits: digits });
+const fmtLight = (au, lang) => {
+  const minutes = au * 8.31675;
+  return minutes < 90
+    ? `${fmtNum(minutes, lang, 1)} ${lang === "de" ? "Minuten" : "minutes"}`
+    : `${fmtNum(minutes / 60, lang, 1)} ${lang === "de" ? "Stunden" : "hours"}`;
+};
+
+export function objectStory(o, lang) {
+  const de = lang === "de";
+  const blurb = VISITOR_BLURB[o.key]?.[lang];
+  const source = de
+    ? `Quelle: NASA/JPL (Small-Body-Datenbank und Horizons). Die Lage ist aus den Bahndaten berechnet, Stand ${o.retrieved}, und ungefähr.`
+    : `Source: NASA/JPL (Small-Body Database and Horizons). The position is worked out from the orbit data, retrieved ${o.retrieved}, and is approximate.`;
+  const now = de
+    ? `Die Entfernung von der Sonne beträgt jetzt ${fmtNum(o.sunAU, lang)} Astronomische${fmtNum(o.sunAU, lang) === "1" ? " Einheit" : " Einheiten"} (eine Einheit sind 150 Millionen Kilometer). Das Licht braucht ${fmtLight(o.sunAU, lang)} bis dorthin.`
+    : `Its distance from the Sun is now ${fmtNum(o.sunAU, lang)} astronomical unit${fmtNum(o.sunAU, lang) === "1" ? "" : "s"} (one unit is 150 million kilometres). Light needs ${fmtLight(o.sunAU, lang)} to get there.`;
+
+  if (o.kind === "spacecraft") {
+    const launched = VISITOR_BLURB[o.key]?.launched;
+    const startLine = launched ? (de ? `Gestartet: ${fmtDate(new Date(launched), lang)}.` : `Launched: ${fmtDate(new Date(launched), lang)}.`) : "";
+    const fromEarth = de
+      ? `Die Entfernung von der Erde beträgt jetzt ${fmtNum(o.earthAU, lang, 2)} Astronomische Einheiten.`
+      : `Its distance from Earth is now ${fmtNum(o.earthAU, lang, 2)} astronomical units.`;
+    const motionNote = ["voyager-1", "voyager-2", "new-horizons"].includes(o.key)
+      ? de
+        ? "Die Lage geht von der letzten Messung aus und läuft in gerader Linie weiter."
+        : "The position goes on from the last measurement in a straight line."
+      : o.key === "jwst"
+        ? de
+          ? "Die Karte setzt es an den Punkt L2 hinter der Erde und lässt es mit ihr um die Sonne laufen."
+          : "The map puts it at the point L2 behind Earth and lets it go round the Sun with her."
+        : de
+          ? "Diese Sonde kreist, die Karte zeigt sie nur grob an ihrer Stelle."
+          : "This spacecraft goes round in an orbit, the map shows it only roughly at its place.";
+    return [blurb, startLine, now, fromEarth, motionNote, source].filter(Boolean);
+  }
+  if (o.kind === "interstellar") {
+    return [
+      blurb,
+      de
+        ? `Seine Bahn ist keine Ellipse, sondern eine Hyperbel (Exzentrizität ${fmtNum(o.e, lang, 2)}). Es kommt von außen, schwingt um die Sonne und verlässt unser System für immer. Fern von der Sonne ist es etwa ${fmtNum(o.vInf, lang, 0)} Kilometer pro Sekunde schnell.`
+        : `Its orbit is not an ellipse but a hyperbola (eccentricity ${fmtNum(o.e, lang, 2)}). It came from outside, swung round the Sun and leaves our system for good. Far from the Sun it moves at about ${fmtNum(o.vInf, lang, 0)} kilometres per second.`,
+      de
+        ? `Der nächste Punkt zur Sonne lag bei ${fmtNum(o.q, lang, 2)} Astronomischen Einheiten, am ${fmtDate(o.perihelion, lang)}.`
+        : `Its closest point to the Sun was ${fmtNum(o.q, lang, 2)} astronomical units, on ${fmtDate(o.perihelion, lang)}.`,
+      now,
+      source,
+    ];
+  }
+  const retro = o.incl > 90;
+  return [
+    blurb,
+    de
+      ? `Er umkreist die Sonne in etwa ${fmtNum(o.periodYears, lang, o.periodYears < 100 ? 1 : 0)} Jahren auf einer lang gestreckten Bahn, von ${fmtNum(o.q, lang, 2)} Astronomischen Einheiten im Sonnennächsten bis ${fmtNum(o.Q, lang, 0)} im Sonnenfernsten.`
+      : `It goes round the Sun in about ${fmtNum(o.periodYears, lang, o.periodYears < 100 ? 1 : 0)} years on a long stretched orbit, from ${fmtNum(o.q, lang, 2)} astronomical units at its closest to ${fmtNum(o.Q, lang, 0)} at its farthest.`,
+    de
+      ? `Der letzte sonnennächste Punkt war am ${fmtDate(o.perihelion, lang)}. Der nächste kommt etwa am ${fmtDate(o.nextPerihelion, lang)} (aus den Bahnelementen gerechnet, die Planeten verschieben ihn um einige Monate).`
+      : `The last closest approach to the Sun was on ${fmtDate(o.perihelion, lang)}. The next one comes at about ${fmtDate(o.nextPerihelion, lang)} (worked out from the orbital elements, the planets shift it by some months).`,
+    de
+      ? `Die Bahn ist um ${fmtNum(o.incl, lang, 0)} Grad gegen die der Planeten geneigt${retro ? ", er läuft also gegen deren Richtung" : ""}.`
+      : `The orbit is tilted by ${fmtNum(o.incl, lang, 0)} degrees against that of the planets${retro ? ", so it runs against their direction" : ""}.`,
+    now,
+    source,
+  ].filter(Boolean);
+}
+
 // Name of a Solar System planet in the menu. Earth has its own text in UI, the others reuse the story titles.
 export const solarName = (name, lang) => SOLAR_STORIES[name]?.title[lang] ?? name;
 
 export function buildStory(star, planet, lang) {
   const t = TEXT[lang];
   // The other planets of our own system. One that has no text of its own shows only its name.
+  if (planet.solarObject) return { title: planet.pl_name, paragraphs: objectStory(planet.solarObject, lang) };
   if (planet.solarOther) {
     const story = SOLAR_STORIES[planet.pl_name];
     return story ? { title: story.title[lang], paragraphs: story[lang] } : { title: planet.pl_name, paragraphs: [] };
@@ -417,7 +607,7 @@ export function buildStory(star, planet, lang) {
   );
 
   const facts = [];
-  if (planet.pl_rade != null) facts.push(t.radius(n(planet.pl_rade)));
+  if (planet.pl_rade != null) facts.push((planet.radius_calculated ? t.radiusCalc : t.radius)(n(planet.pl_rade)));
   if (planet.pl_bmasse != null) facts.push(t.mass(n(planet.pl_bmasse, 2), planet.discoverymethod === "Radial Velocity"));
   if (planet.pl_orbper != null) facts.push(t.yearFact(t.year(n, planet.pl_orbper)));
   if (facts.length) {
