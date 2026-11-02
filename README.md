@@ -149,6 +149,8 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
 - **Settings:** candidate zone (the green habitable band, on or off), look of the exoplanets, scale (compressed or linear), Gaia stars, deep stars and
   background. The candidate zone, the Gaia stars, the deep stars and the background are **on by default** (the deep stars are not offered on touch
   devices and narrow screens). The two star layers load in the background after the start.
+- **Info button (top right, left of the burger):** the story panel of the chosen planet (bottom right, half as tall as before) is closed until
+  you press "Info". The button shows up as soon as a planet has been chosen and stays open or closed as you left it.
 - **Left panel:** language, the Travel planner button, time speed, search, filters (discovered by, spectral class), measuring and the lists.
 
 ## Legal

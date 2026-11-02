@@ -2527,6 +2527,21 @@ function showSystem(star, planet) {
 
 // Story panel. The text always stays visible, the audio is an extra.
 const storyPanel = document.getElementById("story");
+// The story panel (the "info" of a planet) is closed until the Info button at the top right is pressed. The button
+// shows up as soon as there is a story. While a trip flies (quiet) both are hidden.
+const infoButton = document.getElementById("info-button");
+let storyOpen = false;
+let hasStory = false;
+function applyStoryVisibility() {
+  storyPanel.hidden = quiet || !storyOpen || !hasStory;
+  infoButton.hidden = quiet || !hasStory;
+  infoButton.setAttribute("aria-expanded", String(storyOpen));
+  layoutView();
+}
+infoButton.addEventListener("click", () => {
+  storyOpen = !storyOpen;
+  applyStoryVisibility();
+});
 const listenButton = document.getElementById("story-listen");
 const closeupButton = document.getElementById("story-closeup");
 let storyParagraphs = [];
@@ -2672,7 +2687,8 @@ function showStory(star, planet) {
       return p;
     })
   );
-  storyPanel.hidden = false;
+  hasStory = true;
+  applyStoryVisibility();
   updateCloseupButton();
 }
 
@@ -3578,12 +3594,10 @@ measurePlanButton.addEventListener("click", () => {
 
 // Texts and the habitable zone off while the ship flies, on again afterwards (the story panel comes back as it was, or
 // with the story of the target when the trip ends there).
-let storyHiddenBefore = true;
 function setQuiet(on) {
   if (on === quiet) return;
   quiet = on;
-  if (on) storyHiddenBefore = storyPanel.hidden;
-  storyPanel.hidden = on ? true : storyHiddenBefore;
+  applyStoryVisibility();
   for (const s of [solar, activeExo]) if (s?.zoneMesh) s.zoneMesh.visible = zoneOn && !on && !(closeup && current?.system === s);
 }
 
