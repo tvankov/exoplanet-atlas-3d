@@ -59,6 +59,7 @@
     <p id="spectral-note" class="hint" hidden></p>
     <button id="measure" type="button" aria-pressed="false">Measure distance</button>
     <p id="measure-note" class="hint" hidden></p>
+    <button id="measure-plan" type="button" hidden>Plan a trip between them</button>
     <details class="menu">
       <summary id="solar-title">Solar System</summary>
       <ul id="solar-list" class="planet-list"></ul>
@@ -66,8 +67,9 @@
     <details class="menu" id="planner">
       <summary id="planner-title">Travel planner</summary>
       <div class="planner-body">
-        <label><span id="plan-from-label">From</span> <select id="plan-from"></select></label>
-        <label><span id="plan-to-label">To</span> <select id="plan-to"></select></label>
+        <label><span id="plan-from-label">From</span> <input id="plan-from" type="text" list="plan-places" autocomplete="off" spellcheck="false"></label>
+        <label><span id="plan-to-label">To</span> <input id="plan-to" type="text" list="plan-places" autocomplete="off" spellcheck="false"></label>
+        <datalist id="plan-places"></datalist>
         <label><span id="plan-speed-label">Speed</span> <select id="plan-speed"></select></label>
         <p id="plan-kind" class="hint"></p>
         <button id="plan-go" type="button">Plan and fly</button>

@@ -436,6 +436,7 @@ html, body {
   opacity: 0.85;
 }
 .planner-body select,
+.planner-body input,
 #spectral-mode,
 #spectral-class {
   box-sizing: border-box;

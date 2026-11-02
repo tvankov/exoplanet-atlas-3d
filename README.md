@@ -88,8 +88,8 @@ python src/build_orbits.py   # -> web/data/orbits.json (67 KB)
 
 The maths and all texts of this part are in `web/travel.js`, the drawing is in `web/main.js`.
 
-- **Travel planner, stage 1 (planet to planet):** the menu "Travel planner" in the left panel has From, To and Speed (the eight
-  planets). The ship leaves the start planet where it is now and flies a straight line at constant speed to the place where the target will
+- **Travel planner (planet to planet, and anywhere else):** the menu "Travel planner" in the left panel has From, To and Speed. From and
+  To are text fields with suggestions: the eight planets, the Sun or any of the 4,819 host stars. The ship leaves the start planet where it is now and flies a straight line at constant speed to the place where the target will
   be on arrival (an intercept course, `solveIntercept`: stepping plus bisection on "distance to the target at time T equals speed times T").
   Start and target stand on their real positions of today (`planetPosition`). The line is worked out in AU and drawn through the squeezed
   map, so it looks curved; the ring marks the arrival point. The camera follows the ship, the time slider speeds it up (when you press
@@ -99,6 +99,12 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   0.1 c and 0.9 c are far beyond any real spacecraft (physics does not forbid them). 1 c is the speed of light, which only light reaches, so it
   has no time on board. **10 c and 100 c are FICTIONAL**: nothing can be faster than light as far as we know. They are marked in red in the
   panel and in the menu.
+- **Trips to and between stars:** if one end is a star or the Sun, the ship flies a straight line in real space (light years, the axes of
+  the data); the time is distance over speed, 1 c being one light year per year. The stars are treated as standing still (their real
+  motion is slow and not used here) and a planet counts as the Sun, because the planets are tiny against light years. Two extra
+  fictional steps (1,000 c and 100,000 c) make star trips watchable. At the top speed of the time slider (1e8) a trip of thousands of years
+  still takes hours to watch, so slow probes to a star are not watchable. After "Measure distance" with two stars, the button "Plan a trip
+  between them" fills in both ends.
 - **What it does not do:** no gravity, no orbit of the Sun, no speed of the start planet at launch and no time for the light to reach the
   planets. It is a straight line, not a mission plan.
 - **Flight speed in c:** "Flight speed (keys)" sets how fast W, A, S, D and Q, E move: Auto (as before) or a multiple of c, where 1 c is one
@@ -115,7 +121,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   Gaia layers.
 - **Measure distance:** press the button, click two stars (or the Sun), get the straight-line distance in light years and parsecs and the
   line between them, drawn curved because the map is squeezed. The distances are the catalogue distances with their measurement errors. It
-  is the base for stage 2 of the planner (star to star).
+  feeds the planner (star to star).
 
 ## Legal
 

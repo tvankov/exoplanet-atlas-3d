@@ -19,6 +19,8 @@ export const SPEEDS = [
   { id: "c1", kms: C_KMS, kind: "limit" },
   { id: "c10", kms: 10 * C_KMS, kind: "fiction" },
   { id: "c100", kms: 100 * C_KMS, kind: "fiction" },
+  { id: "c1000", kms: 1000 * C_KMS, kind: "fiction" }, // between stars: 10 c would still take years
+  { id: "c100000", kms: 100000 * C_KMS, kind: "fiction" },
 ];
 
 // Free flight with the keys. Every step is a multiple of c, where 1 c is one light second per second. "auto"
@@ -102,6 +104,8 @@ export const TRAVEL_UI = {
       c1: "1 c (light speed)",
       c10: "10 c (FICTIONAL)",
       c100: "100 c (FICTIONAL)",
+      c1000: "1,000 c (FICTIONAL)",
+      c100000: "100,000 c (FICTIONAL)",
     },
     kind: {
       probe: "A speed that real spacecraft have reached.",
@@ -109,7 +113,12 @@ export const TRAVEL_UI = {
       limit: "1 c is the speed of light. Only light itself travels at it; a ship with mass cannot reach it. Treated as fictional.",
       fiction: "FICTIONAL: nothing can go faster than light, as far as we know today. Shown only to feel the distances.",
     },
-    note: "The ship flies a straight line and aims at where the target will be on arrival (intercept course, marked by the ring). Gravity is ignored. The planets are on their real positions of today. The line is curved on the map because the map is compressed.",
+    note: "The ship flies a straight line and aims at where the target will be on arrival (intercept course, marked by the ring). Gravity is ignored. The planets are on their real positions of today. The line is curved on the map because the map is compressed. Start and target can also be the Sun or any star of the list. Between stars the ship flies a straight line in real space, the stars are treated as standing still (they move slowly) and a planet counts as the Sun, because planets are tiny against light years.",
+    unknown: "Unknown place. Type a planet, the Sun or a star name from the list.",
+    useMeasure: "Plan a trip between them",
+    resultStars: (d) =>
+      `${d.from} to ${d.to}\nDistance: ${d.ly} light years (${d.pc} parsecs)\nTravel time: ${d.time}\nOn board: ${d.board}`,
+    sun: "Sun",
     result: (d) =>
       `${d.from} to ${d.to}\nDistance: ${d.au} AU (${d.light} of light travel)\nTravel time: ${d.time}\nOn board: ${d.board}`,
     boardLight: "none, light does not age (and a ship with mass cannot go this fast)",
@@ -152,6 +161,8 @@ export const TRAVEL_UI = {
       c1: "1 c (Lichtgeschwindigkeit)",
       c10: "10 c (FIKTIV)",
       c100: "100 c (FIKTIV)",
+      c1000: "1.000 c (FIKTIV)",
+      c100000: "100.000 c (FIKTIV)",
     },
     kind: {
       probe: "Ein Tempo, das echte Raumsonden erreicht haben.",
@@ -159,7 +170,12 @@ export const TRAVEL_UI = {
       limit: "1 c ist die Lichtgeschwindigkeit. Nur Licht selbst fliegt so schnell, ein Schiff mit Masse kann sie nicht erreichen. Gilt hier als fiktiv.",
       fiction: "FIKTIV: Nach heutigem Wissen kann nichts schneller als das Licht sein. Nur gezeigt, um die Entfernungen zu spüren.",
     },
-    note: "Das Schiff fliegt eine gerade Linie und zielt dorthin, wo das Ziel bei der Ankunft stehen wird (Abfangbahn, vom Ring markiert). Schwerkraft wird nicht gerechnet. Die Planeten stehen auf ihren echten Positionen von heute. Die Linie ist auf der Karte gebogen, weil die Karte gestaucht ist.",
+    note: "Das Schiff fliegt eine gerade Linie und zielt dorthin, wo das Ziel bei der Ankunft stehen wird (Abfangbahn, vom Ring markiert). Schwerkraft wird nicht gerechnet. Die Planeten stehen auf ihren echten Positionen von heute. Die Linie ist auf der Karte gebogen, weil die Karte gestaucht ist. Start und Ziel können auch die Sonne oder ein Stern der Liste sein. Zwischen Sternen fliegt das Schiff eine gerade Linie im echten Raum, die Sterne gelten als ruhend (sie bewegen sich langsam) und ein Planet zählt als die Sonne, weil Planeten gegen Lichtjahre winzig sind.",
+    unknown: "Unbekannter Ort. Tippe einen Planeten, die Sonne oder einen Sternnamen aus der Liste.",
+    useMeasure: "Reise zwischen ihnen planen",
+    resultStars: (d) =>
+      `${d.from} nach ${d.to}\nEntfernung: ${d.ly} Lichtjahre (${d.pc} Parsec)\nReisezeit: ${d.time}\nAn Bord: ${d.board}`,
+    sun: "Sonne",
     result: (d) =>
       `${d.from} nach ${d.to}\nEntfernung: ${d.au} AE (${d.light} Lichtlaufzeit)\nReisezeit: ${d.time}\nAn Bord: ${d.board}`,
     boardLight: "keine, Licht altert nicht (und ein Schiff mit Masse kann nicht so schnell sein)",

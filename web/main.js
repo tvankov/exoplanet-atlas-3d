@@ -214,6 +214,7 @@ function updatePositions() {
   });
   attr.needsUpdate = true;
   if (measureA) drawMeasure();
+  if (trip) drawTrip();
   if (gaia) placeGaia();
   if (deep) placeDeep();
 }
@@ -3406,7 +3407,7 @@ shipTarget.scale.set(0.05, 0.05, 1);
 for (const o of [ship, shipLine, shipTarget]) {
   o.visible = false;
   o.frustumCulled = false;
-  solar.group.add(o);
+  scene.add(o); // not in the Solar System group: that one is hidden from far away, and a trip may go to a star
 }
 
 // Keeps the selection of a menu over a rebuild of its entries (a language change writes the labels again).
@@ -3430,9 +3431,7 @@ function buildPlanner() {
   document.getElementById("plan-note").textContent = t.note;
   planGo.textContent = t.go;
   planStop.textContent = t.stop;
-  const names = PLANETS.map((p) => [p.name, p.name === "Earth" ? UI[lang].earthShort : solarName(p.name, lang)]);
-  fillSelect(planFrom, names, "Earth");
-  fillSelect(planTo, names, "Mars");
+  fillPlaces();
   fillSelect(planSpeed, SPEEDS.map((v) => [v.id, t.speedLabel[v.id]]), "parker");
   fillSelect(
     flySpeedSelect,
@@ -3444,6 +3443,7 @@ function buildPlanner() {
   spectralModeSelect.options[1].textContent = t.spectralMode.highlight;
   spectralModeSelect.options[2].textContent = t.spectralMode.isolate;
   document.getElementById("measure").textContent = measuring ? t.measureStop : t.measure;
+  measurePlanButton.textContent = t.useMeasure;
   if (points) applyFilters();
   showMeasure();
   if (trip) showTripResult();
@@ -3471,16 +3471,61 @@ function showTripResult() {
   } else {
     board = trip.beta === 1 ? t.boardLight : t.boardFiction;
   }
-  planResult.textContent = t.result({
-    from: planetLabel(trip.fromName),
-    to: planetLabel(trip.toName),
-    au: fmt(trip.distanceAu),
-    light: duration(trip.distanceAu * LIGHT_SECONDS_PER_AU, lang),
-    time: duration(seconds, lang),
-    board,
-  });
+  const names = { from: placeLabel(trip.from), to: placeLabel(trip.to), time: duration(seconds, lang), board };
+  if (trip.mode === "star") {
+    const ly = trip.distanceAu * LY_PER_AU;
+    planResult.textContent = t.resultStars({ ...names, ly: fmt(ly, 2), pc: fmt(ly / 3.2616, 2) });
+  } else {
+    planResult.textContent = t.result({
+      ...names,
+      au: fmt(trip.distanceAu),
+      light: duration(trip.distanceAu * LIGHT_SECONDS_PER_AU, lang),
+    });
+  }
 }
 const planetLabel = (name) => (name === "Earth" ? UI[lang].earthShort : solarName(name, lang));
+
+// Where a trip can start or end: a planet, the Sun or any host star of the list. The two boxes are text fields
+// with a list of suggestions, because a menu of 4,800 stars would be too long to use.
+const planPlaces = document.getElementById("plan-places");
+const measurePlanButton = document.getElementById("measure-plan");
+let starByName = null;
+const sunLabel = () => TRAVEL_UI[lang].sun;
+function resolvePlace(text) {
+  const q = text.trim().toLowerCase();
+  if (!q) return null;
+  const planet = PLANETS.find((p) =>
+    [p.name, solarName(p.name, "en"), solarName(p.name, "de"), ...(p.name === "Earth" ? [UI.en.earthShort, UI.de.earthShort] : [])].some(
+      (n) => n.toLowerCase() === q
+    )
+  );
+  if (planet) return { kind: "planet", name: planet.name };
+  if (q === "sun" || q === "sonne") return { kind: "star", star: SUN_POINT };
+  starByName ??= new Map(stars.map((s) => [s.hostname.toLowerCase(), s]));
+  const star = starByName.get(q);
+  return star ? { kind: "star", star } : null;
+}
+function placeLabel(place) {
+  if (place.kind === "planet") return planetLabel(place.name);
+  return place.star === SUN_POINT ? sunLabel() : place.star.hostname;
+}
+// Fills the suggestions, writes the defaults (Earth to Mars) and, after a change of language, writes a planet or
+// the Sun again in the new language.
+function fillPlaces() {
+  const names = [...PLANETS.map((p) => planetLabel(p.name)), sunLabel(), ...stars.map((s) => s.hostname)];
+  planPlaces.replaceChildren(...names.map((n) => new Option("", n)));
+  for (const [input, fallback] of [[planFrom, "Earth"], [planTo, "Mars"]]) {
+    const place = resolvePlace(input.value) ?? { kind: "planet", name: fallback };
+    input.value = placeLabel(place);
+  }
+}
+planFrom.addEventListener("focus", () => planFrom.select());
+planTo.addEventListener("focus", () => planTo.select());
+measurePlanButton.addEventListener("click", () => {
+  planFrom.value = measureA.hostname;
+  planTo.value = measureB.hostname;
+  document.getElementById("planner").open = true;
+});
 
 function clearTrip() {
   trip = null;
@@ -3493,37 +3538,57 @@ planStop.addEventListener("click", clearTrip);
 
 planGo.addEventListener("click", () => {
   const t = TRAVEL_UI[lang];
-  if (planFrom.value === planTo.value) {
+  const from = resolvePlace(planFrom.value);
+  const to = resolvePlace(planTo.value);
+  if (!from || !to) {
+    planResult.textContent = t.unknown;
+    return;
+  }
+  if (placeLabel(from) === placeLabel(to)) {
     planResult.textContent = t.same;
     return;
   }
   const speed = SPEEDS.find((v) => v.id === planSpeed.value);
   const jd0 = JD_AT_LOAD + solar.time * 365.25;
-  const rowOf = (name) => ORBITS.planets[ELEMENT_ROW[name]];
-  const o = planetPosition(rowOf(planFrom.value), jd0);
-  const hit = solveIntercept(o, (jd) => planetPosition(rowOf(planTo.value), jd), jd0, (speed.kms / C_KMS) * C_AU_PER_DAY);
-  if (!hit) {
-    planResult.textContent = t.none;
-    return;
+  const beta = speed.kms / C_KMS;
+  let o;
+  let d;
+  let days;
+  let mode;
+  if (from.kind === "planet" && to.kind === "planet") {
+    // Planet to planet: both move, so the ship aims at the place where the target will be (AU, ecliptic).
+    mode = "solar";
+    const rowOf = (name) => ORBITS.planets[ELEMENT_ROW[name]];
+    o = planetPosition(rowOf(from.name), jd0);
+    const hit = solveIntercept(o, (jd) => planetPosition(rowOf(to.name), jd), jd0, beta * C_AU_PER_DAY);
+    if (!hit) {
+      planResult.textContent = t.none;
+      return;
+    }
+    d = hit.arrive;
+    days = hit.days;
+  } else {
+    // Stars are treated as standing still and a planet counts as the Sun (light years, the axes of the data), so
+    // the time is just distance over speed: 1 c is one light year per year.
+    mode = "star";
+    const at = (place) => (place.kind === "planet" ? SUN_POINT : place.star);
+    const a = at(from);
+    const b = at(to);
+    o = { x: a.x, y: a.y, z: a.z };
+    d = { x: b.x, y: b.y, z: b.z };
+    days = (Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * 365.25) / beta;
   }
-  const d = hit.arrive;
-  const points3 = Array.from({ length: 161 }, (_, k) => {
-    const u = k / 160;
-    return mapEcliptic({ x: o.x + (d.x - o.x) * u, y: o.y + (d.y - o.y) * u, z: o.z + (d.z - o.z) * u }, new THREE.Vector3());
-  });
-  shipLine.geometry.dispose();
-  shipLine.geometry = new THREE.BufferGeometry().setFromPoints(points3);
-  mapEcliptic(d, shipTarget.position);
+  const unit = mode === "solar" ? 1 : 1 / LY_PER_AU; // positions in AU for the trip data, light years become AU here
   trip = {
-    jd0, days: hit.days, o, d, beta: speed.kms / C_KMS, kind: speed.kind, follow: true, arrived: false,
-    fromName: planFrom.value, toName: planTo.value,
-    distanceAu: Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z),
+    jd0, days, o, d, beta, kind: speed.kind, follow: true, arrived: false, mode, from, to,
+    distanceAu: Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * unit,
   };
+  const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
   planStop.hidden = false;
   // The trip should be watchable: the time speed is set so that it takes about 20 seconds on the screen
   // (never slower than real time). The slider can change it afterwards.
-  timeScale = Math.min(1e8, Math.max(1, (hit.days * 86400) / 20));
+  timeScale = Math.min(1e8, Math.max(1, (days * 86400) / 20));
   speedSlider.value = String((Math.log10(timeScale) / 8) * 100);
   updateSpeedText();
   showTripResult();
@@ -3532,10 +3597,22 @@ planGo.addEventListener("click", () => {
   leaveCloseup();
   updateCloseupButton();
   const routeSize = points3[0].distanceTo(points3[160]);
-  const target = mapEcliptic(o, new THREE.Vector3());
+  const target = tripMap(o, new THREE.Vector3());
   startFlight(() => target, Math.max(0.25, routeSize * 1.4));
   ring.visible = false;
 });
+
+// Positions of the trip are AU (ecliptic) for a trip between planets and light years (data axes) for the rest.
+const tripMap = (p, out) => (trip.mode === "solar" ? mapEcliptic(p, out) : toMapPosition(p, out));
+const lerp3 = (o, d, u) => ({ x: o.x + (d.x - o.x) * u, y: o.y + (d.y - o.y) * u, z: o.z + (d.z - o.z) * u });
+// The straight line of the trip through the squeezed map (so it is curved), and the ring at the arrival point.
+function drawTrip() {
+  const line = Array.from({ length: 161 }, (_, k) => tripMap(lerp3(trip.o, trip.d, k / 160), new THREE.Vector3()));
+  shipLine.geometry.dispose();
+  shipLine.geometry = new THREE.BufferGeometry().setFromPoints(line);
+  tripMap(trip.d, shipTarget.position);
+  return line;
+}
 
 let tripShownAt = 0;
 const shipTmp = new THREE.Vector3();
@@ -3543,10 +3620,7 @@ function stepTrip(now) {
   if (!trip) return;
   const jd = JD_AT_LOAD + solar.time * 365.25;
   const u = Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days));
-  mapEcliptic(
-    { x: trip.o.x + (trip.d.x - trip.o.x) * u, y: trip.o.y + (trip.d.y - trip.o.y) * u, z: trip.o.z + (trip.d.z - trip.o.z) * u },
-    ship.position
-  );
+  tripMap(lerp3(trip.o, trip.d, u), ship.position);
   // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
   const size = camera.position.distanceTo(ship.position) * 0.02;
   shipGlow.children.forEach((layer, i) => (layer.material.uniforms.uSize.value = size * (i === 0 ? 1 : 2.4)));
@@ -3629,6 +3703,7 @@ measureButton.addEventListener("click", () => {
 function showMeasure() {
   const t = TRAVEL_UI[lang];
   measureNote.hidden = !measuring;
+  measurePlanButton.hidden = !(measuring && measureB);
   if (!measuring) return;
   if (!measureA) measureNote.textContent = t.measureHint;
   else if (!measureB) measureNote.textContent = t.measureSecond(measureA.hostname);
