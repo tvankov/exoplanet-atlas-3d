@@ -3724,7 +3724,7 @@ function stopFraction() {
   const target = tripMap(trip.d, new THREE.Vector3());
   const p = new THREE.Vector3();
   for (let k = 2000; k >= 1; k--) {
-    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= Math.max(radius * 1.5, radius + 0.03)) return k / 2000;
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= radius * 1.5) return k / 2000;
   }
   return 0.5;
 }
@@ -3748,6 +3748,8 @@ function drawTrip() {
 let egoOn = false;
 const egoLast = new THREE.Vector3();
 const egoAhead = new THREE.Vector3();
+const egoOffset = new THREE.Vector3(); // the offset of the camera from the ship at the start, see startOffset
+const egoOffsetNow = new THREE.Vector3(); // the part of it that is still in effect
 function enterEgo(u) {
   egoOn = true;
   flight = null;
@@ -3757,6 +3759,8 @@ function enterEgo(u) {
   if (u > 0.99) egoAhead.negate(); // at the very end the "ahead" point would be past the target
   egoAhead.normalize();
   const offset = u < 0.02 ? startOffset(egoAhead, offsetTmp) : offsetTmp.set(0, 0, 0); // only a start in first person gets the offset
+  egoOffset.copy(offset);
+  egoOffsetNow.copy(offset);
   egoAhead.multiplyScalar(controls.minDistance * 1.5);
   egoLast.copy(ship.position);
   camera.position.copy(ship.position).add(offset);
@@ -3816,6 +3820,13 @@ function stepView(now) {
     if (!egoOn) enterEgo(trip.phase === "cruise" ? Math.min(1, Math.max(0, (JD_AT_LOAD + solar.time * 365.25 - trip.jd0) / trip.days)) : 0);
     // Camera and target move with the ship, so the mouse look stays as the user left it.
     const delta = shipTmp.copy(ship.position).sub(egoLast);
+    // The offset of the start melts away during the first tenth of the route: the camera slides into the path of the ship
+    // (the normal first person view) and stays there.
+    const melt = Math.min(1, (trip.share ?? 0) / 0.1);
+    const keep = 1 - melt * melt * (3 - 2 * melt);
+    offsetTmp.copy(egoOffset).multiplyScalar(keep);
+    delta.add(offsetTmp).sub(egoOffsetNow);
+    egoOffsetNow.copy(offsetTmp);
     camera.position.add(delta);
     controls.target.add(delta);
     egoLast.copy(ship.position);
@@ -3910,6 +3921,7 @@ function stepTrip(now) {
   const t = trip.phase === "cruise" ? Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)) : trip.phase === "exit" || trip.phase === "done" ? 1 : 0; // the share of the time that has passed
   const u = rampDistance(t) * trip.uEnd; // the share of the way, the ship starts and stops softly and stops short of the target
   trip.speedFactor = rampSpeed(t);
+  trip.share = rampDistance(t); // the share of the whole route
   tripMap(lerp3(trip.o, trip.d, u), ship.position);
   // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
   const size = camera.position.distanceTo(ship.position) * 0.02;
