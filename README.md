@@ -97,6 +97,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   travel time, the travel time and, below c, the time on board with the Lorentz factor (time dilation).
 - **First person start:** the camera starts 1.3 radii (centre to centre) from the start object, but never closer than 0.03 map units to its surface (the near plane of the camera is 0.01 and cuts away anything closer, which felt like sitting inside the Earth), a bit left, above and behind it, looking along the route, so the
   start object stands at the lower right of the picture and falls behind when the ship speeds up.
+  Only the start has this offset: during the first tenth of the route the camera slides into the path of the ship (the normal first person view).
 - **View:** "View" chooses third person (the camera follows the ship from outside, the default) or first person (the camera sits at the ship and
   looks along the flight direction; the mouse looks around, zoom is off). It can be switched during the flight.
 - **The trip as a short film:** (1) the start planet or system is in view (2.5 s), (2) the ship turns towards the target (2.5 s), (3) it jumps
@@ -112,7 +113,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   story, a star or the Sun is shown as its system.
 - **Exoplanets as destination, stopping in front of the target:** From and To also take the name of any exoplanet (for example Proxima Cen b).
   The ship flies to its star, and on arrival the system opens and the camera goes to the planet. The ship never flies through the
-  target: it stops 1.5 radii from its centre, a quarter of a diameter in front of its surface, but never closer than 0.03 map units to the surface (the radius as drawn on the map; all host stars are drawn with the same size), then the
+  target: it stops 1.5 radii from its centre, a quarter of a diameter in front of its surface (the radius as drawn on the map; all host stars are drawn with the same size), then the
   close-up takes over. The blue line shows the whole route up to the ring at the target; the ship stops on it a little before the ring. The distance and travel time shown are to the target itself, the small stretch that is not flown is not subtracted.
 - **Time speed:** the trip sets the time speed so that it takes about 20 seconds; when the ship arrives (or on Stop) the time speed is back
   at the value you had before, even if you moved the slider during the flight.
