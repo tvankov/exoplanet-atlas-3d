@@ -97,8 +97,13 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   travel time, the travel time and, below c, the time on board with the Lorentz factor (time dilation).
 - **View:** "View" chooses third person (the camera follows the ship from outside, the default) or first person (the camera sits at the ship and
   looks along the flight direction; the mouse looks around, zoom is off). It can be switched during the flight.
+- **The trip as a short film:** (1) the start planet or system is in view (2.5 s), (2) the ship turns towards the target (2.5 s), (3) it jumps
+  into hyperspace (1.2 s) and flies, with the stars as streaks all the time, (4) it comes out of hyperspace at the target system point
+  (the stop point in front of the target) and (5) the camera goes on to the planet if a planet was chosen. **The turn and the hyperspace are
+  fiction** (there is no hyperspace as far as we know, it is only the look of the film); the times shown are for the speed chosen. Before the
+  flight the time runs in real time; during the flight it is set so that it takes about 20 seconds; at the end your setting is back.
 - **Soft start and stop, and the arrival:** the ship speeds up evenly during the first tenth of the time and slows down during the last tenth
-  (the star streaks fade in and out with it). The area under the speed curve stays the same, so the travel time shown is right, but the
+  . The area under the speed curve stays the same, so the travel time shown is right, but the
   constant speed in between is 1.11 times the chosen one. At the end the destination is in view: a planet gets its close-up with its
   story, a star or the Sun is shown as its system.
 - **Exoplanets as destination, stopping in front of the target:** From and To also take the name of any exoplanet (for example Proxima Cen b).
@@ -125,7 +130,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   different places. Everything above 1 c is marked FICTIONAL.
 - **Diffraction spikes:** the brightest stars (as seen from the camera, in the NASA layer and in the near Gaia layer, also the deep layer)
   get a four-armed cross, like a telescope shows. It is an effect of the optics, not a part of the star, and an illustration.
-- **Star streaks:** at high speed (the ship of the planner at 0.01 c and more, the key flight at 1,000 c and more) the picture is smeared
+- **Star streaks:** in the hyperspace of the planner and at high speed of the key flight (1,000 c and more) the picture is smeared
   outwards from the middle, so the stars become streaks (a post-processing pass in `main.js`, off at normal speed).
 - **Spectral class filter:** the classes O, B, A, F, G, K, M from the star temperature `st_teff` (limits 30,000 / 10,000 / 7,500 / 6,000 /
   5,200 / 3,700 K, the usual rounded ones). Off, highlight (the others dimmed) or isolate (the others hidden). It works together with

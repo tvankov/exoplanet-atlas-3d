@@ -3286,7 +3286,7 @@ function animate() {
     camera.position.add(delta);
     controls.target.add(delta);
   }
-  stepView();
+  stepView(now);
   stepKeys(dt);
   controls.update();
   declutterLabels();
@@ -3611,20 +3611,23 @@ planGo.addEventListener("click", () => {
   const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
   planStop.hidden = false;
-  // The trip should be watchable: the time speed is set so that it takes about 20 seconds on the screen
-  // (never slower than real time). The slider can change it afterwards.
-  timeScale = Math.min(1e8, Math.max(1, (days * 86400) / 20));
-  speedSlider.value = String((Math.log10(timeScale) / 8) * 100);
+  // The trip is a short film: the start is in view (intro), the ship turns towards the target (turn), jumps into
+  // hyperspace (jump), flies (cruise) and comes out at the target (exit), where the target gets its view (done).
+  // The cruise is made watchable: its time speed is set so that it takes about 20 seconds on the screen (never
+  // slower than real time). Before it the clock runs in real time, so the planets stay where the course was worked out.
+  trip.watchScale = Math.min(1e8, Math.max(1, (days * 86400) / 20));
+  timeScale = 1;
+  speedSlider.value = "0";
   updateSpeedText();
   showTripResult();
   planResult.textContent += `\n${t.setSpeed}`;
-  // Show the whole route first: the camera looks from above at the ship, far enough for the route to fit.
+  trip.phase = "intro";
+  trip.phaseStart = performance.now() / 1000;
+  trip.warpTarget = 0;
   leaveCloseup();
   updateCloseupButton();
-  const routeSize = points3[0].distanceTo(points3[160]);
-  const target = tripMap(o, new THREE.Vector3());
-  if (planView.value !== "ego") startFlight(() => target, Math.max(0.25, routeSize * 1.4));
-  ring.visible = false;
+  showPlace(from);
+  ring.visible = false; // the ring would mark the start planet
 });
 
 // The ship stops three diameters in front of the target and does not fly through it. The diameter is the one drawn
@@ -3680,10 +3683,33 @@ function leaveEgo() {
   controls.enableZoom = true;
   if (trip) ship.visible = true;
 }
-function stepView() {
-  if (!trip || trip.arrived) return;
+// Where the camera goes while the ship turns: in the ship (first person) or behind it (third person), looking along the route.
+const turnFrom = { pos: new THREE.Vector3(), target: new THREE.Vector3() };
+const poseTmp = { pos: new THREE.Vector3(), target: new THREE.Vector3() };
+const aheadTmp = new THREE.Vector3();
+function tripPose(pose) {
+  tripMap(lerp3(trip.o, trip.d, 0.01 * trip.uEnd), aheadTmp).sub(ship.position).normalize();
   if (planView.value === "ego") {
-    if (!egoOn) enterEgo(Math.min(1, Math.max(0, (JD_AT_LOAD + solar.time * 365.25 - trip.jd0) / trip.days)));
+    pose.pos.copy(ship.position);
+    pose.target.copy(ship.position).addScaledVector(aheadTmp, controls.minDistance * 1.5);
+  } else {
+    pose.pos.copy(ship.position).addScaledVector(aheadTmp, -0.35);
+    pose.target.copy(ship.position);
+  }
+}
+
+function stepView(now) {
+  if (!trip || trip.phase === "intro" || trip.phase === "done") return;
+  if (trip.phase === "turn") {
+    tripPose(poseTmp);
+    const u = Math.min(1, (now - trip.phaseStart) / TRIP_TURN);
+    const e = u * u * (3 - 2 * u);
+    camera.position.lerpVectors(turnFrom.pos, poseTmp.pos, e);
+    controls.target.lerpVectors(turnFrom.target, poseTmp.target, e);
+    return;
+  }
+  if (planView.value === "ego") {
+    if (!egoOn) enterEgo(trip.phase === "cruise" ? Math.min(1, Math.max(0, (JD_AT_LOAD + solar.time * 365.25 - trip.jd0) / trip.days)) : 0);
     // Camera and target move with the ship, so the mouse look stays as the user left it.
     const delta = shipTmp.copy(ship.position).sub(egoLast);
     camera.position.add(delta);
@@ -3715,11 +3741,13 @@ function rampDistance(t) {
 }
 const rampSpeed = (t) => Math.min(1, t / RAMP, (1 - t) / RAMP); // 0 to 1, the share of the top speed
 
-// At the end of the trip the destination is in view: a planet gets its close-up (as if clicked), a star or the
-// Sun is shown as its system.
+// A place in view: a planet gets its close-up (as if clicked), a star or the Sun is shown as its system. Used for
+// the start and for the arrival of the trip.
 function showArrival() {
   trip.follow = false;
-  const to = trip.to;
+  showPlace(trip.to);
+}
+function showPlace(to) {
   if (to.kind === "planet") {
     const body = solar.bodies.find((b) => b.name === to.name);
     if (body) selectBody(solar, body);
@@ -3733,33 +3761,67 @@ function showArrival() {
   }
 }
 
+const TRIP_INTRO = 2.5; // seconds of the film, real time
+const TRIP_TURN = 2.5;
+const TRIP_JUMP = 1.2;
+const TRIP_EXIT = 1.8;
+function setPhase(name, now) {
+  trip.phase = name;
+  trip.phaseStart = now;
+  trip.warpTarget = name === "jump" || name === "cruise" ? 1 : 0; // hyperspace: the stars are streaks all the time
+  if (name === "turn") {
+    leaveCloseup(); // the close-up would pull the camera back to the start planet
+    updateCloseupButton();
+    flight = null;
+    turnFrom.pos.copy(camera.position);
+    turnFrom.target.copy(controls.target);
+  }
+  if (name === "cruise") {
+    trip.jd0 = JD_AT_LOAD + solar.time * 365.25;
+    timeScale = trip.watchScale;
+    speedSlider.value = String((Math.log10(timeScale) / 8) * 100);
+    updateSpeedText();
+  }
+}
+
 let tripShownAt = 0;
 const shipTmp = new THREE.Vector3();
 function stepTrip(now) {
   if (!trip) return;
+  const elapsed = now - trip.phaseStart;
+  if (trip.phase === "intro" && elapsed >= TRIP_INTRO) setPhase("turn", now);
+  else if (trip.phase === "turn" && elapsed >= TRIP_TURN) setPhase("jump", now);
+  else if (trip.phase === "jump" && elapsed >= TRIP_JUMP) setPhase("cruise", now);
+  else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
+    setPhase("done", now);
+    leaveEgo();
+    showTripResult();
+    planResult.textContent += `\n${TRAVEL_UI[lang].arrived}`;
+    showArrival(); // out of hyperspace at the target system: now on to the planet if one was chosen
+  }
   const jd = JD_AT_LOAD + solar.time * 365.25;
-  const t = Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)); // the share of the time that has passed
+  const t = trip.phase === "cruise" ? Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)) : trip.phase === "exit" || trip.phase === "done" ? 1 : 0; // the share of the time that has passed
   const u = rampDistance(t) * trip.uEnd; // the share of the way, the ship starts and stops softly and stops short of the target
   trip.speedFactor = rampSpeed(t);
   tripMap(lerp3(trip.o, trip.d, u), ship.position);
   // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
   const size = camera.position.distanceTo(ship.position) * 0.02;
   shipGlow.children.forEach((layer, i) => (layer.material.uniforms.uSize.value = size * (i === 0 ? 1 : 2.4)));
-  if (t >= 1 && !trip.arrived) {
-    trip.arrived = true;
+  ship.visible = trip.phase !== "intro" && !egoOn;
+  if (t >= 1 && trip.phase === "cruise") {
+    trip.arrived = true; // the flight itself is over, the film goes on with the exit
     restoreTimeSpeed();
-    leaveEgo();
-    showTripResult();
-    planResult.textContent += `\n${TRAVEL_UI[lang].arrived}`;
-    showArrival();
-    return;
+    setPhase("exit", now);
   }
-  if (trip.arrived || now - tripShownAt < 0.3) return;
+  if (trip.phase === "done" || now - tripShownAt < 0.3) return;
   tripShownAt = now;
   const seconds = t * trip.days * 86400;
   const board = trip.beta < 1 ? duration(boardSeconds(seconds, trip.beta), lang) : "-";
   showTripResult();
-  planResult.textContent += `\n${TRAVEL_UI[lang].live({ percent: fmt((u / trip.uEnd) * 100, 0), time: duration(seconds, lang), board })}`;
+  planResult.textContent +=
+    trip.phase === "cruise"
+      ? `\n${TRAVEL_UI[lang].live({ percent: fmt((u / trip.uEnd) * 100, 0), time: duration(seconds, lang), board })}`
+      : `\n${TRAVEL_UI[lang].phase[trip.phase]}`;
 }
 
 // The streaks of the stars grow with the speed: the ship of the planner, or the free flight with a step in c.
@@ -3767,7 +3829,7 @@ let warp = 0;
 let flyWarpTarget = 0;
 function stepWarp(dt) {
   let target = flyWarpTarget;
-  if (trip && !trip.arrived) target = Math.max(target, Math.min(1, Math.max(0, (Math.log10(trip.beta) + 2) / 4) * (trip.speedFactor ?? 1)));
+  if (trip) target = Math.max(target, trip.warpTarget ?? 0);
   warp += (target - warp) * Math.min(1, dt * 3);
   warpPass.enabled = warp > 0.01;
   warpPass.uniforms.uStrength.value = warp;
