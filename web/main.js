@@ -3489,6 +3489,7 @@ const planetLabel = (name) => (name === "Earth" ? UI[lang].earthShort : solarNam
 const planPlaces = document.getElementById("plan-places");
 const measurePlanButton = document.getElementById("measure-plan");
 let starByName = null;
+let planetByName = null;
 const sunLabel = () => TRAVEL_UI[lang].sun;
 function resolvePlace(text) {
   const q = text.trim().toLowerCase();
@@ -3502,16 +3503,25 @@ function resolvePlace(text) {
   if (q === "sun" || q === "sonne") return { kind: "star", star: SUN_POINT };
   starByName ??= new Map(stars.map((s) => [s.hostname.toLowerCase(), s]));
   const star = starByName.get(q);
-  return star ? { kind: "star", star } : null;
+  if (star) return { kind: "star", star };
+  // An exoplanet: the trip goes to its star, and the planet gets its close-up on arrival.
+  planetByName ??= new Map(stars.flatMap((s) => s.planets.map((p) => [p.pl_name.toLowerCase(), { kind: "exo", star: s, planet: p }])));
+  return planetByName.get(q) ?? null;
 }
 function placeLabel(place) {
   if (place.kind === "planet") return planetLabel(place.name);
+  if (place.kind === "exo") return place.planet.pl_name;
   return place.star === SUN_POINT ? sunLabel() : place.star.hostname;
 }
 // Fills the suggestions, writes the defaults (Earth to Mars) and, after a change of language, writes a planet or
 // the Sun again in the new language.
 function fillPlaces() {
-  const names = [...PLANETS.map((p) => planetLabel(p.name)), sunLabel(), ...stars.map((s) => s.hostname)];
+  const names = [
+    ...PLANETS.map((p) => planetLabel(p.name)),
+    sunLabel(),
+    ...stars.map((s) => s.hostname),
+    ...stars.flatMap((s) => s.planets.map((p) => p.pl_name)),
+  ];
   planPlaces.replaceChildren(...names.map((n) => new Option("", n)));
   for (const [input, fallback] of [[planFrom, "Earth"], [planTo, "Mars"]]) {
     const place = resolvePlace(input.value) ?? { kind: "planet", name: fallback };
@@ -3584,6 +3594,10 @@ planGo.addEventListener("click", () => {
     const at = (place) => (place.kind === "planet" ? SUN_POINT : place.star);
     const a = at(from);
     const b = at(to);
+    if (a === b) {
+      planResult.textContent = t.same; // two planets of one star, or a planet of ours and the Sun: no trip between them
+      return;
+    }
     o = { x: a.x, y: a.y, z: a.z };
     d = { x: b.x, y: b.y, z: b.z };
     days = (Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * 365.25) / beta;
@@ -3593,6 +3607,7 @@ planGo.addEventListener("click", () => {
     jd0, days, o, d, beta, kind: speed.kind, follow: true, arrived: false, mode, from, to, saved,
     distanceAu: Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * unit,
   };
+  trip.uEnd = stopFraction();
   const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
   planStop.hidden = false;
@@ -3612,12 +3627,27 @@ planGo.addEventListener("click", () => {
   ring.visible = false;
 });
 
+// The ship stops three diameters in front of the target and does not fly through it. The diameter is the one drawn
+// on the map (a planet of the Solar System, the Sun, or a host star, which is drawn with the same size for all stars).
+// The result is the share of the way where the ship stops. The times and distances shown are to the target itself.
+function stopFraction() {
+  const to = trip.to;
+  const radius =
+    to.kind === "planet" ? solar.bodies.find((b) => b.name === to.name).mesh.geometry.parameters.radius : to.star === SUN_POINT ? SUN_RADIUS : EXO_STAR_RADIUS;
+  const target = tripMap(trip.d, new THREE.Vector3());
+  const p = new THREE.Vector3();
+  for (let k = 2000; k >= 1; k--) {
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= radius * 6) return k / 2000;
+  }
+  return 0.5;
+}
+
 // Positions of the trip are AU (ecliptic) for a trip between planets and light years (data axes) for the rest.
 const tripMap = (p, out) => (trip.mode === "solar" ? mapEcliptic(p, out) : toMapPosition(p, out));
 const lerp3 = (o, d, u) => ({ x: o.x + (d.x - o.x) * u, y: o.y + (d.y - o.y) * u, z: o.z + (d.z - o.z) * u });
 // The straight line of the trip through the squeezed map (so it is curved), and the ring at the arrival point.
 function drawTrip() {
-  const line = Array.from({ length: 161 }, (_, k) => tripMap(lerp3(trip.o, trip.d, k / 160), new THREE.Vector3()));
+  const line = Array.from({ length: 161 }, (_, k) => tripMap(lerp3(trip.o, trip.d, (k / 160) * trip.uEnd), new THREE.Vector3()));
   shipLine.geometry.dispose();
   shipLine.geometry = new THREE.BufferGeometry().setFromPoints(line);
   tripMap(trip.d, shipTarget.position);
@@ -3693,6 +3723,9 @@ function showArrival() {
   if (to.kind === "planet") {
     const body = solar.bodies.find((b) => b.name === to.name);
     if (body) selectBody(solar, body);
+  } else if (to.kind === "exo") {
+    showSystem(to.star, to.planet);
+    enterCloseup(); // on to the planet itself
   } else if (to.star === SUN_POINT) {
     showSystem(EARTH.star, EARTH.planet);
   } else if (to.star.planets.length) {
@@ -3706,7 +3739,7 @@ function stepTrip(now) {
   if (!trip) return;
   const jd = JD_AT_LOAD + solar.time * 365.25;
   const t = Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)); // the share of the time that has passed
-  const u = rampDistance(t); // the share of the way, the ship starts and stops softly
+  const u = rampDistance(t) * trip.uEnd; // the share of the way, the ship starts and stops softly and stops short of the target
   trip.speedFactor = rampSpeed(t);
   tripMap(lerp3(trip.o, trip.d, u), ship.position);
   // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
@@ -3726,7 +3759,7 @@ function stepTrip(now) {
   const seconds = t * trip.days * 86400;
   const board = trip.beta < 1 ? duration(boardSeconds(seconds, trip.beta), lang) : "-";
   showTripResult();
-  planResult.textContent += `\n${TRAVEL_UI[lang].live({ percent: fmt(u * 100, 0), time: duration(seconds, lang), board })}`;
+  planResult.textContent += `\n${TRAVEL_UI[lang].live({ percent: fmt((u / trip.uEnd) * 100, 0), time: duration(seconds, lang), board })}`;
 }
 
 // The streaks of the stars grow with the speed: the ship of the planner, or the free flight with a step in c.
