@@ -660,3 +660,12 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
 }
+
+/* The button between From and To swaps them. */
+#planner-panel .swap {
+  display: block;
+  margin: 4px auto 0;
+  padding: 0 14px;
+  font-size: 16px;
+  line-height: 22px;
+}

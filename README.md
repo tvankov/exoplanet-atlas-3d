@@ -105,6 +105,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
 - **First person start:** the camera starts 1.3 radii (centre to centre) from the start object, but never closer than 0.03 map units to its surface (the near plane of the camera is 0.01 and cuts away anything closer, which felt like sitting inside the Earth), a bit left, above and behind it, looking along the route, so the
   start object stands at the lower right of the picture and falls behind when the ship speeds up.
   Only the start has this offset: during the first tenth of the route the camera slides into the path of the ship (the normal first person view).
+- **Swap:** the button with the two arrows between From and To swaps start and target.
 - **Pick on the map:** next to From and To there is a "Pick" button. It closes the planner and waits for one click on the map: on a planet of a system that is shown, or on the nearest star (the Sun counts). The name goes into the field and the planner opens again. Esc or Cancel stops it.
 - **View:** "View" chooses first person (the default: the camera sits at the ship and looks at the blue ring of the target, zoom is off) or third
   person (the camera follows the ship from outside). It can be switched during the flight.

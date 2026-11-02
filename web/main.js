@@ -3514,6 +3514,8 @@ function buildPlanner() {
     document.getElementById(id).textContent = t.pick;
     document.getElementById(id).title = t.pickTitle;
   }
+  document.getElementById("plan-swap").title = t.swap;
+  document.getElementById("plan-swap").setAttribute("aria-label", t.swap);
   document.getElementById("pick-hint-text").textContent = t.pickHint;
   document.getElementById("pick-cancel").textContent = t.cancel;
   document.getElementById("settings-title").textContent = t.settings;
@@ -4086,6 +4088,9 @@ function stopPicking() {
   pickHint.hidden = true;
   togglePlanner(true);
 }
+document.getElementById("plan-swap").addEventListener("click", () => {
+  [planFrom.value, planTo.value] = [planTo.value, planFrom.value];
+});
 document.getElementById("plan-from-pick").addEventListener("click", () => startPicking("from"));
 document.getElementById("plan-to-pick").addEventListener("click", () => startPicking("to"));
 document.getElementById("pick-cancel").addEventListener("click", stopPicking);
