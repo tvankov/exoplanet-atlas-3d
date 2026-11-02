@@ -151,6 +151,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   devices and narrow screens). The two star layers load in the background after the start.
 - **Info button (top right, left of the burger):** the story panel of the chosen planet (bottom right, half as tall as before) is closed until
   you press "Info". The button shows up as soon as a planet has been chosen and stays open or closed as you left it.
+  The buttons Listen and Close-up (or System view) sit at the top right of that window, next to the title, and stay in view when the text scrolls.
 - **Left panel:** language, the Travel planner button, time speed, search, filters (discovered by, spectral class), measuring and the lists.
 
 ## Legal

@@ -580,3 +580,30 @@ html, body {
 #info-button[aria-expanded="true"] {
   background: rgba(40, 52, 80, 0.85);
 }
+
+/* Listen and the view button sit at the top right of the info window, next to the title. The head stays in view when the text scrolls. */
+#story-head {
+  position: sticky;
+  top: -12px;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -12px -14px 6px;
+  padding: 12px 14px 6px;
+  background: rgba(10, 14, 24, 0.92);
+}
+#story-head h2 {
+  margin: 0;
+}
+#story-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+#story-actions button {
+  margin: 0;
+  padding: 3px 8px;
+  font-size: 12px;
+}

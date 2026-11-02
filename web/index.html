@@ -139,11 +139,15 @@
     <button id="plan-stop" type="button">Stop</button>
   </div>
   <section id="story" hidden>
-    <h2 id="story-title"></h2>
+    <div id="story-head">
+      <h2 id="story-title"></h2>
+      <div id="story-actions">
+        <button id="story-listen" type="button">Listen</button>
+        <button id="story-closeup" type="button" hidden>Close-up</button>
+      </div>
+    </div>
     <p id="story-type" class="type" hidden></p>
     <div id="story-text"></div>
-    <button id="story-listen" type="button">Listen</button>
-    <button id="story-closeup" type="button" hidden>Close-up</button>
   </section>
   <script type="module" src="main.js"></script>
 </body>
