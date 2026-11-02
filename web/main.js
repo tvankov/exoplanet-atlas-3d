@@ -3624,6 +3624,7 @@ function restoreTimeSpeed() {
 function clearTrip() {
   if (trip && !trip.arrived) restoreTimeSpeed();
   setQuiet(false);
+  setNear(0.01);
   leaveEgo();
   trip = null;
   for (const o of [ship, shipLine, shipTarget]) o.visible = false;
@@ -3692,6 +3693,7 @@ planGo.addEventListener("click", () => {
   trip.uEnd = mode === "solar" ? stopFraction() : 1;
   if (mode === "star") edgePoints();
   trip.p2 = tripMap(lerp3(trip.o, trip.d, trip.uStart), new THREE.Vector3());
+  setNear(0.002);
   const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
   tripHud.hidden = false; // the planner closes while the ship flies, a small box at the bottom shows the trip
@@ -3719,21 +3721,37 @@ planGo.addEventListener("click", () => {
 // The edge of a system on the map: the Solar System (Neptune is at 1.64) and the exoplanet systems (up to 1.6) are
 // drawn about this big. On a short route the edges are at most a third of it, so they do not run into each other.
 const SYSTEM_EDGE = 1.8;
+// The outer orbit as drawn for an exoplanet system, worked out like in exoSystem (without building it). Proxima Cen is tiny (0.2),
+// a system with a long period planet is up to 1.6.
+function exoOuter(star) {
+  const mass = star.st_mass ?? 1;
+  const au = star.planets.filter((p) => p.pl_orbper).map((p) => Math.cbrt(mass * (p.pl_orbper / 365.25) ** 2));
+  if (!au.length) return 0.15;
+  const auMin = Math.min(...au);
+  return Math.max(0.15, ...au.map((a) => Math.min(MAX_ORBIT, 0.15 * Math.sqrt(a / auMin))));
+}
+// How far out the edge of a system is: a bit beyond its outer orbit, so the ship comes out of hyperspace just outside of the system.
+function edgeOf(place) {
+  if (place.kind === "planet" || place.star === SUN_POINT) return SYSTEM_EDGE; // the Solar System, Neptune is at 1.64
+  return Math.min(SYSTEM_EDGE, Math.max(0.3, 1.5 * exoOuter(place.star)));
+}
 function edgePoints() {
   const a = tripMap(trip.o, new THREE.Vector3());
   const b = tripMap(trip.d, new THREE.Vector3());
-  const edge = Math.min(SYSTEM_EDGE, 0.35 * a.distanceTo(b));
+  const room = 0.35 * a.distanceTo(b); // on a short route the two edges must not run into each other
+  const edgeA = Math.min(edgeOf(trip.from), room);
+  const edgeB = Math.min(edgeOf(trip.to), room);
   const p = new THREE.Vector3();
   trip.uStart = 0;
   trip.uEnd = 1;
   for (let k = 0; k <= 2000; k++) {
-    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(a) >= edge) {
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(a) >= edgeA) {
       trip.uStart = k / 2000;
       break;
     }
   }
   for (let k = 2000; k >= 0; k--) {
-    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(b) >= edge) {
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(b) >= edgeB) {
       trip.uEnd = k / 2000;
       break;
     }
@@ -3916,6 +3934,13 @@ function showPlace(to) {
   }
 }
 
+// The camera cuts away everything closer than its near plane (0.01). A trip ends 1.5 radii from a planet that is 0.0135 wide
+// on the map, so the planet would be cut and the ship seemed to be inside it. During a trip the near plane is smaller.
+function setNear(value) {
+  camera.near = value;
+  camera.updateProjectionMatrix();
+}
+
 const TRIP_INTRO = 2.5; // seconds of the film, real time
 const TRIP_TURN = 2.5;
 const TRIP_JUMP = 1.2;
@@ -3952,6 +3977,7 @@ function stepTrip(now) {
   else if (trip.phase === "jump" && elapsed >= TRIP_JUMP) setPhase("cruise", now);
   else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
     setPhase("done", now);
+    setNear(0.01);
     planStop.textContent = stopLabel(); // "Stop" becomes "Close"
     leaveEgo();
     setQuiet(false);
