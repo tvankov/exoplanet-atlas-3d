@@ -35,19 +35,20 @@ composer.addPass(new RenderPass(scene, camera));
 // brightest sample (max, not the average) so a faint dot becomes a sharp streak instead of fading away.
 // The pass is switched off when the strength is zero, so normal flying costs nothing.
 const warpPass = new ShaderPass({
-  uniforms: { tDiffuse: { value: null }, uStrength: { value: 0 } },
+  uniforms: { tDiffuse: { value: null }, uStrength: { value: 0 }, uCenter: { value: new THREE.Vector2(0.5, 0.5) } },
   vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: `
     uniform sampler2D tDiffuse;
     uniform float uStrength;
+    uniform vec2 uCenter; // where the direction of flight is on the screen, see stepWarp
     varying vec2 vUv;
     void main() {
-      vec2 dir = vUv - 0.5;
+      vec2 dir = vUv - uCenter;
       vec3 base = texture2D(tDiffuse, vUv).rgb;
       vec3 best = base;
       for (int i = 1; i < 18; i++) {
         float t = float(i) / 17.0;
-        vec3 s = texture2D(tDiffuse, 0.5 + dir * (1.0 - uStrength * 0.2 * t)).rgb;
+        vec3 s = texture2D(tDiffuse, uCenter + dir * (1.0 - uStrength * 0.2 * t)).rgb;
         best = max(best, s * (1.0 - 0.8 * t));
       }
       gl_FragColor = vec4(mix(base, best, min(1.0, uStrength * 1.6)), 1.0);
@@ -3811,10 +3812,7 @@ const egoOffsetNow = new THREE.Vector3(); // the part of it that is still in eff
 function enterEgo(u) {
   egoOn = true;
   flight = null;
-  const span = trip.uEnd - trip.uStart;
-  const here = trip.uStart + span * u;
-  tripMap(lerp3(trip.o, trip.d, Math.min(1, here + 0.01 * span)), egoAhead).sub(tripMap(lerp3(trip.o, trip.d, here), offsetTmp));
-  if (u > 0.99) egoAhead.negate(); // at the very end the "ahead" point would be past the target
+  tripMap(trip.d, egoAhead).sub(ship.position); // looks at the blue ring of the target
   egoAhead.normalize();
   const offset = u < 0.02 ? startOffset(egoAhead, offsetTmp) : offsetTmp.set(0, 0, 0); // only a start in first person gets the offset
   egoOffset.copy(offset);
@@ -3854,7 +3852,7 @@ function startOffset(forward, out) {
   return out.copy(forward).multiplyScalar(-A).addScaledVector(rightTmp, -0.4 * A).addScaledVector(upTmp, 0.25 * A);
 }
 function tripPose(pose) {
-  tripMap(lerp3(trip.o, trip.d, trip.uStart + 0.01 * (trip.uEnd - trip.uStart)), aheadTmp).sub(trip.p2).normalize();
+  tripMap(trip.d, aheadTmp).sub(ship.position).normalize(); // first person looks at the blue ring of the target
   if (planView.value === "ego") {
     pose.pos.copy(ship.position).add(startOffset(aheadTmp, offsetTmp));
     pose.target.copy(pose.pos).addScaledVector(aheadTmp, controls.minDistance * 1.5);
@@ -3886,7 +3884,10 @@ function stepView(now) {
     delta.add(offsetTmp).sub(egoOffsetNow);
     egoOffsetNow.copy(offsetTmp);
     camera.position.add(delta);
-    controls.target.add(delta);
+    // First person always looks at the blue ring of the target. The route is curved on the squeezed map, so the direction along the
+    // route is not the direction of the target; the streaks of the hyperspace run out of the ring then (see stepWarp).
+    tripMap(trip.d, aheadTmp).sub(camera.position).normalize();
+    controls.target.copy(camera.position).addScaledVector(aheadTmp, controls.minDistance * 1.5);
     egoLast.copy(ship.position);
     return;
   }
@@ -4027,7 +4028,15 @@ function stepWarp(dt) {
   warp += (target - warp) * Math.min(1, dt * 3);
   warpPass.enabled = warp > 0.01;
   warpPass.uniforms.uStrength.value = warp;
+  if (warpPass.enabled) {
+    // The streaks run out of the point we fly towards. The panels shift the picture (layoutView), so that point is not the middle of
+    // the screen: it is where a point far ahead along the view direction lands on the screen.
+    camera.updateMatrixWorld();
+    camera.getWorldDirection(warpAhead).multiplyScalar(1000).add(camera.position).project(camera);
+    warpPass.uniforms.uCenter.value.set(warpAhead.x * 0.5 + 0.5, warpAhead.y * 0.5 + 0.5);
+  }
 }
+const warpAhead = new THREE.Vector3();
 
 // How many map units a light year is at the camera. The map is squeezed, so this changes with the place: in
 // the Solar System part (closer than 9 units to the Sun) it is derived from the AU squeeze (r drawn as
