@@ -88,7 +88,7 @@ python src/build_orbits.py   # -> web/data/orbits.json (67 KB)
   example 2MASS J03590986+2009361 b), and the map used to leave them out, so 335 stars showed no planet at all. For 341 of them the same
   archive table has a measured semi-major axis (`pl_orbsmax`, AU, `data/raw/nasa_orbsmax_*.csv` from `src/fetch_nasa_extras.py`, written into
   `stars.json` by `src/transform.py`). The map takes the period from Kepler's third law, P^2 = a^3 / M (years, AU, solar masses of the star;
-  a star without a mass counts as the Sun). Only 7 planets have neither value and are still not drawn. Gaia does not help here: it measures stars,
+  a star without a mass counts as the Sun). Only 7 planets have neither value (mostly found by microlensing, for example KMT-2019-BLG-1953L b). They are drawn too, at a fixed place 0.6 map units from the star, without an orbit line, without moving, and the story says that the orbit is not known and the place is only for the picture. Gaia does not help here: it measures stars,
   not planet orbits.
 
 ## Travel planner, flight speed and star tools

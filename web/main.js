@@ -1948,12 +1948,14 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
         const a = (k / 128) * Math.PI * 2;
         return new THREE.Vector3(Math.cos(a) * p.orbit, 0, Math.sin(a) * p.orbit);
       });
-    group.add(
-      new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints(points),
-        orbitLineMaterial
-      )
-    );
+    if (!p.orbitUnknown) {
+      group.add(
+        new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints(points),
+          orbitLineMaterial
+        )
+      );
+    }
     const radius = Math.max(p.size, viewDistance * MIN_PLANET_PER_VIEW_DISTANCE);
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 24), planetMaterial(p));
     const label = labelSprite(p.name);
@@ -2336,18 +2338,22 @@ solar.group.add(beltLabel);
 // and the rest follow the same square root idea as above. Not to scale, for orientation.
 const MAX_ORBIT = 1.6;
 const EXO_STAR_RADIUS = 0.05; // every host star is drawn this size, planets are sized against it
+const UNKNOWN_ORBIT = 0.6; // map units, where a planet of unknown orbit is drawn (a picture place, not a distance)
 function exoSystem(star) {
   const mass = star.st_mass ?? 1; // sun-like fallback, only changes the drawn orbit radii
   const planets = star.planets
-    .filter((p) => p.pl_orbper || p.pl_orbsmax) // without a period or a semi-major axis the planet cannot be placed on an orbit
     .map((p) => {
+      // A planet with neither a period nor an axis (7 of them) has no known orbit. It is drawn at a marked place next to the star, without
+      // an orbit line and without moving, and the story says so.
+      const known = !!(p.pl_orbper || p.pl_orbsmax);
       // A planet without a period (mostly directly imaged ones far from the star) has a measured semi-major axis instead; the period
       // then follows from Kepler's third law, P^2 = a^3 / M (years, AU, solar masses). The same law gives the axis from a period.
-      const years = p.pl_orbper ? p.pl_orbper / 365.25 : Math.sqrt(p.pl_orbsmax ** 3 / mass);
+      const years = !known ? Infinity : p.pl_orbper ? p.pl_orbper / 365.25 : Math.sqrt(p.pl_orbsmax ** 3 / mass);
       return {
         name: p.pl_name,
         years,
-        au: p.pl_orbper ? Math.cbrt(mass * years * years) : p.pl_orbsmax,
+        orbitUnknown: !known,
+        au: !known ? null : p.pl_orbper ? Math.cbrt(mass * years * years) : p.pl_orbsmax,
         // Without a star radius there is no ratio to draw, the minimum size applies.
         size: star.st_rad && p.pl_rade ? (EXO_STAR_RADIUS * p.pl_rade) / (star.st_rad * EARTH_RADII_PER_SUN) : 0,
         type: planetType(p.pl_rade),
@@ -2355,8 +2361,9 @@ function exoSystem(star) {
         color: p.habitable ? 0x6fd3a0 : 0xb0b8c8,
       };
     });
-  const auMin = Math.min(...planets.map((p) => p.au));
-  for (const p of planets) p.orbit = Math.min(MAX_ORBIT, 0.15 * Math.sqrt(p.au / auMin));
+  const knownAu = planets.filter((p) => p.au).map((p) => p.au);
+  const auMin = knownAu.length ? Math.min(...knownAu) : 1;
+  for (const p of planets) p.orbit = p.orbitUnknown ? UNKNOWN_ORBIT : Math.min(MAX_ORBIT, 0.15 * Math.sqrt(p.au / auMin));
   const outer = Math.max(0.15, ...planets.map((p) => p.orbit));
 
   const system = makeSystem({
@@ -2370,7 +2377,7 @@ function exoSystem(star) {
   // The zone is drawn with the same distance mapping as the orbits, so a planet that sits
   // in the zone in reality sits in the drawn band too.
   const zone = zoneAu(star);
-  if (zone && planets.length) {
+  if (zone && knownAu.length) {
     const toMap = (au) => Math.min(MAX_ORBIT, 0.15 * Math.sqrt(au / auMin));
     addZone(system, toMap(zone.inner), toMap(zone.outer));
   }
@@ -2681,6 +2688,9 @@ function showStory(star, planet) {
   hasClip = !!(planet.habitable || star.solarSystem) && !planet.solarObject; // the visitors have no recording
   const story = buildStory(star, planet, lang);
   storyParagraphs = story.paragraphs;
+  if (star.planets?.includes(planet) && !planet.pl_orbper && !planet.pl_orbsmax) {
+    storyParagraphs = [...storyParagraphs, TRAVEL_UI[lang].orbitUnknown]; // see exoSystem
+  }
   listenButton.hidden = storyParagraphs.length === 0;
   document.getElementById("story-title").textContent = story.title;
   // The type line is shown, not read aloud, so the recorded clips stay valid. Earth is a real
@@ -3736,7 +3746,7 @@ const SYSTEM_EDGE = 1.8;
 function exoOuter(star) {
   const mass = star.st_mass ?? 1;
   const au = star.planets.filter((p) => p.pl_orbper || p.pl_orbsmax).map((p) => (p.pl_orbper ? Math.cbrt(mass * (p.pl_orbper / 365.25) ** 2) : p.pl_orbsmax));
-  if (!au.length) return 0.15;
+  if (!au.length) return UNKNOWN_ORBIT;
   const auMin = Math.min(...au);
   return Math.max(0.15, ...au.map((a) => Math.min(MAX_ORBIT, 0.15 * Math.sqrt(a / auMin))));
 }
