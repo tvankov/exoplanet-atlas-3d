@@ -88,7 +88,7 @@ python src/build_orbits.py   # -> web/data/orbits.json (67 KB)
 
 The maths and all texts of this part are in `web/travel.js`, the drawing is in `web/main.js`.
 
-- **Travel planner (planet to planet, and anywhere else):** the menu "Travel planner" in the left panel has From, To and Speed. From and
+- **Travel planner (planet to planet, and anywhere else):** the button "Travel planner" in the left panel opens a panel in the middle of the screen with From, To, Speed, View and the flight speed of the keys. When the trip starts the panel closes and a small box at the bottom shows the trip with a Stop button (it turns into Close at the end). From and
   To are text fields with suggestions: the eight planets, the Sun or any of the 4,819 host stars. The ship leaves the start planet where it is now and flies a straight line at constant speed to the place where the target will
   be on arrival (an intercept course, `solveIntercept`: stepping plus bisection on "distance to the target at time T equals speed times T").
   Start and target stand on their real positions of today (`planetPosition`). The line is worked out in AU and drawn through the squeezed
@@ -141,6 +141,15 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
 - **Measure distance:** press the button, click two stars (or the Sun), get the straight-line distance in light years and parsecs and the
   line between them, drawn curved because the map is squeezed. The distances are the catalogue distances with their measurement errors. It
   feeds the planner (star to star).
+
+## Menus
+
+- **Burger menu (top right):** three menus. *Hints* (controls, legend of the green zone, note on the asteroid belt), *Sources and licences* (the link to
+  the imprint, privacy and licences page and the credits) and *Settings*.
+- **Settings:** candidate zone (the green habitable band, on or off), look of the exoplanets, scale (compressed or linear), Gaia stars, deep stars and
+  background. The candidate zone, the Gaia stars, the deep stars and the background are **on by default** (the deep stars are not offered on touch
+  devices and narrow screens). The two star layers load in the background after the start.
+- **Left panel:** language, the Travel planner button, time speed, search, filters (discovered by, spectral class), measuring and the lists.
 
 ## Legal
 

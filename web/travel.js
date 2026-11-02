@@ -123,6 +123,10 @@ export const TRAVEL_UI = {
       jump: "Jump into hyperspace (FICTIONAL).",
       exit: "Out of hyperspace at the target.",
     },
+    settings: "Settings",
+    zoneOn: "Candidate zone: on",
+    zoneOff: "Candidate zone: off",
+    close: "Close",
     unknown: "Unknown place. Type a planet, the Sun or a star name from the list.",
     useMeasure: "Plan a trip between them",
     resultStars: (d) =>
@@ -189,6 +193,10 @@ export const TRAVEL_UI = {
       jump: "Sprung in den Hyperraum (FIKTIV).",
       exit: "Aus dem Hyperraum am Ziel.",
     },
+    settings: "Einstellungen",
+    zoneOn: "Kandidatenzone: an",
+    zoneOff: "Kandidatenzone: aus",
+    close: "Schließen",
     unknown: "Unbekannter Ort. Tippe einen Planeten, die Sonne oder einen Sternnamen aus der Liste.",
     useMeasure: "Reise zwischen ihnen planen",
     resultStars: (d) =>

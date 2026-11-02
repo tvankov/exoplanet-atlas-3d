@@ -68,6 +68,7 @@ controls.minDistance = 0.02; // lets the close-up get near a planet that is only
 // Distances run from 4 to 28000 ly. A square root squeezes the far field so the
 // neighbourhood stays readable. The direction of every star is unchanged.
 let compressed = true;
+let zoneOn = true; // the green candidate zone, a switch in the settings
 function toMapPosition(star, out) {
   const r = Math.hypot(star.x, star.y, star.z);
   if (r === 0) return out.set(0, 0, 0);
@@ -2421,6 +2422,7 @@ function addZone(system, inner, outer) {
   band.rotation.x = -Math.PI / 2; // a ring is born standing up, the orbits lie flat
   system.group.add(band);
   system.zone = true;
+  band.visible = zoneOn;
   system.zoneMesh = band; // the close-up hides it, see enterCloseup
 }
 
@@ -2498,7 +2500,7 @@ function leaveCloseup() {
   closeup = false;
   // The green zone is a flat disc through the orbit plane. Close to a planet it would cut through
   // the planet and tint half of it, so it is only shown in the system view.
-  if (current?.system.zoneMesh) current.system.zoneMesh.visible = !quiet;
+  if (current?.system.zoneMesh) current.system.zoneMesh.visible = zoneOn && !quiet;
   if (current?.follow?.userData.label) current.follow.userData.label.visible = true;
 }
 
@@ -3392,6 +3394,31 @@ const planSpeed = document.getElementById("plan-speed");
 const planKind = document.getElementById("plan-kind");
 const planGo = document.getElementById("plan-go");
 const planStop = document.getElementById("plan-stop");
+const plannerPanel = document.getElementById("planner-panel");
+const plannerOpen = document.getElementById("planner-open");
+const tripHud = document.getElementById("trip-hud");
+function togglePlanner(open = plannerPanel.hidden) {
+  plannerPanel.hidden = !open;
+  plannerOpen.setAttribute("aria-expanded", String(open));
+}
+plannerOpen.addEventListener("click", () => togglePlanner());
+document.getElementById("planner-close").addEventListener("click", () => togglePlanner(false));
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !plannerPanel.hidden) togglePlanner(false);
+});
+const stopLabel = () => (trip?.phase === "done" ? TRAVEL_UI[lang].close : TRAVEL_UI[lang].stop);
+
+// Candidate zone switch (settings).
+const zoneButton = document.getElementById("zone-toggle");
+function showZoneState() {
+  zoneButton.textContent = zoneOn ? TRAVEL_UI[lang].zoneOn : TRAVEL_UI[lang].zoneOff;
+  zoneButton.setAttribute("aria-pressed", String(zoneOn));
+}
+zoneButton.addEventListener("click", () => {
+  zoneOn = !zoneOn;
+  showZoneState();
+  for (const s of [solar, activeExo]) if (s?.zoneMesh) s.zoneMesh.visible = zoneOn && !quiet && !(closeup && current?.system === s);
+});
 const planResult = document.getElementById("plan-result");
 const planView = document.getElementById("plan-view");
 const flySpeedSelect = document.getElementById("fly-speed");
@@ -3439,7 +3466,10 @@ function buildPlanner() {
   planView.options[1].textContent = t.viewEgo;
   document.getElementById("plan-note").textContent = t.note;
   planGo.textContent = t.go;
-  planStop.textContent = t.stop;
+  planStop.textContent = stopLabel();
+  plannerOpen.textContent = t.title;
+  document.getElementById("settings-title").textContent = t.settings;
+  showZoneState();
   fillPlaces();
   fillSelect(planSpeed, SPEEDS.map((v) => [v.id, t.speedLabel[v.id]]), "parker");
   fillSelect(
@@ -3543,7 +3573,7 @@ planTo.addEventListener("focus", () => planTo.select());
 measurePlanButton.addEventListener("click", () => {
   planFrom.value = measureA.hostname;
   planTo.value = measureB.hostname;
-  document.getElementById("planner").open = true;
+  plannerPanel.hidden = false;
 });
 
 // Texts and the habitable zone off while the ship flies, on again afterwards (the story panel comes back as it was, or
@@ -3554,7 +3584,7 @@ function setQuiet(on) {
   quiet = on;
   if (on) storyHiddenBefore = storyPanel.hidden;
   storyPanel.hidden = on ? true : storyHiddenBefore;
-  for (const s of [solar, activeExo]) if (s?.zoneMesh) s.zoneMesh.visible = !on && !(closeup && current?.system === s);
+  for (const s of [solar, activeExo]) if (s?.zoneMesh) s.zoneMesh.visible = zoneOn && !on && !(closeup && current?.system === s);
 }
 
 // The trip sets the time speed so that it can be watched; at the end (or on Stop) the speed of the user is back.
@@ -3570,7 +3600,7 @@ function clearTrip() {
   leaveEgo();
   trip = null;
   for (const o of [ship, shipLine, shipTarget]) o.visible = false;
-  planStop.hidden = true;
+  tripHud.hidden = true;
   planResult.textContent = "";
   warp = 0;
 }
@@ -3632,7 +3662,9 @@ planGo.addEventListener("click", () => {
   trip.uEnd = stopFraction();
   const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
-  planStop.hidden = false;
+  tripHud.hidden = false; // the planner closes while the ship flies, a small box at the bottom shows the trip
+  togglePlanner(false);
+  planStop.textContent = stopLabel();
   // The trip is a short film: the start is in view (intro), the ship turns towards the target (turn), jumps into
   // hyperspace (jump), flies (cruise) and comes out at the target (exit), where the target gets its view (done).
   // The cruise is made watchable: its time speed is set so that it takes about 20 seconds on the screen (never
@@ -3817,6 +3849,7 @@ function stepTrip(now) {
   else if (trip.phase === "jump" && elapsed >= TRIP_JUMP) setPhase("cruise", now);
   else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
     setPhase("done", now);
+    planStop.textContent = stopLabel(); // "Stop" becomes "Close"
     leaveEgo();
     setQuiet(false);
     showTripResult();
@@ -3982,3 +4015,6 @@ applyLanguage();
 animate();
 // The start screen goes away once the first frame is on its way.
 requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));
+// The two star layers are on by default (they load in the background); the deep layer is not offered on touch devices.
+gaiaButton.click();
+if (!IS_MOBILE) deepButton.click();

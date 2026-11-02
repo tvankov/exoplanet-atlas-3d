@@ -26,16 +26,7 @@
       <option value="en">English</option>
       <option value="de">Deutsch</option>
     </select>
-    <select id="look">
-      <option value="schematic">Schematic</option>
-      <option value="artistic" selected>Artistic</option>
-    </select>
-    <button id="scale" type="button">Scale: compressed</button>
-    <button id="gaia" type="button" aria-pressed="false">Gaia stars: off</button>
-    <p id="gaia-note" class="hint" hidden></p>
-    <button id="gaia-deep" type="button" aria-pressed="false">Deep stars: off</button>
-    <p id="gaia-deep-note" class="hint" hidden></p>
-    <button id="bg-toggle" type="button" aria-pressed="true">Background: on</button>
+    <button id="planner-open" type="button" aria-expanded="false" aria-controls="planner-panel">Travel planner</button>
     <div id="speed-box">
       <label id="speed-title" for="speed">Time speed</label>
       <input id="speed" type="range" min="0" max="100" step="any" value="51.97">
@@ -64,23 +55,6 @@
       <summary id="solar-title">Solar System</summary>
       <ul id="solar-list" class="planet-list"></ul>
     </details>
-    <details class="menu" id="planner">
-      <summary id="planner-title">Travel planner</summary>
-      <div class="planner-body">
-        <label><span id="plan-from-label">From</span> <input id="plan-from" type="text" list="plan-places" autocomplete="off" spellcheck="false"></label>
-        <label><span id="plan-to-label">To</span> <input id="plan-to" type="text" list="plan-places" autocomplete="off" spellcheck="false"></label>
-        <datalist id="plan-places"></datalist>
-        <label><span id="plan-speed-label">Speed</span> <select id="plan-speed"></select></label>
-        <label><span id="plan-view-label">View</span> <select id="plan-view"><option value="third"></option><option value="ego"></option></select></label>
-        <p id="plan-kind" class="hint"></p>
-        <button id="plan-go" type="button">Plan and fly</button>
-        <button id="plan-stop" type="button" hidden>Stop</button>
-        <p id="plan-result" class="plan-result"></p>
-        <p id="plan-note" class="hint"></p>
-        <label><span id="fly-label">Flight speed (keys)</span> <select id="fly-speed"></select></label>
-        <p id="fly-note" class="hint"></p>
-      </div>
-    </details>
     <details class="menu">
       <summary id="stars-title">Named stars</summary>
       <ul id="star-list" class="planet-list"></ul>
@@ -97,12 +71,15 @@
   </div>
   <button id="burger" type="button" aria-expanded="false" aria-controls="info">&#9776;</button>
   <div id="info" hidden>
-    <h2 id="hints-title">Hints</h2>
+    <details class="menu" open>
+      <summary id="hints-title">Hints</summary>
     <p class="hint" id="hint">Drag to rotate, scroll to zoom, right drag to pan</p>
     <p id="zone-legend"><span class="swatch"></span><span id="zone-text"></span></p>
     <p id="belt-note" class="hint"></p>
+    </details>
+    <details class="menu">
+      <summary id="credits-title">Credits</summary>
     <p><a id="legal-link" href="legal.html" target="_blank" rel="noopener">Imprint, privacy, licences</a></p>
-    <h2 id="credits-title">Credits</h2>
     <p id="credits">
     This research has made use of the NASA Exoplanet Archive, which is operated by the California Institute of Technology,
     under contract with the National Aeronautics and Space Administration under the Exoplanet Exploration Program.
@@ -124,6 +101,41 @@
     Star names of the Gaia layer: This research has made use of the SIMBAD database, operated at CDS, Strasbourg,
     France (Wenger et al. 2000, A&amp;AS 143, 9).
     </p>
+    </details>
+    <details class="menu" open>
+      <summary id="settings-title">Settings</summary>
+      <button id="zone-toggle" type="button" aria-pressed="true">Candidate zone: on</button>
+      <select id="look">
+        <option value="schematic">Schematic</option>
+        <option value="artistic" selected>Artistic</option>
+      </select>
+      <button id="scale" type="button">Scale: compressed</button>
+      <button id="gaia" type="button" aria-pressed="false">Gaia stars: off</button>
+      <p id="gaia-note" class="hint" hidden></p>
+      <button id="gaia-deep" type="button" aria-pressed="false">Deep stars: off</button>
+      <p id="gaia-deep-note" class="hint" hidden></p>
+      <button id="bg-toggle" type="button" aria-pressed="true">Background: on</button>
+    </details>
+  </div>
+  <section id="planner-panel" hidden aria-labelledby="planner-title">
+    <button id="planner-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="planner-title">Travel planner</h2>
+    <div class="planner-body">
+        <label><span id="plan-from-label">From</span> <input id="plan-from" type="text" list="plan-places" autocomplete="off" spellcheck="false"></label>
+        <label><span id="plan-to-label">To</span> <input id="plan-to" type="text" list="plan-places" autocomplete="off" spellcheck="false"></label>
+        <datalist id="plan-places"></datalist>
+        <label><span id="plan-speed-label">Speed</span> <select id="plan-speed"></select></label>
+        <label><span id="plan-view-label">View</span> <select id="plan-view"><option value="third"></option><option value="ego"></option></select></label>
+        <p id="plan-kind" class="hint"></p>
+        <button id="plan-go" type="button">Plan and fly</button>
+        <p id="plan-note" class="hint"></p>
+        <label><span id="fly-label">Flight speed (keys)</span> <select id="fly-speed"></select></label>
+        <p id="fly-note" class="hint"></p>
+    </div>
+  </section>
+  <div id="trip-hud" hidden>
+    <p id="plan-result" class="plan-result"></p>
+    <button id="plan-stop" type="button">Stop</button>
   </div>
   <section id="story" hidden>
     <h2 id="story-title"></h2>
