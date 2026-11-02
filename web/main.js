@@ -3776,16 +3776,16 @@ const aheadTmp = new THREE.Vector3();
 const offsetTmp = new THREE.Vector3();
 const rightTmp = new THREE.Vector3();
 const upTmp = new THREE.Vector3();
-// First person starts with the start object at the lower right of the picture: the camera sits eight radii of
+// First person starts with the start object at the lower right of the picture: the camera sits four radii of
 // the object away, a bit to the left, above and behind it, and looks along the route. When the ship speeds up
 // the object falls behind. "forward" is the unit vector along the route.
 function startOffset(forward, out) {
-  const A = 8 * placeRadius(trip.from);
+  const A = 4 * placeRadius(trip.from);
   rightTmp.crossVectors(forward, camera.up);
   if (rightTmp.lengthSq() < 1e-6) rightTmp.set(1, 0, 0);
   rightTmp.normalize();
   upTmp.crossVectors(rightTmp, forward);
-  return out.copy(forward).multiplyScalar(-A).addScaledVector(rightTmp, -0.36 * A).addScaledVector(upTmp, 0.21 * A);
+  return out.copy(forward).multiplyScalar(-A).addScaledVector(rightTmp, -0.4 * A).addScaledVector(upTmp, 0.25 * A);
 }
 function tripPose(pose) {
   tripMap(lerp3(trip.o, trip.d, 0.01 * trip.uEnd), aheadTmp).sub(ship.position).normalize();
