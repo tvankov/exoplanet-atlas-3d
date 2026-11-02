@@ -132,7 +132,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   different places. Everything above 1 c is marked FICTIONAL.
 - **Diffraction spikes:** the brightest stars (as seen from the camera, in the NASA layer and in the near Gaia layer, also the deep layer)
   get a four-armed cross, like a telescope shows. It is an effect of the optics, not a part of the star, and an illustration.
-- **Star streaks:** in the hyperspace of the planner and at high speed of the key flight (1,000 c and more) the picture is smeared
+- **Star streaks:** in the hyperspace of the planner, **only in first person** (from outside there is no motion blur) and at high speed of the key flight (1,000 c and more) the picture is smeared
   outwards from the middle, so the stars become streaks (a post-processing pass in `main.js`, off at normal speed).
 - **Spectral class filter:** the classes O, B, A, F, G, K, M from the star temperature `st_teff` (limits 30,000 / 10,000 / 7,500 / 6,000 /
   5,200 / 3,700 K, the usual rounded ones). Off, highlight (the others dimmed) or isolate (the others hidden). It works together with
@@ -146,13 +146,13 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
 
 - **Burger menu (top right):** three menus. *Hints* (controls, legend of the green zone, note on the asteroid belt), *Sources and licences* (the link to
   the imprint, privacy and licences page and the credits) and *Settings*.
-- **Settings:** candidate zone (the green habitable band, on or off), look of the exoplanets, scale (compressed or linear), Gaia stars, deep stars and
+- **Settings:** language (first entry), candidate zone (the green habitable band, on or off), look of the exoplanets, scale (compressed or linear), Gaia stars, deep stars and
   background. The candidate zone, the Gaia stars, the deep stars and the background are **on by default** (the deep stars are not offered on touch
   devices and narrow screens). The two star layers load in the background after the start.
 - **Info button (top right, left of the burger):** the story panel of the chosen planet (bottom right, half as tall as before) is closed until
   you press "Info". The button is always there (hidden only while a trip flies); before a planet is chosen the window says so. It stays open or closed as you left it.
   The buttons Listen and Close-up (or System view) sit at the top right of that window, next to the title, and stay in view when the text scrolls.
-- **Left panel:** language, the Travel planner button, time speed, search, filters (discovered by, spectral class), measuring and the lists.
+- **Left panel:** the Travel planner button, time speed, search, filters (discovered by, spectral class), measuring and the lists.
 
 ## Legal
 

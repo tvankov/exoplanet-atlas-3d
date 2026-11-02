@@ -3913,7 +3913,8 @@ let warp = 0;
 let flyWarpTarget = 0;
 function stepWarp(dt) {
   let target = flyWarpTarget;
-  if (trip) target = Math.max(target, trip.warpTarget ?? 0);
+  // The hyperspace streaks are only seen from inside the ship (first person); from outside there is no motion blur.
+  if (trip && planView.value === "ego") target = Math.max(target, trip.warpTarget ?? 0);
   warp += (target - warp) * Math.min(1, dt * 3);
   warpPass.enabled = warp > 0.01;
   warpPass.uniforms.uStrength.value = warp;

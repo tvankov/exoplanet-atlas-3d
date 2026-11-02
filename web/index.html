@@ -22,10 +22,6 @@
   <div id="hud">
     <h1>Exoplanet Atlas 3D</h1>
     <p id="count">Loading stars...</p>
-    <select id="lang" aria-label="Language">
-      <option value="en">English</option>
-      <option value="de">Deutsch</option>
-    </select>
     <button id="planner-open" type="button" aria-expanded="false" aria-controls="planner-panel">Travel planner</button>
     <div id="speed-box">
       <label id="speed-title" for="speed">Time speed</label>
@@ -105,6 +101,10 @@
     </details>
     <details class="menu" open>
       <summary id="settings-title">Settings</summary>
+      <select id="lang" aria-label="Language">
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+      </select>
       <button id="zone-toggle" type="button" aria-pressed="true">Candidate zone: on</button>
       <select id="look">
         <option value="schematic">Schematic</option>
