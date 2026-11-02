@@ -2733,7 +2733,7 @@ canvas.addEventListener("pointerup", (e) => {
   if (!pressAt) return;
   const moved = Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y);
   pressAt = null;
-  if (moved < 5) (measuring ? pickMeasure : pickPlanet)(e.clientX, e.clientY);
+  if (moved < 5) (picking ? pickForPlanner : measuring ? pickMeasure : pickPlanet)(e.clientX, e.clientY);
 });
 
 function pickPlanet(x, y) {
@@ -3450,6 +3450,7 @@ zoneButton.addEventListener("click", () => {
 });
 const planResult = document.getElementById("plan-result");
 const planView = document.getElementById("plan-view");
+planView.value = "ego"; // first person is the default
 const flySpeedSelect = document.getElementById("fly-speed");
 const flyNote = document.getElementById("fly-note");
 const LIGHT_SECONDS_PER_AU = LIGHT_MINUTES_PER_AU * 60;
@@ -3497,6 +3498,12 @@ function buildPlanner() {
   planGo.textContent = t.go;
   planStop.textContent = stopLabel();
   plannerOpen.textContent = t.title;
+  for (const id of ["plan-from-pick", "plan-to-pick"]) {
+    document.getElementById(id).textContent = t.pick;
+    document.getElementById(id).title = t.pickTitle;
+  }
+  document.getElementById("pick-hint-text").textContent = t.pickHint;
+  document.getElementById("pick-cancel").textContent = t.cancel;
   document.getElementById("settings-title").textContent = t.settings;
   showZoneState();
   applyStoryVisibility();
@@ -4051,6 +4058,59 @@ function mapPerLightYear() {
 }
 
 // ---------------------------------------------------------------------------------------------------------
+// Pick the start or the target of a trip on the map: the button next to a field closes the planner and waits for one click, on a
+// planet of a system that is shown or on the nearest star (the Sun counts). The name goes into the field and the planner opens again.
+let picking = null; // "from", "to" or null
+const pickHint = document.getElementById("pick-hint");
+function startPicking(which) {
+  picking = which;
+  measuring = false;
+  measureButton.setAttribute("aria-pressed", "false");
+  togglePlanner(false);
+  pickHint.hidden = false;
+}
+function stopPicking() {
+  picking = null;
+  pickHint.hidden = true;
+  togglePlanner(true);
+}
+document.getElementById("plan-from-pick").addEventListener("click", () => startPicking("from"));
+document.getElementById("plan-to-pick").addEventListener("click", () => startPicking("to"));
+document.getElementById("pick-cancel").addEventListener("click", stopPicking);
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && picking) stopPicking();
+});
+function pickForPlanner(x, y) {
+  let name = null;
+  // A planet first (the invisible spheres around them are easy to hit)...
+  const systems = [solar, activeExo].filter((s) => s?.group.visible);
+  raycaster.setFromCamera(new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1), camera);
+  const hit = raycaster.intersectObjects(systems.flatMap((s) => s.bodies.map((b) => b.hit)), false)[0]?.object;
+  for (const system of systems) {
+    const body = system.bodies.find((b) => b.hit === hit);
+    if (body && !body.visitor) name = system === solar ? planetLabel(body.name) : body.name;
+  }
+  // ...then the nearest star within 16 pixels.
+  if (!name) {
+    const position = points.geometry.getAttribute("position");
+    let bestDistance = 16;
+    const test = (label, p) => {
+      pickTmp.copy(p).project(camera);
+      if (pickTmp.z < -1 || pickTmp.z > 1) return;
+      const d = Math.hypot(((pickTmp.x + 1) / 2) * innerWidth - x, ((1 - pickTmp.y) / 2) * innerHeight - y);
+      if (d < bestDistance) {
+        bestDistance = d;
+        name = label;
+      }
+    };
+    test(sunLabel(), new THREE.Vector3());
+    stars.forEach((star, i) => test(star.hostname, new THREE.Vector3(position.getX(i), position.getY(i), position.getZ(i))));
+  }
+  if (!name) return; // nothing there, the hint stays and the next click counts
+  (picking === "from" ? planFrom : planTo).value = name;
+  stopPicking();
+}
+
 // Measuring the distance between two stars: click "Measure distance", then two stars (or the Sun). The
 // distance is the straight line in real space from the table positions. On the squeezed map that line is
 // curved, so it is drawn through toMapPosition. This is the base for stage 2 of the planner (star to star).
