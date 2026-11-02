@@ -102,6 +102,8 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   (the stop point in front of the target) and (5) the camera goes on to the planet if a planet was chosen. **The turn and the hyperspace are
   fiction** (there is no hyperspace as far as we know, it is only the look of the film); the times shown are for the speed chosen. Before the
   flight the time runs in real time; during the flight it is set so that it takes about 20 seconds; at the end your setting is back.
+- **Clean view while flying:** from the turn until the exit the names above the bodies, the green habitable zone and the story panel are switched
+  off; afterwards they come back (the story panel with the story of the target). "Stop" brings them back too.
 - **Soft start and stop, and the arrival:** the ship speeds up evenly during the first tenth of the time and slows down during the last tenth
   . The area under the speed curve stays the same, so the travel time shown is right, but the
   constant speed in between is 1.11 times the chosen one. At the end the destination is in view: a planet gets its close-up with its

@@ -945,6 +945,9 @@ const jdToDate = (jd) => new Date((jd - 2440587.5) * 86400000);
 
 // Every name above a body. declutterLabels fades out the ones that would lie on top of a nearer one.
 const allLabels = new Set();
+// While a trip of the planner is flying (turn to exit), the names above the bodies, the green habitable zone and the story panel are
+// switched off, so the view of the flight is clean. See setQuiet. The names fade out through their normal fade.
+let quiet = false;
 const labelPoint = new THREE.Vector3();
 // true when the label and everything above it is visible, false when something is hidden, null when it is no
 // longer in the scene (its system was taken down)
@@ -969,6 +972,13 @@ function nearOnly(sprite) {
 }
 
 function declutterLabels() {
+  if (quiet) {
+    for (const s of allLabels) {
+      s.userData.fade -= s.userData.fade * 0.2;
+      s.material.opacity = s.userData.fade * nearOnly(s);
+    }
+    return;
+  }
   const W = window.innerWidth;
   const H = window.innerHeight;
   const entries = [];
@@ -2488,7 +2498,7 @@ function leaveCloseup() {
   closeup = false;
   // The green zone is a flat disc through the orbit plane. Close to a planet it would cut through
   // the planet and tint half of it, so it is only shown in the system view.
-  if (current?.system.zoneMesh) current.system.zoneMesh.visible = true;
+  if (current?.system.zoneMesh) current.system.zoneMesh.visible = !quiet;
   if (current?.follow?.userData.label) current.follow.userData.label.visible = true;
 }
 
@@ -3536,6 +3546,17 @@ measurePlanButton.addEventListener("click", () => {
   document.getElementById("planner").open = true;
 });
 
+// Texts and the habitable zone off while the ship flies, on again afterwards (the story panel comes back as it was, or
+// with the story of the target when the trip ends there).
+let storyHiddenBefore = true;
+function setQuiet(on) {
+  if (on === quiet) return;
+  quiet = on;
+  if (on) storyHiddenBefore = storyPanel.hidden;
+  storyPanel.hidden = on ? true : storyHiddenBefore;
+  for (const s of [solar, activeExo]) if (s?.zoneMesh) s.zoneMesh.visible = !on && !(closeup && current?.system === s);
+}
+
 // The trip sets the time speed so that it can be watched; at the end (or on Stop) the speed of the user is back.
 function restoreTimeSpeed() {
   timeScale = trip.saved.timeScale;
@@ -3545,6 +3566,7 @@ function restoreTimeSpeed() {
 
 function clearTrip() {
   if (trip && !trip.arrived) restoreTimeSpeed();
+  setQuiet(false);
   leaveEgo();
   trip = null;
   for (const o of [ship, shipLine, shipTarget]) o.visible = false;
@@ -3772,6 +3794,7 @@ function setPhase(name, now) {
   if (name === "turn") {
     leaveCloseup(); // the close-up would pull the camera back to the start planet
     updateCloseupButton();
+    setQuiet(true);
     flight = null;
     turnFrom.pos.copy(camera.position);
     turnFrom.target.copy(controls.target);
@@ -3795,6 +3818,7 @@ function stepTrip(now) {
   else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
     setPhase("done", now);
     leaveEgo();
+    setQuiet(false);
     showTripResult();
     planResult.textContent += `\n${TRAVEL_UI[lang].arrived}`;
     showArrival(); // out of hyperspace at the target system: now on to the planet if one was chosen
