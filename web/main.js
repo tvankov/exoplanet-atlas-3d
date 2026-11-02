@@ -2533,8 +2533,20 @@ const infoButton = document.getElementById("info-button");
 let storyOpen = false;
 let hasStory = false;
 function applyStoryVisibility() {
-  storyPanel.hidden = quiet || !storyOpen || !hasStory;
-  infoButton.hidden = quiet || !hasStory;
+  storyPanel.hidden = quiet || !storyOpen;
+  infoButton.hidden = quiet;
+  if (!hasStory) {
+    // No planet chosen yet: the window says so instead of staying empty.
+    document.getElementById("story-title").textContent = "Info";
+    document.getElementById("story-type").hidden = true;
+    const p = document.createElement("p");
+    p.textContent = TRAVEL_UI[lang].infoEmpty;
+    document.getElementById("story-text").replaceChildren(p);
+    listenButton.hidden = true;
+    closeupButton.hidden = true;
+  } else {
+    listenButton.hidden = false;
+  }
   infoButton.setAttribute("aria-expanded", String(storyOpen));
   layoutView();
 }
@@ -3486,6 +3498,7 @@ function buildPlanner() {
   plannerOpen.textContent = t.title;
   document.getElementById("settings-title").textContent = t.settings;
   showZoneState();
+  applyStoryVisibility();
   fillPlaces();
   fillSelect(planSpeed, SPEEDS.map((v) => [v.id, t.speedLabel[v.id]]), "parker");
   fillSelect(
