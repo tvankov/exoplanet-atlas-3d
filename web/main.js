@@ -3286,12 +3286,7 @@ function animate() {
     camera.position.add(delta);
     controls.target.add(delta);
   }
-  if (trip?.follow && !trip.arrived && !flight) {
-    // The camera stays with the ship, the same way the close-up stays with a planet.
-    const delta = ship.position.clone().sub(controls.target);
-    camera.position.add(delta);
-    controls.target.add(delta);
-  }
+  stepView();
   stepKeys(dt);
   controls.update();
   declutterLabels();
@@ -3388,6 +3383,7 @@ const planKind = document.getElementById("plan-kind");
 const planGo = document.getElementById("plan-go");
 const planStop = document.getElementById("plan-stop");
 const planResult = document.getElementById("plan-result");
+const planView = document.getElementById("plan-view");
 const flySpeedSelect = document.getElementById("fly-speed");
 const flyNote = document.getElementById("fly-note");
 const LIGHT_SECONDS_PER_AU = LIGHT_MINUTES_PER_AU * 60;
@@ -3428,6 +3424,9 @@ function buildPlanner() {
   document.getElementById("plan-to-label").textContent = t.to;
   document.getElementById("plan-speed-label").textContent = t.speed;
   document.getElementById("fly-label").textContent = t.flyTitle;
+  document.getElementById("plan-view-label").textContent = t.view;
+  planView.options[0].textContent = t.viewThird;
+  planView.options[1].textContent = t.viewEgo;
   document.getElementById("plan-note").textContent = t.note;
   planGo.textContent = t.go;
   planStop.textContent = t.stop;
@@ -3527,7 +3526,16 @@ measurePlanButton.addEventListener("click", () => {
   document.getElementById("planner").open = true;
 });
 
+// The trip sets the time speed so that it can be watched; at the end (or on Stop) the speed of the user is back.
+function restoreTimeSpeed() {
+  timeScale = trip.saved.timeScale;
+  speedSlider.value = String((Math.log10(timeScale) / 8) * 100);
+  updateSpeedText();
+}
+
 function clearTrip() {
+  if (trip && !trip.arrived) restoreTimeSpeed();
+  leaveEgo();
   trip = null;
   for (const o of [ship, shipLine, shipTarget]) o.visible = false;
   planStop.hidden = true;
@@ -3550,6 +3558,8 @@ planGo.addEventListener("click", () => {
   }
   const speed = SPEEDS.find((v) => v.id === planSpeed.value);
   const jd0 = JD_AT_LOAD + solar.time * 365.25;
+  // The time speed of the user, put back when the trip ends. A second trip started during a first one keeps the first value.
+  const saved = trip && !trip.arrived ? trip.saved : { timeScale };
   const beta = speed.kms / C_KMS;
   let o;
   let d;
@@ -3580,7 +3590,7 @@ planGo.addEventListener("click", () => {
   }
   const unit = mode === "solar" ? 1 : 1 / LY_PER_AU; // positions in AU for the trip data, light years become AU here
   trip = {
-    jd0, days, o, d, beta, kind: speed.kind, follow: true, arrived: false, mode, from, to,
+    jd0, days, o, d, beta, kind: speed.kind, follow: true, arrived: false, mode, from, to, saved,
     distanceAu: Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * unit,
   };
   const points3 = drawTrip();
@@ -3598,7 +3608,7 @@ planGo.addEventListener("click", () => {
   updateCloseupButton();
   const routeSize = points3[0].distanceTo(points3[160]);
   const target = tripMap(o, new THREE.Vector3());
-  startFlight(() => target, Math.max(0.25, routeSize * 1.4));
+  if (planView.value !== "ego") startFlight(() => target, Math.max(0.25, routeSize * 1.4));
   ring.visible = false;
 });
 
@@ -3614,6 +3624,55 @@ function drawTrip() {
   return line;
 }
 
+// First person: the camera sits at the ship and looks along the flight direction (the direction of the curved
+// line on the map). The mouse looks around from there (the orbit target is a little ahead of the camera, so the
+// camera turns almost in place), zoom is off. Third person is the camera that follows the ship from outside.
+let egoOn = false;
+const egoLast = new THREE.Vector3();
+const egoAhead = new THREE.Vector3();
+function enterEgo(u) {
+  egoOn = true;
+  flight = null;
+  const next = Math.min(1, u + 0.01);
+  tripMap(lerp3(trip.o, trip.d, next), egoAhead);
+  egoAhead.sub(ship.position);
+  if (u > 0.99) egoAhead.negate(); // at the very end the "ahead" point would be past the target
+  egoAhead.normalize().multiplyScalar(controls.minDistance * 1.5);
+  egoLast.copy(ship.position);
+  camera.position.copy(ship.position);
+  controls.target.copy(ship.position).add(egoAhead);
+  controls.enableZoom = false;
+  ship.visible = false; // the camera sits inside its glow
+}
+function leaveEgo() {
+  if (!egoOn) return;
+  egoOn = false;
+  controls.enableZoom = true;
+  if (trip) ship.visible = true;
+}
+function stepView() {
+  if (!trip || trip.arrived) return;
+  if (planView.value === "ego") {
+    if (!egoOn) enterEgo(Math.min(1, Math.max(0, (JD_AT_LOAD + solar.time * 365.25 - trip.jd0) / trip.days)));
+    // Camera and target move with the ship, so the mouse look stays as the user left it.
+    const delta = shipTmp.copy(ship.position).sub(egoLast);
+    camera.position.add(delta);
+    controls.target.add(delta);
+    egoLast.copy(ship.position);
+    return;
+  }
+  if (egoOn) {
+    leaveEgo();
+    startFlight(() => ship.position.clone(), 0.4); // back out to the view from outside
+  }
+  if (trip.follow && !flight) {
+    // The camera stays with the ship, the same way the close-up stays with a planet.
+    const delta = shipTmp.copy(ship.position).sub(controls.target);
+    camera.position.add(delta);
+    controls.target.add(delta);
+  }
+}
+
 let tripShownAt = 0;
 const shipTmp = new THREE.Vector3();
 function stepTrip(now) {
@@ -3626,6 +3685,8 @@ function stepTrip(now) {
   shipGlow.children.forEach((layer, i) => (layer.material.uniforms.uSize.value = size * (i === 0 ? 1 : 2.4)));
   if (u >= 1 && !trip.arrived) {
     trip.arrived = true;
+    restoreTimeSpeed();
+    leaveEgo();
     showTripResult();
     planResult.textContent += `\n${TRAVEL_UI[lang].arrived}`;
     return;

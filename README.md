@@ -95,6 +95,10 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   map, so it looks curved; the ring marks the arrival point. The camera follows the ship, the time slider speeds it up (when you press
   "Plan and fly" the time speed is set so the trip takes about 20 seconds; change it afterwards). The panel shows the distance, the light
   travel time, the travel time and, below c, the time on board with the Lorentz factor (time dilation).
+- **View:** "View" chooses third person (the camera follows the ship from outside, the default) or first person (the camera sits at the ship and
+  looks along the flight direction; the mouse looks around, zoom is off). It can be switched during the flight.
+- **Time speed:** the trip sets the time speed so that it takes about 20 seconds; when the ship arrives (or on Stop) the time speed is back
+  at the value you had before, even if you moved the slider during the flight.
 - **Speed steps:** Voyager 1 (17 km/s), Parker Solar Probe (about 190 km/s), 0.1 c, 0.9 c, 1 c, 10 c and 100 c. The first two are real.
   0.1 c and 0.9 c are far beyond any real spacecraft (physics does not forbid them). 1 c is the speed of light, which only light reaches, so it
   has no time on board. **10 c and 100 c are FICTIONAL**: nothing can be faster than light as far as we know. They are marked in red in the
