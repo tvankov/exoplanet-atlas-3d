@@ -3732,9 +3732,10 @@ function stopFraction() {
 // Positions of the trip are AU (ecliptic) for a trip between planets and light years (data axes) for the rest.
 const tripMap = (p, out) => (trip.mode === "solar" ? mapEcliptic(p, out) : toMapPosition(p, out));
 const lerp3 = (o, d, u) => ({ x: o.x + (d.x - o.x) * u, y: o.y + (d.y - o.y) * u, z: o.z + (d.z - o.z) * u });
-// The straight line of the trip through the squeezed map (so it is curved), and the ring at the arrival point.
+// The straight line of the trip through the squeezed map (so it is curved) all the way to the ring at the target. The ship
+// stops a little before it (see stopFraction), the line shows the whole route.
 function drawTrip() {
-  const line = Array.from({ length: 161 }, (_, k) => tripMap(lerp3(trip.o, trip.d, (k / 160) * trip.uEnd), new THREE.Vector3()));
+  const line = Array.from({ length: 161 }, (_, k) => tripMap(lerp3(trip.o, trip.d, k / 160), new THREE.Vector3()));
   shipLine.geometry.dispose();
   shipLine.geometry = new THREE.BufferGeometry().setFromPoints(line);
   tripMap(trip.d, shipTarget.position);
@@ -3776,11 +3777,11 @@ const aheadTmp = new THREE.Vector3();
 const offsetTmp = new THREE.Vector3();
 const rightTmp = new THREE.Vector3();
 const upTmp = new THREE.Vector3();
-// First person starts with the start object at the lower right of the picture: the camera sits four radii of
+// First person starts with the start object at the lower right of the picture: the camera sits two radii of
 // the object away, a bit to the left, above and behind it, and looks along the route. When the ship speeds up
 // the object falls behind. "forward" is the unit vector along the route.
 function startOffset(forward, out) {
-  const A = 4 * placeRadius(trip.from);
+  const A = 2 * placeRadius(trip.from);
   rightTmp.crossVectors(forward, camera.up);
   if (rightTmp.lengthSq() < 1e-6) rightTmp.set(1, 0, 0);
   rightTmp.normalize();

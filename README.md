@@ -113,7 +113,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
 - **Exoplanets as destination, stopping in front of the target:** From and To also take the name of any exoplanet (for example Proxima Cen b).
   The ship flies to its star, and on arrival the system opens and the camera goes to the planet. The ship never flies through the
   target: it stops three diameters in front of it (the diameter as drawn on the map; all host stars are drawn with the same size), then the
-  close-up takes over. The distance and travel time shown are to the target itself, the small stretch that is not flown is not subtracted.
+  close-up takes over. The blue line shows the whole route up to the ring at the target; the ship stops on it a little before the ring. The distance and travel time shown are to the target itself, the small stretch that is not flown is not subtracted.
 - **Time speed:** the trip sets the time speed so that it takes about 20 seconds; when the ship arrives (or on Stop) the time speed is back
   at the value you had before, even if you moved the slider during the flight.
 - **Speed steps:** Voyager 1 (17 km/s), Parker Solar Probe (about 190 km/s), 0.1 c, 0.9 c, 1 c, 10 c and 100 c. The first two are real.
