@@ -103,7 +103,16 @@ def main() -> None:
     else:
         planets["disc_facility"] = None
 
-    planet_cols = ["pl_name", "pl_rade", "pl_bmasse", "pl_orbper", "pl_eqt", "discoverymethod", "disc_year", "disc_facility", "habitable", "radius_calculated"]
+    # The semi-major axis in AU (src/fetch_nasa_extras.py). The map needs it for the planets without an orbital period,
+    # mostly directly imaged ones far from their star: with the axis and the star mass the period follows from Kepler's law.
+    orbsmax = sorted(RAW_DIR.glob("nasa_orbsmax_*.csv"))
+    if orbsmax:
+        axis = pd.read_csv(orbsmax[-1]).drop_duplicates("pl_name").set_index("pl_name")["pl_orbsmax"]
+        planets["pl_orbsmax"] = planets["pl_name"].map(axis)
+    else:
+        planets["pl_orbsmax"] = None
+
+    planet_cols = ["pl_name", "pl_rade", "pl_bmasse", "pl_orbper", "pl_orbsmax", "pl_eqt", "discoverymethod", "disc_year", "disc_facility", "habitable", "radius_calculated"]
     by_star = {
         host: grp[planet_cols].astype(object).where(grp[planet_cols].notna(), None).to_dict("records")
         for host, grp in planets.groupby("hostname")

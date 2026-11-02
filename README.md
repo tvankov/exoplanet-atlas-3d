@@ -84,6 +84,13 @@ python src/build_orbits.py   # -> web/data/orbits.json (67 KB)
   For them the text says "about ... but nobody has measured it, it is worked out from the mass", the type line says the type comes from a
   calculated radius, and the list shows "≈". The recordings of these 16 stories were made again with the new text.
 
+- **Planets without an orbital period:** 348 of the planets have no period in the archive (mostly directly imaged ones far from their star, for
+  example 2MASS J03590986+2009361 b), and the map used to leave them out, so 335 stars showed no planet at all. For 341 of them the same
+  archive table has a measured semi-major axis (`pl_orbsmax`, AU, `data/raw/nasa_orbsmax_*.csv` from `src/fetch_nasa_extras.py`, written into
+  `stars.json` by `src/transform.py`). The map takes the period from Kepler's third law, P^2 = a^3 / M (years, AU, solar masses of the star;
+  a star without a mass counts as the Sun). Only 7 planets have neither value and are still not drawn. Gaia does not help here: it measures stars,
+  not planet orbits.
+
 ## Travel planner, flight speed and star tools
 
 The maths and all texts of this part are in `web/travel.js`, the drawing is in `web/main.js`.

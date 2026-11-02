@@ -2339,13 +2339,15 @@ const EXO_STAR_RADIUS = 0.05; // every host star is drawn this size, planets are
 function exoSystem(star) {
   const mass = star.st_mass ?? 1; // sun-like fallback, only changes the drawn orbit radii
   const planets = star.planets
-    .filter((p) => p.pl_orbper) // without a period the planet cannot be placed on an orbit
+    .filter((p) => p.pl_orbper || p.pl_orbsmax) // without a period or a semi-major axis the planet cannot be placed on an orbit
     .map((p) => {
-      const years = p.pl_orbper / 365.25;
+      // A planet without a period (mostly directly imaged ones far from the star) has a measured semi-major axis instead; the period
+      // then follows from Kepler's third law, P^2 = a^3 / M (years, AU, solar masses). The same law gives the axis from a period.
+      const years = p.pl_orbper ? p.pl_orbper / 365.25 : Math.sqrt(p.pl_orbsmax ** 3 / mass);
       return {
         name: p.pl_name,
         years,
-        au: Math.cbrt(mass * years * years),
+        au: p.pl_orbper ? Math.cbrt(mass * years * years) : p.pl_orbsmax,
         // Without a star radius there is no ratio to draw, the minimum size applies.
         size: star.st_rad && p.pl_rade ? (EXO_STAR_RADIUS * p.pl_rade) / (star.st_rad * EARTH_RADII_PER_SUN) : 0,
         type: planetType(p.pl_rade),
@@ -3733,7 +3735,7 @@ const SYSTEM_EDGE = 1.8;
 // a system with a long period planet is up to 1.6.
 function exoOuter(star) {
   const mass = star.st_mass ?? 1;
-  const au = star.planets.filter((p) => p.pl_orbper).map((p) => Math.cbrt(mass * (p.pl_orbper / 365.25) ** 2));
+  const au = star.planets.filter((p) => p.pl_orbper || p.pl_orbsmax).map((p) => (p.pl_orbper ? Math.cbrt(mass * (p.pl_orbper / 365.25) ** 2) : p.pl_orbsmax));
   if (!au.length) return 0.15;
   const auMin = Math.min(...au);
   return Math.max(0.15, ...au.map((a) => Math.min(MAX_ORBIT, 0.15 * Math.sqrt(a / auMin))));
