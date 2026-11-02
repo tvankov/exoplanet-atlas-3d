@@ -3711,7 +3711,7 @@ planGo.addEventListener("click", () => {
   ring.visible = false; // the ring would mark the start planet
 });
 
-// The ship stops three diameters in front of the target and does not fly through it. The diameter is the one drawn
+// The ship stops three quarters of a diameter (1.5 radii from the centre) in front of the target and does not fly through it. The diameter is the one drawn
 // on the map (a planet of the Solar System, the Sun, or a host star, which is drawn with the same size for all stars).
 // The result is the share of the way where the ship stops. The times and distances shown are to the target itself.
 // The drawn radius of a place of the trip: the planet as drawn, the Sun, or a host star.
@@ -3724,7 +3724,7 @@ function stopFraction() {
   const target = tripMap(trip.d, new THREE.Vector3());
   const p = new THREE.Vector3();
   for (let k = 2000; k >= 1; k--) {
-    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= radius * 6) return k / 2000;
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= radius * 1.5) return k / 2000;
   }
   return 0.5;
 }
@@ -3777,11 +3777,11 @@ const aheadTmp = new THREE.Vector3();
 const offsetTmp = new THREE.Vector3();
 const rightTmp = new THREE.Vector3();
 const upTmp = new THREE.Vector3();
-// First person starts with the start object at the lower right of the picture: the camera sits two radii of
+// First person starts with the start object at the lower right of the picture: the camera sits 1.3 radii of
 // the object away, a bit to the left, above and behind it, and looks along the route. When the ship speeds up
 // the object falls behind. "forward" is the unit vector along the route.
 function startOffset(forward, out) {
-  const A = 2 * placeRadius(trip.from);
+  const A = 1.3 * placeRadius(trip.from);
   rightTmp.crossVectors(forward, camera.up);
   if (rightTmp.lengthSq() < 1e-6) rightTmp.set(1, 0, 0);
   rightTmp.normalize();
