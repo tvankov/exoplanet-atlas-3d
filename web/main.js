@@ -3724,7 +3724,7 @@ function stopFraction() {
   const target = tripMap(trip.d, new THREE.Vector3());
   const p = new THREE.Vector3();
   for (let k = 2000; k >= 1; k--) {
-    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= radius * 1.5) return k / 2000;
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= Math.max(radius * 1.5, radius + 0.03)) return k / 2000;
   }
   return 0.5;
 }
@@ -3781,7 +3781,10 @@ const upTmp = new THREE.Vector3();
 // the object away, a bit to the left, above and behind it, and looks along the route. When the ship speeds up
 // the object falls behind. "forward" is the unit vector along the route.
 function startOffset(forward, out) {
-  const A = 1.3 * placeRadius(trip.from);
+  // Never closer than 0.03 map units to the surface: the camera has a near plane at 0.01, and a planet closer than that is
+  // cut away (the camera seemed to sit inside the Earth). 1.106 is the length of the offset vector in units of A.
+  const R = placeRadius(trip.from);
+  const A = Math.max(1.3 * R, (R + 0.03) / 1.106);
   rightTmp.crossVectors(forward, camera.up);
   if (rightTmp.lengthSq() < 1e-6) rightTmp.set(1, 0, 0);
   rightTmp.normalize();
