@@ -84,6 +84,39 @@ python src/build_orbits.py   # -> web/data/orbits.json (67 KB)
   For them the text says "about ... but nobody has measured it, it is worked out from the mass", the type line says the type comes from a
   calculated radius, and the list shows "≈". The recordings of these 16 stories were made again with the new text.
 
+## Travel planner, flight speed and star tools
+
+The maths and all texts of this part are in `web/travel.js`, the drawing is in `web/main.js`.
+
+- **Travel planner, stage 1 (planet to planet):** the menu "Travel planner" in the left panel has From, To and Speed (the eight
+  planets). The ship leaves the start planet where it is now and flies a straight line at constant speed to the place where the target will
+  be on arrival (an intercept course, `solveIntercept`: stepping plus bisection on "distance to the target at time T equals speed times T").
+  Start and target stand on their real positions of today (`planetPosition`). The line is worked out in AU and drawn through the squeezed
+  map, so it looks curved; the ring marks the arrival point. The camera follows the ship, the time slider speeds it up (when you press
+  "Plan and fly" the time speed is set so the trip takes about 20 seconds; change it afterwards). The panel shows the distance, the light
+  travel time, the travel time and, below c, the time on board with the Lorentz factor (time dilation).
+- **Speed steps:** Voyager 1 (17 km/s), Parker Solar Probe (about 190 km/s), 0.1 c, 0.9 c, 1 c, 10 c and 100 c. The first two are real.
+  0.1 c and 0.9 c are far beyond any real spacecraft (physics does not forbid them). 1 c is the speed of light, which only light reaches, so it
+  has no time on board. **10 c and 100 c are FICTIONAL**: nothing can be faster than light as far as we know. They are marked in red in the
+  panel and in the menu.
+- **What it does not do:** no gravity, no orbit of the Sun, no speed of the start planet at launch and no time for the light to reach the
+  planets. It is a straight line, not a mission plan.
+- **Flight speed in c:** "Flight speed (keys)" sets how fast W, A, S, D and Q, E move: Auto (as before) or a multiple of c, where 1 c is one
+  light second per second (the steps are 1, 1,000, 1e5, 1e7, 1e9 and 1e11 c). The speed is true to the real distance near the camera,
+  worked out from the squeeze of the map at that place (square root of the distance), so on the screen the same speed looks different in
+  different places. Everything above 1 c is marked FICTIONAL.
+- **Diffraction spikes:** the brightest stars (as seen from the camera, in the NASA layer and in the near Gaia layer, also the deep layer)
+  get a four-armed cross, like a telescope shows. It is an effect of the optics, not a part of the star, and an illustration.
+- **Star streaks:** at high speed (the ship of the planner at 0.01 c and more, the key flight at 1,000 c and more) the picture is smeared
+  outwards from the middle, so the stars become streaks (a post-processing pass in `main.js`, off at normal speed).
+- **Spectral class filter:** the classes O, B, A, F, G, K, M from the star temperature `st_teff` (limits 30,000 / 10,000 / 7,500 / 6,000 /
+  5,200 / 3,700 K, the usual rounded ones). Off, highlight (the others dimmed) or isolate (the others hidden). It works together with
+  "Discovered by". Stars whose temperature was only assumed (287) have no class. It applies to the host stars of the NASA list, not to the
+  Gaia layers.
+- **Measure distance:** press the button, click two stars (or the Sun), get the straight-line distance in light years and parsecs and the
+  line between them, drawn curved because the map is squeezed. The distances are the catalogue distances with their measurement errors. It
+  is the base for stage 2 of the planner (star to star).
+
 ## Legal
 
 `LICENSE` (MIT for the code, not for third party material), `THIRD_PARTY_NOTICES.md` (every source with its terms and the

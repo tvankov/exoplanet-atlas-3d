@@ -4,6 +4,11 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
+import {
+  C_AU_PER_DAY, C_KMS, FLY_STEPS, LY_PER_AU, SECONDS_PER_YEAR as YEAR_SECONDS, SPECTRAL, SPEEDS, TRAVEL_UI,
+  boardSeconds, lorentz, solveIntercept, spectralClass,
+} from "./travel.js";
 import { buildStory, duration, planetType, PLANET_TYPES, slug, solarName, UI } from "./story.js";
 
 const DEFAULT_RADIUS = 1; // solar radii, display only, used where st_rad is missing
@@ -26,6 +31,30 @@ const composer = new EffectComposer(
   new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 })
 );
 composer.addPass(new RenderPass(scene, camera));
+// Star streaks at high speed: every pixel is smeared outwards from the middle of the screen, keeping the
+// brightest sample (max, not the average) so a faint dot becomes a sharp streak instead of fading away.
+// The pass is switched off when the strength is zero, so normal flying costs nothing.
+const warpPass = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uStrength: { value: 0 } },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float uStrength;
+    varying vec2 vUv;
+    void main() {
+      vec2 dir = vUv - 0.5;
+      vec3 base = texture2D(tDiffuse, vUv).rgb;
+      vec3 best = base;
+      for (int i = 1; i < 18; i++) {
+        float t = float(i) / 17.0;
+        vec3 s = texture2D(tDiffuse, 0.5 + dir * (1.0 - uStrength * 0.2 * t)).rgb;
+        best = max(best, s * (1.0 - 0.8 * t));
+      }
+      gl_FragColor = vec4(mix(base, best, min(1.0, uStrength * 1.6)), 1.0);
+    }`,
+});
+warpPass.enabled = false;
+composer.addPass(warpPass);
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.5, 0.92); // strength, radius, threshold
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
@@ -69,6 +98,9 @@ const material = new THREE.ShaderMaterial({
     uniform float uMagRef;  // the apparent magnitude that shows at about 60 % brightness, see updateCameraReal
     varying vec3 vColor;
     varying float vGlow;
+    varying float vSpike; // 0 for most stars, up to 1 for the brightest ones, which get a cross
+    varying float vRatio; // the part of the sprite that the star body fills (the cross needs a larger sprite)
+    varying vec3 vTint;
     void main() {
       // Real brightness, as for the Gaia stars: the apparent magnitude m = M + 5 log10(d / 10 pc) tells how bright
       // the star looks from the camera, so a bright giant stands out and a faint dwarf is a dim dot, and far
@@ -78,31 +110,50 @@ const material = new THREE.ShaderMaterial({
       float dpc = max(length(truePos - uCamera), 0.3) / 3.2616;
       float m = absmag + 5.0 * log(dpc) / log(10.0) - 5.0;
       float fade = max(1.0 - exp(-pow(10.0, -0.4 * (m - uMagRef))), 0.18);
-      float shown = mix(0.1, 1.0, match);   // a star that the filter leaves out is dimmed a lot, not removed
+      float shown = match < 0.0 ? 0.0 : mix(0.1, 1.0, match);   // a star that a filter leaves out is dimmed a lot (match 0) or hidden (match -1)
       vColor = (glow > 0.5 ? color : color * fade) * shown;
       vGlow = glow;
       vec4 mv = modelViewMatrix * vec4(position, 1.0);
       // A glowing star gets a larger sprite, because the halo needs room to fade out.
       // Every other star stays a small plain dot.
-      gl_PointSize = glow > 0.5 ? max(8.0, size * 260.0 / -mv.z) : max(mix(1.6, 2.5, fade), size * 100.0 / -mv.z);
+      float body = glow > 0.5 ? max(8.0, size * 260.0 / -mv.z) : max(mix(1.6, 2.5, fade), size * 100.0 / -mv.z);
+      // Diffraction spikes: a telescope shows a cross on bright stars (from the struts that hold its mirror). The
+      // cross is an effect of the optics, not a part of the star. It starts on the stars that look about 5 magnitudes
+      // brighter than the faintest ones shown and is full from 8.5 magnitudes brighter, so only the clear points get one.
+      vSpike = smoothstep(uMagRef - 5.0, uMagRef - 8.5, m) * step(0.5, match);
+      float sprite = mix(body, max(body, 46.0), vSpike);
+      vRatio = body / sprite;
+      vTint = mix(color, vec3(1.0), 0.45) * max(match, 0.0);
+      gl_PointSize = sprite;
       gl_Position = projectionMatrix * mv;
     }`,
   fragmentShader: `
     varying vec3 vColor;
     varying float vGlow;
+    varying float vSpike;
+    varying float vRatio;
+    varying vec3 vTint;
     void main() {
-      float d = length(gl_PointCoord - 0.5) * 2.0; // 0 in the middle, 1 at the edge
-      if (d > 1.0) discard;
+      vec2 p = (gl_PointCoord - 0.5) * 2.0;
+      float d = length(p) / vRatio; // 0 in the middle, 1 at the edge of the star body
+      float cross = vSpike * (exp(-abs(p.x) * 40.0) * pow(max(1.0 - abs(p.y), 0.0), 2.5)
+                            + exp(-abs(p.y) * 40.0) * pow(max(1.0 - abs(p.x), 0.0), 2.5));
+      vec3 spikes = vTint * cross * 0.9;
+      if (d > 1.0) {
+        if (cross < 0.004) discard;
+        gl_FragColor = vec4(pow(spikes, vec3(2.2)), 1.0);
+        return;
+      }
       if (vGlow < 0.5) {
         // Plain star: a small dot with a soft edge and no halo, so it stays quiet in the background.
-        gl_FragColor = vec4(pow(vColor * smoothstep(1.0, 0.4, d), vec3(2.2)), 1.0);
+        gl_FragColor = vec4(pow(vColor * smoothstep(1.0, 0.4, d) + spikes, vec3(2.2)), 1.0);
         return;
       }
       float halo = pow(1.0 - d, 1.8);              // soft glow in the star colour
       float core = smoothstep(0.3, 0.0, d);        // small white hot centre
       // Additive blending: the colour is added as it is, so the brightness is set here. The colours are
       // written as screen colours, the pow turns them into linear light for the post-processing chain.
-      gl_FragColor = vec4(pow(vColor * halo * 1.3 + vec3(core * 0.8), vec3(2.2)), 1.0);
+      gl_FragColor = vec4(pow(vColor * halo * 1.3 + vec3(core * 0.8) + spikes, vec3(2.2)), 1.0);
     }`,
 });
 
@@ -162,6 +213,7 @@ function updatePositions() {
     attr.setXYZ(i, tmp.x, tmp.y, tmp.z);
   });
   attr.needsUpdate = true;
+  if (measureA) drawMeasure();
   if (gaia) placeGaia();
   if (deep) placeDeep();
 }
@@ -187,6 +239,8 @@ const gaiaMaterial = new THREE.ShaderMaterial({
     attribute float absmag;   // absolute magnitude: how bright the star really is
     attribute vec3 color;
     varying vec3 vColor;
+    varying float vSpike;
+    varying float vRatio;
     void main() {
       // Real brightness: the apparent magnitude m = M + 5 log10(d / 10 pc) shows how bright the star looks
       // from the camera. The light drops with the square of the distance, so stars fade when we fly away
@@ -198,15 +252,26 @@ const gaiaMaterial = new THREE.ShaderMaterial({
       vColor = color * b * uGain;
       // The size depends on the brightness only: a faint star is a fine dot, a bright one a few pixels.
       // (It grew with the distance first and was a big soft disc up close.)
-      gl_PointSize = 1.6 + 3.2 * b;
+      float body = 1.6 + 3.2 * b;
+      // Diffraction spikes on the brightest stars, see the star layer above.
+      vSpike = smoothstep(uMagRef - 1.5, uMagRef - 5.0, m);
+      float sprite = mix(body, max(body, 40.0), vSpike);
+      vRatio = body / sprite;
+      gl_PointSize = sprite;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }`,
   fragmentShader: `
     varying vec3 vColor;
+    varying float vSpike;
+    varying float vRatio;
     void main() {
-      float d = length(gl_PointCoord - 0.5) * 2.0;
-      if (d > 1.0) discard;
-      gl_FragColor = vec4(pow(vColor * smoothstep(1.0, 0.3, d), vec3(2.2)), 1.0); // screen colours to linear light
+      vec2 p = (gl_PointCoord - 0.5) * 2.0;
+      float d = length(p) / vRatio;
+      float cross = vSpike * (exp(-abs(p.x) * 40.0) * pow(max(1.0 - abs(p.y), 0.0), 2.5)
+                            + exp(-abs(p.y) * 40.0) * pow(max(1.0 - abs(p.x), 0.0), 2.5));
+      if (d > 1.0 && cross < 0.004) discard;
+      vec3 spikes = mix(vColor, vec3(1.0), 0.45) * cross * 0.9;
+      gl_FragColor = vec4(pow(vColor * smoothstep(1.0, 0.3, min(d, 1.0)) * step(d, 1.0) + spikes, vec3(2.2)), 1.0); // screen colours to linear light
     }`,
 });
 // Faintest magnitude that shows up clearly when the camera sits at the Sun. 6 is the naked eye and was too
@@ -2626,7 +2691,7 @@ canvas.addEventListener("pointerup", (e) => {
   if (!pressAt) return;
   const moved = Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y);
   pressAt = null;
-  if (moved < 5) pickPlanet(e.clientX, e.clientY);
+  if (moved < 5) (measuring ? pickMeasure : pickPlanet)(e.clientX, e.clientY);
 });
 
 function pickPlanet(x, y) {
@@ -2720,6 +2785,7 @@ function applyLanguage() {
   showGaiaState();
   showDeepState();
   showBackgroundState();
+  buildPlanner();
   stopSpeaking();
   if (current) showStory(current.star, current.planet);
 }
@@ -2983,23 +3049,53 @@ function buildFacilityMenu() {
   facilitySelect.replaceChildren(new Option(UI[lang].facilityAll, ""));
   for (const [name, n] of options) facilitySelect.append(new Option(`${name} (${n})`, name));
 }
-facilitySelect.addEventListener("change", () => {
+// One function for both filters (discoverer and spectral class), because they share the "match" attribute of the
+// star shader: 1 is shown, 0 is dimmed, -1 is hidden (only the spectral filter in "isolate" mode hides).
+const spectralModeSelect = document.getElementById("spectral-mode");
+const spectralClassSelect = document.getElementById("spectral-class");
+const spectralNote = document.getElementById("spectral-note");
+function applyFilters() {
   const facility = facilitySelect.value;
+  const spectralMode = spectralModeSelect.value;
+  const cls = spectralClassSelect.value;
   const match = points.geometry.getAttribute("match");
   let hosts = 0;
   let planets = 0;
+  let classHosts = 0;
+  let classPlanets = 0;
+  let unknown = 0;
   stars.forEach((s, i) => {
     const hits = facility ? s.planets.filter((p) => p.disc_facility === facility).length : 0;
-    match.setX(i, !facility || hits > 0 ? 1 : 0);
+    const facilityOk = !facility || hits > 0;
     if (hits > 0) {
       hosts++;
       planets += hits;
     }
+    // A star whose temperature was only assumed (teff_missing) has no class.
+    const own = s.teff_missing ? null : spectralClass(s.st_teff);
+    if (!own) unknown++;
+    const classOk = spectralMode === "off" || own === cls;
+    if (spectralMode !== "off" && own === cls) {
+      classHosts++;
+      classPlanets += s.planets.length;
+    }
+    match.setX(i, !classOk && spectralMode === "isolate" ? -1 : facilityOk && classOk ? 1 : 0);
   });
   match.needsUpdate = true;
   facilityNote.hidden = !facility;
   facilityNote.textContent = facility ? UI[lang].facilityNote(planets, hosts) : "";
-});
+  spectralClassSelect.hidden = spectralMode === "off";
+  spectralNote.hidden = spectralMode === "off";
+  if (spectralMode !== "off") {
+    const range = SPECTRAL.find((c) => c.cls === cls);
+    spectralNote.textContent = TRAVEL_UI[lang].spectralNote(
+      cls, TRAVEL_UI[lang].spectralRange(range.min, range.max), "", classHosts, classPlanets, unknown
+    );
+  }
+}
+facilitySelect.addEventListener("change", applyFilters);
+spectralModeSelect.addEventListener("change", applyFilters);
+spectralClassSelect.addEventListener("change", applyFilters);
 
 // Search over all stars and planets of the NASA list: type a name, get up to ten hits, nearest star first, with the
 // same three buttons as the lists (planet, star, system). The index is made on the first key press.
@@ -3162,6 +3258,8 @@ function animate() {
   lastFrame = now;
   stepSystem(solar, dt);
   if (activeExo) stepSystem(activeExo, dt);
+  stepTrip(now);
+  stepWarp(dt);
   milkyWay.position.copy(camera.position);
   sunRays.quaternion.copy(camera.quaternion); // the sheet faces the camera
   sunRays.material.uniforms.uTime.value = now;
@@ -3184,6 +3282,12 @@ function animate() {
     // After the flight the camera and its target move with the planet, so the view stays on it
     // while the user can still turn around it with the mouse.
     const delta = current.follow.getWorldPosition(trackTmp).sub(controls.target);
+    camera.position.add(delta);
+    controls.target.add(delta);
+  }
+  if (trip?.follow && !trip.arrived && !flight) {
+    // The camera stays with the ship, the same way the close-up stays with a planet.
+    const delta = ship.position.clone().sub(controls.target);
     camera.position.add(delta);
     controls.target.add(delta);
   }
@@ -3218,8 +3322,10 @@ window.addEventListener("keyup", (e) => keys.delete(e.code));
 window.addEventListener("blur", () => keys.clear());
 
 function stepKeys(dt) {
+  flyWarpTarget = 0;
   if (keys.size === 0) return;
   if (flight) flight = null;
+  if (trip) trip.follow = false; // the keys take over from the ship
   if (closeup) {
     leaveCloseup(); // the close-up follows the planet and would pull the camera back
     updateCloseupButton();
@@ -3252,7 +3358,12 @@ function stepKeys(dt) {
   if (keys.has("KeyE")) keyMove.add(camera.up);
   if (keys.has("KeyQ")) keyMove.sub(camera.up);
   if (keyMove.lengthSq() > 0) {
-    const speed = Math.max(distance * 0.4, 0.02) * (shiftHeld ? 4 : 1);
+    // "Auto" follows the distance to the target. A step in c is a real speed (1 c = one light second per second),
+    // turned into map units where the camera is, see mapPerLightYear.
+    const flyC = currentFlyC();
+    const base = flyC === null ? Math.max(distance * 0.4, 0.02) : (flyC / YEAR_SECONDS) * mapPerLightYear();
+    const speed = base * (shiftHeld ? 4 : 1);
+    flyWarpTarget = flyC === null ? 0 : Math.min(1, Math.max(0, (Math.log10(flyC) - 2) / 8));
     keyMove.normalize().multiplyScalar(speed * dt);
     camera.position.add(keyMove);
     controls.target.add(keyMove);
@@ -3261,6 +3372,318 @@ function stepKeys(dt) {
 let shiftHeld = false;
 window.addEventListener("keydown", (e) => (shiftHeld = e.shiftKey));
 window.addEventListener("keyup", (e) => (shiftHeld = e.shiftKey));
+
+// ---------------------------------------------------------------------------------------------------------
+// Travel planner, stage 1: planet to planet in the Solar System. The ship leaves the start planet where it is
+// now and flies a straight line at constant speed to the place where the target will be on arrival (intercept
+// course, solveIntercept in travel.js). Gravity is ignored, and the ship does not start with the speed of the
+// start planet. The positions are the real ones from planetPosition. The path is worked out in AU and then drawn
+// through mapEcliptic, so on the squeezed map the straight line is curved (a note says so).
+let trip = null; // { jd0, days, o, d, beta, kind, ... } while a trip is set up
+const planFrom = document.getElementById("plan-from");
+const planTo = document.getElementById("plan-to");
+const planSpeed = document.getElementById("plan-speed");
+const planKind = document.getElementById("plan-kind");
+const planGo = document.getElementById("plan-go");
+const planStop = document.getElementById("plan-stop");
+const planResult = document.getElementById("plan-result");
+const flySpeedSelect = document.getElementById("fly-speed");
+const flyNote = document.getElementById("fly-note");
+const LIGHT_SECONDS_PER_AU = LIGHT_MINUTES_PER_AU * 60;
+const PLAN_COLOR = 0x7fe3ff;
+
+const ship = new THREE.Group();
+const shipGlow = starGlow(PLAN_COLOR, 1);
+ship.add(shipGlow);
+const shipLine = new THREE.Line(
+  new THREE.BufferGeometry(),
+  new THREE.LineBasicMaterial({ color: PLAN_COLOR, transparent: true, opacity: 0.85 })
+);
+const shipTarget = new THREE.Sprite(
+  new THREE.SpriteMaterial({ map: ringTexture(), sizeAttenuation: false, depthTest: false, transparent: true, color: PLAN_COLOR })
+);
+shipTarget.scale.set(0.05, 0.05, 1);
+for (const o of [ship, shipLine, shipTarget]) {
+  o.visible = false;
+  o.frustumCulled = false;
+  solar.group.add(o);
+}
+
+// Keeps the selection of a menu over a rebuild of its entries (a language change writes the labels again).
+function fillSelect(select, entries, fallback) {
+  const keep = select.value || fallback;
+  select.replaceChildren(...entries.map(([value, text]) => new Option(text, value)));
+  if (entries.some(([value]) => value === keep)) select.value = keep;
+}
+
+function currentFlyC() {
+  return FLY_STEPS.find((f) => f.id === flySpeedSelect.value)?.c ?? null;
+}
+
+function buildPlanner() {
+  const t = TRAVEL_UI[lang];
+  document.getElementById("planner-title").textContent = t.title;
+  document.getElementById("plan-from-label").textContent = t.from;
+  document.getElementById("plan-to-label").textContent = t.to;
+  document.getElementById("plan-speed-label").textContent = t.speed;
+  document.getElementById("fly-label").textContent = t.flyTitle;
+  document.getElementById("plan-note").textContent = t.note;
+  planGo.textContent = t.go;
+  planStop.textContent = t.stop;
+  const names = PLANETS.map((p) => [p.name, p.name === "Earth" ? UI[lang].earthShort : solarName(p.name, lang)]);
+  fillSelect(planFrom, names, "Earth");
+  fillSelect(planTo, names, "Mars");
+  fillSelect(planSpeed, SPEEDS.map((v) => [v.id, t.speedLabel[v.id]]), "parker");
+  fillSelect(
+    flySpeedSelect,
+    FLY_STEPS.map((f) => [f.id, f.c === null ? t.flyAuto : t.flyStep(f.c.toLocaleString(lang)) + (f.c > 1 ? ` ${t.fictionTag}` : "")]),
+    "auto"
+  );
+  showPlanKind();
+  spectralModeSelect.options[0].textContent = t.spectralMode.off;
+  spectralModeSelect.options[1].textContent = t.spectralMode.highlight;
+  spectralModeSelect.options[2].textContent = t.spectralMode.isolate;
+  document.getElementById("measure").textContent = measuring ? t.measureStop : t.measure;
+  if (points) applyFilters();
+  showMeasure();
+  if (trip) showTripResult();
+}
+
+function showPlanKind() {
+  const speed = SPEEDS.find((v) => v.id === planSpeed.value);
+  planKind.textContent = TRAVEL_UI[lang].kind[speed.kind];
+  planKind.classList.toggle("plan-fiction", speed.kind === "fiction" || speed.kind === "limit");
+  const flyC = currentFlyC();
+  flyNote.textContent = flyC === null ? "" : (flyC > 1 ? TRAVEL_UI[lang].flyFiction + " " : "") + TRAVEL_UI[lang].flyNote;
+  flyNote.classList.toggle("plan-fiction", flyC > 1);
+}
+planSpeed.addEventListener("change", showPlanKind);
+flySpeedSelect.addEventListener("change", showPlanKind);
+
+const fmt = (value, digits = 2) => value.toLocaleString(lang, { maximumFractionDigits: digits });
+
+function showTripResult() {
+  const t = TRAVEL_UI[lang];
+  const seconds = trip.days * 86400;
+  let board;
+  if (trip.beta < 1) {
+    board = `${duration(boardSeconds(seconds, trip.beta), lang)} ${t.gamma(fmt(lorentz(trip.beta), 3))}`;
+  } else {
+    board = trip.beta === 1 ? t.boardLight : t.boardFiction;
+  }
+  planResult.textContent = t.result({
+    from: planetLabel(trip.fromName),
+    to: planetLabel(trip.toName),
+    au: fmt(trip.distanceAu),
+    light: duration(trip.distanceAu * LIGHT_SECONDS_PER_AU, lang),
+    time: duration(seconds, lang),
+    board,
+  });
+}
+const planetLabel = (name) => (name === "Earth" ? UI[lang].earthShort : solarName(name, lang));
+
+function clearTrip() {
+  trip = null;
+  for (const o of [ship, shipLine, shipTarget]) o.visible = false;
+  planStop.hidden = true;
+  planResult.textContent = "";
+  warp = 0;
+}
+planStop.addEventListener("click", clearTrip);
+
+planGo.addEventListener("click", () => {
+  const t = TRAVEL_UI[lang];
+  if (planFrom.value === planTo.value) {
+    planResult.textContent = t.same;
+    return;
+  }
+  const speed = SPEEDS.find((v) => v.id === planSpeed.value);
+  const jd0 = JD_AT_LOAD + solar.time * 365.25;
+  const rowOf = (name) => ORBITS.planets[ELEMENT_ROW[name]];
+  const o = planetPosition(rowOf(planFrom.value), jd0);
+  const hit = solveIntercept(o, (jd) => planetPosition(rowOf(planTo.value), jd), jd0, (speed.kms / C_KMS) * C_AU_PER_DAY);
+  if (!hit) {
+    planResult.textContent = t.none;
+    return;
+  }
+  const d = hit.arrive;
+  const points3 = Array.from({ length: 161 }, (_, k) => {
+    const u = k / 160;
+    return mapEcliptic({ x: o.x + (d.x - o.x) * u, y: o.y + (d.y - o.y) * u, z: o.z + (d.z - o.z) * u }, new THREE.Vector3());
+  });
+  shipLine.geometry.dispose();
+  shipLine.geometry = new THREE.BufferGeometry().setFromPoints(points3);
+  mapEcliptic(d, shipTarget.position);
+  trip = {
+    jd0, days: hit.days, o, d, beta: speed.kms / C_KMS, kind: speed.kind, follow: true, arrived: false,
+    fromName: planFrom.value, toName: planTo.value,
+    distanceAu: Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z),
+  };
+  for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
+  planStop.hidden = false;
+  // The trip should be watchable: the time speed is set so that it takes about 20 seconds on the screen
+  // (never slower than real time). The slider can change it afterwards.
+  timeScale = Math.min(1e8, Math.max(1, (hit.days * 86400) / 20));
+  speedSlider.value = String((Math.log10(timeScale) / 8) * 100);
+  updateSpeedText();
+  showTripResult();
+  planResult.textContent += `\n${t.setSpeed}`;
+  // Show the whole route first: the camera looks from above at the ship, far enough for the route to fit.
+  leaveCloseup();
+  updateCloseupButton();
+  const routeSize = points3[0].distanceTo(points3[160]);
+  const target = mapEcliptic(o, new THREE.Vector3());
+  startFlight(() => target, Math.max(0.25, routeSize * 1.4));
+  ring.visible = false;
+});
+
+let tripShownAt = 0;
+const shipTmp = new THREE.Vector3();
+function stepTrip(now) {
+  if (!trip) return;
+  const jd = JD_AT_LOAD + solar.time * 365.25;
+  const u = Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days));
+  mapEcliptic(
+    { x: trip.o.x + (trip.d.x - trip.o.x) * u, y: trip.o.y + (trip.d.y - trip.o.y) * u, z: trip.o.z + (trip.d.z - trip.o.z) * u },
+    ship.position
+  );
+  // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
+  const size = camera.position.distanceTo(ship.position) * 0.02;
+  shipGlow.children.forEach((layer, i) => (layer.material.uniforms.uSize.value = size * (i === 0 ? 1 : 2.4)));
+  if (u >= 1 && !trip.arrived) {
+    trip.arrived = true;
+    showTripResult();
+    planResult.textContent += `\n${TRAVEL_UI[lang].arrived}`;
+    return;
+  }
+  if (trip.arrived || now - tripShownAt < 0.3) return;
+  tripShownAt = now;
+  const seconds = u * trip.days * 86400;
+  const board = trip.beta < 1 ? duration(boardSeconds(seconds, trip.beta), lang) : "-";
+  showTripResult();
+  planResult.textContent += `\n${TRAVEL_UI[lang].live({ percent: fmt(u * 100, 0), time: duration(seconds, lang), board })}`;
+}
+
+// The streaks of the stars grow with the speed: the ship of the planner, or the free flight with a step in c.
+let warp = 0;
+let flyWarpTarget = 0;
+function stepWarp(dt) {
+  let target = flyWarpTarget;
+  if (trip && !trip.arrived) target = Math.max(target, Math.min(1, Math.max(0, (Math.log10(trip.beta) + 2) / 4)));
+  warp += (target - warp) * Math.min(1, dt * 3);
+  warpPass.enabled = warp > 0.01;
+  warpPass.uniforms.uStrength.value = warp;
+}
+
+// How many map units a light year is at the camera. The map is squeezed, so this changes with the place: in
+// the Solar System part (closer than 9 units to the Sun) it is derived from the AU squeeze (r drawn as
+// 0.3 * sqrt(r)), further out from the star squeeze (a distance drawn as its square root, or divided by 10).
+function mapPerLightYear() {
+  const r = camera.position.length();
+  if (r < 9) {
+    const au = Math.max((r / 0.3) ** 2, 0.05);
+    return 0.15 / Math.sqrt(au) / LY_PER_AU;
+  }
+  return compressed ? 1 / (2 * r) : 0.1;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Measuring the distance between two stars: click "Measure distance", then two stars (or the Sun). The
+// distance is the straight line in real space from the table positions. On the squeezed map that line is
+// curved, so it is drawn through toMapPosition. This is the base for stage 2 of the planner (star to star).
+let measuring = false;
+let measureA = null;
+let measureB = null;
+const measureButton = document.getElementById("measure");
+const measureNote = document.getElementById("measure-note");
+const SUN_POINT = { hostname: "Sun", x: 0, y: 0, z: 0 };
+const MEASURE_COLOR = 0xffd166;
+const measureLine = new THREE.Line(
+  new THREE.BufferGeometry(),
+  new THREE.LineBasicMaterial({ color: MEASURE_COLOR, transparent: true, opacity: 0.9, depthTest: false })
+);
+const measureMarks = [0, 1].map(() => {
+  const m = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: ringTexture(), sizeAttenuation: false, depthTest: false, transparent: true, color: MEASURE_COLOR })
+  );
+  m.scale.set(0.04, 0.04, 1);
+  return m;
+});
+for (const o of [measureLine, ...measureMarks]) {
+  o.visible = false;
+  o.frustumCulled = false;
+  o.renderOrder = 10;
+  scene.add(o);
+}
+
+measureButton.addEventListener("click", () => {
+  measuring = !measuring;
+  measureButton.setAttribute("aria-pressed", String(measuring));
+  if (!measuring) {
+    measureA = measureB = null;
+    for (const o of [measureLine, ...measureMarks]) o.visible = false;
+  }
+  buildPlanner();
+});
+
+function showMeasure() {
+  const t = TRAVEL_UI[lang];
+  measureNote.hidden = !measuring;
+  if (!measuring) return;
+  if (!measureA) measureNote.textContent = t.measureHint;
+  else if (!measureB) measureNote.textContent = t.measureSecond(measureA.hostname);
+  else {
+    const ly = Math.hypot(measureB.x - measureA.x, measureB.y - measureA.y, measureB.z - measureA.z);
+    measureNote.textContent = t.measureResult({ a: measureA.hostname, b: measureB.hostname, ly: fmt(ly, 1), pc: fmt(ly / 3.2616, 1) });
+  }
+}
+
+function drawMeasure() {
+  const marks = [measureA, measureB];
+  marks.forEach((star, i) => {
+    measureMarks[i].visible = !!star;
+    if (star) toMapPosition(star, measureMarks[i].position);
+  });
+  measureLine.visible = !!(measureA && measureB);
+  if (!measureLine.visible) return;
+  const line = Array.from({ length: 97 }, (_, k) => {
+    const u = k / 96;
+    return toMapPosition(
+      { x: measureA.x + (measureB.x - measureA.x) * u, y: measureA.y + (measureB.y - measureA.y) * u, z: measureA.z + (measureB.z - measureA.z) * u },
+      new THREE.Vector3()
+    );
+  });
+  measureLine.geometry.dispose();
+  measureLine.geometry = new THREE.BufferGeometry().setFromPoints(line);
+}
+
+// The star nearest to the click on the screen, within 16 pixels. The Sun is part of the choice.
+const pickTmp = new THREE.Vector3();
+function pickMeasure(x, y) {
+  const position = points.geometry.getAttribute("position");
+  let best = null;
+  let bestDistance = 16;
+  const test = (star, p) => {
+    pickTmp.copy(p).project(camera);
+    if (pickTmp.z < -1 || pickTmp.z > 1) return; // behind the camera
+    const d = Math.hypot(((pickTmp.x + 1) / 2) * innerWidth - x, ((1 - pickTmp.y) / 2) * innerHeight - y);
+    if (d < bestDistance) {
+      bestDistance = d;
+      best = star;
+    }
+  };
+  test(SUN_POINT, new THREE.Vector3());
+  stars.forEach((star, i) => test(star, new THREE.Vector3(position.getX(i), position.getY(i), position.getZ(i))));
+  if (!best) return;
+  if (measureB || !measureA) {
+    measureA = best;
+    measureB = null;
+  } else if (best !== measureA) {
+    measureB = best;
+  }
+  drawMeasure();
+  showMeasure();
+}
 
 const res = await fetch("data/stars.json");
 const data = await res.json();

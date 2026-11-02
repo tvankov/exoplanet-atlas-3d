@@ -427,3 +427,33 @@ html, body {
   margin-top: 8px;
   text-overflow: ellipsis;
 }
+
+/* Travel planner: labelled selects stacked in the panel, the result keeps its line breaks. */
+.planner-body label {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+.planner-body select,
+#spectral-mode,
+#spectral-class {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+#spectral-mode,
+#spectral-class {
+  margin-top: 8px;
+}
+.plan-result {
+  white-space: pre-line;
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+.plan-fiction {
+  color: #ff9d7a;
+  font-weight: 600;
+  opacity: 1 !important;
+}

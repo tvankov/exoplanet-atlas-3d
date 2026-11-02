@@ -48,9 +48,35 @@
     </div>
     <select id="facility" aria-label="Discovered by"></select>
     <p id="facility-note" class="hint" hidden></p>
+    <select id="spectral-mode" aria-label="Spectral class filter">
+      <option value="off"></option>
+      <option value="highlight"></option>
+      <option value="isolate"></option>
+    </select>
+    <select id="spectral-class" aria-label="Spectral class" hidden>
+      <option>O</option><option>B</option><option>A</option><option>F</option><option>G</option><option>K</option><option>M</option>
+    </select>
+    <p id="spectral-note" class="hint" hidden></p>
+    <button id="measure" type="button" aria-pressed="false">Measure distance</button>
+    <p id="measure-note" class="hint" hidden></p>
     <details class="menu">
       <summary id="solar-title">Solar System</summary>
       <ul id="solar-list" class="planet-list"></ul>
+    </details>
+    <details class="menu" id="planner">
+      <summary id="planner-title">Travel planner</summary>
+      <div class="planner-body">
+        <label><span id="plan-from-label">From</span> <select id="plan-from"></select></label>
+        <label><span id="plan-to-label">To</span> <select id="plan-to"></select></label>
+        <label><span id="plan-speed-label">Speed</span> <select id="plan-speed"></select></label>
+        <p id="plan-kind" class="hint"></p>
+        <button id="plan-go" type="button">Plan and fly</button>
+        <button id="plan-stop" type="button" hidden>Stop</button>
+        <p id="plan-result" class="plan-result"></p>
+        <p id="plan-note" class="hint"></p>
+        <label><span id="fly-label">Flight speed (keys)</span> <select id="fly-speed"></select></label>
+        <p id="fly-note" class="hint"></p>
+      </div>
     </details>
     <details class="menu">
       <summary id="stars-title">Named stars</summary>
