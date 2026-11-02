@@ -97,6 +97,10 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   travel time, the travel time and, below c, the time on board with the Lorentz factor (time dilation).
 - **View:** "View" chooses third person (the camera follows the ship from outside, the default) or first person (the camera sits at the ship and
   looks along the flight direction; the mouse looks around, zoom is off). It can be switched during the flight.
+- **Soft start and stop, and the arrival:** the ship speeds up evenly during the first tenth of the time and slows down during the last tenth
+  (the star streaks fade in and out with it). The area under the speed curve stays the same, so the travel time shown is right, but the
+  constant speed in between is 1.11 times the chosen one. At the end the destination is in view: a planet gets its close-up with its
+  story, a star or the Sun is shown as its system.
 - **Time speed:** the trip sets the time speed so that it takes about 20 seconds; when the ship arrives (or on Stop) the time speed is back
   at the value you had before, even if you moved the slider during the flight.
 - **Speed steps:** Voyager 1 (17 km/s), Parker Solar Probe (about 190 km/s), 0.1 c, 0.9 c, 1 c, 10 c and 100 c. The first two are real.

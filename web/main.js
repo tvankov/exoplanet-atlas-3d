@@ -3673,27 +3673,57 @@ function stepView() {
   }
 }
 
+// Soft start and stop ("fade in and out" of the speed): the first and last tenth of the time the ship speeds up and
+// slows down evenly, in between it flies at a constant speed. The area under the speed curve stays 1, so the
+// total travel time is the one shown; the constant speed is 1 / 0.9 = 1.11 times the chosen one.
+const RAMP = 0.1;
+const RAMP_TOP = 1 / (1 - RAMP);
+function rampDistance(t) {
+  if (t < RAMP) return (RAMP_TOP * t * t) / (2 * RAMP);
+  if (t > 1 - RAMP) return 1 - (RAMP_TOP * (1 - t) ** 2) / (2 * RAMP);
+  return RAMP_TOP * (RAMP / 2 + (t - RAMP));
+}
+const rampSpeed = (t) => Math.min(1, t / RAMP, (1 - t) / RAMP); // 0 to 1, the share of the top speed
+
+// At the end of the trip the destination is in view: a planet gets its close-up (as if clicked), a star or the
+// Sun is shown as its system.
+function showArrival() {
+  trip.follow = false;
+  const to = trip.to;
+  if (to.kind === "planet") {
+    const body = solar.bodies.find((b) => b.name === to.name);
+    if (body) selectBody(solar, body);
+  } else if (to.star === SUN_POINT) {
+    showSystem(EARTH.star, EARTH.planet);
+  } else if (to.star.planets.length) {
+    showSystem(to.star, to.star.planets[0]);
+  }
+}
+
 let tripShownAt = 0;
 const shipTmp = new THREE.Vector3();
 function stepTrip(now) {
   if (!trip) return;
   const jd = JD_AT_LOAD + solar.time * 365.25;
-  const u = Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days));
+  const t = Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)); // the share of the time that has passed
+  const u = rampDistance(t); // the share of the way, the ship starts and stops softly
+  trip.speedFactor = rampSpeed(t);
   tripMap(lerp3(trip.o, trip.d, u), ship.position);
   // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
   const size = camera.position.distanceTo(ship.position) * 0.02;
   shipGlow.children.forEach((layer, i) => (layer.material.uniforms.uSize.value = size * (i === 0 ? 1 : 2.4)));
-  if (u >= 1 && !trip.arrived) {
+  if (t >= 1 && !trip.arrived) {
     trip.arrived = true;
     restoreTimeSpeed();
     leaveEgo();
     showTripResult();
     planResult.textContent += `\n${TRAVEL_UI[lang].arrived}`;
+    showArrival();
     return;
   }
   if (trip.arrived || now - tripShownAt < 0.3) return;
   tripShownAt = now;
-  const seconds = u * trip.days * 86400;
+  const seconds = t * trip.days * 86400;
   const board = trip.beta < 1 ? duration(boardSeconds(seconds, trip.beta), lang) : "-";
   showTripResult();
   planResult.textContent += `\n${TRAVEL_UI[lang].live({ percent: fmt(u * 100, 0), time: duration(seconds, lang), board })}`;
@@ -3704,7 +3734,7 @@ let warp = 0;
 let flyWarpTarget = 0;
 function stepWarp(dt) {
   let target = flyWarpTarget;
-  if (trip && !trip.arrived) target = Math.max(target, Math.min(1, Math.max(0, (Math.log10(trip.beta) + 2) / 4)));
+  if (trip && !trip.arrived) target = Math.max(target, Math.min(1, Math.max(0, (Math.log10(trip.beta) + 2) / 4) * (trip.speedFactor ?? 1)));
   warp += (target - warp) * Math.min(1, dt * 3);
   warpPass.enabled = warp > 0.01;
   warpPass.uniforms.uStrength.value = warp;
