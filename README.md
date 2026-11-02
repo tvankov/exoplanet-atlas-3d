@@ -107,6 +107,11 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   flight the time runs in real time; during the flight it is set so that it takes about 20 seconds; at the end your setting is back.
 - **Clean view while flying:** from the turn until the exit the names above the bodies, the green habitable zone and the story panel are switched
   off; afterwards they come back (the story panel with the story of the target). "Stop" brings them back too.
+- **The four points of a trip to or between stars:** (1) the start (the camera at the start object), (2) the edge of the start system: the ship
+  first flies out of the system (3 s), (3) the edge of the target system, where it comes out of hyperspace, and (4) the planet, to which the
+  camera flies at the end. The hyperspace runs from point 2 to point 3 only. An edge is 1.8 map units from the star (the systems are drawn about
+  that big), on a short route at most a third of it. A planet of ours leaves from its own place, not from the Sun. Between planets of one system
+  there are no edges: the ship stops in front of the target planet as before.
 - **Soft start and stop, and the arrival:** the ship speeds up evenly during the first tenth of the time and slows down during the last tenth
   . The area under the speed curve stays the same, so the travel time shown is right, but the
   constant speed in between is 1.11 times the chosen one. At the end the destination is in view: a planet gets its close-up with its

@@ -119,9 +119,10 @@ export const TRAVEL_UI = {
     viewEgo: "First person (from the ship)",
     phase: {
       intro: "Departure: the start is in view.",
+      depart: "The ship leaves the start system.",
       turn: "The ship turns towards the target.",
       jump: "Jump into hyperspace (FICTIONAL).",
-      exit: "Out of hyperspace at the target.",
+      exit: "Out of hyperspace at the edge of the target system.",
     },
     infoEmpty: "Choose a planet (click it in the picture or use the lists on the left) and its story appears here.",
     settings: "Settings",
@@ -190,9 +191,10 @@ export const TRAVEL_UI = {
     viewEgo: "Ego (aus dem Schiff)",
     phase: {
       intro: "Abflug: der Start ist im Blick.",
+      depart: "Das Schiff verlässt das Startsystem.",
       turn: "Das Schiff dreht sich zum Ziel.",
       jump: "Sprung in den Hyperraum (FIKTIV).",
-      exit: "Aus dem Hyperraum am Ziel.",
+      exit: "Aus dem Hyperraum am Rand des Zielsystems.",
     },
     infoEmpty: "Wähle einen Planeten (im Bild anklicken oder in den Listen links), dann erscheint hier seine Geschichte.",
     settings: "Einstellungen",

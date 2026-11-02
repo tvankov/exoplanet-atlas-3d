@@ -3686,7 +3686,12 @@ planGo.addEventListener("click", () => {
     jd0, days, o, d, beta, kind: speed.kind, follow: true, arrived: false, mode, from, to, saved,
     distanceAu: Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * unit,
   };
-  trip.uEnd = stopFraction();
+  // Between planets of one system the ship stops in front of the target planet. Otherwise the hyperspace runs from the edge of the
+  // start system to the edge of the target system (the points 2 and 3 of the film), see edgePoints.
+  trip.uStart = 0;
+  trip.uEnd = mode === "solar" ? stopFraction() : 1;
+  if (mode === "star") edgePoints();
+  trip.p2 = tripMap(lerp3(trip.o, trip.d, trip.uStart), new THREE.Vector3());
   const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
   tripHud.hidden = false; // the planner closes while the ship flies, a small box at the bottom shows the trip
@@ -3711,11 +3716,46 @@ planGo.addEventListener("click", () => {
   ring.visible = false; // the ring would mark the start planet
 });
 
+// The edge of a system on the map: the Solar System (Neptune is at 1.64) and the exoplanet systems (up to 1.6) are
+// drawn about this big. On a short route the edges are at most a third of it, so they do not run into each other.
+const SYSTEM_EDGE = 1.8;
+function edgePoints() {
+  const a = tripMap(trip.o, new THREE.Vector3());
+  const b = tripMap(trip.d, new THREE.Vector3());
+  const edge = Math.min(SYSTEM_EDGE, 0.35 * a.distanceTo(b));
+  const p = new THREE.Vector3();
+  trip.uStart = 0;
+  trip.uEnd = 1;
+  for (let k = 0; k <= 2000; k++) {
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(a) >= edge) {
+      trip.uStart = k / 2000;
+      break;
+    }
+  }
+  for (let k = 2000; k >= 0; k--) {
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(b) >= edge) {
+      trip.uEnd = k / 2000;
+      break;
+    }
+  }
+}
+
+// Where the ship is before it flies out of the start system: a planet leaves from its own place, a star or the Sun from its centre.
+const homeTmp = new THREE.Vector3();
+function homePosition(out) {
+  if (trip.mode === "star" && trip.from.kind !== "star" && current?.follow) return current.follow.getWorldPosition(out);
+  return tripMap(trip.o, out);
+}
+
 // The ship stops three quarters of a diameter (1.5 radii from the centre) in front of the target and does not fly through it. The diameter is the one drawn
 // on the map (a planet of the Solar System, the Sun, or a host star, which is drawn with the same size for all stars).
 // The result is the share of the way where the ship stops. The times and distances shown are to the target itself.
 // The drawn radius of a place of the trip: the planet as drawn, the Sun, or a host star.
 function placeRadius(place) {
+  if (place.kind === "exo") {
+    const body = activeExo?.bodies.find((b) => b.name === place.planet.pl_name);
+    if (body) return body.mesh.geometry.parameters.radius;
+  }
   if (place.kind === "planet") return solar.bodies.find((b) => b.name === place.name).mesh.geometry.parameters.radius;
   return place.star === SUN_POINT ? SUN_RADIUS : EXO_STAR_RADIUS;
 }
@@ -3753,9 +3793,9 @@ const egoOffsetNow = new THREE.Vector3(); // the part of it that is still in eff
 function enterEgo(u) {
   egoOn = true;
   flight = null;
-  const next = Math.min(1, u + 0.01);
-  tripMap(lerp3(trip.o, trip.d, next), egoAhead);
-  egoAhead.sub(ship.position);
+  const span = trip.uEnd - trip.uStart;
+  const here = trip.uStart + span * u;
+  tripMap(lerp3(trip.o, trip.d, Math.min(1, here + 0.01 * span)), egoAhead).sub(tripMap(lerp3(trip.o, trip.d, here), offsetTmp));
   if (u > 0.99) egoAhead.negate(); // at the very end the "ahead" point would be past the target
   egoAhead.normalize();
   const offset = u < 0.02 ? startOffset(egoAhead, offsetTmp) : offsetTmp.set(0, 0, 0); // only a start in first person gets the offset
@@ -3796,7 +3836,7 @@ function startOffset(forward, out) {
   return out.copy(forward).multiplyScalar(-A).addScaledVector(rightTmp, -0.4 * A).addScaledVector(upTmp, 0.25 * A);
 }
 function tripPose(pose) {
-  tripMap(lerp3(trip.o, trip.d, 0.01 * trip.uEnd), aheadTmp).sub(ship.position).normalize();
+  tripMap(lerp3(trip.o, trip.d, trip.uStart + 0.01 * (trip.uEnd - trip.uStart)), aheadTmp).sub(trip.p2).normalize();
   if (planView.value === "ego") {
     pose.pos.copy(ship.position).add(startOffset(aheadTmp, offsetTmp));
     pose.target.copy(pose.pos).addScaledVector(aheadTmp, controls.minDistance * 1.5);
@@ -3880,6 +3920,7 @@ const TRIP_INTRO = 2.5; // seconds of the film, real time
 const TRIP_TURN = 2.5;
 const TRIP_JUMP = 1.2;
 const TRIP_EXIT = 1.8;
+const TRIP_DEPART = 3; // the ship flies out of the start system (only trips to and between stars)
 function setPhase(name, now) {
   trip.phase = name;
   trip.phaseStart = now;
@@ -3906,7 +3947,8 @@ function stepTrip(now) {
   if (!trip) return;
   const elapsed = now - trip.phaseStart;
   if (trip.phase === "intro" && elapsed >= TRIP_INTRO) setPhase("turn", now);
-  else if (trip.phase === "turn" && elapsed >= TRIP_TURN) setPhase("jump", now);
+  else if (trip.phase === "turn" && elapsed >= TRIP_TURN) setPhase(trip.mode === "star" ? "depart" : "jump", now);
+  else if (trip.phase === "depart" && elapsed >= TRIP_DEPART) setPhase("jump", now);
   else if (trip.phase === "jump" && elapsed >= TRIP_JUMP) setPhase("cruise", now);
   else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
     setPhase("done", now);
@@ -3919,10 +3961,16 @@ function stepTrip(now) {
   }
   const jd = JD_AT_LOAD + solar.time * 365.25;
   const t = trip.phase === "cruise" ? Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)) : trip.phase === "exit" || trip.phase === "done" ? 1 : 0; // the share of the time that has passed
-  const u = rampDistance(t) * trip.uEnd; // the share of the way, the ship starts and stops softly and stops short of the target
   trip.speedFactor = rampSpeed(t);
-  trip.share = rampDistance(t); // the share of the whole route
-  tripMap(lerp3(trip.o, trip.d, u), ship.position);
+  trip.share = rampDistance(t); // the share of the hyperspace part, the ship starts and stops softly
+  const u = trip.uStart + (trip.uEnd - trip.uStart) * trip.share; // the share of the whole line
+  if (trip.phase === "intro" || trip.phase === "turn") homePosition(ship.position);
+  else if (trip.phase === "depart") {
+    // out of the start system, to its edge (point 2)
+    const e = Math.min(1, (now - trip.phaseStart) / TRIP_DEPART);
+    ship.position.lerpVectors(homePosition(homeTmp), trip.p2, e * e * (3 - 2 * e));
+  } else if (trip.phase === "jump") ship.position.copy(trip.p2);
+  else tripMap(lerp3(trip.o, trip.d, u), ship.position);
   // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
   const size = camera.position.distanceTo(ship.position) * 0.02;
   shipGlow.children.forEach((layer, i) => (layer.material.uniforms.uSize.value = size * (i === 0 ? 1 : 2.4)));
@@ -3939,7 +3987,7 @@ function stepTrip(now) {
   showTripResult();
   planResult.textContent +=
     trip.phase === "cruise"
-      ? `\n${TRAVEL_UI[lang].live({ percent: fmt((u / trip.uEnd) * 100, 0), time: duration(seconds, lang), board })}`
+      ? `\n${TRAVEL_UI[lang].live({ percent: fmt(trip.share * 100, 0), time: duration(seconds, lang), board })}`
       : `\n${TRAVEL_UI[lang].phase[trip.phase]}`;
 }
 
