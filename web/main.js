@@ -3714,10 +3714,13 @@ planGo.addEventListener("click", () => {
 // The ship stops three diameters in front of the target and does not fly through it. The diameter is the one drawn
 // on the map (a planet of the Solar System, the Sun, or a host star, which is drawn with the same size for all stars).
 // The result is the share of the way where the ship stops. The times and distances shown are to the target itself.
+// The drawn radius of a place of the trip: the planet as drawn, the Sun, or a host star.
+function placeRadius(place) {
+  if (place.kind === "planet") return solar.bodies.find((b) => b.name === place.name).mesh.geometry.parameters.radius;
+  return place.star === SUN_POINT ? SUN_RADIUS : EXO_STAR_RADIUS;
+}
 function stopFraction() {
-  const to = trip.to;
-  const radius =
-    to.kind === "planet" ? solar.bodies.find((b) => b.name === to.name).mesh.geometry.parameters.radius : to.star === SUN_POINT ? SUN_RADIUS : EXO_STAR_RADIUS;
+  const radius = placeRadius(trip.to);
   const target = tripMap(trip.d, new THREE.Vector3());
   const p = new THREE.Vector3();
   for (let k = 2000; k >= 1; k--) {
@@ -3751,10 +3754,12 @@ function enterEgo(u) {
   tripMap(lerp3(trip.o, trip.d, next), egoAhead);
   egoAhead.sub(ship.position);
   if (u > 0.99) egoAhead.negate(); // at the very end the "ahead" point would be past the target
-  egoAhead.normalize().multiplyScalar(controls.minDistance * 1.5);
+  egoAhead.normalize();
+  const offset = u < 0.02 ? startOffset(egoAhead, offsetTmp) : offsetTmp.set(0, 0, 0); // only a start in first person gets the offset
+  egoAhead.multiplyScalar(controls.minDistance * 1.5);
   egoLast.copy(ship.position);
-  camera.position.copy(ship.position);
-  controls.target.copy(ship.position).add(egoAhead);
+  camera.position.copy(ship.position).add(offset);
+  controls.target.copy(camera.position).add(egoAhead);
   controls.enableZoom = false;
   ship.visible = false; // the camera sits inside its glow
 }
@@ -3768,11 +3773,25 @@ function leaveEgo() {
 const turnFrom = { pos: new THREE.Vector3(), target: new THREE.Vector3() };
 const poseTmp = { pos: new THREE.Vector3(), target: new THREE.Vector3() };
 const aheadTmp = new THREE.Vector3();
+const offsetTmp = new THREE.Vector3();
+const rightTmp = new THREE.Vector3();
+const upTmp = new THREE.Vector3();
+// First person starts with the start object at the lower right of the picture: the camera sits eight radii of
+// the object away, a bit to the left, above and behind it, and looks along the route. When the ship speeds up
+// the object falls behind. "forward" is the unit vector along the route.
+function startOffset(forward, out) {
+  const A = 8 * placeRadius(trip.from);
+  rightTmp.crossVectors(forward, camera.up);
+  if (rightTmp.lengthSq() < 1e-6) rightTmp.set(1, 0, 0);
+  rightTmp.normalize();
+  upTmp.crossVectors(rightTmp, forward);
+  return out.copy(forward).multiplyScalar(-A).addScaledVector(rightTmp, -0.36 * A).addScaledVector(upTmp, 0.21 * A);
+}
 function tripPose(pose) {
   tripMap(lerp3(trip.o, trip.d, 0.01 * trip.uEnd), aheadTmp).sub(ship.position).normalize();
   if (planView.value === "ego") {
-    pose.pos.copy(ship.position);
-    pose.target.copy(ship.position).addScaledVector(aheadTmp, controls.minDistance * 1.5);
+    pose.pos.copy(ship.position).add(startOffset(aheadTmp, offsetTmp));
+    pose.target.copy(pose.pos).addScaledVector(aheadTmp, controls.minDistance * 1.5);
   } else {
     pose.pos.copy(ship.position).addScaledVector(aheadTmp, -0.35);
     pose.target.copy(ship.position);
