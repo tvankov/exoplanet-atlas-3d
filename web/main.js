@@ -3147,8 +3147,18 @@ function applyFilters() {
     );
   }
 }
-facilitySelect.addEventListener("change", applyFilters);
-spectralModeSelect.addEventListener("change", applyFilters);
+// A dot after "Tools" shows that a filter or the measuring is on, also when the menu is closed.
+function updateToolsDot() {
+  document.getElementById("tools-title").classList.toggle("active", !!facilitySelect.value || spectralModeSelect.value !== "off" || measuring);
+}
+facilitySelect.addEventListener("change", () => {
+  applyFilters();
+  updateToolsDot();
+});
+spectralModeSelect.addEventListener("change", () => {
+  applyFilters();
+  updateToolsDot();
+});
 spectralClassSelect.addEventListener("change", applyFilters);
 
 // Search over all stars and planets of the NASA list: type a name, get up to ten hits, nearest star first, with the
@@ -3514,6 +3524,7 @@ function buildPlanner() {
     document.getElementById(id).textContent = t.pick;
     document.getElementById(id).title = t.pickTitle;
   }
+  document.getElementById("tools-title").textContent = t.tools;
   document.getElementById("plan-swap").title = t.swap;
   document.getElementById("plan-swap").setAttribute("aria-label", t.swap);
   document.getElementById("pick-hint-text").textContent = t.pickHint;
@@ -4158,6 +4169,7 @@ for (const o of [measureLine, ...measureMarks]) {
 
 measureButton.addEventListener("click", () => {
   measuring = !measuring;
+  updateToolsDot();
   measureButton.setAttribute("aria-pressed", String(measuring));
   if (!measuring) {
     measureA = measureB = null;

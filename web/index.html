@@ -23,30 +23,33 @@
     <h1>Exoplanet Atlas 3D</h1>
     <p id="count">Loading stars...</p>
     <button id="planner-open" type="button" aria-expanded="false" aria-controls="planner-panel">Travel planner</button>
+    <div id="search-box">
+      <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
+      <ul id="search-results" class="planet-list" hidden></ul>
+    </div>
     <div id="speed-box">
       <label id="speed-title" for="speed">Time speed</label>
       <input id="speed" type="range" min="0" max="100" step="any" value="51.97">
       <p id="speed-text"></p>
       <p id="speed-elapsed"></p>
     </div>
-    <div id="search-box">
-      <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
-      <ul id="search-results" class="planet-list" hidden></ul>
-    </div>
-    <select id="facility" aria-label="Discovered by"></select>
-    <p id="facility-note" class="hint" hidden></p>
-    <select id="spectral-mode" aria-label="Spectral class filter">
-      <option value="off"></option>
-      <option value="highlight"></option>
-      <option value="isolate"></option>
-    </select>
-    <select id="spectral-class" aria-label="Spectral class" hidden>
-      <option>O</option><option>B</option><option>A</option><option>F</option><option>G</option><option>K</option><option>M</option>
-    </select>
-    <p id="spectral-note" class="hint" hidden></p>
-    <button id="measure" type="button" aria-pressed="false">Measure distance</button>
-    <p id="measure-note" class="hint" hidden></p>
-    <button id="measure-plan" type="button" hidden>Plan a trip between them</button>
+    <details class="menu" id="tools-menu">
+      <summary id="tools-title">Tools</summary>
+      <select id="facility" aria-label="Discovered by"></select>
+      <p id="facility-note" class="hint" hidden></p>
+      <select id="spectral-mode" aria-label="Spectral class filter">
+        <option value="off"></option>
+        <option value="highlight"></option>
+        <option value="isolate"></option>
+      </select>
+      <select id="spectral-class" aria-label="Spectral class" hidden>
+        <option>O</option><option>B</option><option>A</option><option>F</option><option>G</option><option>K</option><option>M</option>
+      </select>
+      <p id="spectral-note" class="hint" hidden></p>
+      <button id="measure" type="button" aria-pressed="false">Measure distance</button>
+      <p id="measure-note" class="hint" hidden></p>
+      <button id="measure-plan" type="button" hidden>Plan a trip between them</button>
+    </details>
     <details class="menu">
       <summary id="solar-title">Solar System</summary>
       <ul id="solar-list" class="planet-list"></ul>
