@@ -2494,7 +2494,7 @@ function flyTo({ star, system }) {
 }
 
 // The target is a function because a planet keeps moving while the camera flies to it.
-function startFlight(getTarget, distance, direction = VIEW_DIRECTION) {
+function startFlight(getTarget, distance, direction = VIEW_DIRECTION, spherical = false) {
   flight = {
     start: performance.now(),
     fromPos: camera.position.clone(),
@@ -2502,8 +2502,20 @@ function startFlight(getTarget, distance, direction = VIEW_DIRECTION) {
     getTarget,
     distance,
     direction,
+    spherical,
   };
+  if (spherical) {
+    // Close to a planet the camera does not go in a straight line to its new place (that line can lead through the planet, for example
+    // from the front of the planet to its lit side). It turns around the planet on the way: the direction as seen from the planet is
+    // turned step by step, the distance changes evenly.
+    const rel = camera.position.clone().sub(getTarget());
+    flight.r0 = rel.length();
+    flight.dir0 = rel.normalize();
+    flight.turn = new THREE.Quaternion().setFromUnitVectors(flight.dir0, direction.clone().normalize());
+  }
 }
+const flightQ = new THREE.Quaternion();
+const flightDir = new THREE.Vector3();
 
 // Close-up of the chosen planet. The camera stays with it while it travels around the star.
 let closeup = false;
@@ -2617,7 +2629,9 @@ function enterCloseup() {
   const toStar = current.system.group.getWorldPosition(new THREE.Vector3()).sub(planetPos).normalize();
   if (toStar.lengthSq() === 0) toStar.set(0, 0, 1); // the star itself is the target, there is no star direction
   const direction = toStar.multiplyScalar(0.75).add(new THREE.Vector3(0, 0.55, 0)).normalize();
-  startFlight(() => follow.getWorldPosition(new THREE.Vector3()), radius * (follow.userData.closeupRadii ?? CLOSEUP_RADII), direction);
+  // Coming from close by (the end of a trip), the camera turns around the planet; from far away a straight flight is fine.
+  const near = camera.position.distanceTo(planetPos) < radius * 12;
+  startFlight(() => follow.getWorldPosition(new THREE.Vector3()), radius * (follow.userData.closeupRadii ?? CLOSEUP_RADII), direction, near);
   ring.visible = false; // the ring would sit on top of the planet we are looking at
 }
 
@@ -2854,8 +2868,13 @@ function stepFlight() {
   const u = Math.min(1, (performance.now() - flight.start) / FLIGHT_MS);
   const e = u * u * (3 - 2 * u); // smoothstep, soft start and stop
   const target = flight.getTarget();
-  const toPos = target.clone().addScaledVector(flight.direction, flight.distance);
-  camera.position.lerpVectors(flight.fromPos, toPos, e);
+  if (flight.spherical) {
+    flightDir.copy(flight.dir0).applyQuaternion(flightQ.identity().slerp(flight.turn, e));
+    camera.position.copy(target).addScaledVector(flightDir, flight.r0 + (flight.distance - flight.r0) * e);
+  } else {
+    const toPos = target.clone().addScaledVector(flight.direction, flight.distance);
+    camera.position.lerpVectors(flight.fromPos, toPos, e);
+  }
   controls.target.lerpVectors(flight.fromTarget, target, e);
   if (u === 1) flight = null;
 }
@@ -3754,7 +3773,9 @@ planGo.addEventListener("click", () => {
   trip.uStart = 0;
   trip.uEnd = mode === "solar" ? stopFraction() : 1;
   if (mode === "star") edgePoints();
+  else trip.uStart = startFraction();
   trip.p2 = tripMap(lerp3(trip.o, trip.d, trip.uStart), new THREE.Vector3());
+  trip.routeMap = tripMap(trip.o, new THREE.Vector3()).distanceTo(tripMap(trip.d, new THREE.Vector3())); // the length of the route on the map
   setNear(0.002);
   const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
@@ -3823,8 +3844,23 @@ function edgePoints() {
 // Where the ship is before it flies out of the start system: a planet leaves from its own place, a star or the Sun from its centre.
 const homeTmp = new THREE.Vector3();
 function homePosition(out) {
-  if (trip.mode === "star" && trip.from.kind !== "star" && current?.follow) return current.follow.getWorldPosition(out);
-  return tripMap(trip.o, out);
+  if (trip.mode === "solar") return out.copy(trip.p2); // already 1.5 radii from the planet, see startFraction
+  // To and between stars: from the place of the start object (a planet of ours or of a system leaves from its own place), moved
+  // 1.5 radii out on the side of the route, so the ship and the camera behind it never sit inside the object.
+  const base = trip.from.kind !== "star" && current?.follow ? current.follow.getWorldPosition(out) : tripMap(trip.o, out);
+  homeDir.copy(trip.p2).sub(base).normalize();
+  return out.addScaledVector(homeDir, 1.5 * placeRadius(trip.from));
+}
+const homeDir = new THREE.Vector3();
+// Between planets of one system the line starts in the middle of the start planet. The ship starts where the line is 1.5 radii from it.
+function startFraction() {
+  const a = tripMap(trip.o, new THREE.Vector3());
+  const p = new THREE.Vector3();
+  const clear = 1.5 * placeRadius(trip.from);
+  for (let k = 0; k <= 2000; k++) {
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(a) >= clear) return k / 2000;
+  }
+  return 0;
 }
 
 // The ship stops three quarters of a diameter (1.5 radii from the centre) in front of the target and does not fly through it. The diameter is the one drawn
@@ -3902,15 +3938,15 @@ const upTmp = new THREE.Vector3();
 // the object away, a bit to the left, above and behind it, and looks along the route. When the ship speeds up
 // the object falls behind. "forward" is the unit vector along the route.
 function startOffset(forward, out) {
-  // Never closer than 0.03 map units to the surface: the camera has a near plane at 0.01, and a planet closer than that is
-  // cut away (the camera seemed to sit inside the Earth). 1.106 is the length of the offset vector in units of A.
+  // Seen from the centre of the start object (radius R) the camera sits 3R behind it, 1.2R to the left and 0.9R above, so the object
+  // is ahead of it at the lower right. The ship starts 1.5R ahead of the centre, so relative to the ship the camera is 4.5R behind. The
+  // camera keeps this offset while the ship flies away, and it passes the object at 1.5R from its middle: beside it, never through it.
   const R = placeRadius(trip.from);
-  const A = Math.max(1.3 * R, (R + 0.03) / 1.106);
   rightTmp.crossVectors(forward, camera.up);
   if (rightTmp.lengthSq() < 1e-6) rightTmp.set(1, 0, 0);
   rightTmp.normalize();
   upTmp.crossVectors(rightTmp, forward);
-  return out.copy(forward).multiplyScalar(-A).addScaledVector(rightTmp, -0.4 * A).addScaledVector(upTmp, 0.25 * A);
+  return out.copy(forward).multiplyScalar(-4.5 * R).addScaledVector(rightTmp, -1.2 * R).addScaledVector(upTmp, 0.9 * R);
 }
 function tripPose(pose) {
   tripMap(trip.d, aheadTmp).sub(ship.position).normalize(); // first person looks at the blue ring of the target
@@ -3937,9 +3973,16 @@ function stepView(now) {
     if (!egoOn) enterEgo(trip.phase === "cruise" ? Math.min(1, Math.max(0, (JD_AT_LOAD + solar.time * 365.25 - trip.jd0) / trip.days)) : 0);
     // Camera and target move with the ship, so the mouse look stays as the user left it.
     const delta = shipTmp.copy(ship.position).sub(egoLast);
-    // The offset of the start melts away during the first tenth of the route: the camera slides into the path of the ship
-    // (the normal first person view) and stays there.
-    const melt = Math.min(1, (trip.share ?? 0) / 0.1);
+    // The offset of the start melts away: the camera slides into the path of the ship (the normal first person view) and stays there.
+    // Between stars that happens during the first tenth of the hyperspace part. Between planets of one system the camera first has to
+    // be past the start planet (6 radii from the start), then it takes a tenth of the route, at least 4 radii.
+    let melt;
+    if (trip.mode === "solar") {
+      const R = placeRadius(trip.from);
+      const m0 = 6 * R;
+      const m1 = Math.max(m0 + 4 * R, 0.1 * trip.routeMap);
+      melt = Math.min(1, Math.max(0, (ship.position.distanceTo(trip.p2) - m0) / (m1 - m0)));
+    } else melt = Math.min(1, (trip.share ?? 0) / 0.1);
     const keep = 1 - melt * melt * (3 - 2 * melt);
     offsetTmp.copy(egoOffset).multiplyScalar(keep);
     delta.add(offsetTmp).sub(egoOffsetNow);

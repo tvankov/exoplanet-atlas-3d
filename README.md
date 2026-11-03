@@ -121,6 +121,12 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   camera flies at the end. The hyperspace runs from point 2 to point 3 only. An edge lies a bit beyond the outer orbit as drawn (1.5 times it, between 0.3 and 1.8 map units; the Solar System is 1.8 because Neptune is at 1.64, Proxima Cen is 0.3), on a short route at most a third of it. A planet of ours leaves from its own place, not from the Sun. Between planets of one system
   there are no edges: the ship stops in front of the target planet as before.
 - **Streaks run out of the target:** in first person the camera always looks at the blue ring of the target (the route is curved on the squeezed map, so the direction along the route is not the direction of the target), and the streaks of the hyperspace radiate from the point the camera looks at. The side panels shift the picture, so that point is worked out on the screen and is not the middle of the window.
+- **No collisions at the start and at the end:** (1) The ship starts 1.5 radii outside of the start object, not in its middle (between planets of
+  one system the line starts there, to and between stars the ship leaves from there). (2) In first person the camera starts 4.5 radii behind the
+  ship, 1.2 radii to the left and 0.9 above (seen from the object's centre: 3 behind, 1.2 left, 0.9 above), so it passes the object at 1.5 radii from
+  its middle. The offset melts away only when the camera is 6 radii past the start object (between planets of one system), then over a tenth of the
+  route. (3) The flight from the stop point to the close-up of the planet does not go in a straight line: close to the planet the camera turns
+  around it (its direction as seen from the planet is turned step by step), so it cannot cut through the planet when it goes to the lit side.
 - **Near plane during a trip:** the camera normally cuts away everything closer than 0.01 map units. A trip ends 1.5 radii from a planet that is drawn 0.0135 wide, so the planet would be cut and the ship seemed to fly into it (Mars). During a trip the near plane is 0.002, afterwards 0.01 again.
 - **Soft start and stop, and the arrival:** the ship speeds up evenly during the first tenth of the time and slows down during the last tenth
   . The area under the speed curve stays the same, so the travel time shown is right, but the
