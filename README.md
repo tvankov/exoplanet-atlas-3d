@@ -121,8 +121,8 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   camera flies at the end. The hyperspace runs from point 2 to point 3 only. An edge lies a bit beyond the outer orbit as drawn (1.5 times it, between 0.3 and 1.8 map units; the Solar System is 1.8 because Neptune is at 1.64, Proxima Cen is 0.3), on a short route at most a third of it. A planet of ours leaves from its own place, not from the Sun. Between planets of one system
   there are no edges: the ship stops in front of the target planet as before.
 - **Streaks run out of the target:** in first person the camera always looks at the blue ring of the target (the route is curved on the squeezed map, so the direction along the route is not the direction of the target), and the streaks of the hyperspace radiate from the point the camera looks at. The side panels shift the picture, so that point is worked out on the screen and is not the middle of the window.
-- **No collisions at the start and at the end:** (1) The ship starts 1.5 radii outside of the start object, not in its middle (between planets of
-  one system the line starts there, to and between stars the ship leaves from there). (2) In first person the camera starts 4.5 radii behind the
+- **No collisions at the start and at the end:** (1) The ship starts 1.575 radii (1.5 plus 5 %) from the middle of the start object, not in its middle (between planets of
+  one system the line starts there, to and between stars the ship leaves from there). (2) In first person the camera starts 4.575 radii behind the
   ship, 1.2 radii to the left and 0.9 above (seen from the object's centre: 3 behind, 1.2 left, 0.9 above), so it passes the object at 1.5 radii from
   its middle. The offset melts away only when the camera is 6 radii past the start object (between planets of one system), then over a tenth of the
   route. (3) The flight from the stop point to the close-up of the planet does not go in a straight line: close to the planet the camera turns
@@ -134,7 +134,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   story, a star or the Sun is shown as its system.
 - **Exoplanets as destination, stopping in front of the target:** From and To also take the name of any exoplanet (for example Proxima Cen b).
   The ship flies to its star, and on arrival the system opens and the camera goes to the planet. The ship never flies through the
-  target: it stops 1.5 radii from its centre, a quarter of a diameter in front of its surface (the radius as drawn on the map; all host stars are drawn with the same size), then the
+  target: it stops 1.575 radii from its centre, a bit more than a quarter of a diameter in front of its surface (the radius as drawn on the map; all host stars are drawn with the same size), then the
   close-up takes over. The blue line shows the whole route up to the ring at the target; the ship stops on it a little before the ring. The distance and travel time shown are to the target itself, the small stretch that is not flown is not subtracted.
 - **Time speed:** the trip sets the time speed so that it takes about 20 seconds; when the ship arrives (or on Stop) the time speed is back
   at the value you had before, even if you moved the slider during the flight.

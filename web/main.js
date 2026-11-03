@@ -3803,6 +3803,9 @@ planGo.addEventListener("click", () => {
 
 // The edge of a system on the map: the Solar System (Neptune is at 1.64) and the exoplanet systems (up to 1.6) are
 // drawn about this big. On a short route the edges are at most a third of it, so they do not run into each other.
+// How far from the middle of the start object the ship starts and from the middle of the target it stops, in radii of the object as drawn
+// (1.5 first, 5 % more after a first test: still a bit too close).
+const TRIP_CLEAR = 1.575;
 const SYSTEM_EDGE = 1.8;
 // The outer orbit as drawn for an exoplanet system, worked out like in exoSystem (without building it). Proxima Cen is tiny (0.2),
 // a system with a long period planet is up to 1.6.
@@ -3849,14 +3852,14 @@ function homePosition(out) {
   // 1.5 radii out on the side of the route, so the ship and the camera behind it never sit inside the object.
   const base = trip.from.kind !== "star" && current?.follow ? current.follow.getWorldPosition(out) : tripMap(trip.o, out);
   homeDir.copy(trip.p2).sub(base).normalize();
-  return out.addScaledVector(homeDir, 1.5 * placeRadius(trip.from));
+  return out.addScaledVector(homeDir, TRIP_CLEAR * placeRadius(trip.from));
 }
 const homeDir = new THREE.Vector3();
 // Between planets of one system the line starts in the middle of the start planet. The ship starts where the line is 1.5 radii from it.
 function startFraction() {
   const a = tripMap(trip.o, new THREE.Vector3());
   const p = new THREE.Vector3();
-  const clear = 1.5 * placeRadius(trip.from);
+  const clear = TRIP_CLEAR * placeRadius(trip.from);
   for (let k = 0; k <= 2000; k++) {
     if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(a) >= clear) return k / 2000;
   }
@@ -3880,7 +3883,7 @@ function stopFraction() {
   const target = tripMap(trip.d, new THREE.Vector3());
   const p = new THREE.Vector3();
   for (let k = 2000; k >= 1; k--) {
-    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= radius * 1.5) return k / 2000;
+    if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= radius * TRIP_CLEAR) return k / 2000;
   }
   return 0.5;
 }
@@ -3946,7 +3949,7 @@ function startOffset(forward, out) {
   if (rightTmp.lengthSq() < 1e-6) rightTmp.set(1, 0, 0);
   rightTmp.normalize();
   upTmp.crossVectors(rightTmp, forward);
-  return out.copy(forward).multiplyScalar(-4.5 * R).addScaledVector(rightTmp, -1.2 * R).addScaledVector(upTmp, 0.9 * R);
+  return out.copy(forward).multiplyScalar(-(3 + TRIP_CLEAR) * R).addScaledVector(rightTmp, -1.2 * R).addScaledVector(upTmp, 0.9 * R);
 }
 function tripPose(pose) {
   tripMap(trip.d, aheadTmp).sub(ship.position).normalize(); // first person looks at the blue ring of the target
