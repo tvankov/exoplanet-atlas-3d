@@ -170,6 +170,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
 - **Info button (top right, left of the burger):** the story panel of the chosen planet (bottom right, half as tall as before) is closed until
   you press "Info". The button is always there (hidden only while a trip flies); before a planet is chosen the window says so. It stays open or closed as you left it.
   The buttons Listen and Close-up (or System view) sit at the top right of that window, next to the title, and stay in view when the text scrolls.
+- **Named stars:** the 16 stars of the Gaia layer with a proper name (SIMBAD) were only dots. "Fly to" now gives the star a body of its own: a ball with glow, corona and rays, in the colour of its Gaia entry. All stars of the map are drawn with the same size, which is not the real size. It is a system without planets and replaces the exoplanet system that is shown.
 - **Left panel:** on top the Travel planner button, search and time speed. The menu "Tools" (closed) holds the filters (discovered by, spectral class) and measuring; a green dot after its title shows that a filter or measuring is on. Below are the lists (Solar System, named stars, habitable candidates).
 
 ## Legal

@@ -319,10 +319,12 @@ async function loadGaia() {
   const xyz = new Float32Array(buffer, 0, count * 3);
   const attributes = new Uint8Array(buffer, count * 12, count * 4);
   const colors = new Float32Array(count * 3);
+  const rawColors = new Float32Array(count * 3); // the colours as they are, a named star gets its body in its own colour
   const absmag = new Float32Array(count);
   const color = new THREE.Color();
   for (let i = 0; i < count; i++) {
     color.setRGB(attributes[i * 4] / 255, attributes[i * 4 + 1] / 255, attributes[i * 4 + 2] / 255);
+    color.toArray(rawColors, i * 3);
     // The same quiet, whitish colour as the other background stars.
     const m = Math.max(color.r, color.g, color.b);
     color.lerp(new THREE.Color(m, m, m), BACKGROUND_WHITENING).multiplyScalar(0.9);
@@ -344,7 +346,7 @@ async function loadGaia() {
     scene.add(sprite);
     return { sprite, star: s };
   });
-  gaia = { points: layer, xyz, count, labels };
+  gaia = { points: layer, xyz, count, labels, rawColors };
   placeGaia();
 }
 
@@ -3213,6 +3215,27 @@ searchInput.addEventListener("keydown", (e) => {
 
 // The named stars of the Gaia layer as a list: a click switches the layer on (so the star and its name are
 // there) and flies to the star, nearest first.
+// A named star of the Gaia layer is only a dot in the layer. When we fly to it, it gets a body of its own: a ball with the glow, the corona and the
+// rays, the same size as every host star of the map (the size is not the real one), in the colour of its Gaia entry. It is a system without planets
+// and takes the place of the exoplanet system that is shown (there is only one at a time).
+function showNamedStar(s, target) {
+  let best = 0;
+  let bestDistance = Infinity;
+  for (let i = 0; i < gaia.count; i++) {
+    const d = (gaia.xyz[i * 3] - s.x) ** 2 + (gaia.xyz[i * 3 + 1] - s.y) ** 2 + (gaia.xyz[i * 3 + 2] - s.z) ** 2;
+    if (d < bestDistance) {
+      bestDistance = d;
+      best = i;
+    }
+  }
+  const color = new THREE.Color(gaia.rawColors[best * 3], gaia.rawColors[best * 3 + 1], gaia.rawColors[best * 3 + 2]);
+  if (activeExo) disposeSystem(activeExo);
+  activeExo = makeSystem({ starName: s.name, starColor: color.getHex(), starRadius: EXO_STAR_RADIUS, planets: [], viewDistance: 0.4 });
+  activeExo.group.position.copy(target);
+  current = null; // no planet is chosen, the ring and the story have nothing to show
+  ring.visible = false;
+}
+
 function buildStarMenu() {
   document.getElementById("stars-title").textContent = UI[lang].starsTitle;
   searchInput.placeholder = UI[lang].searchPlaceholder;
@@ -3234,11 +3257,13 @@ function buildStarMenu() {
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = UI[lang].flyTo;
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       if (!gaiaOn) gaiaButton.click();
+      for (let i = 0; i < 100 && !gaia; i++) await new Promise((r) => setTimeout(r, 100)); // the layer loads first, its colours are needed
       leaveCloseup(); // a close-up that follows a planet would pull the camera back
       updateCloseupButton();
       const target = toMapPosition(s, new THREE.Vector3());
+      showNamedStar(s, target);
       startFlight(() => target, 0.4);
     });
     const views = document.createElement("div");
