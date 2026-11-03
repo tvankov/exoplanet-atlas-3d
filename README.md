@@ -182,7 +182,11 @@ The button "Real scale: off / on" at the top of the left panel (above the Travel
   planets are 0.0007 wide next to distances of hundreds of units. The speed in c uses the real scale.
 - **Trips:** between planets they work in both modes (start and end distances are real in the real scale). A trip to or between stars switches back to
   the explanation mode and says so.
-- **Next (stage 2):** the stars and exoplanet systems in the real scale, with real stellar radii and orbits.
+- **Other stars (stage 2):** in the real scale one system is shown at a time (the "home"): the Solar System or the system of a host star, with the real
+  star radius (`st_rad`, a missing one counts as 1 solar radius), the real planet radii (`pl_rade`; a planet without a radius keeps a drawn marker),
+  the real orbits (the semi-major axis in AU, circles) and the zone at its real distance. Going to another star (search, the lists, the named stars)
+  is a cut to its system, because at real distances the stars are light years apart and no picture can show that. The other stars are the sky seen from
+  the home star (directions and brightness as seen from there). A named star without data of its own is a Sun-sized star without planets.
 
 ## Menus
 
