@@ -168,7 +168,7 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
 
 ## Real scale (stage 1: the Solar System)
 
-The button "Scale" in the settings switches between two modes.
+The button "Real scale: off / on" at the top of the left panel (above the Travel planner) switches between two modes.
 
 - **Explanation mode (the default):** distances are squeezed (square root of the distance) and the planets are drawn bigger than they are, so everything
   fits on the screen and can be read.

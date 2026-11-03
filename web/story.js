@@ -6,8 +6,8 @@ export const UI = {
   en: {
     speech: "en-US",
     hint: "Drag to rotate, scroll to zoom, right drag to pan. Keyboard: W A S D fly, Q and E down and up, arrow keys look around, Shift is faster",
-    scaleCompressed: "Scale: explanation mode",
-    scaleLinear: "Scale: real",
+    scaleCompressed: "Real scale: off",
+    scaleLinear: "Real scale: on",
     loading: "Loading stars...",
     count: (stars, planets) => `${stars} host stars, ${planets} planets`,
     candidates: (n) => `Habitable candidates (${n} + Earth)`,
@@ -77,8 +77,8 @@ export const UI = {
   de: {
     speech: "de-DE",
     hint: "Ziehen zum Drehen, Scrollen zum Zoomen, rechts ziehen zum Verschieben. Tastatur: W A S D fliegen, Q und E runter und hoch, Pfeiltasten umschauen, Shift ist schneller",
-    scaleCompressed: "Skala: Erklärmodus",
-    scaleLinear: "Skala: echter Maßstab",
+    scaleCompressed: "Echter Maßstab: aus",
+    scaleLinear: "Echter Maßstab: an",
     loading: "Sterne werden geladen...",
     count: (stars, planets) => `${stars} Muttersterne, ${planets} Planeten`,
     candidates: (n) => `Bewohnbare Kandidaten (${n} + Erde)`,

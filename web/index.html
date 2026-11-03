@@ -22,6 +22,7 @@
   <div id="hud">
     <h1>Exoplanet Atlas 3D</h1>
     <p id="count">Loading stars...</p>
+    <button id="scale" type="button" aria-pressed="false">Real scale: off</button>
     <button id="planner-open" type="button" aria-expanded="false" aria-controls="planner-panel">Travel planner</button>
     <div id="search-box">
       <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
@@ -113,7 +114,6 @@
         <option value="schematic">Schematic</option>
         <option value="artistic" selected>Artistic</option>
       </select>
-      <button id="scale" type="button">Scale: compressed</button>
       <button id="gaia" type="button" aria-pressed="false">Gaia stars: off</button>
       <p id="gaia-note" class="hint" hidden></p>
       <button id="gaia-deep" type="button" aria-pressed="false">Deep stars: off</button>

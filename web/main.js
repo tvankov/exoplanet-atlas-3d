@@ -3405,6 +3405,7 @@ function setRealScale(on) {
   if (activeExo && on) activeExo.group.visible = false;
   const scaleButton = document.getElementById("scale");
   scaleButton.textContent = on ? UI[lang].scaleLinear : UI[lang].scaleCompressed;
+  scaleButton.setAttribute("aria-pressed", String(on));
   leaveCloseup();
   updateCloseupButton();
   flyTo({ star: EARTH.star, system: solar }); // the camera would be lost otherwise: show the Solar System
