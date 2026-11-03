@@ -46,8 +46,11 @@ const warpPass = new ShaderPass({
       vec2 dir = vUv - uCenter;
       vec3 base = texture2D(tDiffuse, vUv).rgb;
       vec3 best = base;
-      for (int i = 1; i < 18; i++) {
-        float t = float(i) / 17.0;
+      // 32 samples along the line to the centre, each one moved by a different small random amount per pixel (dithering): with a few
+      // fixed samples a streak was a row of beads, now it is a smooth thin line.
+      float jitter = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453);
+      for (int i = 0; i < 32; i++) {
+        float t = (float(i) + jitter) / 32.0;
         vec3 s = texture2D(tDiffuse, uCenter + dir * (1.0 - uStrength * 0.2 * t)).rgb;
         best = max(best, s * (1.0 - 0.8 * t));
       }
@@ -4352,7 +4355,7 @@ const warpAhead = new THREE.Vector3();
 // The streaks of the blur are made from stars that stand still, so they do not move, and it does not look like we fly past anything. In the
 // hyperspace, streaks therefore fly towards us and past us from the point we look at, like stars would: a field of short lines in the space of
 // the camera. Each line has an angle and a share of the screen radius, and moves in depth; the closer it gets, the further out it is on the screen.
-const WARP_COUNT = 700;
+const WARP_COUNT = 1400;
 const WARP_FAR = 40;
 const WARP_NEAR = 0.05;
 const warpAngle = new Float32Array(WARP_COUNT);
@@ -4375,7 +4378,7 @@ camera.add(warpField);
 function stepWarpField(dt) {
   warpField.visible = warp > 0.03;
   if (!warpField.visible) return;
-  warpField.material.opacity = Math.min(0.85, warp);
+  warpField.material.opacity = Math.min(0.6, warp * 0.7);
   const aspect = camera.aspect;
   const half = Math.tan((camera.fov * Math.PI) / 360);
   const speed = 30 + 40 * warp; // units per second, the field moves past the camera
