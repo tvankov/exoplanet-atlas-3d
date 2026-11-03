@@ -69,10 +69,21 @@ controls.minDistance = 0.02; // lets the close-up get near a planet that is only
 // Distances run from 4 to 28000 ly. A square root squeezes the far field so the
 // neighbourhood stays readable. The direction of every star is unchanged.
 let compressed = true;
+// Two modes. The explanation mode (the default) squeezes distances (square root) and draws the planets bigger, so everything fits on the
+// screen. The real scale shows real distances and real sizes: 1 AU is REAL_K map units, which keeps the Sun at the radius it is drawn with
+// (0.08), and the planets and the Moon follow from their real radii and distances. The stars are then a sky (directions only, on a sphere
+// of SKY_RADIUS around the camera), because at real distances the other stars are light years away and the picture would have no depth.
+let realScale = false;
+const REAL_K = 0.08 / 0.00465047; // map units per AU: the drawn radius of the Sun over the real one in AU
+const SKY_RADIUS = 5000;
 let zoneOn = true; // the green candidate zone, a switch in the settings
 function toMapPosition(star, out) {
   const r = Math.hypot(star.x, star.y, star.z);
   if (r === 0) return out.set(0, 0, 0);
+  if (realScale) {
+    const sky = SKY_RADIUS / r;
+    return out.set(star.x * sky, star.z * sky, -star.y * sky);
+  }
   const k = compressed ? Math.sqrt(r) / r : 1 / 10;
   // The data uses z as "north"; three.js has y up, so the axes are swapped.
   return out.set(star.x * k, star.z * k, -star.y * k);
@@ -197,6 +208,7 @@ function buildPoints() {
   });
 
   points = new THREE.Points(new THREE.BufferGeometry(), material);
+  points.frustumCulled = false; // in the real scale the layer is a sky around the camera, its bounds change with the mode
   points.geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   points.geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   points.geometry.setAttribute("truePos", new THREE.BufferAttribute(truePositions, 3));
@@ -291,6 +303,7 @@ function updateCameraReal() {
   const m = camera.position;
   const s = compressed ? m.length() : 10; // compressed: the real distance is the drawn distance squared
   gaiaCameraTmp.set(m.x * s, -m.z * s, m.y * s); // back from the three.js axes to the data axes
+  if (realScale) gaiaCameraTmp.set(0, 0, 0); // the camera is in the Solar System, the stars are far away from it
   material.uniforms.uCamera.value.copy(gaiaCameraTmp); // the stars of the NASA list use it for their brightness too
   // The hosts reach out to 28,000 light years, so their exposure starts higher than the Gaia layer's and also
   // opens up with the distance from the Sun, otherwise the far ones would vanish on the overview.
@@ -939,6 +952,7 @@ function orbitCurve(el, count = 160) {
 }
 // Ecliptic AU to the map of the Solar System view. The plane of the ecliptic is the flat plane, the north is up.
 function mapEcliptic(p, out) {
+  if (realScale) return out.set(p.x * REAL_K, p.z * REAL_K, -p.y * REAL_K);
   const r = Math.hypot(p.x, p.y, p.z);
   const k = r > 0 ? (0.3 * Math.sqrt(r)) / r : 0;
   return out.set(p.x * k, p.z * k, -p.y * k);
@@ -1950,13 +1964,10 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
         const a = (k / 128) * Math.PI * 2;
         return new THREE.Vector3(Math.cos(a) * p.orbit, 0, Math.sin(a) * p.orbit);
       });
+    let orbitLine = null;
     if (!p.orbitUnknown) {
-      group.add(
-        new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints(points),
-          orbitLineMaterial
-        )
-      );
+      orbitLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), orbitLineMaterial);
+      group.add(orbitLine);
     }
     const radius = Math.max(p.size, viewDistance * MIN_PLANET_PER_VIEW_DISTANCE);
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 24), planetMaterial(p));
@@ -1982,7 +1993,7 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
     const clouds = p.earth ? addClouds(mesh, radius) : null;
     if (p.earth) addAtmosphere(mesh, radius);
     group.add(mesh);
-    return { ...p, mesh, hit, moon, clouds, start: i * 1.7 };
+    return { ...p, mesh, hit, moon, clouds, orbitLine, start: i * 1.7 };
   });
   return { group, bodies, viewDistance, time: 0, starMesh, rays };
 }
@@ -2040,7 +2051,8 @@ function stepSystem(system, dt) {
   // purpose: a system is only a few map units wide, and from another star, say 143 light years
   // away, its belt and labels would hang in the sky like something that belongs there.
   // The Solar System is shown from further away: the comets and the far spacecraft reach out to 4 map units.
-  system.group.visible = camera.position.distanceTo(system.group.position) < (system === solar ? 9 : 4);
+  // In the real scale the Solar System is always there (it is the whole picture) and the other systems are not drawn (yet).
+  system.group.visible = realScale ? system === solar : camera.position.distanceTo(system.group.position) < (system === solar ? 9 : 4);
 }
 
 function planetOrbitPoints(name) {
@@ -2620,7 +2632,7 @@ function enterCloseup() {
   closeup = true;
   if (current.system.zoneMesh) current.system.zoneMesh.visible = false;
   if (current.follow.userData.label) current.follow.userData.label.visible = false;
-  const radius = current.follow.geometry.parameters.radius;
+  const radius = current.follow.geometry.parameters.radius * current.follow.scale.x; // the real scale shrinks the planet meshes
   const follow = current.follow;
   // The camera comes in from the side of the star, a little from above. Seen from there the planet
   // shows its lit half. From a fixed direction it was often the night side, and a dark planet
@@ -2845,7 +2857,7 @@ function applyLanguage() {
   lookSelect.setAttribute("aria-label", t.lookLabel);
   lookSelect.options[0].textContent = t.look.schematic;
   lookSelect.options[1].textContent = t.look.artistic;
-  document.getElementById("scale").textContent = compressed ? t.scaleCompressed : t.scaleLinear;
+  document.getElementById("scale").textContent = realScale ? t.scaleLinear : t.scaleCompressed;
   document.getElementById("count").textContent = stars.length
     ? t.count(stars.length, stars.reduce((n, s) => n + s.planets.length, 0))
     : t.loading;
@@ -3349,17 +3361,89 @@ function updateElapsed(now) {
   speedElapsed.textContent = UI[lang].elapsed(duration(system.time * SECONDS_PER_YEAR, lang));
 }
 
-document.getElementById("scale").addEventListener("click", (e) => {
-  compressed = !compressed;
-  e.target.textContent = compressed ? UI[lang].scaleCompressed : UI[lang].scaleLinear;
-  updatePositions();
-  // Positions changed, so the selected star has to be found again.
-  if (current) {
-    leaveCloseup();
-    flyTo(current);
-    updateCloseupButton();
+// Everything that depends on the mode: the planets (real radius, orbit lines, the Moon), what is hidden in the real scale (asteroid belt,
+// dust disc: they are drawn with the squeezed distances), the zone, the stars (a sky), the reach of the controls.
+const SOLAR_REAL_VIEW = 45 * REAL_K; // the camera distance that shows the whole Solar System in the real scale (Neptune is at 30 AU)
+function setRealScale(on) {
+  realScale = on;
+  controls.minDistance = on ? 4e-5 : 0.02;
+  solar.viewDistance = on ? SOLAR_REAL_VIEW : 1.5;
+  for (const b of solar.bodies) {
+    if (!PLANETS.some((p) => p.name === b.name)) continue;
+    const drawn = b.mesh.geometry.parameters.radius;
+    const s = on ? b.size / drawn : 1; // the planet as drawn is bigger than its real size
+    b.mesh.scale.setScalar(s);
+    if (!on) b.hit.scale.setScalar(1);
+    for (const label of [b.mesh.userData.label, b.moon?.mesh.userData.label]) {
+      if (!label) continue;
+      label.userData.baseScale ??= label.scale.clone();
+      label.scale.copy(label.userData.baseScale).divideScalar(s); // the names keep their size on the screen
+    }
+    if (b.moon) b.moon.distance = (on ? 60.3 : 2.6) * drawn; // the Moon is 60.3 Earth radii away, the explanation mode draws it at 2.6
+    if (b.orbitLine) {
+      b.orbitLine.geometry.dispose();
+      b.orbitLine.geometry = new THREE.BufferGeometry().setFromPoints(planetOrbitPoints(b.name));
+    }
   }
-});
+  solar.belt.visible = !on;
+  beltLabel.visible = !on;
+  dustDisc.visible = !on;
+  if (solar.zoneMesh) {
+    solar.group.remove(solar.zoneMesh);
+    solar.zoneMesh.geometry.dispose();
+    solar.zoneMesh.material.dispose();
+    solar.zoneMesh = null;
+  }
+  const toMap = (au) => (on ? REAL_K * au : 0.3 * Math.sqrt(au));
+  addZone(solar, toMap(sunZone.inner), toMap(sunZone.outer));
+  if (!on) {
+    camera.near = 0.01;
+    camera.updateProjectionMatrix();
+    for (const layer of [points, gaia?.points, deep?.points]) layer?.position.set(0, 0, 0);
+  }
+  updatePositions(); // the stars: positions on the map or a sky
+  if (activeExo && on) activeExo.group.visible = false;
+  const scaleButton = document.getElementById("scale");
+  scaleButton.textContent = on ? UI[lang].scaleLinear : UI[lang].scaleCompressed;
+  leaveCloseup();
+  updateCloseupButton();
+  flyTo({ star: EARTH.star, system: solar }); // the camera would be lost otherwise: show the Solar System
+  current = null;
+  ring.visible = false;
+}
+document.getElementById("scale").addEventListener("click", () => setRealScale(!realScale));
+
+// The near plane of the camera: the real scale has planets that are 0.0007 wide next to distances of hundreds of units, so the near plane follows
+// the distance to the nearest surface (a fiftieth of it). Also the stars of the sky and the invisible spheres around the planets (for clicks).
+const rangeTmp = new THREE.Vector3();
+function updateCameraRange() {
+  let nearest = camera.position.length() - SUN_RADIUS;
+  const check = (mesh) => {
+    const radius = mesh.geometry.parameters.radius * mesh.getWorldScale(rangeTmp).x;
+    nearest = Math.min(nearest, camera.position.distanceTo(mesh.getWorldPosition(rangeTmp)) - radius);
+  };
+  for (const b of solar.bodies) {
+    if (b.visitor) continue;
+    check(b.mesh);
+    if (b.moon) check(b.moon.mesh);
+    // A click on a planet must be possible from far away: the hit sphere is at least 1.2 % of the distance to the camera.
+    const world = b.mesh.getWorldPosition(rangeTmp);
+    const desired = Math.max(b.hit.geometry.parameters.radius * b.mesh.scale.x, camera.position.distanceTo(world) * 0.012);
+    b.hit.scale.setScalar(desired / (b.hit.geometry.parameters.radius * b.mesh.scale.x));
+  }
+  const near = Math.min(0.01, Math.max(2e-6, 0.02 * Math.max(nearest, 0)));
+  if (Math.abs(near - camera.near) > camera.near * 0.05) {
+    camera.near = near;
+    camera.updateProjectionMatrix();
+  }
+}
+// The stars of the real scale are a sky around the camera: the layers move with it.
+function followSky() {
+  for (const layer of [points, gaia?.points, deep?.points]) layer?.position.copy(camera.position);
+  if (gaia) {
+    for (const { sprite, star } of gaia.labels) toMapPosition(star, sprite.position).add(camera.position);
+  }
+}
 
 const trackTmp = new THREE.Vector3();
 let lastFrame = performance.now() / 1000;
@@ -3372,6 +3456,10 @@ function animate() {
   if (activeExo) stepSystem(activeExo, dt);
   stepTrip(now);
   stepWarp(dt);
+  if (realScale) {
+    updateCameraRange();
+    followSky();
+  }
   milkyWay.position.copy(camera.position);
   sunRays.quaternion.copy(camera.quaternion); // the sheet faces the camera
   sunRays.material.uniforms.uTime.value = now;
@@ -3763,6 +3851,8 @@ planGo.addEventListener("click", () => {
     d = { x: b.x, y: b.y, z: b.z };
     days = (Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * 365.25) / beta;
   }
+  const switchedBack = realScale && mode === "star";
+  if (switchedBack) setRealScale(false); // the star map is not drawn in the real scale (yet)
   const unit = mode === "solar" ? 1 : 1 / LY_PER_AU; // positions in AU for the trip data, light years become AU here
   trip = {
     jd0, days, o, d, beta, kind: speed.kind, follow: true, arrived: false, mode, from, to, saved,
@@ -3792,6 +3882,7 @@ planGo.addEventListener("click", () => {
   updateSpeedText();
   showTripResult();
   planResult.textContent += `\n${t.setSpeed}`;
+  if (switchedBack) planResult.textContent += `\n${t.realOff}`;
   trip.phase = "intro";
   trip.phaseStart = performance.now() / 1000;
   trip.warpTarget = 0;
@@ -3873,9 +3964,12 @@ function startFraction() {
 function placeRadius(place) {
   if (place.kind === "exo") {
     const body = activeExo?.bodies.find((b) => b.name === place.planet.pl_name);
-    if (body) return body.mesh.geometry.parameters.radius;
+    if (body) return body.mesh.geometry.parameters.radius * body.mesh.scale.x;
   }
-  if (place.kind === "planet") return solar.bodies.find((b) => b.name === place.name).mesh.geometry.parameters.radius;
+  if (place.kind === "planet") {
+    const mesh = solar.bodies.find((b) => b.name === place.name).mesh;
+    return mesh.geometry.parameters.radius * mesh.scale.x;
+  }
   return place.star === SUN_POINT ? SUN_RADIUS : EXO_STAR_RADIUS;
 }
 function stopFraction() {
@@ -4045,6 +4139,7 @@ function showPlace(to) {
 // The camera cuts away everything closer than its near plane (0.01). A trip ends 1.5 radii from a planet that is 0.0135 wide
 // on the map, so the planet would be cut and the ship seemed to be inside it. During a trip the near plane is smaller.
 function setNear(value) {
+  if (realScale) return; // the real scale sets the near plane itself, see updateCameraRange
   camera.near = value;
   camera.updateProjectionMatrix();
 }
@@ -4149,6 +4244,7 @@ const warpAhead = new THREE.Vector3();
 // the Solar System part (closer than 9 units to the Sun) it is derived from the AU squeeze (r drawn as
 // 0.3 * sqrt(r)), further out from the star squeeze (a distance drawn as its square root, or divided by 10).
 function mapPerLightYear() {
+  if (realScale) return REAL_K / LY_PER_AU; // map units per AU, and a light year is 1 / LY_PER_AU AU
   const r = camera.position.length();
   if (r < 9) {
     const au = Math.max((r / 0.3) ** 2, 0.05);
@@ -4207,7 +4303,7 @@ function pickForPlanner(x, y) {
       }
     };
     test(sunLabel(), new THREE.Vector3());
-    stars.forEach((star, i) => test(star.hostname, new THREE.Vector3(position.getX(i), position.getY(i), position.getZ(i))));
+    stars.forEach((star, i) => test(star.hostname, new THREE.Vector3(position.getX(i), position.getY(i), position.getZ(i)).add(points.position)));
   }
   if (!name) return; // nothing there, the hint stays and the next click counts
   (picking === "from" ? planFrom : planTo).value = name;
@@ -4301,7 +4397,7 @@ function pickMeasure(x, y) {
     }
   };
   test(SUN_POINT, new THREE.Vector3());
-  stars.forEach((star, i) => test(star, new THREE.Vector3(position.getX(i), position.getY(i), position.getZ(i))));
+  stars.forEach((star, i) => test(star, new THREE.Vector3(position.getX(i), position.getY(i), position.getZ(i)).add(points.position)));
   if (!best) return;
   if (measureB || !measureA) {
     measureA = best;

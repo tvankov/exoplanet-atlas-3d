@@ -166,6 +166,24 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   line between them, drawn curved because the map is squeezed. The distances are the catalogue distances with their measurement errors. It
   feeds the planner (star to star).
 
+## Real scale (stage 1: the Solar System)
+
+The button "Scale" in the settings switches between two modes.
+
+- **Explanation mode (the default):** distances are squeezed (square root of the distance) and the planets are drawn bigger than they are, so everything
+  fits on the screen and can be read.
+- **Real scale:** real distances and real sizes. 1 AU is 17.2 map units, which keeps the Sun at the radius it is drawn with (0.08), and everything else
+  follows from the real values: the planet radii (Earth is 109.1 times smaller than the Sun), the orbits (the real ellipses, no squeeze) and the
+  Moon at 60.3 Earth radii (the explanation mode draws it at 2.6). The zone of candidates is drawn at its real distance (about 0.95 to 1.7 AU). The
+  names above the planets keep their size on the screen, which is the way to find a planet that is a dot.
+- **What is different in the real scale:** the asteroid belt and the dust disc are hidden (they are drawn with the squeezed distances). The stars are
+  a sky: only their directions count, on a sphere around the camera (the other stars are light years away, the picture would have no depth). The
+  other star systems are not drawn (yet). The near plane of the camera follows the distance to the nearest surface (a fiftieth of it), because the
+  planets are 0.0007 wide next to distances of hundreds of units. The speed in c uses the real scale.
+- **Trips:** between planets they work in both modes (start and end distances are real in the real scale). A trip to or between stars switches back to
+  the explanation mode and says so.
+- **Next (stage 2):** the stars and exoplanet systems in the real scale, with real stellar radii and orbits.
+
 ## Menus
 
 - **Burger menu (top right):** three menus. *Hints* (controls, legend of the green zone, note on the asteroid belt), *Sources and licences* (the link to
