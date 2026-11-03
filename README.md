@@ -189,6 +189,7 @@ The button "Real scale: off / on" at the top of the left panel (above the Travel
   Solar System, a bit beyond Neptune; for another star 1.5 times its outer orbit, at least 40 star radii), the hyperspace jump is the cut (the ship
   waits at the edge while the streaks run), and out of hyperspace the target system is the home and the ship is at its edge, on the side of the start
   star. The real distance in light years is in the panel, the camera does not fly it.
+- **Orbit lines with enough points:** in the real scale an orbit is hundreds of units long and the camera can be a few thousandths of a unit from the planet. With 128 corners the line was a polygon whose sides lay several planet radii beside the planet. The real scale now draws 8,192 corners per orbit (the explanation mode keeps 128).
 - **Other stars (stage 2):** in the real scale one system is shown at a time (the "home"): the Solar System or the system of a host star, with the real
   star radius (`st_rad`, a missing one counts as 1 solar radius), the real planet radii (`pl_rade`; a planet without a radius keeps a drawn marker),
   the real orbits (the semi-major axis in AU, circles) and the zone at its real distance. Going to another star (search, the lists, the named stars)

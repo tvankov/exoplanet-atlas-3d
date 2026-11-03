@@ -1972,8 +1972,8 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
     // The Solar System has the real orbits (ellipses), exoplanet systems have circles.
     const points =
       p.orbitPoints ??
-      Array.from({ length: 129 }, (_, k) => {
-        const a = (k / 128) * Math.PI * 2;
+      Array.from({ length: realScale ? 8193 : 129 }, (_, k) => {
+        const a = (k / (realScale ? 8192 : 128)) * Math.PI * 2; // the real scale needs many corners, see planetOrbitPoints
         return new THREE.Vector3(Math.cos(a) * p.orbit, 0, Math.sin(a) * p.orbit);
       });
     let orbitLine = null;
@@ -2069,7 +2069,9 @@ function stepSystem(system, dt) {
 
 function planetOrbitPoints(name) {
   const el = planetElements(ORBITS.planets[ELEMENT_ROW[name]], JD_AT_LOAD);
-  const curve = orbitCurve({ a: el.a, e: el.e, i: el.I, om: el.node, w: el.peri - el.node }, 128);
+  // In the real scale an orbit is hundreds of units long and the camera can be a few thousandths of a unit from the planet: with 128 corners
+  // the line is a polygon whose sides lie several planet radii beside the planet. 8,192 corners keep the line within a fraction of a radius.
+  const curve = orbitCurve({ a: el.a, e: el.e, i: el.I, om: el.node, w: el.peri - el.node }, realScale ? 8192 : 128);
   return curve.map((p) => mapEcliptic(p, new THREE.Vector3()));
 }
 
