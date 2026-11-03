@@ -4275,18 +4275,25 @@ function stepView(now) {
 // slows down evenly, in between it flies at a constant speed. The area under the speed curve stays 1, so the
 // total travel time is the one shown; the constant speed is 1 / 0.9 = 1.11 times the chosen one.
 const RAMP = 0.1;
-const RAMP_TOP = 1 / (1 - RAMP);
+// A trip to another star brakes earlier: it ends at the edge of the target system (point 3), where the film stops, so the last quarter of
+// the time is the braking. The area under the speed curve stays 1 (the top speed is 1 / (1 - (up + down) / 2) times the chosen one).
+const RAMP_STAR_DOWN = 0.25;
+const rampDown = () => (trip.mode === "star" ? RAMP_STAR_DOWN : RAMP);
 function rampDistance(t) {
-  if (t < RAMP) return (RAMP_TOP * t * t) / (2 * RAMP);
-  if (t > 1 - RAMP) return 1 - (RAMP_TOP * (1 - t) ** 2) / (2 * RAMP);
-  return RAMP_TOP * (RAMP / 2 + (t - RAMP));
+  const up = RAMP;
+  const down = rampDown();
+  const top = 1 / (1 - (up + down) / 2);
+  if (t < up) return (top * t * t) / (2 * up);
+  if (t > 1 - down) return 1 - (top * (1 - t) ** 2) / (2 * down);
+  return top * (up / 2 + (t - up));
 }
-const rampSpeed = (t) => Math.min(1, t / RAMP, (1 - t) / RAMP); // 0 to 1, the share of the top speed
+const rampSpeed = (t) => Math.min(1, t / RAMP, (1 - t) / rampDown()); // 0 to 1, the share of the top speed
 
 // A place in view: a planet gets its close-up (as if clicked), a star or the Sun is shown as its system. Used for
 // the start and for the arrival of the trip.
 function showArrival() {
   trip.follow = false;
+  if (trip.mode === "star") return; // a trip to another star ends at the edge of its system (point 3), not at the planet
   showPlace(trip.to, !!trip.log);
 }
 function showPlace(to, keepView = false) {
