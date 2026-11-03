@@ -3943,6 +3943,9 @@ planGo.addEventListener("click", () => {
     trip.p2 = tripMap(lerp3(trip.o, trip.d, trip.uStart), new THREE.Vector3());
     trip.routeMap = tripMap(trip.o, new THREE.Vector3()).distanceTo(tripMap(trip.d, new THREE.Vector3())); // the length of the route on the map
   }
+  trip.log = realScale && mode === "solar"
+    ? { ca: TRIP_CLEAR * placeRadius(from), cb: TRIP_CLEAR * placeRadius(to), D: tripMap(o, new THREE.Vector3()).distanceTo(tripMap(d, new THREE.Vector3())) }
+    : null; // variant B, see logDistance
   setNear(0.002);
   const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
@@ -4172,10 +4175,33 @@ function tripPose(pose) {
   if (planView.value === "ego") {
     pose.pos.copy(ship.position).add(startOffset(aheadTmp, offsetTmp));
     pose.target.copy(pose.pos).addScaledVector(aheadTmp, controls.minDistance * 1.5);
+  } else if (trip.log) {
+    // Behind, above and a bit to the side of the ship, so the start planet is not between the camera and the ship.
+    rightTmp.crossVectors(aheadTmp, camera.up).normalize();
+    upTmp.crossVectors(rightTmp, aheadTmp);
+    offsetTmp.copy(aheadTmp).multiplyScalar(-0.6).addScaledVector(rightTmp, 0.5).addScaledVector(upTmp, 0.5).normalize().multiplyScalar(logBack());
+    pose.pos.copy(ship.position).add(offsetTmp);
+    pose.target.copy(ship.position);
   } else {
     pose.pos.copy(ship.position).addScaledVector(aheadTmp, -0.35);
     pose.target.copy(ship.position);
   }
+}
+
+// Variant B of the real scale, a trip between two planets. At real distances (1.5 AU is 65,000 planet radii) a flight at a constant speed
+// is either an endless nothing or a blink at the planets. So the distance from the nearer planet grows and shrinks by the same factor
+// every second (a zoom): the ship leaves the start planet slowly and fast, covers the middle in a rush and slows down again towards the target,
+// where it stops 1.575 radii from the planet. Only the picture is a zoom, the clock and the planets run as they really do, so the target
+// is where it was worked out to be when the time is up. r is the distance of the ship from the start planet, over the line to the target.
+function logDistance(t, { ca, cb, D }) {
+  return t < 0.5 ? ca * (D / 2 / ca) ** (2 * t) : D - cb * (D / 2 / cb) ** (2 * (1 - t));
+}
+// The camera sits this far from the ship: a quarter of the distance to the nearer planet, but at least 4 radii of it (and at most a tenth of the route).
+function logBack() {
+  const { D } = trip.log;
+  const r = trip.logR ?? trip.log.ca;
+  const fromNear = r < D - r;
+  return Math.min(0.1 * D, Math.max(0.25 * Math.min(r, D - r), 4 * placeRadius(fromNear ? trip.from : trip.to)));
 }
 
 function stepView(now) {
@@ -4223,15 +4249,11 @@ function stepView(now) {
     const delta = shipTmp.copy(ship.position).sub(controls.target);
     camera.position.add(delta);
     controls.target.add(delta);
-    if (realScale && trip.mode === "solar" && (trip.phase === "cruise" || trip.phase === "exit")) {
-      // In the real scale the planet is tiny against the 0.35 the camera keeps behind the ship, so at the end the planet would be a dot far
-      // away. The camera comes closer with the ship: a quarter of the distance to the target, but never closer than 4 radii of it.
-      const back = Math.min(0.35, Math.max(0.25 * ship.position.distanceTo(ringPosition(aheadTmp)), 4 * placeRadius(trip.to)));
-      offsetTmp.copy(camera.position).sub(ship.position);
-      if (offsetTmp.length() > back) {
-        camera.position.copy(ship.position).addScaledVector(offsetTmp.setLength(back), 1);
-        controls.target.copy(ship.position);
-      }
+    if (trip.log) {
+      // Variant B: the camera keeps its direction (the user may orbit) and its distance follows the ship, see logBack.
+      offsetTmp.copy(camera.position).sub(ship.position).setLength(logBack());
+      camera.position.copy(ship.position).add(offsetTmp);
+      controls.target.copy(ship.position);
     }
   }
 }
@@ -4314,7 +4336,7 @@ function stepTrip(now) {
   if (!trip) return;
   const elapsed = now - trip.phaseStart;
   if (trip.phase === "intro" && elapsed >= TRIP_INTRO) setPhase("turn", now);
-  else if (trip.phase === "turn" && elapsed >= TRIP_TURN) setPhase(trip.mode === "star" ? "depart" : "jump", now);
+  else if (trip.phase === "turn" && elapsed >= TRIP_TURN) setPhase(trip.mode === "star" ? "depart" : trip.log ? "cruise" : "jump", now);
   else if (trip.phase === "depart" && elapsed >= TRIP_DEPART) setPhase("jump", now);
   else if (trip.phase === "jump" && elapsed >= TRIP_JUMP) setPhase("cruise", now);
   else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
@@ -4331,6 +4353,12 @@ function stepTrip(now) {
   const t = trip.phase === "cruise" ? Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)) : trip.phase === "exit" || trip.phase === "done" ? 1 : 0; // the share of the time that has passed
   trip.speedFactor = rampSpeed(t);
   trip.share = rampDistance(t); // the share of the hyperspace part, the ship starts and stops softly
+  if (trip.log) {
+    trip.logR = logDistance(t, trip.log);
+    trip.share = (trip.logR - trip.log.ca) / (trip.log.D - trip.log.cb - trip.log.ca);
+    // The streaks only where the ship is fast: far from both planets.
+    if (trip.phase === "cruise") trip.warpTarget = Math.min(1, Math.min(trip.logR, trip.log.D - trip.logR) / (0.1 * trip.log.D));
+  }
   const u = trip.uStart + (trip.uEnd - trip.uStart) * trip.share; // the share of the whole line
   if (trip.phase === "intro" || trip.phase === "turn") homePosition(ship.position);
   else if (trip.phase === "depart") {
