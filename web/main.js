@@ -2651,7 +2651,8 @@ window.addEventListener("resize", layoutView);
 
 const CLOSEUP_RADII = 3; // camera distance in planet radii
 
-function enterCloseup() {
+// keepView: the camera keeps the side it is on (the end of a trip) instead of turning to the lit side.
+function enterCloseup(keepView = false) {
   closeup = true;
   if (current.system.zoneMesh) current.system.zoneMesh.visible = false;
   if (current.follow.userData.label) current.follow.userData.label.visible = false;
@@ -2663,9 +2664,9 @@ function enterCloseup() {
   const planetPos = follow.getWorldPosition(new THREE.Vector3());
   const toStar = current.system.group.getWorldPosition(new THREE.Vector3()).sub(planetPos).normalize();
   if (toStar.lengthSq() === 0) toStar.set(0, 0, 1); // the star itself is the target, there is no star direction
-  const direction = toStar.multiplyScalar(0.75).add(new THREE.Vector3(0, 0.55, 0)).normalize();
+  const direction = keepView ? camera.position.clone().sub(planetPos).normalize() : toStar.multiplyScalar(0.75).add(new THREE.Vector3(0, 0.55, 0)).normalize();
   // Coming from close by (the end of a trip), the camera turns around the planet; from far away a straight flight is fine.
-  const near = camera.position.distanceTo(planetPos) < radius * 12;
+  const near = !keepView && camera.position.distanceTo(planetPos) < radius * 12;
   startFlight(() => follow.getWorldPosition(new THREE.Vector3()), radius * (follow.userData.closeupRadii ?? CLOSEUP_RADII), direction, near);
   ring.visible = false; // the ring would sit on top of the planet we are looking at
 }
@@ -2810,7 +2811,7 @@ function pickPlanet(x, y) {
   }
 }
 
-function selectBody(system, body) {
+function selectBody(system, body, keepView = false) {
   let star;
   let planet;
   if (system === solar) {
@@ -2825,7 +2826,7 @@ function selectBody(system, body) {
   }
   leaveCloseup();
   current = { star, system, follow: body.mesh, planet };
-  enterCloseup(); // the camera goes straight to the planet that was clicked
+  enterCloseup(keepView); // the camera goes straight to the planet that was clicked
   showStory(star, planet);
   buildHabitableMenu(); // moves the highlight, or clears it when the planet is not a candidate
   buildSolarMenu();
@@ -4091,6 +4092,7 @@ function realTripSetup() {
 }
 // The ring marks where the target is. Between planets the course ends where the planet was meant to be, but the clock goes on at the speed
 // of the user (restored at the arrival), so in the exit the planet has moved on: the ring and the ship follow the planet itself.
+const centerTmp = new THREE.Vector3();
 const liveTmp = new THREE.Vector3();
 const liveD = new THREE.Vector3();
 const shiftTmp = new THREE.Vector3();
@@ -4251,9 +4253,20 @@ function stepView(now) {
     controls.target.add(delta);
     if (trip.log) {
       // Variant B: the camera keeps its direction (the user may orbit) and its distance follows the ship, see logBack.
-      offsetTmp.copy(camera.position).sub(ship.position).setLength(logBack());
-      camera.position.copy(ship.position).add(offsetTmp);
-      controls.target.copy(ship.position);
+      // In the exit the camera looks at the planet and comes in to the distance of the close-up, so the close-up that follows is no change.
+      let e = 0;
+      let length = logBack();
+      centerTmp.copy(ship.position);
+      if (trip.phase === "exit") {
+        const mesh = solar.bodies.find((b) => b.name === trip.to.name).mesh;
+        const x = Math.min(1, (now - trip.phaseStart) / TRIP_EXIT);
+        e = x * x * (3 - 2 * x);
+        centerTmp.lerp(mesh.getWorldPosition(liveTmp), e);
+        length += (mesh.geometry.parameters.radius * mesh.scale.x * (mesh.userData.closeupRadii ?? CLOSEUP_RADII) - length) * e;
+      }
+      offsetTmp.copy(camera.position).sub(centerTmp).setLength(length);
+      camera.position.copy(centerTmp).add(offsetTmp);
+      controls.target.copy(centerTmp);
     }
   }
 }
@@ -4274,12 +4287,12 @@ const rampSpeed = (t) => Math.min(1, t / RAMP, (1 - t) / RAMP); // 0 to 1, the s
 // the start and for the arrival of the trip.
 function showArrival() {
   trip.follow = false;
-  showPlace(trip.to);
+  showPlace(trip.to, !!trip.log);
 }
-function showPlace(to) {
+function showPlace(to, keepView = false) {
   if (to.kind === "planet") {
     const body = solar.bodies.find((b) => b.name === to.name);
-    if (body) selectBody(solar, body);
+    if (body) selectBody(solar, body, keepView);
   } else if (to.kind === "exo") {
     showSystem(to.star, to.planet);
     enterCloseup(); // on to the planet itself
