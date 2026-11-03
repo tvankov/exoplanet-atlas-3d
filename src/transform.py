@@ -50,6 +50,12 @@ def teff_to_hex(teff: pd.Series) -> pd.Series:
     )
 
 
+# The archive gives GJ 273 (Luyten's Star) a distance of 5.92 pc (19.3 ly), but its Gaia parallax puts it at 12.3 ly (the real value is
+# about 12.4), and the Gaia layer of the map has the star there as a named star. For the hosts below the distance is taken from the
+# Gaia entry of the named star (web/data/gaia_names.json, made by src/build_gaia.py), the direction stays the archive's. The change is flagged.
+DISTANCE_FROM_GAIA_NAME = {"GJ 273": "Luyten's star"}
+
+
 def build_stars(planets: pd.DataFrame) -> pd.DataFrame:
     # In pscomppars the star columns repeat on every planet row of a system,
     # so taking the first row per hostname loses nothing.
@@ -57,6 +63,19 @@ def build_stars(planets: pd.DataFrame) -> pd.DataFrame:
     stars = stars[
         ["hostname", "ra", "dec", "sy_dist", "glon", "glat", "st_teff", "st_rad", "st_mass", "st_spectype"]
     ].copy()
+
+    stars["dist_from_gaia"] = False
+    names_file = ROOT / "web" / "data" / "gaia_names.json"
+    if names_file.exists():
+        named = {n["name"]: n for n in json.loads(names_file.read_text(encoding="utf-8"))}
+        for host, name in DISTANCE_FROM_GAIA_NAME.items():
+            if host in set(stars["hostname"]) and name in named:
+                n = named[name]
+                gaia_pc = float(np.sqrt(n["x"] ** 2 + n["y"] ** 2 + n["z"] ** 2)) / PC_TO_LY
+                row = stars["hostname"] == host
+                print(f"{host}: distance {stars.loc[row, 'sy_dist'].iloc[0]:.2f} pc in the archive, {gaia_pc:.2f} pc from Gaia ({name}); the Gaia value is used")
+                stars.loc[row, "sy_dist"] = gaia_pc
+                stars.loc[row, "dist_from_gaia"] = True
 
     d = stars["sy_dist"] * PC_TO_LY
     ra, dec = np.radians(stars["ra"]), np.radians(stars["dec"])

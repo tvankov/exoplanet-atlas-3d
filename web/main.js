@@ -3218,6 +3218,8 @@ searchInput.addEventListener("keydown", (e) => {
 // A named star of the Gaia layer is only a dot in the layer. When we fly to it, it gets a body of its own: a ball with the glow, the corona and the
 // rays, the same size as every host star of the map (the size is not the real one), in the colour of its Gaia entry. It is a system without planets
 // and takes the place of the exoplanet system that is shown (there is only one at a time).
+// Named stars that are also a host of the NASA list under another name. Luyten's star is GJ 273 (src/transform.py puts the host at the Gaia distance).
+const NAMED_HOSTS = { "Luyten's star": "GJ 273" };
 function showNamedStar(s, target) {
   let best = 0;
   let bestDistance = Infinity;
@@ -3260,6 +3262,8 @@ function buildStarMenu() {
     button.addEventListener("click", async () => {
       if (!gaiaOn) gaiaButton.click();
       for (let i = 0; i < 100 && !gaia; i++) await new Promise((r) => setTimeout(r, 100)); // the layer loads first, its colours are needed
+      const host = stars.find((st) => st.hostname === NAMED_HOSTS[s.name]);
+      if (host) return showSystem(host, host.planets[0]); // the star has planets in the list, so its system is shown
       leaveCloseup(); // a close-up that follows a planet would pull the camera back
       updateCloseupButton();
       const target = toMapPosition(s, new THREE.Vector3());
