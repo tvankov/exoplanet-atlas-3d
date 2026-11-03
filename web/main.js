@@ -3921,8 +3921,6 @@ planGo.addEventListener("click", () => {
     d = { x: b.x, y: b.y, z: b.z };
     days = (Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * 365.25) / beta;
   }
-  const switchedBack = realScale && mode === "star";
-  if (switchedBack) setRealScale(false); // the star map is not drawn in the real scale (yet)
   const unit = mode === "solar" ? 1 : 1 / LY_PER_AU; // positions in AU for the trip data, light years become AU here
   trip = {
     jd0, days, o, d, beta, kind: speed.kind, follow: true, arrived: false, mode, from, to, saved,
@@ -3932,10 +3930,14 @@ planGo.addEventListener("click", () => {
   // start system to the edge of the target system (the points 2 and 3 of the film), see edgePoints.
   trip.uStart = 0;
   trip.uEnd = mode === "solar" ? stopFraction() : 1;
-  if (mode === "star") edgePoints();
-  else trip.uStart = startFraction();
-  trip.p2 = tripMap(lerp3(trip.o, trip.d, trip.uStart), new THREE.Vector3());
-  trip.routeMap = tripMap(trip.o, new THREE.Vector3()).distanceTo(tripMap(trip.d, new THREE.Vector3())); // the length of the route on the map
+  trip.real = realScale && mode === "star";
+  if (trip.real) realTripSetup();
+  else {
+    if (mode === "star") edgePoints();
+    else trip.uStart = startFraction();
+    trip.p2 = tripMap(lerp3(trip.o, trip.d, trip.uStart), new THREE.Vector3());
+    trip.routeMap = tripMap(trip.o, new THREE.Vector3()).distanceTo(tripMap(trip.d, new THREE.Vector3())); // the length of the route on the map
+  }
   setNear(0.002);
   const points3 = drawTrip();
   for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
@@ -3952,7 +3954,6 @@ planGo.addEventListener("click", () => {
   updateSpeedText();
   showTripResult();
   planResult.textContent += `\n${t.setSpeed}`;
-  if (switchedBack) planResult.textContent += `\n${t.realOff}`;
   trip.phase = "intro";
   trip.phaseStart = performance.now() / 1000;
   trip.warpTarget = 0;
@@ -4011,7 +4012,7 @@ function homePosition(out) {
   if (trip.mode === "solar") return out.copy(trip.p2); // already 1.5 radii from the planet, see startFraction
   // To and between stars: from the place of the start object (a planet of ours or of a system leaves from its own place), moved
   // 1.5 radii out on the side of the route, so the ship and the camera behind it never sit inside the object.
-  const base = trip.from.kind !== "star" && current?.follow ? current.follow.getWorldPosition(out) : tripMap(trip.o, out);
+  const base = trip.from.kind !== "star" && current?.follow ? current.follow.getWorldPosition(out) : trip.real ? out.set(0, 0, 0) : tripMap(trip.o, out);
   homeDir.copy(trip.p2).sub(base).normalize();
   return out.addScaledVector(homeDir, TRIP_CLEAR * placeRadius(trip.from));
 }
@@ -4053,16 +4054,44 @@ function stopFraction() {
   return 0.5;
 }
 
+// The real scale between stars (the stars are light years apart): the start system is the home of the first part of the film, the target
+// system the home of the last part, and the hyperspace is the cut between them. p2 and p3 are the edges of the two systems in their own
+// frames (the ship leaves the start system towards the target star and arrives at the target system from the side of the start star).
+const ZERO3 = new THREE.Vector3();
+const SOLAR_REAL_EDGE = 600; // map units, a bit beyond Neptune (516)
+const starOfPlace = (place) => (place.kind === "planet" || place.star === SUN_POINT ? null : place.star);
+function realEdge(place) {
+  const star = starOfPlace(place);
+  if (!star) return SOLAR_REAL_EDGE;
+  const au = star.planets.filter((p) => p.pl_orbper || p.pl_orbsmax).map((p) => (p.pl_orbper ? Math.cbrt((star.st_mass ?? 1) * (p.pl_orbper / 365.25) ** 2) : p.pl_orbsmax));
+  return Math.max(1.5 * Math.max(0, ...au) * REAL_K, 40 * (star.st_rad ?? 1) * SUN_RADIUS, 1);
+}
+function realTripSetup() {
+  trip.dirLocal = new THREE.Vector3(trip.d.x - trip.o.x, trip.d.z - trip.o.z, -(trip.d.y - trip.o.y)).normalize(); // scene axes
+  trip.fromStar = starOfPlace(trip.from);
+  trip.toStar = starOfPlace(trip.to);
+  trip.p2 = trip.dirLocal.clone().multiplyScalar(realEdge(trip.from));
+  trip.p3 = trip.dirLocal.clone().multiplyScalar(-realEdge(trip.to));
+  trip.ringStart = trip.dirLocal.clone().multiplyScalar(realEdge(trip.from) * 1.6);
+  trip.frame = "start";
+  trip.routeMap = trip.p2.length() * 2;
+  if (realHome !== trip.fromStar) setHome(trip.fromStar); // the start system is shown first
+}
+const ringPosition = (out) => (trip.real ? out.copy(trip.frame === "start" ? trip.ringStart : ZERO3) : tripMap(trip.d, out));
+
 // Positions of the trip are AU (ecliptic) for a trip between planets and light years (data axes) for the rest.
 const tripMap = (p, out) => (trip.mode === "solar" ? mapEcliptic(p, out) : toMapPosition(p, out));
 const lerp3 = (o, d, u) => ({ x: o.x + (d.x - o.x) * u, y: o.y + (d.y - o.y) * u, z: o.z + (d.z - o.z) * u });
 // The straight line of the trip through the squeezed map (so it is curved) all the way to the ring at the target. The ship
 // stops a little before it (see stopFraction), the line shows the whole route.
 function drawTrip() {
-  const line = Array.from({ length: 161 }, (_, k) => tripMap(lerp3(trip.o, trip.d, k / 160), new THREE.Vector3()));
+  // Real scale between stars: no line along the light years, only a short line from the star to the ring in the direction of the target.
+  const line = trip.real
+    ? [new THREE.Vector3(), trip.ringStart.clone()]
+    : Array.from({ length: 161 }, (_, k) => tripMap(lerp3(trip.o, trip.d, k / 160), new THREE.Vector3()));
   shipLine.geometry.dispose();
   shipLine.geometry = new THREE.BufferGeometry().setFromPoints(line);
-  tripMap(trip.d, shipTarget.position);
+  ringPosition(shipTarget.position);
   return line;
 }
 
@@ -4077,7 +4106,7 @@ const egoOffsetNow = new THREE.Vector3(); // the part of it that is still in eff
 function enterEgo(u) {
   egoOn = true;
   flight = null;
-  tripMap(trip.d, egoAhead).sub(ship.position); // looks at the blue ring of the target
+  ringPosition(egoAhead).sub(ship.position); // looks at the blue ring of the target
   egoAhead.normalize();
   const offset = u < 0.02 ? startOffset(egoAhead, offsetTmp) : offsetTmp.set(0, 0, 0); // only a start in first person gets the offset
   egoOffset.copy(offset);
@@ -4117,7 +4146,7 @@ function startOffset(forward, out) {
   return out.copy(forward).multiplyScalar(-(3 + TRIP_CLEAR) * R).addScaledVector(rightTmp, -1.2 * R).addScaledVector(upTmp, 0.9 * R);
 }
 function tripPose(pose) {
-  tripMap(trip.d, aheadTmp).sub(ship.position).normalize(); // first person looks at the blue ring of the target
+  ringPosition(aheadTmp).sub(ship.position).normalize(); // first person looks at the blue ring of the target
   if (planView.value === "ego") {
     pose.pos.copy(ship.position).add(startOffset(aheadTmp, offsetTmp));
     pose.target.copy(pose.pos).addScaledVector(aheadTmp, controls.minDistance * 1.5);
@@ -4158,7 +4187,7 @@ function stepView(now) {
     camera.position.add(delta);
     // First person always looks at the blue ring of the target. The route is curved on the squeezed map, so the direction along the
     // route is not the direction of the target; the streaks of the hyperspace run out of the ring then (see stepWarp).
-    tripMap(trip.d, aheadTmp).sub(camera.position).normalize();
+    ringPosition(aheadTmp).sub(camera.position).normalize();
     controls.target.copy(camera.position).addScaledVector(aheadTmp, controls.minDistance * 1.5);
     egoLast.copy(ship.position);
     return;
@@ -4232,6 +4261,13 @@ function setPhase(name, now) {
     turnFrom.pos.copy(camera.position);
     turnFrom.target.copy(controls.target);
   }
+  if (name === "exit" && trip.real) {
+    // The cut: out of hyperspace the ship is at the edge of the target system, on the side of the start star, and the target system is the home now.
+    trip.frame = "target";
+    setHome(trip.toStar);
+    shipLine.visible = false;
+    ringPosition(shipTarget.position);
+  }
   if (name === "cruise") {
     trip.jd0 = JD_AT_LOAD + solar.time * 365.25;
     timeScale = trip.watchScale;
@@ -4270,6 +4306,7 @@ function stepTrip(now) {
     const e = Math.min(1, (now - trip.phaseStart) / TRIP_DEPART);
     ship.position.lerpVectors(homePosition(homeTmp), trip.p2, e * e * (3 - 2 * e));
   } else if (trip.phase === "jump") ship.position.copy(trip.p2);
+  else if (trip.real) ship.position.copy(trip.frame === "target" ? trip.p3 : trip.p2); // the cruise is a cut: the ship waits at the edge
   else tripMap(lerp3(trip.o, trip.d, u), ship.position);
   // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
   const size = camera.position.distanceTo(ship.position) * 0.02;

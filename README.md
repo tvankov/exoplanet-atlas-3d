@@ -180,8 +180,11 @@ The button "Real scale: off / on" at the top of the left panel (above the Travel
   a sky: only their directions count, on a sphere around the camera (the other stars are light years away, the picture would have no depth). The
   other star systems are not drawn (yet). The near plane of the camera follows the distance to the nearest surface (a fiftieth of it), because the
   planets are 0.0007 wide next to distances of hundreds of units. The speed in c uses the real scale.
-- **Trips:** between planets they work in both modes (start and end distances are real in the real scale). A trip to or between stars switches back to
-  the explanation mode and says so.
+- **Trips:** between planets they work in both modes (start and end distances are real in the real scale). A trip to or between stars in the real
+  scale is the same film with a cut: the ship leaves the start system towards the target star up to the edge of the system (600 map units for the
+  Solar System, a bit beyond Neptune; for another star 1.5 times its outer orbit, at least 40 star radii), the hyperspace jump is the cut (the ship
+  waits at the edge while the streaks run), and out of hyperspace the target system is the home and the ship is at its edge, on the side of the start
+  star. The real distance in light years is in the panel, the camera does not fly it.
 - **Other stars (stage 2):** in the real scale one system is shown at a time (the "home"): the Solar System or the system of a host star, with the real
   star radius (`st_rad`, a missing one counts as 1 solar radius), the real planet radii (`pl_rade`; a planet without a radius keeps a drawn marker),
   the real orbits (the semi-major axis in AU, circles) and the zone at its real distance. Going to another star (search, the lists, the named stars)
