@@ -4177,11 +4177,11 @@ function tripPose(pose) {
   if (planView.value === "ego") {
     pose.pos.copy(ship.position).add(startOffset(aheadTmp, offsetTmp));
     pose.target.copy(pose.pos).addScaledVector(aheadTmp, controls.minDistance * 1.5);
-  } else if (trip.log) {
+  } else if (trip.mode === "solar") {
     // Behind, above and a bit to the side of the ship, so the start planet is not between the camera and the ship.
     rightTmp.crossVectors(aheadTmp, camera.up).normalize();
     upTmp.crossVectors(rightTmp, aheadTmp);
-    offsetTmp.copy(aheadTmp).multiplyScalar(-0.6).addScaledVector(rightTmp, 0.5).addScaledVector(upTmp, 0.5).normalize().multiplyScalar(logBack());
+    offsetTmp.copy(aheadTmp).multiplyScalar(-0.6).addScaledVector(rightTmp, 0.5).addScaledVector(upTmp, 0.5).normalize().multiplyScalar(followBack());
     pose.pos.copy(ship.position).add(offsetTmp);
     pose.target.copy(ship.position);
   } else {
@@ -4204,6 +4204,15 @@ function logBack() {
   const r = trip.logR ?? trip.log.ca;
   const fromNear = r < D - r;
   return Math.min(0.1 * D, Math.max(0.25 * Math.min(r, D - r), 4 * placeRadius(fromNear ? trip.from : trip.to)));
+}
+// The same for the explanation mode, where a route between two planets is a third of a map unit: a camera 0.35 behind the ship would
+// sit at the start planet at the end. Never more than 0.35, a quarter of the distance to the nearer planet, at least 4 radii of it.
+const backTmp = new THREE.Vector3();
+function followBack() {
+  if (trip.log) return logBack();
+  const dFrom = ship.position.distanceTo(tripMap(trip.o, backTmp));
+  const dTo = ship.position.distanceTo(ringPosition(backTmp));
+  return Math.min(0.35, Math.max(0.25 * Math.min(dFrom, dTo), 4 * placeRadius(dFrom < dTo ? trip.from : trip.to)));
 }
 
 function stepView(now) {
@@ -4251,11 +4260,11 @@ function stepView(now) {
     const delta = shipTmp.copy(ship.position).sub(controls.target);
     camera.position.add(delta);
     controls.target.add(delta);
-    if (trip.log) {
-      // Variant B: the camera keeps its direction (the user may orbit) and its distance follows the ship, see logBack.
+    if (trip.mode === "solar") {
+      // Between planets the camera keeps its direction (the user may orbit) and its distance follows the ship, see followBack.
       // In the exit the camera looks at the planet and comes in to the distance of the close-up, so the close-up that follows is no change.
       let e = 0;
-      let length = logBack();
+      let length = followBack();
       centerTmp.copy(ship.position);
       if (trip.phase === "exit") {
         const mesh = solar.bodies.find((b) => b.name === trip.to.name).mesh;
@@ -4293,16 +4302,20 @@ const rampSpeed = (t) => Math.min(1, t / RAMP, (1 - t) / rampDown()); // 0 to 1,
 // the start and for the arrival of the trip.
 function showArrival() {
   trip.follow = false;
-  if (trip.mode === "star") return; // a trip to another star ends at the edge of its system (point 3), not at the planet
-  showPlace(trip.to, !!trip.log);
+  // A trip to another star ends at the edge of its system (point 3), not at the planet: the system is shown (in the real scale it already is).
+  if (trip.mode === "star") {
+    if (!realScale) showPlace(trip.to, false, true);
+    return;
+  }
+  showPlace(trip.to, true);
 }
-function showPlace(to, keepView = false) {
+function showPlace(to, keepView = false, systemOnly = false) {
   if (to.kind === "planet") {
     const body = solar.bodies.find((b) => b.name === to.name);
     if (body) selectBody(solar, body, keepView);
   } else if (to.kind === "exo") {
     showSystem(to.star, to.planet);
-    enterCloseup(); // on to the planet itself
+    if (!systemOnly) enterCloseup(); // on to the planet itself
   } else if (to.star === SUN_POINT) {
     showSystem(EARTH.star, EARTH.planet);
   } else if (to.star.planets.length) {
