@@ -4027,6 +4027,7 @@ function startFraction() {
   const a = tripMap(trip.o, new THREE.Vector3());
   const p = new THREE.Vector3();
   const clear = TRIP_CLEAR * placeRadius(trip.from);
+  if (realScale) return Math.min(0.5, clear / a.distanceTo(tripMap(trip.d, p))); // exactly, see stopFraction
   for (let k = 0; k <= 2000; k++) {
     if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(a) >= clear) return k / 2000;
   }
@@ -4053,6 +4054,9 @@ function stopFraction() {
   const radius = placeRadius(trip.to);
   const target = tripMap(trip.d, new THREE.Vector3());
   const p = new THREE.Vector3();
+  // The real scale is a straight line, and a planet is tiny against the 2000 steps of the search below (a step is longer than the
+  // stopping distance), so the share is worked out exactly.
+  if (realScale) return Math.max(0.5, 1 - (radius * TRIP_CLEAR) / tripMap(trip.o, p).distanceTo(target));
   for (let k = 2000; k >= 1; k--) {
     if (tripMap(lerp3(trip.o, trip.d, k / 2000), p).distanceTo(target) >= radius * TRIP_CLEAR) return k / 2000;
   }
@@ -4082,7 +4086,20 @@ function realTripSetup() {
   trip.routeMap = trip.p2.length() * 2;
   if (realHome !== trip.fromStar) setHome(trip.fromStar); // the start system is shown first
 }
-const ringPosition = (out) => (trip.real ? out.copy(trip.frame === "start" ? trip.ringStart : ZERO3) : tripMap(trip.d, out));
+// The ring marks where the target is. Between planets the course ends where the planet was meant to be, but the clock goes on at the speed
+// of the user (restored at the arrival), so in the exit the planet has moved on: the ring and the ship follow the planet itself.
+const liveTmp = new THREE.Vector3();
+const liveD = new THREE.Vector3();
+const shiftTmp = new THREE.Vector3();
+function liveShift(out) {
+  const body = solar.bodies.find((b) => b.name === trip.to.name);
+  return out.copy(body.mesh.getWorldPosition(liveTmp)).sub(tripMap(trip.d, liveD));
+}
+const ringPosition = (out) => {
+  if (trip.real) return out.copy(trip.frame === "start" ? trip.ringStart : ZERO3);
+  tripMap(trip.d, out);
+  return trip.mode === "solar" && trip.phase === "exit" ? out.add(liveShift(shiftTmp)) : out;
+};
 
 // Positions of the trip are AU (ecliptic) for a trip between planets and light years (data axes) for the rest.
 const tripMap = (p, out) => (trip.mode === "solar" ? mapEcliptic(p, out) : toMapPosition(p, out));
@@ -4206,6 +4223,16 @@ function stepView(now) {
     const delta = shipTmp.copy(ship.position).sub(controls.target);
     camera.position.add(delta);
     controls.target.add(delta);
+    if (realScale && trip.mode === "solar" && (trip.phase === "cruise" || trip.phase === "exit")) {
+      // In the real scale the planet is tiny against the 0.35 the camera keeps behind the ship, so at the end the planet would be a dot far
+      // away. The camera comes closer with the ship: a quarter of the distance to the target, but never closer than 4 radii of it.
+      const back = Math.min(0.35, Math.max(0.25 * ship.position.distanceTo(ringPosition(aheadTmp)), 4 * placeRadius(trip.to)));
+      offsetTmp.copy(camera.position).sub(ship.position);
+      if (offsetTmp.length() > back) {
+        camera.position.copy(ship.position).addScaledVector(offsetTmp.setLength(back), 1);
+        controls.target.copy(ship.position);
+      }
+    }
   }
 }
 
@@ -4313,6 +4340,10 @@ function stepTrip(now) {
   } else if (trip.phase === "jump") ship.position.copy(trip.p2);
   else if (trip.real) ship.position.copy(trip.frame === "target" ? trip.p3 : trip.p2); // the cruise is a cut: the ship waits at the edge
   else tripMap(lerp3(trip.o, trip.d, u), ship.position);
+  if (trip.mode === "solar" && trip.phase === "exit") {
+    ship.position.add(liveShift(shiftTmp)); // stays the same distance from the planet while it moves
+    ringPosition(shipTarget.position);
+  }
   // The glow keeps a fixed size on the screen, whatever the zoom: the ship is tiny against the map.
   const size = camera.position.distanceTo(ship.position) * 0.02;
   shipGlow.children.forEach((layer, i) => (layer.material.uniforms.uSize.value = size * (i === 0 ? 1 : 2.4)));
