@@ -120,6 +120,9 @@ The maths and all texts of this part are in `web/travel.js`, the drawing is in `
   first flies out of the system (3 s), (3) the edge of the target system, where it comes out of hyperspace, and (4) the planet, to which the
   camera flies at the end. The hyperspace runs from point 2 to point 3 only. An edge lies a bit beyond the outer orbit as drawn (1.5 times it, between 0.3 and 1.8 map units; the Solar System is 1.8 because Neptune is at 1.64, Proxima Cen is 0.3), on a short route at most a third of it. A planet of ours leaves from its own place, not from the Sun. Between planets of one system
   there are no edges: the ship stops in front of the target planet as before.
+- **Moving streaks and the speed in the panel:** the blur alone is made from stars that stand still, so it did not move and it did not look like we fly past
+  anything. In the hyperspace (first person) a field of 700 short lines now flies out of the point we look at and past the camera, with the blur on top.
+  It is an effect, not data. The result box of a trip now also says the speed that was chosen ("Speed: 100 c (FICTIONAL)"), next to the travel time.
 - **Streaks run out of the target:** in first person the camera always looks at the blue ring of the target (the route is curved on the squeezed map, so the direction along the route is not the direction of the target), and the streaks of the hyperspace radiate from the point the camera looks at. The side panels shift the picture, so that point is worked out on the screen and is not the middle of the window.
 - **No collisions at the start and at the end:** (1) The ship starts 1.575 radii (1.5 plus 5 %) from the middle of the start object, not in its middle (between planets of
   one system the line starts there, to and between stars the ship leaves from there). (2) In first person the camera starts 4.575 radii behind the

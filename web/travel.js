@@ -140,10 +140,10 @@ export const TRAVEL_UI = {
     unknown: "Unknown place. Type a planet, the Sun or a star name from the list.",
     useMeasure: "Plan a trip between them",
     resultStars: (d) =>
-      `${d.from} to ${d.to}\nDistance: ${d.ly} light years (${d.pc} parsecs)\nTravel time: ${d.time}\nOn board: ${d.board}`,
+      `${d.from} to ${d.to}\nDistance: ${d.ly} light years (${d.pc} parsecs)\nSpeed: ${d.speed}\nTravel time: ${d.time}\nOn board: ${d.board}`,
     sun: "Sun",
     result: (d) =>
-      `${d.from} to ${d.to}\nDistance: ${d.au} AU (${d.light} of light travel)\nTravel time: ${d.time}\nOn board: ${d.board}`,
+      `${d.from} to ${d.to}\nDistance: ${d.au} AU (${d.light} of light travel)\nSpeed: ${d.speed}\nTravel time: ${d.time}\nOn board: ${d.board}`,
     boardLight: "none, light does not age (and a ship with mass cannot go this fast)",
     boardFiction: "not defined, this speed is fictional",
     gamma: (g) => `(time dilation, factor ${g})`,
@@ -220,10 +220,10 @@ export const TRAVEL_UI = {
     unknown: "Unbekannter Ort. Tippe einen Planeten, die Sonne oder einen Sternnamen aus der Liste.",
     useMeasure: "Reise zwischen ihnen planen",
     resultStars: (d) =>
-      `${d.from} nach ${d.to}\nEntfernung: ${d.ly} Lichtjahre (${d.pc} Parsec)\nReisezeit: ${d.time}\nAn Bord: ${d.board}`,
+      `${d.from} nach ${d.to}\nEntfernung: ${d.ly} Lichtjahre (${d.pc} Parsec)\nTempo: ${d.speed}\nReisezeit: ${d.time}\nAn Bord: ${d.board}`,
     sun: "Sonne",
     result: (d) =>
-      `${d.from} nach ${d.to}\nEntfernung: ${d.au} AE (${d.light} Lichtlaufzeit)\nReisezeit: ${d.time}\nAn Bord: ${d.board}`,
+      `${d.from} nach ${d.to}\nEntfernung: ${d.au} AE (${d.light} Lichtlaufzeit)\nTempo: ${d.speed}\nReisezeit: ${d.time}\nAn Bord: ${d.board}`,
     boardLight: "keine, Licht altert nicht (und ein Schiff mit Masse kann nicht so schnell sein)",
     boardFiction: "nicht definiert, dieses Tempo ist fiktiv",
     gamma: (g) => `(Zeitdehnung, Faktor ${g})`,

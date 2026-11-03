@@ -3778,7 +3778,7 @@ function showTripResult() {
   } else {
     board = trip.beta === 1 ? t.boardLight : t.boardFiction;
   }
-  const names = { from: placeLabel(trip.from), to: placeLabel(trip.to), time: duration(seconds, lang), board };
+  const names = { from: placeLabel(trip.from), to: placeLabel(trip.to), time: duration(seconds, lang), board, speed: t.speedLabel[trip.speedId] };
   if (trip.mode === "star") {
     const ly = trip.distanceAu * LY_PER_AU;
     planResult.textContent = t.resultStars({ ...names, ly: fmt(ly, 2), pc: fmt(ly / 3.2616, 2) });
@@ -3923,7 +3923,7 @@ planGo.addEventListener("click", () => {
   }
   const unit = mode === "solar" ? 1 : 1 / LY_PER_AU; // positions in AU for the trip data, light years become AU here
   trip = {
-    jd0, days, o, d, beta, kind: speed.kind, follow: true, arrived: false, mode, from, to, saved,
+    jd0, days, o, d, beta, kind: speed.kind, speedId: speed.id, follow: true, arrived: false, mode, from, to, saved,
     distanceAu: Math.hypot(d.x - o.x, d.y - o.y, d.z - o.z) * unit,
   };
   // Between planets of one system the ship stops in front of the target planet. Otherwise the hyperspace runs from the edge of the
@@ -4338,6 +4338,7 @@ function stepWarp(dt) {
   warp += (target - warp) * Math.min(1, dt * 3);
   warpPass.enabled = warp > 0.01;
   warpPass.uniforms.uStrength.value = warp;
+  stepWarpField(dt);
   if (warpPass.enabled) {
     // The streaks run out of the point we fly towards. The panels shift the picture (layoutView), so that point is not the middle of
     // the screen: it is where a point far ahead along the view direction lands on the screen.
@@ -4347,6 +4348,55 @@ function stepWarp(dt) {
   }
 }
 const warpAhead = new THREE.Vector3();
+
+// The streaks of the blur are made from stars that stand still, so they do not move, and it does not look like we fly past anything. In the
+// hyperspace, streaks therefore fly towards us and past us from the point we look at, like stars would: a field of short lines in the space of
+// the camera. Each line has an angle and a share of the screen radius, and moves in depth; the closer it gets, the further out it is on the screen.
+const WARP_COUNT = 700;
+const WARP_FAR = 40;
+const WARP_NEAR = 0.05;
+const warpAngle = new Float32Array(WARP_COUNT);
+const warpRho = new Float32Array(WARP_COUNT);
+const warpZ = new Float32Array(WARP_COUNT);
+for (let i = 0; i < WARP_COUNT; i++) {
+  warpAngle[i] = Math.random() * Math.PI * 2;
+  warpRho[i] = 0.15 + Math.random() * 1.1;
+  warpZ[i] = -(WARP_NEAR + Math.random() * (WARP_FAR - WARP_NEAR));
+}
+const warpField = new THREE.LineSegments(
+  new THREE.BufferGeometry().setAttribute("position", new THREE.BufferAttribute(new Float32Array(WARP_COUNT * 6), 3)),
+  new THREE.LineBasicMaterial({ color: 0xdbe8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false })
+);
+warpField.frustumCulled = false;
+warpField.renderOrder = 20;
+warpField.visible = false;
+scene.add(camera); // the field is a child of the camera
+camera.add(warpField);
+function stepWarpField(dt) {
+  warpField.visible = warp > 0.03;
+  if (!warpField.visible) return;
+  warpField.material.opacity = Math.min(0.85, warp);
+  const aspect = camera.aspect;
+  const half = Math.tan((camera.fov * Math.PI) / 360);
+  const speed = 30 + 40 * warp; // units per second, the field moves past the camera
+  const length = 2 + 8 * warp; // the tail of a line is this far behind its head
+  const position = warpField.geometry.getAttribute("position");
+  for (let i = 0; i < WARP_COUNT; i++) {
+    warpZ[i] += speed * dt;
+    if (warpZ[i] > -WARP_NEAR) {
+      warpZ[i] = -WARP_FAR;
+      warpAngle[i] = Math.random() * Math.PI * 2;
+      warpRho[i] = 0.15 + Math.random() * 1.1;
+    }
+    const cx = Math.cos(warpAngle[i]) * warpRho[i];
+    const cy = Math.sin(warpAngle[i]) * warpRho[i];
+    const zHead = warpZ[i];
+    const zTail = Math.max(zHead - length, -WARP_FAR * 1.5);
+    position.setXYZ(2 * i, cx * half * aspect * -zHead, cy * half * -zHead, zHead);
+    position.setXYZ(2 * i + 1, cx * half * aspect * -zTail, cy * half * -zTail, zTail);
+  }
+  position.needsUpdate = true;
+}
 
 // How many map units a light year is at the camera. The map is squeezed, so this changes with the place: in
 // the Solar System part (closer than 9 units to the Sun) it is derived from the AU squeeze (r drawn as
