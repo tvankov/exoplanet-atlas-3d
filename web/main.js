@@ -3921,18 +3921,20 @@ const fmt = (value, digits = 2) => value.toLocaleString(lang, { maximumFractionD
 
 // One figure of the trip: the word on top, the number below, and a second line where there is a second way of
 // saying the same thing (parsecs, light travel time).
-function kpiCell(label, value, sub, fiction = false) {
+function kpiCell(label, value, sub, warn = false) {
   const cell = document.createElement("div");
   const title = document.createElement("span");
   title.className = "kpi-label";
   title.textContent = label;
   const number = document.createElement("span");
-  number.className = fiction ? "kpi-value plan-fiction" : "kpi-value";
+  number.className = "kpi-value";
   number.textContent = value;
   cell.append(title, number);
   if (sub) {
     const under = document.createElement("span");
-    under.className = "kpi-sub";
+    // A warning (the speed is invented) sits in the small line and in the colour the planner uses for it. The
+    // number itself stays a plain number: "1,000 c (FICTIONAL)" in one line reads like a unit of measurement.
+    under.className = warn ? "kpi-sub plan-fiction" : "kpi-sub";
     under.textContent = sub;
     cell.append(under);
   }
@@ -3957,9 +3959,10 @@ function showTripResult() {
     sub = t.lightTravel(duration(trip.distanceAu * LIGHT_SECONDS_PER_AU, lang));
   }
   const fiction = trip.kind === "fiction" || trip.kind === "limit";
+  const speedName = t.speedLabel[trip.speedId].replace(t.fictionTag, "").trim();
   const cells = [
     kpiCell(t.distance, value, sub),
-    kpiCell(t.speed, t.speedLabel[trip.speedId], "", fiction),
+    kpiCell(t.speed, speedName, fiction ? t.fictionTag : "", fiction),
     kpiCell(t.travelTime, duration(seconds, lang), ""),
   ];
   // Below the speed of light the clock on board runs slower, and that is worth a figure of its own. At it and
