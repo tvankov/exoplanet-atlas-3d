@@ -12,7 +12,7 @@ export const UI = {
     // Everything the atlas holds in one number: the host stars, the Gaia stars and the planets. It says what is
     // counted and claims nothing else, so there is nothing in the line to argue with.
     count: (objects) => `${objects} stars and planets`,
-    candidates: (n) => `Habitable candidates (${n} + Earth)`,
+    candidates: (n) => `Habitable candidates (${n})`,
     earth: "Earth (reference)",
     solarTitle: "Solar System",
     starsTitle: "Named stars",
@@ -85,7 +85,7 @@ export const UI = {
     scaleLinear: "Echter Maßstab: an",
     loading: "Sterne werden geladen...",
     count: (objects) => `${objects} Sterne und Planeten`,
-    candidates: (n) => `Bewohnbare Kandidaten (${n} + Erde)`,
+    candidates: (n) => `Bewohnbare Kandidaten (${n})`,
     earth: "Erde (Referenz)",
     solarTitle: "Sonnensystem",
     starsTitle: "Benannte Sterne",

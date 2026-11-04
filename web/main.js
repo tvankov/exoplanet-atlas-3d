@@ -2986,9 +2986,9 @@ function buildHabitableMenu() {
     for (const p of star.planets) if (p.habitable) items.push({ star, planet: p });
   }
   items.sort((a, b) => a.star.dist_ly - b.star.dist_ly);
-  items.unshift(EARTH);
-
-  document.getElementById("habitable-title").textContent = UI[lang].candidates(items.length - 1);
+  // Earth used to head this list as a yardstick. It is not a candidate, and the Solar System has its own menu
+  // right above, so the list now holds only what the catalogue calls a candidate.
+  document.getElementById("habitable-title").textContent = UI[lang].candidates(items.length);
   const list = document.getElementById("habitable");
   list.replaceChildren();
   for (const { star, planet } of items) {
