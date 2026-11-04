@@ -6,7 +6,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import {
-  C_AU_PER_DAY, C_KMS, FLY_STEPS, LY_PER_AU, SECONDS_PER_YEAR as YEAR_SECONDS, SPECTRAL, SPEEDS, TRAVEL_UI,
+  C_AU_PER_DAY, C_KMS, LY_PER_AU, SPECTRAL, SPEEDS, TRAVEL_UI,
   boardSeconds, lorentz, solveIntercept, spectralClass,
 } from "./travel.js";
 import { buildStory, duration, planetType, PLANET_TYPES, slug, solarName, UI } from "./story.js";
@@ -3689,7 +3689,6 @@ window.addEventListener("keyup", (e) => keys.delete(e.code));
 window.addEventListener("blur", () => keys.clear());
 
 function stepKeys(dt) {
-  flyWarpTarget = 0;
   if (keys.size === 0) return;
   if (flight) flight = null;
   if (trip) trip.follow = false; // the keys take over from the ship
@@ -3725,12 +3724,10 @@ function stepKeys(dt) {
   if (keys.has("KeyE")) keyMove.add(camera.up);
   if (keys.has("KeyQ")) keyMove.sub(camera.up);
   if (keyMove.lengthSq() > 0) {
-    // "Auto" follows the distance to the target. A step in c is a real speed (1 c = one light second per second),
-    // turned into map units where the camera is, see mapPerLightYear.
-    const flyC = currentFlyC();
-    const base = flyC === null ? Math.max(distance * 0.4, 0.02) : (flyC / YEAR_SECONDS) * mapPerLightYear();
-    const speed = base * (shiftHeld ? 4 : 1);
-    flyWarpTarget = flyC === null ? 0 : Math.min(1, Math.max(0, (Math.log10(flyC) - 2) / 8));
+    // The speed follows the distance to whatever we are looking at: slow next to a planet, fast on the overview.
+    // Shift is four times that. A second control for a fixed speed in c sat in the planner and only doubled the
+    // one above it, so it is gone.
+    const speed = Math.max(distance * 0.4, 0.02) * (shiftHeld ? 4 : 1);
     keyMove.normalize().multiplyScalar(speed * dt);
     camera.position.add(keyMove);
     controls.target.add(keyMove);
@@ -3783,6 +3780,28 @@ zoneButton.addEventListener("click", () => {
 });
 const planResult = document.getElementById("plan-result"); // the running line: phase, progress, messages
 const tripTitle = document.getElementById("trip-title");
+// The line over the picture that says what the ship is doing. It is its own element, not part of the box, and it
+// disappears a few seconds after the landing. The switch in the settings turns it off for good.
+const caption = document.getElementById("flight-caption");
+const CAPTION_STAY = 6; // seconds the last line stays after the arrival
+let captionsOn = true;
+let captionTimer = 0;
+function showCaption(text, fadeAfter = 0) {
+  clearTimeout(captionTimer);
+  if (!captionsOn || !text) return hideCaption();
+  caption.textContent = text;
+  caption.hidden = false;
+  caption.classList.remove("away");
+  // Above the box with the figures, whatever height that box happens to have.
+  caption.style.bottom = `${(tripHud.hidden ? 20 : tripHud.offsetHeight + 32)}px`;
+  if (fadeAfter) captionTimer = setTimeout(() => caption.classList.add("away"), fadeAfter * 1000);
+}
+function hideCaption() {
+  clearTimeout(captionTimer);
+  caption.hidden = true;
+  caption.classList.remove("away");
+  caption.textContent = "";
+}
 const tripKpis = document.getElementById("trip-kpis");
 const tripBoard = document.getElementById("trip-board");
 // A message without a trip (an unknown place, two times the same one): the box only holds that one line.
@@ -3795,8 +3814,6 @@ function showTripMessage(text) {
 }
 const planView = document.getElementById("plan-view");
 planView.value = "ego"; // first person is the default
-const flySpeedSelect = document.getElementById("fly-speed");
-const flyNote = document.getElementById("fly-note");
 const LIGHT_SECONDS_PER_AU = LIGHT_MINUTES_PER_AU * 60;
 const PLAN_COLOR = 0x7fe3ff;
 
@@ -3824,17 +3841,12 @@ function fillSelect(select, entries, fallback) {
   if (entries.some(([value]) => value === keep)) select.value = keep;
 }
 
-function currentFlyC() {
-  return FLY_STEPS.find((f) => f.id === flySpeedSelect.value)?.c ?? null;
-}
-
 function buildPlanner() {
   const t = TRAVEL_UI[lang];
   document.getElementById("planner-title").textContent = t.title;
   document.getElementById("plan-from-label").textContent = t.from;
   document.getElementById("plan-to-label").textContent = t.to;
   document.getElementById("plan-speed-label").textContent = t.speed;
-  document.getElementById("fly-label").textContent = t.flyTitle;
   document.getElementById("plan-view-label").textContent = t.view;
   planView.options[0].textContent = t.viewThird;
   planView.options[1].textContent = t.viewEgo;
@@ -3862,14 +3874,10 @@ function buildPlanner() {
   document.getElementById("pick-cancel").textContent = t.cancel;
   document.getElementById("settings-title").textContent = t.settings;
   showZoneState();
+  showCaptionState();
   applyStoryVisibility();
   fillPlaces();
   fillSelect(planSpeed, SPEEDS.map((v) => [v.id, t.speedLabel[v.id]]), "parker");
-  fillSelect(
-    flySpeedSelect,
-    FLY_STEPS.map((f) => [f.id, f.c === null ? t.flyAuto : t.flyStep(f.c.toLocaleString(lang)) + (f.c > 1 ? ` ${t.fictionTag}` : "")]),
-    "auto"
-  );
   showPlanKind();
   spectralModeSelect.options[0].textContent = t.spectralMode.off;
   spectralModeSelect.options[1].textContent = t.spectralMode.highlight;
@@ -3885,12 +3893,30 @@ function showPlanKind() {
   const speed = SPEEDS.find((v) => v.id === planSpeed.value);
   planKind.textContent = TRAVEL_UI[lang].kind[speed.kind];
   planKind.classList.toggle("plan-fiction", speed.kind === "fiction" || speed.kind === "limit");
-  const flyC = currentFlyC();
-  flyNote.textContent = flyC === null ? "" : (flyC > 1 ? TRAVEL_UI[lang].flyFiction + " " : "") + TRAVEL_UI[lang].flyNote;
-  flyNote.classList.toggle("plan-fiction", flyC > 1);
 }
 planSpeed.addEventListener("change", showPlanKind);
-flySpeedSelect.addEventListener("change", showPlanKind);
+
+const captionButton = document.getElementById("caption-toggle");
+function showCaptionState() {
+  const t = TRAVEL_UI[lang];
+  captionButton.textContent = captionsOn ? t.captionsOn : t.captionsOff;
+  captionButton.setAttribute("aria-pressed", String(captionsOn));
+}
+try {
+  captionsOn = localStorage.getItem("captions") !== "off";
+} catch {
+  // no memory of the choice, the captions stay on
+}
+captionButton.addEventListener("click", () => {
+  captionsOn = !captionsOn;
+  try {
+    localStorage.setItem("captions", captionsOn ? "on" : "off");
+  } catch {
+    // not remembered, still works for this visit
+  }
+  if (!captionsOn) hideCaption();
+  showCaptionState();
+});
 
 const fmt = (value, digits = 2) => value.toLocaleString(lang, { maximumFractionDigits: digits });
 
@@ -4028,6 +4054,7 @@ function clearTrip() {
   planRoute.textContent = routeLabel();
   tripHud.hidden = true;
   planResult.textContent = "";
+  hideCaption();
   tripTitle.textContent = "";
   tripKpis.replaceChildren();
   tripBoard.textContent = "";
@@ -4632,7 +4659,7 @@ function stepTrip(now) {
     leaveEgo();
     setQuiet(false);
     showTripResult();
-    planResult.textContent = TRAVEL_UI[lang].arrived;
+    showCaption(TRAVEL_UI[lang].arrived, CAPTION_STAY);
     showArrival(); // out of hyperspace at the target system: now on to the planet if one was chosen
   }
   const jd = JD_AT_LOAD + solar.time * 365.25;
@@ -4687,17 +4714,17 @@ function stepTrip(now) {
   tripShownAt = now;
   const seconds = t * trip.days * 86400;
   const board = trip.beta < 1 ? duration(boardSeconds(seconds, trip.beta), lang) : "-";
-  planResult.textContent =
+  showCaption(
     trip.phase === "cruise"
       ? TRAVEL_UI[lang].live({ percent: fmt(trip.share * 100, 0), time: duration(seconds, lang), board })
-      : TRAVEL_UI[lang].phase[trip.phase];
+      : TRAVEL_UI[lang].phase[trip.phase]
+  );
 }
 
 // The streaks of the stars grow with the speed: the ship of the planner, or the free flight with a step in c.
 let warp = 0;
-let flyWarpTarget = 0;
 function stepWarp(dt) {
-  let target = flyWarpTarget;
+  let target = 0;
   // The hyperspace streaks are only seen from inside the ship (first person); from outside there is no motion blur.
   if (trip && planView.value === "ego") target = Math.max(target, trip.warpTarget ?? 0);
   warp += (target - warp) * Math.min(1, dt * 3);
@@ -4763,18 +4790,6 @@ function stepWarpField(dt) {
   position.needsUpdate = true;
 }
 
-// How many map units a light year is at the camera. The map is squeezed, so this changes with the place: in
-// the Solar System part (closer than 9 units to the Sun) it is derived from the AU squeeze (r drawn as
-// 0.3 * sqrt(r)), further out from the star squeeze (a distance drawn as its square root, or divided by 10).
-function mapPerLightYear() {
-  if (realScale) return REAL_K / LY_PER_AU; // map units per AU, and a light year is 1 / LY_PER_AU AU
-  const r = camera.position.length();
-  if (r < 9) {
-    const au = Math.max((r / 0.3) ** 2, 0.05);
-    return 0.15 / Math.sqrt(au) / LY_PER_AU;
-  }
-  return compressed ? 1 / (2 * r) : 0.1;
-}
 
 // ---------------------------------------------------------------------------------------------------------
 // Pick the start or the target of a trip on the map: the button next to a field closes the planner and waits for one click, on a

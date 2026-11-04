@@ -529,6 +529,31 @@ html, body {
 #planner-panel #plan-go {
   margin-top: 10px;
 }
+/* The caption of the flight: one line over the picture, above the box with the figures. It fades in and out,
+   so the arrival is not followed by a line that stands there for ever. */
+#flight-caption {
+  position: fixed;
+  left: 50%;
+  bottom: 190px; /* set again from the real height of the box, see showCaption */
+  transform: translateX(-50%);
+  z-index: 9;
+  margin: 0;
+  max-width: min(640px, calc(100vw - 32px));
+  text-align: center;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.8s ease;
+}
+#flight-caption[hidden] {
+  display: none;
+}
+#flight-caption.away {
+  opacity: 0;
+}
+
 /* While the ship flies the planner is closed, a small box at the bottom shows the trip. */
 #trip-hud {
   position: fixed;

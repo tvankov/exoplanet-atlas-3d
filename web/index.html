@@ -114,6 +114,7 @@
         <option value="de">Deutsch</option>
       </select>
       <button id="zone-toggle" type="button" aria-pressed="true">Candidate zone: on</button>
+      <button id="caption-toggle" type="button" aria-pressed="true">Flight captions: on</button>
       <select id="look">
         <option value="schematic">Schematic</option>
         <option value="artistic" selected>Artistic</option>
@@ -145,14 +146,15 @@
           <summary id="plan-note-title">How the trip is worked out</summary>
           <div id="plan-note"></div>
         </details>
-        <label><span id="fly-label">Flight speed (keys)</span> <select id="fly-speed"></select></label>
-        <p id="fly-note" class="hint"></p>
     </div>
   </section>
   <div id="pick-hint" hidden>
     <p id="pick-hint-text"></p>
     <button id="pick-cancel" type="button">Cancel</button>
   </div>
+  <!-- What the ship is doing, written over the picture like a subtitle. It goes away by itself after the
+       landing and can be switched off in the settings. -->
+  <p id="flight-caption" hidden></p>
   <div id="trip-hud" hidden>
     <h3 id="trip-title"></h3>
     <!-- The three figures of the trip, filled by showTripResult: a word on top, the number below. -->

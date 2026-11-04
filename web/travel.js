@@ -23,17 +23,6 @@ export const SPEEDS = [
   { id: "c100000", kms: 100000 * C_KMS, kind: "fiction" },
 ];
 
-// Free flight with the keys. Every step is a multiple of c, where 1 c is one light second per second. "auto"
-// keeps the old behaviour (slow when close to something, fast on the overview).
-export const FLY_STEPS = [
-  { id: "auto", c: null },
-  { id: "f1", c: 1 },
-  { id: "f3", c: 1e3 },
-  { id: "f5", c: 1e5 },
-  { id: "f7", c: 1e7 },
-  { id: "f9", c: 1e9 },
-  { id: "f11", c: 1e11 },
-];
 
 // Lorentz factor for a speed given as a fraction of c, below c only.
 export const lorentz = (beta) => 1 / Math.sqrt(1 - beta * beta);
@@ -99,7 +88,7 @@ export const TRAVEL_UI = {
     routeHide: "Hide the route",
     routeNote:
       "The course is on the map, nothing flies. Fly it yourself: W and S forward and back, A and D sideways, "
-      + "Q and E down and up, the arrow keys turn. The speed for the keys is set below.",
+      + "Q and E down and up, the arrow keys turn. The speed follows the distance, Shift is faster.",
     stop: "Stop",
     speedLabel: {
       voyager: "Voyager 1 (17 km/s)",
@@ -150,6 +139,8 @@ export const TRAVEL_UI = {
     zoneOn: "Candidate zone: on",
     zoneOff: "Candidate zone: off",
     close: "Close",
+    captionsOn: "Flight captions: on",
+    captionsOff: "Flight captions: off",
     unknown: "Unknown place. Type a planet, the Sun or a star name from the list.",
     useMeasure: "Plan a trip between them",
     sun: "Sun",
@@ -171,11 +162,6 @@ export const TRAVEL_UI = {
     filmTime: "The journey runs for about 20 seconds. The clock of the planets keeps the speed you set: the course between two stars does not depend on where a planet stands. The ship speeds up and slows down softly, and at the end the target is shown.",
     setSpeed: "Time speed was set so that the trip takes about 20 seconds. Change it with the time slider; at the end it returns to your setting. The ship speeds up and slows down softly (the first and last tenth of the time), and at the end the target is shown.",
     fictionTag: "(FICTIONAL)",
-    flyTitle: "Flight speed (keys)",
-    flyAuto: "Auto (follows the distance)",
-    flyStep: (c) => `${c} c`,
-    flyFiction: "FICTIONAL: faster than light is impossible as far as we know today.",
-    flyNote: "The speed is true to the real distance near the camera. The map is compressed, so on the screen the same speed looks different in different places.",
     spectralMode: { off: "Spectral class: off", highlight: "Spectral class: highlight", isolate: "Spectral class: isolate" },
     spectralNote: (cls, lo, hi, hosts, planets, unknown) =>
       `Class ${cls} (${lo}). ${hosts} host stars with ${planets} planets. Class from the star temperature; ${unknown} stars have none and count as no class.`,
@@ -197,7 +183,7 @@ export const TRAVEL_UI = {
     routeHide: "Route ausblenden",
     routeNote:
       "Die Route liegt auf der Karte, es fliegt nichts. Flieg sie selbst: W und S vor und zurück, A und D zur "
-      + "Seite, Q und E runter und hoch, die Pfeiltasten drehen. Das Tempo der Tasten stellst du unten ein.",
+      + "Seite, Q und E runter und hoch, die Pfeiltasten drehen. Das Tempo richtet sich nach dem Abstand, Shift ist schneller.",
     stop: "Stopp",
     speedLabel: {
       voyager: "Voyager 1 (17 km/s)",
@@ -246,6 +232,8 @@ export const TRAVEL_UI = {
     zoneOn: "Kandidatenzone: an",
     zoneOff: "Kandidatenzone: aus",
     close: "Schließen",
+    captionsOn: "Flugtexte: an",
+    captionsOff: "Flugtexte: aus",
     unknown: "Unbekannter Ort. Tippe einen Planeten, die Sonne oder einen Sternnamen aus der Liste.",
     useMeasure: "Reise zwischen ihnen planen",
     sun: "Sonne",
@@ -267,11 +255,6 @@ export const TRAVEL_UI = {
     filmTime: "Die Reise läuft etwa 20 Sekunden. Die Uhr der Planeten behält dein Tempo: der Kurs zwischen zwei Sternen hängt nicht davon ab, wo ein Planet gerade steht. Das Schiff beschleunigt und bremst sanft, am Ende siehst du das Ziel.",
     setSpeed: "Die Zeitgeschwindigkeit wurde so gesetzt, dass die Reise etwa 20 Sekunden dauert. Mit dem Zeitregler änderst du sie, am Ende kehrt sie zu deiner Einstellung zurück. Das Schiff beschleunigt und bremst sanft (im ersten und letzten Zehntel der Zeit), am Ende siehst du das Ziel.",
     fictionTag: "(FIKTIV)",
-    flyTitle: "Flugtempo (Tasten)",
-    flyAuto: "Auto (folgt dem Abstand)",
-    flyStep: (c) => `${c} c`,
-    flyFiction: "FIKTIV: Schneller als das Licht ist nach heutigem Wissen unmöglich.",
-    flyNote: "Das Tempo stimmt mit der echten Entfernung nahe der Kamera. Die Karte ist gestaucht, deshalb sieht dasselbe Tempo auf dem Bildschirm an verschiedenen Orten anders aus.",
     spectralMode: { off: "Spektralklasse: aus", highlight: "Spektralklasse: hervorheben", isolate: "Spektralklasse: isolieren" },
     spectralNote: (cls, lo, hi, hosts, planets, unknown) =>
       `Klasse ${cls} (${lo}). ${hosts} Wirtssterne mit ${planets} Planeten. Die Klasse kommt aus der Sterntemperatur; ${unknown} Sterne haben keine und zählen als ohne Klasse.`,
