@@ -241,8 +241,8 @@ function updatePositions() {
   attr.needsUpdate = true;
   if (measureA) drawMeasure();
   if (trip) drawTrip();
-  if (gaia) placeGaia();
-  if (deep) placeDeep();
+  syncSkyMode();
+  if (gaia) placeGaiaLabels();
 }
 
 // Gaia layer: the stars closer than 326 light years from ESA Gaia DR3, made by src/build_gaia.py, without
@@ -257,18 +257,37 @@ const gaiaMaterial = new THREE.ShaderMaterial({
     uCamera: { value: new THREE.Vector3() }, // where the camera is, in real light years, updated every frame
     uMagRef: { value: 6 }, // the apparent magnitude that shows at about 60 % brightness, see updateGaiaCamera
     uGain: { value: 0.85 }, // how bright a fully lit star is drawn
+    // The byte of the file stands for this range of absolute magnitudes (the two layers use different ones).
+    uMagRange: { value: new THREE.Vector2(0, 1) },
+    uWhiten: { value: 0 }, // how far the colour is pulled towards white
+    uTint: { value: 1 }, // overall factor on the colour
+    // Where a star is drawn: 0 the squeezed map, 1 the plain tenth, 2 a sky around the home star of the real
+    // scale. This used to be worked out for every star on the processor and kept as a second list of positions.
+    uMode: { value: 0 },
+    uHome: { value: new THREE.Vector3() },
+    uSky: { value: 1 },
   },
   vertexShader: `
     uniform vec3 uCamera;
     uniform float uMagRef;
     uniform float uGain;
-    attribute vec3 truePos;   // the real position in light years
-    attribute float absmag;   // absolute magnitude: how bright the star really is
-    attribute vec3 color;
+    uniform vec2 uMagRange;
+    uniform float uWhiten;
+    uniform float uTint;
+    uniform float uMode;
+    uniform vec3 uHome;
+    uniform float uSky;
+    // The file as it is: "position" holds the real place in light years, the four bytes hold the colour and the
+    // absolute magnitude. Nothing is unpacked on the processor any more, which is what keeps the memory small.
+    attribute vec4 packed;
     varying vec3 vColor;
     varying float vSpike;
     varying float vRatio;
     void main() {
+      vec3 truePos = position;
+      float absmag = uMagRange.x + packed.w * (uMagRange.y - uMagRange.x);
+      float peak = max(max(packed.r, packed.g), packed.b);
+      vec3 color = mix(packed.rgb, vec3(peak), uWhiten) * uTint;
       // Real brightness: the apparent magnitude m = M + 5 log10(d / 10 pc) shows how bright the star looks
       // from the camera. The light drops with the square of the distance, so stars fade when we fly away
       // and the truly bright ones (Sirius, Alpha Centauri) stand out from the many faint red dwarfs.
@@ -285,7 +304,18 @@ const gaiaMaterial = new THREE.ShaderMaterial({
       float sprite = mix(body, max(body, 40.0), vSpike);
       vRatio = body / sprite;
       gl_PointSize = sprite;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      vec3 drawn;
+      if (uMode > 1.5) {
+        // Real scale: the stars are a sky around the home star, directions only.
+        vec3 d = truePos - uHome;
+        d *= uSky / max(length(d), 1e-6);
+        drawn = vec3(d.x, d.z, -d.y);
+      } else {
+        float r = length(truePos);
+        float k = uMode < 0.5 ? (r > 0.0 ? sqrt(r) / r : 0.0) : 0.1;
+        drawn = vec3(truePos.x * k, truePos.z * k, -truePos.y * k); // the data has z as north, three.js has y up
+      }
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(drawn, 1.0);
     }`,
   fragmentShader: `
     varying vec3 vColor;
@@ -306,6 +336,10 @@ const gaiaMaterial = new THREE.ShaderMaterial({
 const GAIA_MAG_BASE = 8.5;
 const GAIA_MAG_MIN = -2; // absolute magnitudes stored in one byte, same range as MAG_MIN and MAG_MAX in src/build_gaia.py
 const GAIA_MAG_MAX = 18;
+gaiaMaterial.uniforms.uMagRange.value.set(GAIA_MAG_MIN, GAIA_MAG_MAX);
+gaiaMaterial.uniforms.uWhiten.value = BACKGROUND_WHITENING;
+gaiaMaterial.uniforms.uTint.value = 0.9; // the near layer is a touch quieter than the deep one
+gaiaMaterial.uniforms.uSky.value = SKY_RADIUS;
 let gaia = null; // { points, xyz } once the file has been read
 
 // The camera in real light years, so the shader can work out how far each star is. The map is squeezed
@@ -341,26 +375,13 @@ async function loadGaia() {
   if (!response.ok) throw new Error(`Gaia file: ${response.status}`);
   const buffer = await response.arrayBuffer();
   const count = buffer.byteLength / 16; // 12 bytes of position, then 4 bytes of colour and brightness
+  // The file is handed to the graphics card as it is: twelve bytes of position, four of colour and brightness.
+  // Both views point into the same buffer, so a star costs the sixteen bytes it has in the file and nothing more.
   const xyz = new Float32Array(buffer, 0, count * 3);
-  const attributes = new Uint8Array(buffer, count * 12, count * 4);
-  const colors = new Float32Array(count * 3);
-  const rawColors = new Float32Array(count * 3); // the colours as they are, a named star gets its body in its own colour
-  const absmag = new Float32Array(count);
-  const color = new THREE.Color();
-  for (let i = 0; i < count; i++) {
-    color.setRGB(attributes[i * 4] / 255, attributes[i * 4 + 1] / 255, attributes[i * 4 + 2] / 255);
-    color.toArray(rawColors, i * 3);
-    // The same quiet, whitish colour as the other background stars.
-    const m = Math.max(color.r, color.g, color.b);
-    color.lerp(new THREE.Color(m, m, m), BACKGROUND_WHITENING).multiplyScalar(0.9);
-    color.toArray(colors, i * 3);
-    absmag[i] = GAIA_MAG_MIN + (attributes[i * 4 + 3] / 255) * (GAIA_MAG_MAX - GAIA_MAG_MIN); // the byte scale of build_gaia.py
-  }
+  const bytes = new Uint8Array(buffer, count * 12, count * 4);
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-  geometry.setAttribute("truePos", new THREE.BufferAttribute(xyz, 3));
-  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-  geometry.setAttribute("absmag", new THREE.BufferAttribute(absmag, 1));
+  geometry.setAttribute("position", new THREE.BufferAttribute(xyz, 3)); // real light years, the shader squeezes them
+  geometry.setAttribute("packed", new THREE.BufferAttribute(bytes, 4, true)); // colour and magnitude, 0 to 1
   const layer = new THREE.Points(geometry, gaiaMaterial);
   layer.frustumCulled = false; // the bounding box is not computed, and the layer surrounds the Sun anyway
   scene.add(layer);
@@ -371,23 +392,24 @@ async function loadGaia() {
     scene.add(sprite);
     return { sprite, star: s };
   });
-  gaia = { points: layer, xyz, count, labels, rawColors };
-  placeGaia();
+  gaia = { points: layer, xyz, bytes, count, labels };
+  syncSkyMode();
+  placeGaiaLabels();
 }
 
-function placeGaia() {
-  const attr = gaia.points.geometry.getAttribute("position");
-  const tmp = new THREE.Vector3();
-  const star = { x: 0, y: 0, z: 0 };
-  for (let i = 0; i < gaia.count; i++) {
-    star.x = gaia.xyz[i * 3];
-    star.y = gaia.xyz[i * 3 + 1];
-    star.z = gaia.xyz[i * 3 + 2];
-    toMapPosition(star, tmp);
-    attr.setXYZ(i, tmp.x, tmp.y, tmp.z);
+// The stars themselves are placed by the shader. The handful of name labels are ordinary sprites and still need
+// a place in the scene.
+function placeGaiaLabels() {
+  for (const { sprite, star } of gaia.labels) toMapPosition(star, sprite.position);
+}
+
+// Which of the three ways of placing a star the layers use, and where the home star of the real scale is.
+function syncSkyMode() {
+  const mode = realScale ? 2 : compressed ? 0 : 1;
+  for (const material of [gaiaMaterial, deepMaterial]) {
+    material.uniforms.uMode.value = mode;
+    material.uniforms.uHome.value.set(realHome?.x ?? 0, realHome?.y ?? 0, realHome?.z ?? 0);
   }
-  attr.needsUpdate = true;
-  for (const { sprite, star: s } of gaia.labels) toMapPosition(s, sprite.position);
 }
 
 function setGaiaVisible(visible) {
@@ -3098,6 +3120,8 @@ let deepOn = false;
 // add up to a white wall (see updateCameraReal).
 const deepMaterial = gaiaMaterial.clone();
 deepMaterial.uniforms.uGain.value = 0.4;
+deepMaterial.uniforms.uMagRange.value.set(DEEP_MAG_MIN, DEEP_MAG_MAX);
+deepMaterial.uniforms.uTint.value = 1;
 const deepButton = document.getElementById("gaia-deep");
 const deepNote = document.getElementById("gaia-deep-note");
 if (IS_MOBILE) deepButton.hidden = true;
@@ -3108,30 +3132,15 @@ async function loadDeep() {
   const buffer = await response.arrayBuffer();
   const count = buffer.byteLength / 16;
   const xyz = new Float32Array(buffer, 0, count * 3);
-  const attributes = new Uint8Array(buffer, count * 12, count * 4);
-  const colors = new Float32Array(count * 3);
-  const absmag = new Float32Array(count);
-  for (let i = 0; i < count; i++) {
-    const r = attributes[i * 4] / 255;
-    const g = attributes[i * 4 + 1] / 255;
-    const b = attributes[i * 4 + 2] / 255;
-    const peak = Math.max(r, g, b);
-    // The same quiet colour as the other background stars: pulled towards white.
-    colors[i * 3] = r + (peak - r) * BACKGROUND_WHITENING;
-    colors[i * 3 + 1] = g + (peak - g) * BACKGROUND_WHITENING;
-    colors[i * 3 + 2] = b + (peak - b) * BACKGROUND_WHITENING;
-    absmag[i] = DEEP_MAG_MIN + (attributes[i * 4 + 3] / 255) * (DEEP_MAG_MAX - DEEP_MAG_MIN);
-  }
+  const bytes = new Uint8Array(buffer, count * 12, count * 4);
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-  geometry.setAttribute("truePos", new THREE.BufferAttribute(xyz, 3));
-  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-  geometry.setAttribute("absmag", new THREE.BufferAttribute(absmag, 1));
+  geometry.setAttribute("position", new THREE.BufferAttribute(xyz, 3));
+  geometry.setAttribute("packed", new THREE.BufferAttribute(bytes, 4, true));
   const layer = new THREE.Points(geometry, deepMaterial);
   layer.frustumCulled = false;
   scene.add(layer);
-  deep = { points: layer, xyz, count, drawn: count, slow: 0, frames: 0, timeSum: 0 };
-  placeDeep();
+  deep = { points: layer, xyz, bytes, count, drawn: count, slow: 0, frames: 0, timeSum: 0 };
+  syncSkyMode();
 }
 
 // Quality that follows the speed of the computer. The file is sorted brightest first, so drawing fewer stars drops the faintest.
@@ -3148,20 +3157,6 @@ function adaptDeepQuality(dt) {
     deep.drawn = Math.max(100000, Math.floor(deep.drawn * 0.5));
     deep.points.geometry.setDrawRange(0, deep.drawn);
   }
-}
-
-function placeDeep() {
-  const attr = deep.points.geometry.getAttribute("position");
-  const tmp = new THREE.Vector3();
-  const star = { x: 0, y: 0, z: 0 };
-  for (let i = 0; i < deep.count; i++) {
-    star.x = deep.xyz[i * 3];
-    star.y = deep.xyz[i * 3 + 1];
-    star.z = deep.xyz[i * 3 + 2];
-    toMapPosition(star, tmp);
-    attr.setXYZ(i, tmp.x, tmp.y, tmp.z);
-  }
-  attr.needsUpdate = true;
 }
 
 // The picture of the Milky Way behind everything can be switched off, the sky is then black with the stars only.
@@ -3344,7 +3339,7 @@ function gaiaColorOf(s) {
       best = i;
     }
   }
-  return [gaia.rawColors[best * 3], gaia.rawColors[best * 3 + 1], gaia.rawColors[best * 3 + 2]];
+  return [gaia.bytes[best * 4] / 255, gaia.bytes[best * 4 + 1] / 255, gaia.bytes[best * 4 + 2] / 255];
 }
 function showNamedStar(s, target) {
   if (realScale) {
@@ -3364,7 +3359,7 @@ function showNamedStar(s, target) {
       best = i;
     }
   }
-  const color = new THREE.Color(gaia.rawColors[best * 3], gaia.rawColors[best * 3 + 1], gaia.rawColors[best * 3 + 2]);
+  const color = new THREE.Color(gaia.bytes[best * 4] / 255, gaia.bytes[best * 4 + 1] / 255, gaia.bytes[best * 4 + 2] / 255);
   if (activeExo) disposeSystem(activeExo);
   activeExo = makeSystem({ starName: s.name, starColor: color.getHex(), starRadius: EXO_STAR_RADIUS, planets: [], viewDistance: 0.4 });
   activeExo.group.position.copy(target);
