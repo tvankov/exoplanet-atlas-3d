@@ -826,7 +826,22 @@ scene.add(starGlow(SUN_COLOR, SUN_RADIUS * 7));
 // relative to its star (the Sun is about 109 Earth radii wide). That would make most planets
 // invisible, so no planet is drawn smaller than a few pixels at the default view distance.
 const EARTH_RADII_PER_SUN = 109.1;
-const MIN_PLANET_PER_VIEW_DISTANCE = 0.009; // a planet is drawn at least this big (relative to the view), 0.006 was too small to see
+const MIN_PLANET_PER_VIEW_DISTANCE = 0.009; // a planet without a known radius is drawn this big (relative to the view)
+
+// One scale for every system in the explanation mode. The drawn radius of a planet follows its own radius in Earth
+// radii, squeezed with a square root, so Jupiter is about three Earths wide on the screen instead of eleven and
+// still fits between the orbits. Everything below Earth size lands on the same smallest size, otherwise it would
+// be a single pixel. What this buys: two planets drawn the same size really are about the same size, wherever they
+// are. Before this, a planet was drawn in proportion to its own star and to how far its system was spread out, so
+// 82 % of all planets ended up on a minimum size that differed from system to system by a factor of eight.
+const PLANET_DRAW = 0.009; // the drawn radius of a planet of one Earth radius
+const PLANET_DRAW_MIN = 0.008; // nothing is drawn smaller, Mercury and Mars land here
+const drawnPlanetRadius = (earthRadii) => Math.max(PLANET_DRAW_MIN, PLANET_DRAW * Math.sqrt(earthRadii || 0));
+// The host star in the same spirit, but squeezed much harder: the real radii run from 0.01 to 88 suns, and a star
+// drawn to that scale would either swallow the innermost orbit (drawn at 0.15) or be invisible. The square root is
+// therefore held between half and double the old fixed size. It shows which star is a dwarf and which is a giant,
+// it is not a measurement.
+const drawnStarRadius = (solarRadii) => Math.min(0.09, Math.max(0.025, EXO_STAR_RADIUS * Math.sqrt(solarRadii || 1)));
 
 // Our own solar system. The map is in light years, where all of it (Neptune is 0.0005 ly out)
 // would be a single point, so this is a separate display that is only drawn up close.
@@ -1989,7 +2004,9 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
       orbitLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), orbitLineMaterial);
       group.add(orbitLine);
     }
-    const radius = Math.max(p.size, viewDistance * MIN_PLANET_PER_VIEW_DISTANCE);
+    // p.drawn is the size from the shared scale (explanation mode). p.size is the real radius, which the real
+    // scale draws directly. Only a planet with no known radius falls back to a marker that follows the view.
+    const radius = p.drawn || p.size || viewDistance * MIN_PLANET_PER_VIEW_DISTANCE;
     const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 24), planetMaterial(p));
     const label = labelSprite(p.name);
     mesh.add(label);
@@ -2102,7 +2119,8 @@ const solar = makeSystem({
     name: p.name,
     years: p.years,
     orbit: 0.3 * Math.sqrt(p.au),
-    size: (SUN_RADIUS * p.radius) / EARTH_RADII_PER_SUN,
+    size: (SUN_RADIUS * p.radius) / EARTH_RADII_PER_SUN, // the real radius, used by the real scale
+    drawn: drawnPlanetRadius(p.radius),
     color: p.color,
     texture: p.texture,
     bump: p.bump,
@@ -2388,7 +2406,7 @@ const EXO_STAR_RADIUS = 0.05; // every host star is drawn this size, planets are
 const UNKNOWN_ORBIT = 0.6; // map units, where a planet of unknown orbit is drawn (a picture place, not a distance)
 function exoSystem(star) {
   const real = realScale;
-  const starRadius = real ? (star.st_rad ?? 1) * SUN_RADIUS : EXO_STAR_RADIUS; // real: the star radius in solar radii, a missing one counts as 1
+  const starRadius = real ? (star.st_rad ?? 1) * SUN_RADIUS : drawnStarRadius(star.st_rad); // real: the star radius in solar radii, a missing one counts as 1
   const mass = star.st_mass ?? 1; // sun-like fallback, only changes the drawn orbit radii
   const planets = star.planets
     .map((p) => {
@@ -2403,8 +2421,10 @@ function exoSystem(star) {
         years,
         orbitUnknown: !known,
         au: !known ? null : p.pl_orbper ? Math.cbrt(mass * years * years) : p.pl_orbsmax,
-        // Without a star radius there is no ratio to draw, the minimum size applies.
-        size: real ? (p.pl_rade ? (SUN_RADIUS * p.pl_rade) / EARTH_RADII_PER_SUN : 0) : star.st_rad && p.pl_rade ? (EXO_STAR_RADIUS * p.pl_rade) / (star.st_rad * EARTH_RADII_PER_SUN) : 0,
+        size: real && p.pl_rade ? (SUN_RADIUS * p.pl_rade) / EARTH_RADII_PER_SUN : 0, // the real radius, only the real scale uses it
+        // A planet without a known radius keeps the smallest size of the scale; the story panel says that it is
+        // unknown, which is honest, while leaving it out would hide the planet altogether.
+        drawn: real ? 0 : drawnPlanetRadius(p.pl_rade),
         type: planetType(p.pl_rade),
         temp: p.pl_eqt,
         color: p.habitable ? 0x6fd3a0 : 0xb0b8c8,
@@ -2657,6 +2677,7 @@ function updateInfoTexts() {
   document.getElementById("legal-link").textContent = UI[lang].legalLink;
   if (rule) document.getElementById("zone-text").textContent = UI[lang].zone(rule.temp_min, rule.temp_max);
   document.getElementById("belt-note").textContent = UI[lang].beltNote;
+  document.getElementById("scale-note").textContent = UI[lang].scaleNote;
 }
 
 // The panels lie on top of the canvas. The camera looks at the middle of the free space between

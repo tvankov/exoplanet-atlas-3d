@@ -52,6 +52,8 @@ export const UI = {
     zone: (min, max) => `Candidate zone: equilibrium temperature ${min} to ${max} K (estimate)`,
     beltNote:
       "Asteroid belt: schematic. The points are placed at random. Real are its extent, the tilt of the orbits, the gaps Jupiter has cleared and the distances of five known asteroid families.",
+    scaleNote:
+      "Sizes: one scale in every system, so planets can be compared. Squeezed (square root), and everything below Earth size is drawn at the same smallest size. Planet and star are not to scale with each other, and the distances are squeezed as well, each system for itself.",
     types: {
       rocky: "Rocky planet",
       miniNeptune: "Mini-Neptune",
@@ -123,6 +125,8 @@ export const UI = {
     zone: (min, max) => `Kandidatenzone: Gleichgewichtstemperatur ${min} bis ${max} K (Schätzung)`,
     beltNote:
       "Asteroidengürtel: schematisch. Die Punkte liegen zufällig. Echt sind seine Ausdehnung, die Neigung der Bahnen, die Lücken, die Jupiter freigeräumt hat, und die Abstände von fünf bekannten Asteroidenfamilien.",
+    scaleNote:
+      "Größen: ein Maßstab in jedem System, damit Planeten vergleichbar sind. Gestaucht (Wurzel), und alles unter Erdgröße wird gleich klein gezeichnet. Planet und Stern sind untereinander nicht maßstäblich, und die Abstände sind ebenfalls gestaucht, jedes System für sich.",
     types: {
       rocky: "Gesteinsplanet",
       miniNeptune: "Mini-Neptun",
