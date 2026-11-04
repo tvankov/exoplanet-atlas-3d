@@ -95,6 +95,11 @@ export const TRAVEL_UI = {
     to: "To",
     speed: "Speed",
     go: "Plan and fly",
+    route: "Show the route",
+    routeHide: "Hide the route",
+    routeNote:
+      "The course is on the map, nothing flies. Fly it yourself: W and S forward and back, A and D sideways, "
+      + "Q and E down and up, the arrow keys turn. The speed for the keys is set below.",
     stop: "Stop",
     speedLabel: {
       voyager: "Voyager 1 (17 km/s)",
@@ -113,7 +118,7 @@ export const TRAVEL_UI = {
       limit: "1 c is the speed of light. Only light itself travels at it; a ship with mass cannot reach it. Treated as fictional.",
       fiction: "FICTIONAL: nothing can go faster than light, as far as we know today. Shown only to feel the distances.",
     },
-    note: "The ship flies a straight line and aims at where the target will be on arrival (intercept course, marked by the ring). Gravity is ignored. The planets are on their real positions of today. The line is curved on the map because the map is compressed. The trip is shown like a film: the start is in view, the ship turns towards the target, jumps into hyperspace and comes out of it at the target. The turn and the hyperspace are fiction (there is no hyperspace as far as we know), the times shown are for the speed chosen. Start and target can also be the Sun or any star of the list. Between stars the ship flies a straight line in real space, the stars are treated as standing still (they move slowly) and a planet counts as the Sun, because planets are tiny against light years.",
+    note: "The ship flies a straight line and aims at where the target will be on arrival (intercept course, marked by the ring). Gravity is ignored. The planets are on their real positions of today. The line is curved on the map because the map is compressed. The trip is shown like a film: the start is in view, the ship turns towards the target, jumps into hyperspace and comes out of it at the target. The target system is in sight long before the arrival and grows during the approach, and the streaks die away while the ship brakes. The turn and the hyperspace are fiction (there is no hyperspace as far as we know), the times shown are for the speed chosen. Start and target can also be the Sun or any star of the list. Between stars the ship flies a straight line in real space, the stars are treated as standing still (they move slowly) and a planet counts as the Sun, because planets are tiny against light years.",
     view: "View",
     viewThird: "Third person (ship seen from outside)",
     viewEgo: "First person (from the ship)",
@@ -175,6 +180,11 @@ export const TRAVEL_UI = {
     to: "Nach",
     speed: "Tempo",
     go: "Planen und fliegen",
+    route: "Route zeigen",
+    routeHide: "Route ausblenden",
+    routeNote:
+      "Die Route liegt auf der Karte, es fliegt nichts. Flieg sie selbst: W und S vor und zurück, A und D zur "
+      + "Seite, Q und E runter und hoch, die Pfeiltasten drehen. Das Tempo der Tasten stellst du unten ein.",
     stop: "Stopp",
     speedLabel: {
       voyager: "Voyager 1 (17 km/s)",
@@ -193,7 +203,7 @@ export const TRAVEL_UI = {
       limit: "1 c ist die Lichtgeschwindigkeit. Nur Licht selbst fliegt so schnell, ein Schiff mit Masse kann sie nicht erreichen. Gilt hier als fiktiv.",
       fiction: "FIKTIV: Nach heutigem Wissen kann nichts schneller als das Licht sein. Nur gezeigt, um die Entfernungen zu spüren.",
     },
-    note: "Das Schiff fliegt eine gerade Linie und zielt dorthin, wo das Ziel bei der Ankunft stehen wird (Abfangbahn, vom Ring markiert). Schwerkraft wird nicht gerechnet. Die Planeten stehen auf ihren echten Positionen von heute. Die Linie ist auf der Karte gebogen, weil die Karte gestaucht ist. Die Reise wird wie ein Film gezeigt: der Start ist im Blick, das Schiff dreht sich zum Ziel, springt in den Hyperraum und kommt am Ziel wieder heraus. Die Drehung und der Hyperraum sind erfunden (einen Hyperraum gibt es nach heutigem Wissen nicht), die Zeiten gelten für das gewählte Tempo. Start und Ziel können auch die Sonne oder ein Stern der Liste sein. Zwischen Sternen fliegt das Schiff eine gerade Linie im echten Raum, die Sterne gelten als ruhend (sie bewegen sich langsam) und ein Planet zählt als die Sonne, weil Planeten gegen Lichtjahre winzig sind.",
+    note: "Das Schiff fliegt eine gerade Linie und zielt dorthin, wo das Ziel bei der Ankunft stehen wird (Abfangbahn, vom Ring markiert). Schwerkraft wird nicht gerechnet. Die Planeten stehen auf ihren echten Positionen von heute. Die Linie ist auf der Karte gebogen, weil die Karte gestaucht ist. Die Reise wird wie ein Film gezeigt: der Start ist im Blick, das Schiff dreht sich zum Ziel, springt in den Hyperraum und kommt am Ziel wieder heraus. Das Zielsystem ist lange vor der Ankunft zu sehen und wächst beim Anflug, die Streifen verschwinden beim Bremsen. Die Drehung und der Hyperraum sind erfunden (einen Hyperraum gibt es nach heutigem Wissen nicht), die Zeiten gelten für das gewählte Tempo. Start und Ziel können auch die Sonne oder ein Stern der Liste sein. Zwischen Sternen fliegt das Schiff eine gerade Linie im echten Raum, die Sterne gelten als ruhend (sie bewegen sich langsam) und ein Planet zählt als die Sonne, weil Planeten gegen Lichtjahre winzig sind.",
     view: "Ansicht",
     viewThird: "Dritte Person (Schiff von außen)",
     viewEgo: "Ego (aus dem Schiff)",

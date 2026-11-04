@@ -22,7 +22,9 @@
   <div id="hud">
     <h1>Exoplanet Atlas 3D</h1>
     <p id="count">Loading stars...</p>
-    <button id="scale" type="button" aria-pressed="false">Real scale: off</button>
+    <!-- The real scale is parked while the explanation mode is being finished: the button is hidden,
+         the mode itself still works (setRealScale in main.js) and comes back when it is ready. -->
+    <button id="scale" type="button" aria-pressed="false" hidden>Real scale: off</button>
     <button id="planner-open" type="button" aria-expanded="false" aria-controls="planner-panel">Travel planner</button>
     <div id="search-box">
       <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
@@ -30,27 +32,11 @@
     </div>
     <div id="speed-box">
       <label id="speed-title" for="speed">Time speed</label>
-      <input id="speed" type="range" min="0" max="100" step="any" value="51.97">
+      <!-- The slider is logarithmic: 10 ** (value / 100 * 8) seconds per second. 25.99 is one second = two minutes. -->
+      <input id="speed" type="range" min="0" max="100" step="any" value="25.99">
       <p id="speed-text"></p>
       <p id="speed-elapsed"></p>
     </div>
-    <details class="menu" id="tools-menu">
-      <summary id="tools-title">Tools</summary>
-      <select id="facility" aria-label="Discovered by"></select>
-      <p id="facility-note" class="hint" hidden></p>
-      <select id="spectral-mode" aria-label="Spectral class filter">
-        <option value="off"></option>
-        <option value="highlight"></option>
-        <option value="isolate"></option>
-      </select>
-      <select id="spectral-class" aria-label="Spectral class" hidden>
-        <option>O</option><option>B</option><option>A</option><option>F</option><option>G</option><option>K</option><option>M</option>
-      </select>
-      <p id="spectral-note" class="hint" hidden></p>
-      <button id="measure" type="button" aria-pressed="false">Measure distance</button>
-      <p id="measure-note" class="hint" hidden></p>
-      <button id="measure-plan" type="button" hidden>Plan a trip between them</button>
-    </details>
     <details class="menu">
       <summary id="solar-title">Solar System</summary>
       <ul id="solar-list" class="planet-list"></ul>
@@ -67,6 +53,23 @@
     <details class="menu">
       <summary id="habitable-title">Habitable candidates</summary>
       <ul id="habitable" class="planet-list"></ul>
+    </details>
+    <details class="menu" id="tools-menu">
+      <summary id="tools-title">Tools</summary>
+      <select id="facility" aria-label="Discovered by"></select>
+      <p id="facility-note" class="hint" hidden></p>
+      <select id="spectral-mode" aria-label="Spectral class filter">
+        <option value="off"></option>
+        <option value="highlight"></option>
+        <option value="isolate"></option>
+      </select>
+      <select id="spectral-class" aria-label="Spectral class" hidden>
+        <option>O</option><option>B</option><option>A</option><option>F</option><option>G</option><option>K</option><option>M</option>
+      </select>
+      <p id="spectral-note" class="hint" hidden></p>
+      <button id="measure" type="button" aria-pressed="false">Measure distance</button>
+      <p id="measure-note" class="hint" hidden></p>
+      <button id="measure-plan" type="button" hidden>Plan a trip between them</button>
     </details>
   </div>
   <button id="info-button" type="button" aria-expanded="false" aria-controls="story">Info</button>
@@ -135,6 +138,7 @@
         <label><span id="plan-view-label">View</span> <select id="plan-view"><option value="third"></option><option value="ego"></option></select></label>
         <p id="plan-kind" class="hint"></p>
         <button id="plan-go" type="button">Plan and fly</button>
+        <button id="plan-route" type="button">Show the route</button>
         <p id="plan-note" class="hint"></p>
         <label><span id="fly-label">Flight speed (keys)</span> <select id="fly-speed"></select></label>
         <p id="fly-note" class="hint"></p>

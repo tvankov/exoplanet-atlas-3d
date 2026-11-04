@@ -404,6 +404,7 @@ function showGaiaState(state = gaiaOn ? "on" : "off") {
   const note = document.getElementById("gaia-note");
   note.hidden = !(gaiaOn && gaia);
   if (gaia) note.textContent = t.gaiaNote(gaia.count.toLocaleString(lang));
+  updateCount(); // the headline says how many stars are in the sky, that changes with this switch
 }
 gaiaButton.addEventListener("click", async () => {
   if (gaiaOn) {
@@ -1930,9 +1931,14 @@ function planetMaterial(p) {
 }
 scene.add(new THREE.AmbientLight(0xffffff, 0.7)); // keeps the night side from turning fully black, and the small planets of the overview readable
 
+// Orbit lines and the green zone are drawn across the whole picture, which is help on a map and clutter during a
+// flight. One uniform carries how much of them is shown: 0 while the ship flies, 1 otherwise, see stepSoft.
+const SOFT_FADE = { value: 1 };
+
 // The orbit lines are thin and soft: they fade with the distance from the camera, so the ones far away do not
 // weigh as much as the ones near, and they are drawn as light (additive), not as a solid line.
 const orbitLineMaterial = new THREE.ShaderMaterial({
+  uniforms: { uFade: SOFT_FADE },
   vertexShader: `
     varying float vDistance;
     void main() {
@@ -1941,9 +1947,11 @@ const orbitLineMaterial = new THREE.ShaderMaterial({
       gl_Position = projectionMatrix * mv;
     }`,
   fragmentShader: `
+    uniform float uFade;
     varying float vDistance;
     void main() {
-      float a = 0.22 * clamp(2.0 / vDistance, 0.3, 1.0);
+      float a = 0.22 * clamp(2.0 / vDistance, 0.3, 1.0) * uFade;
+      if (a < 0.002) discard;
       gl_FragColor = vec4(vec3(0.8, 0.85, 1.0), a);
       #include <colorspace_fragment>
     }`,
@@ -2016,7 +2024,13 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
 // (1x) nothing visibly moves, which is what real time looks like.
 const SECONDS_PER_YEAR = 365.25 * 86400;
 const CLOUD_DRIFT_YEARS = 20 / 365.25; // the clouds go once round the ground in 20 days, a look and not a measured wind
-let timeScale = 4 * 3600; // simulated seconds per real second, the start value is one second = four hours
+let timeScale = 120; // simulated seconds per real second, the start value is one second = two minutes
+
+// How close the camera has to be before an exoplanet system is drawn around its star.
+const EXO_SHOW = 4;
+// The system a running trip flies to. It is built while the ship is still on its way (buildTripTarget), so it
+// grows in the window during the approach instead of appearing out of nothing at the arrival.
+let tripTarget = null;
 
 // Planets only move along their orbit around the star. They do not spin on their own axis.
 function stepSystem(system, dt) {
@@ -2064,7 +2078,12 @@ function stepSystem(system, dt) {
   // away, its belt and labels would hang in the sky like something that belongs there.
   // The Solar System is shown from further away: the comets and the far spacecraft reach out to 4 map units.
   // In the real scale the Solar System is always there (it is the whole picture) and the other systems are not drawn (yet).
-  system.group.visible = realScale ? (system === solar ? !realHome : system === activeExo) : camera.position.distanceTo(system.group.position) < (system === solar ? 9 : 4);
+  // The system a trip is flying to is drawn whatever the distance, so it can be seen from far away.
+  system.group.visible = realScale
+    ? system === solar
+      ? !realHome
+      : system === activeExo
+    : system === tripTarget || camera.position.distanceTo(system.group.position) < (system === solar ? 9 : EXO_SHOW);
 }
 
 function planetOrbitPoints(name) {
@@ -2441,7 +2460,7 @@ function addZone(system, inner, outer) {
   const band = new THREE.Mesh(
     new THREE.RingGeometry(inner, outer, 128),
     new THREE.ShaderMaterial({
-      uniforms: { uInner: { value: inner }, uOuter: { value: outer } },
+      uniforms: { uInner: { value: inner }, uOuter: { value: outer }, uFade: SOFT_FADE },
       vertexShader: `
         varying vec3 vPos;
         void main() {
@@ -2451,10 +2470,12 @@ function addZone(system, inner, outer) {
       fragmentShader: `
         uniform float uInner;
         uniform float uOuter;
+        uniform float uFade;
         varying vec3 vPos;
         void main() {
           float t = (length(vPos.xy) - uInner) / (uOuter - uInner);
-          float a = 0.11 * smoothstep(0.0, 0.3, t) * (1.0 - smoothstep(0.7, 1.0, t));
+          float a = 0.11 * smoothstep(0.0, 0.3, t) * (1.0 - smoothstep(0.7, 1.0, t)) * uFade;
+          if (a < 0.001) discard;
           gl_FragColor = vec4(pow(vec3(0.3, 0.8, 0.55), vec3(2.2)), a);
           #include <colorspace_fragment>
         }`,
@@ -2570,6 +2591,12 @@ function showSystem(star, planet) {
   if (star.solarSystem) {
     system = solar;
     follow = solar.bodies.find((b) => b.name === planet.pl_name)?.mesh ?? earthMesh;
+  } else if (activeExo?.star === star) {
+    // The system is already in the sky, because a trip built it early (buildTripTarget) or it is the home of the
+    // real scale. Building it again would put its planets back on their starting places, which looks like the
+    // whole system jumped at the moment of the arrival.
+    system = activeExo;
+    follow = system.bodies.find((b) => b.name === planet.pl_name)?.mesh;
   } else {
     if (activeExo) disposeSystem(activeExo);
     activeExo = system = exoSystem(star);
@@ -2871,6 +2898,17 @@ lookSelect.addEventListener("change", () => {
 
 // Redraws everything that has words in it. The story is rebuilt from the same planet,
 // so switching the language while reading keeps the selection.
+// The line over the map. The host stars and their planets are from the NASA table; the two Gaia layers put stars
+// into the sky that have no known planets, so they are counted apart and only while they are switched on.
+function updateCount() {
+  const t = UI[lang];
+  const extra = (gaiaOn && gaia ? gaia.count : 0) + (deepOn && deep ? deep.count : 0);
+  const planets = stars.reduce((n, s) => n + s.planets.length, 0);
+  document.getElementById("count").textContent = stars.length
+    ? t.count((stars.length + extra + planets).toLocaleString(lang))
+    : t.loading;
+}
+
 function applyLanguage() {
   const t = UI[lang];
   document.documentElement.lang = lang;
@@ -2882,9 +2920,7 @@ function applyLanguage() {
   lookSelect.options[0].textContent = t.look.schematic;
   lookSelect.options[1].textContent = t.look.artistic;
   document.getElementById("scale").textContent = realScale ? t.scaleLinear : t.scaleCompressed;
-  document.getElementById("count").textContent = stars.length
-    ? t.count(stars.length, stars.reduce((n, s) => n + s.planets.length, 0))
-    : t.loading;
+  updateCount();
   buildHabitableMenu();
   buildSolarMenu();
   updateSolarLabels();
@@ -3125,6 +3161,7 @@ function showDeepState(state = deepOn ? "on" : "off") {
   deepButton.setAttribute("aria-pressed", String(deepOn));
   deepNote.hidden = !(deepOn && deep);
   if (deep) deepNote.textContent = t.deepNote(deep.count.toLocaleString(lang));
+  updateCount();
 }
 deepButton.addEventListener("click", async () => {
   if (deepOn) {
@@ -3385,6 +3422,8 @@ function buildVisitorMenu() {
 // The speed slider. The left end is real time. Each step to the right is a little faster, over
 // eight powers of ten, up to a hundred million times (one second is about three years).
 const speedSlider = document.getElementById("speed");
+// The handle is put where the clock really stands, so the value in the HTML can never drift away from timeScale.
+speedSlider.value = String((Math.log10(timeScale) / 8) * 100);
 const speedText = document.getElementById("speed-text");
 const speedElapsed = document.getElementById("speed-elapsed");
 
@@ -3520,6 +3559,46 @@ function followSky() {
   }
 }
 
+// Out of the way while the ship flies, back when it has landed. The wait makes the arrival read in two steps:
+// first the system itself, then the lines that explain it.
+const SOFT_OUT = 0.6; // seconds to fade out when a trip sets off
+const SOFT_WAIT = 2; // seconds of quiet after the landing before anything comes back
+const SOFT_IN = 2; // seconds of the fade back in
+let softWanted = 1; // 1 shows the lines and the zone, 0 hides them
+let softAt = 0; // the fade back in starts at this time (seconds), never before
+// A trip that was aimed at a planet lands at the system first and then goes on to the planet. Both the step to the
+// planet and the lines coming back wait for a time, and the lines wait for the camera to have arrived as well: they
+// belong to the last position of the film, not to the stop in between.
+const PLANET_WAIT = 1.2; // seconds the system is held before the camera goes on to the planet
+let planetAt = 0; // when to go on to the planet, 0 if there is nothing to go on to
+let softAfterFlight = false; // the lines wait for the camera to come to rest
+function hideSoft() {
+  softWanted = 0;
+  planetAt = 0;
+  softAfterFlight = false;
+}
+function showSoft(now, wait = 0) {
+  softWanted = 1;
+  softAt = now + wait;
+}
+function stepSoft(now, dt) {
+  // The last leg of the film: on to the planet, and only when the camera stands still do the lines come back.
+  if (planetAt && now >= planetAt) {
+    planetAt = 0;
+    if (current?.follow) {
+      enterCloseup();
+      updateCloseupButton();
+      softAfterFlight = true;
+    } else showSoft(now, SOFT_WAIT);
+  }
+  if (softAfterFlight && !flight) {
+    softAfterFlight = false;
+    showSoft(now, SOFT_WAIT);
+  }
+  if (softWanted === 0) SOFT_FADE.value = Math.max(0, SOFT_FADE.value - dt / SOFT_OUT);
+  else if (now >= softAt) SOFT_FADE.value = Math.min(1, SOFT_FADE.value + dt / SOFT_IN);
+}
+
 const trackTmp = new THREE.Vector3();
 let lastFrame = performance.now() / 1000;
 function animate() {
@@ -3531,6 +3610,7 @@ function animate() {
   if (activeExo) stepSystem(activeExo, dt);
   stepTrip(now);
   stepWarp(dt);
+  stepSoft(now, dt);
   if (realScale) {
     updateCameraRange();
     followSky();
@@ -3656,6 +3736,7 @@ const planTo = document.getElementById("plan-to");
 const planSpeed = document.getElementById("plan-speed");
 const planKind = document.getElementById("plan-kind");
 const planGo = document.getElementById("plan-go");
+const planRoute = document.getElementById("plan-route");
 const planStop = document.getElementById("plan-stop");
 const plannerPanel = document.getElementById("planner-panel");
 const plannerOpen = document.getElementById("planner-open");
@@ -3669,7 +3750,9 @@ document.getElementById("planner-close").addEventListener("click", () => toggleP
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !plannerPanel.hidden) togglePlanner(false);
 });
-const stopLabel = () => (trip?.phase === "done" ? TRAVEL_UI[lang].close : TRAVEL_UI[lang].stop);
+// A finished trip and a route that only lies on the map are both closed, not stopped: nothing is running.
+const stopLabel = () => (trip?.phase === "done" || trip?.phase === "route" ? TRAVEL_UI[lang].close : TRAVEL_UI[lang].stop);
+const routeLabel = () => (trip?.phase === "route" ? TRAVEL_UI[lang].routeHide : TRAVEL_UI[lang].route);
 
 // Candidate zone switch (settings).
 const zoneButton = document.getElementById("zone-toggle");
@@ -3730,6 +3813,7 @@ function buildPlanner() {
   planView.options[1].textContent = t.viewEgo;
   document.getElementById("plan-note").textContent = t.note;
   planGo.textContent = t.go;
+  planRoute.textContent = routeLabel();
   planStop.textContent = stopLabel();
   plannerOpen.textContent = t.title;
   for (const id of ["plan-from-pick", "plan-to-pick"]) {
@@ -3867,19 +3951,26 @@ function restoreTimeSpeed() {
 }
 
 function clearTrip() {
-  if (trip && !trip.arrived) restoreTimeSpeed();
+  showSoft(performance.now() / 1000); // a stopped trip brings them straight back, there is nothing to land on
+  // A route that was only drawn never touched the clock, so there is nothing to put back.
+  if (trip && !trip.arrived && trip.phase !== "route") restoreTimeSpeed();
   setQuiet(false);
   setNear(0.01);
   leaveEgo();
   trip = null;
+  tripTarget = null; // the target system goes back to the normal rule: drawn when the camera is near it
   for (const o of [ship, shipLine, shipTarget]) o.visible = false;
+  planRoute.textContent = routeLabel();
   tripHud.hidden = true;
   planResult.textContent = "";
   warp = 0;
 }
 planStop.addEventListener("click", clearTrip);
 
-planGo.addEventListener("click", () => {
+// Works out the course between the two places and draws it: the line over the map, the ring at the target and the
+// numbers in the box at the bottom. Both buttons of the planner start here. Returns false, with the reason in the
+// box, when the two places do not make a trip.
+function planCourse() {
   const t = TRAVEL_UI[lang];
   const from = resolvePlace(planFrom.value);
   const to = resolvePlace(planTo.value);
@@ -3937,6 +4028,9 @@ planGo.addEventListener("click", () => {
   trip.uStart = 0;
   trip.uEnd = mode === "solar" ? stopFraction() : 1;
   trip.real = realScale && mode === "star";
+  // A trip to another star in the explanation mode: its system is built during the flight, see buildTripTarget.
+  trip.showTarget = !realScale && mode === "star" && !!starOfPlace(to);
+  trip.targetBuilt = false;
   if (trip.real) realTripSetup();
   else {
     if (mode === "star") edgePoints();
@@ -3948,10 +4042,22 @@ planGo.addEventListener("click", () => {
     ? { ca: TRIP_CLEAR * placeRadius(from), cb: TRIP_CLEAR * placeRadius(to), D: tripMap(o, new THREE.Vector3()).distanceTo(tripMap(d, new THREE.Vector3())) }
     : null; // variant B, see logDistance
   setNear(0.002);
-  const points3 = drawTrip();
-  for (const obj of [ship, shipLine, shipTarget]) obj.visible = true;
-  tripHud.hidden = false; // the planner closes while the ship flies, a small box at the bottom shows the trip
+  drawTrip();
+  for (const obj of [shipLine, shipTarget]) obj.visible = true;
+  tripHud.hidden = false; // the planner closes, a small box at the bottom keeps the numbers
   togglePlanner(false);
+  leaveCloseup();
+  updateCloseupButton();
+  ring.visible = false; // the ring would mark the start planet
+  showTripResult();
+  return true;
+}
+
+planGo.addEventListener("click", () => {
+  if (!planCourse()) return;
+  const t = TRAVEL_UI[lang];
+  const { days, from } = trip;
+  ship.visible = true;
   planStop.textContent = stopLabel();
   // The trip is a short film: the start is in view (intro), the ship turns towards the target (turn), jumps into
   // hyperspace (jump), flies (cruise) and comes out at the target (exit), where the target gets its view (done).
@@ -3966,10 +4072,24 @@ planGo.addEventListener("click", () => {
   trip.phase = "intro";
   trip.phaseStart = performance.now() / 1000;
   trip.warpTarget = 0;
-  leaveCloseup();
-  updateCloseupButton();
   showPlace(from);
-  ring.visible = false; // the ring would mark the start planet
+});
+
+// The same course without the film: the line stays on the map and the camera is left to the user, who flies it with
+// the keys. Pressing the button again takes the line away. Nothing is hidden and the clock keeps the speed it had,
+// because there is no flight to watch.
+planRoute.addEventListener("click", () => {
+  if (trip?.phase === "route") {
+    clearTrip();
+    return;
+  }
+  if (!planCourse()) return;
+  trip.phase = "route";
+  trip.follow = false;
+  planStop.textContent = stopLabel();
+  planRoute.textContent = routeLabel();
+  planResult.textContent += `\n${TRAVEL_UI[lang].routeNote}`;
+  showPlace(trip.from); // the start comes into view, from there the keys take over
 });
 
 // The edge of a system on the map: the Solar System (Neptune is at 1.64) and the exoplanet systems (up to 1.6) are
@@ -4215,8 +4335,33 @@ function followBack() {
   return Math.min(0.35, Math.max(0.25 * Math.min(dFrom, dTo), 4 * placeRadius(dFrom < dTo ? trip.from : trip.to)));
 }
 
+// The system at the end of a trip to another star, built while the ship is still far out. It only replaces the
+// system of the start once the camera has left it behind (further than EXO_SHOW, where it would stop being drawn
+// anyway), so nothing disappears in front of the viewer. Only one exoplanet system exists at a time.
+function buildTripTarget() {
+  const star = starOfPlace(trip.to);
+  if (activeExo?.star === star) {
+    tripTarget = activeExo; // already in the sky, it only has to keep being drawn from far away
+    trip.targetBuilt = true;
+    return;
+  }
+  // Nothing is thrown away while it is still on the screen: the old system goes when the camera has left it behind.
+  if (activeExo && camera.position.distanceTo(activeExo.group.position) < EXO_SHOW) return;
+  trip.targetBuilt = true;
+  if (activeExo) {
+    disposeSystem(activeExo);
+    if (current?.system === activeExo) {
+      current = null; // it pointed at the system that was just thrown away
+      ring.visible = false;
+    }
+  }
+  activeExo = tripTarget = exoSystem(star);
+  tripTarget.group.position.copy(toMapPosition(star, new THREE.Vector3()));
+  stepSystem(tripTarget, 0);
+}
+
 function stepView(now) {
-  if (!trip || trip.phase === "intro" || trip.phase === "done") return;
+  if (!trip || trip.phase === "intro" || trip.phase === "done" || trip.phase === "route") return;
   if (trip.phase === "turn") {
     tripPose(poseTmp);
     const u = Math.min(1, (now - trip.phaseStart) / TRIP_TURN);
@@ -4303,12 +4448,33 @@ const rampSpeed = (t) => Math.min(1, t / RAMP, (1 - t) / rampDown()); // 0 to 1,
 function showArrival() {
   trip.follow = false;
   // A trip to another star ends at the edge of its system (point 3), not at the planet: the system is shown (in the real scale it already is).
+  const now = performance.now() / 1000;
   if (trip.mode === "star") {
-    if (!realScale) showPlace(trip.to, false, true);
+    if (realScale) {
+      showSoft(now, SOFT_WAIT); // the real scale is already in the target system, only the lines have to come back
+      return;
+    }
+    showPlace(trip.to, false, true);
+    // The camera keeps the side it came in from instead of swinging to the standard view: the arrival is then the
+    // end of the approach and not a cut. Only lifted a little, so the orbits are not seen edge on.
+    if (current?.system === activeExo && activeExo) {
+      const dir = arriveTmp.copy(camera.position).sub(activeExo.group.position);
+      if (dir.lengthSq() > 0) {
+        dir.normalize();
+        if (dir.y < 0.35) dir.setY(0.35).normalize();
+        startFlight(() => activeExo.group.position.clone(), activeExo.viewDistance, dir.clone());
+      }
+    }
+    // A planet was named as the target, not only its star: the system is held for a moment and then the camera
+    // goes on to the planet itself. The lines and the zone come back there, see stepSoft.
+    if (trip.to.kind === "exo" && current?.follow) planetAt = now + FLIGHT_MS / 1000 + PLANET_WAIT;
+    else showSoft(now, SOFT_WAIT);
     return;
   }
   showPlace(trip.to, true);
+  showSoft(now, SOFT_WAIT);
 }
+const arriveTmp = new THREE.Vector3();
 function showPlace(to, keepView = false, systemOnly = false) {
   if (to.kind === "planet") {
     const body = solar.bodies.find((b) => b.name === to.name);
@@ -4341,6 +4507,7 @@ function setPhase(name, now) {
   trip.phaseStart = now;
   trip.warpTarget = name === "jump" || name === "cruise" ? 1 : 0; // hyperspace: the stars are streaks all the time
   if (name === "turn") {
+    hideSoft(); // the orbit lines and the zone are in the way of the flight
     leaveCloseup(); // the close-up would pull the camera back to the start planet
     updateCloseupButton();
     setQuiet(true);
@@ -4367,6 +4534,13 @@ let tripShownAt = 0;
 const shipTmp = new THREE.Vector3();
 function stepTrip(now) {
   if (!trip) return;
+  if (trip.phase === "route") {
+    // Only the line is drawn and somebody flies it by hand. The film does not run, but the target system is built
+    // just as it would be on a flight: without it the camera arrives at a bare point of light, because an
+    // exoplanet system only exists while it is being shown.
+    if (trip.showTarget && !trip.targetBuilt) buildTripTarget();
+    return;
+  }
   const elapsed = now - trip.phaseStart;
   if (trip.phase === "intro" && elapsed >= TRIP_INTRO) setPhase("turn", now);
   else if (trip.phase === "turn" && elapsed >= TRIP_TURN) setPhase(trip.mode === "star" ? "depart" : trip.log ? "cruise" : "jump", now);
@@ -4386,6 +4560,11 @@ function stepTrip(now) {
   const t = trip.phase === "cruise" ? Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)) : trip.phase === "exit" || trip.phase === "done" ? 1 : 0; // the share of the time that has passed
   trip.speedFactor = rampSpeed(t);
   trip.share = rampDistance(t); // the share of the hyperspace part, the ship starts and stops softly
+  // The target system is put into the sky as soon as the start is behind us, so the approach shows it growing.
+  if (trip.showTarget && !trip.targetBuilt && trip.phase === "cruise") buildTripTarget();
+  // The streaks die away while the ship brakes (the last quarter of a trip to a star) instead of being switched
+  // off at the arrival. A hard cut from full blur to a still picture was what made the arrival feel like a jump.
+  if (trip.phase === "cruise" && !trip.log) trip.warpTarget = Math.min(1, (1 - t) / rampDown());
   if (trip.log) {
     trip.logR = logDistance(t, trip.log);
     trip.share = (trip.logR - trip.log.ca) / (trip.log.D - trip.log.cb - trip.log.ca);

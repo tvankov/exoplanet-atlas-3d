@@ -9,7 +9,9 @@ export const UI = {
     scaleCompressed: "Real scale: off",
     scaleLinear: "Real scale: on",
     loading: "Loading stars...",
-    count: (stars, planets) => `${stars} host stars, ${planets} planets`,
+    // Everything the atlas holds in one number: the host stars, the Gaia stars and the planets. It says what is
+    // counted and claims nothing else, so there is nothing in the line to argue with.
+    count: (objects) => `${objects} stars and planets`,
     candidates: (n) => `Habitable candidates (${n} + Earth)`,
     earth: "Earth (reference)",
     solarTitle: "Solar System",
@@ -80,7 +82,7 @@ export const UI = {
     scaleCompressed: "Echter Maßstab: aus",
     scaleLinear: "Echter Maßstab: an",
     loading: "Sterne werden geladen...",
-    count: (stars, planets) => `${stars} Muttersterne, ${planets} Planeten`,
+    count: (objects) => `${objects} Sterne und Planeten`,
     candidates: (n) => `Bewohnbare Kandidaten (${n} + Erde)`,
     earth: "Erde (Referenz)",
     solarTitle: "Sonnensystem",
