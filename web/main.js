@@ -3781,7 +3781,18 @@ zoneButton.addEventListener("click", () => {
   showZoneState();
   for (const s of [solar, activeExo]) if (s?.zoneMesh) s.zoneMesh.visible = zoneOn && !quiet && !(closeup && current?.system === s);
 });
-const planResult = document.getElementById("plan-result");
+const planResult = document.getElementById("plan-result"); // the running line: phase, progress, messages
+const tripTitle = document.getElementById("trip-title");
+const tripKpis = document.getElementById("trip-kpis");
+const tripBoard = document.getElementById("trip-board");
+// A message without a trip (an unknown place, two times the same one): the box only holds that one line.
+function showTripMessage(text) {
+  tripTitle.textContent = "";
+  tripKpis.replaceChildren();
+  tripBoard.textContent = "";
+  planResult.textContent = text;
+  tripHud.hidden = false;
+}
 const planView = document.getElementById("plan-view");
 planView.value = "ego"; // first person is the default
 const flySpeedSelect = document.getElementById("fly-speed");
@@ -3883,6 +3894,29 @@ flySpeedSelect.addEventListener("change", showPlanKind);
 
 const fmt = (value, digits = 2) => value.toLocaleString(lang, { maximumFractionDigits: digits });
 
+// One figure of the trip: the word on top, the number below, and a second line where there is a second way of
+// saying the same thing (parsecs, light travel time).
+function kpiCell(label, value, sub, fiction = false) {
+  const cell = document.createElement("div");
+  const title = document.createElement("span");
+  title.className = "kpi-label";
+  title.textContent = label;
+  const number = document.createElement("span");
+  number.className = fiction ? "kpi-value plan-fiction" : "kpi-value";
+  number.textContent = value;
+  cell.append(title, number);
+  if (sub) {
+    const under = document.createElement("span");
+    under.className = "kpi-sub";
+    under.textContent = sub;
+    cell.append(under);
+  }
+  return cell;
+}
+
+// The box at the bottom: the two places as a heading, then distance, speed and travel time side by side. What
+// the clock on board says is a sentence, not a number, so it sits underneath. The line below that one is the
+// running commentary of the film and is written by stepTrip.
 function showTripResult() {
   const t = TRAVEL_UI[lang];
   const seconds = trip.days * 86400;
@@ -3892,17 +3926,24 @@ function showTripResult() {
   } else {
     board = trip.beta === 1 ? t.boardLight : t.boardFiction;
   }
-  const names = { from: placeLabel(trip.from), to: placeLabel(trip.to), time: duration(seconds, lang), board, speed: t.speedLabel[trip.speedId] };
+  tripTitle.textContent = t.between(placeLabel(trip.from), placeLabel(trip.to));
+  let value;
+  let sub;
   if (trip.mode === "star") {
     const ly = trip.distanceAu * LY_PER_AU;
-    planResult.textContent = t.resultStars({ ...names, ly: fmt(ly, 2), pc: fmt(ly / 3.2616, 2) });
+    value = t.lightYears(fmt(ly, 2));
+    sub = t.parsec(fmt(ly / 3.2616, 2));
   } else {
-    planResult.textContent = t.result({
-      ...names,
-      au: fmt(trip.distanceAu),
-      light: duration(trip.distanceAu * LIGHT_SECONDS_PER_AU, lang),
-    });
+    value = t.au(fmt(trip.distanceAu));
+    sub = t.lightTravel(duration(trip.distanceAu * LIGHT_SECONDS_PER_AU, lang));
   }
+  const fiction = trip.kind === "fiction" || trip.kind === "limit";
+  tripKpis.replaceChildren(
+    kpiCell(t.distance, value, sub),
+    kpiCell(t.speed, t.speedLabel[trip.speedId], "", fiction),
+    kpiCell(t.travelTime, duration(seconds, lang), "")
+  );
+  tripBoard.textContent = `${t.boardLabel}: ${board}`;
 }
 const planetLabel = (name) => (name === "Earth" ? UI[lang].earthShort : solarName(name, lang));
 
@@ -3987,6 +4028,9 @@ function clearTrip() {
   planRoute.textContent = routeLabel();
   tripHud.hidden = true;
   planResult.textContent = "";
+  tripTitle.textContent = "";
+  tripKpis.replaceChildren();
+  tripBoard.textContent = "";
   warp = 0;
 }
 planStop.addEventListener("click", clearTrip);
@@ -3999,11 +4043,11 @@ function planCourse() {
   const from = resolvePlace(planFrom.value);
   const to = resolvePlace(planTo.value);
   if (!from || !to) {
-    planResult.textContent = t.unknown;
+    showTripMessage(t.unknown);
     return;
   }
   if (placeLabel(from) === placeLabel(to)) {
-    planResult.textContent = t.same;
+    showTripMessage(t.same);
     return;
   }
   const speed = SPEEDS.find((v) => v.id === planSpeed.value);
@@ -4022,7 +4066,7 @@ function planCourse() {
     o = planetPosition(rowOf(from.name), jd0);
     const hit = solveIntercept(o, (jd) => planetPosition(rowOf(to.name), jd), jd0, beta * C_AU_PER_DAY);
     if (!hit) {
-      planResult.textContent = t.none;
+      showTripMessage(t.none);
       return;
     }
     d = hit.arrive;
@@ -4035,7 +4079,7 @@ function planCourse() {
     const a = at(from);
     const b = at(to);
     if (a === b) {
-      planResult.textContent = t.same; // two planets of one star, or a planet of ours and the Sun: no trip between them
+      showTripMessage(t.same); // two planets of one star, or a planet of ours and the Sun: no trip between them
       return;
     }
     o = { x: a.x, y: a.y, z: a.z };
@@ -4099,7 +4143,7 @@ planGo.addEventListener("click", () => {
     updateSpeedText();
   }
   showTripResult();
-  planResult.textContent += `\n${trip.tookClock ? t.setSpeed : t.filmTime}`;
+  planResult.textContent = trip.tookClock ? t.setSpeed : t.filmTime;
   trip.phase = "intro";
   trip.phaseStart = performance.now() / 1000;
   trip.warpTarget = 0;
@@ -4119,7 +4163,7 @@ planRoute.addEventListener("click", () => {
   trip.follow = false;
   planStop.textContent = stopLabel();
   planRoute.textContent = routeLabel();
-  planResult.textContent += `\n${TRAVEL_UI[lang].routeNote}`;
+  planResult.textContent = TRAVEL_UI[lang].routeNote;
   showPlace(trip.from); // the start comes into view, from there the keys take over
 });
 
@@ -4588,7 +4632,7 @@ function stepTrip(now) {
     leaveEgo();
     setQuiet(false);
     showTripResult();
-    planResult.textContent += `\n${TRAVEL_UI[lang].arrived}`;
+    planResult.textContent = TRAVEL_UI[lang].arrived;
     showArrival(); // out of hyperspace at the target system: now on to the planet if one was chosen
   }
   const jd = JD_AT_LOAD + solar.time * 365.25;
@@ -4643,11 +4687,10 @@ function stepTrip(now) {
   tripShownAt = now;
   const seconds = t * trip.days * 86400;
   const board = trip.beta < 1 ? duration(boardSeconds(seconds, trip.beta), lang) : "-";
-  showTripResult();
-  planResult.textContent +=
+  planResult.textContent =
     trip.phase === "cruise"
-      ? `\n${TRAVEL_UI[lang].live({ percent: fmt(trip.share * 100, 0), time: duration(seconds, lang), board })}`
-      : `\n${TRAVEL_UI[lang].phase[trip.phase]}`;
+      ? TRAVEL_UI[lang].live({ percent: fmt(trip.share * 100, 0), time: duration(seconds, lang), board })
+      : TRAVEL_UI[lang].phase[trip.phase];
 }
 
 // The streaks of the stars grow with the speed: the ship of the planner, or the free flight with a step in c.

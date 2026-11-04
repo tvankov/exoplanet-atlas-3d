@@ -545,7 +545,41 @@ html, body {
   border-radius: 8px;
 }
 #trip-hud .plan-result {
-  margin: 0;
+  margin: 6px 0 0;
+}
+/* The heading of the trip: the two places, a fifth bigger than the rest and with air under it. */
+#trip-title {
+  margin: 2px 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+/* The three figures stand next to each other, each a word over a number. On a narrow screen they wrap. */
+#trip-kpis {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+}
+.kpi-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.kpi-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.kpi-sub {
+  display: block;
+  font-size: 11px;
+  opacity: 0.55;
+}
+#trip-board {
+  margin: 10px 0 0;
 }
 #planner-open {
   width: 100%;
