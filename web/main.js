@@ -3977,7 +3977,7 @@ function restoreTimeSpeed() {
 function clearTrip() {
   showSoft(performance.now() / 1000); // a stopped trip brings them straight back, there is nothing to land on
   // A route that was only drawn never touched the clock, so there is nothing to put back.
-  if (trip && !trip.arrived && trip.phase !== "route") restoreTimeSpeed();
+  if (trip && !trip.arrived && trip.tookClock) restoreTimeSpeed(); // only a trip that took the clock gives it back
   setQuiet(false);
   setNear(0.01);
   leaveEgo();
@@ -4087,12 +4087,19 @@ planGo.addEventListener("click", () => {
   // hyperspace (jump), flies (cruise) and comes out at the target (exit), where the target gets its view (done).
   // The cruise is made watchable: its time speed is set so that it takes about 20 seconds on the screen (never
   // slower than real time). Before it the clock runs in real time, so the planets stay where the course was worked out.
-  trip.watchScale = Math.min(1e8, Math.max(1, (days * 86400) / 20));
-  timeScale = 1;
-  speedSlider.value = "0";
-  updateSpeedText();
+  // Between planets the ship rides on the clock of the world: the course is aimed at the place where the target
+  // will be, so the clock has to run fast enough for the target to get there while we watch. Between stars it does
+  // not: the course only has the two stars in it, and winding the clock forward would make every planet in sight
+  // race around its star for no reason. There the film simply runs for CRUISE_SECONDS of real time.
+  trip.tookClock = trip.mode === "solar"; // mode itself is a local of planCourse
+  if (trip.tookClock) {
+    trip.watchScale = Math.min(1e8, Math.max(1, (days * 86400) / 20));
+    timeScale = 1;
+    speedSlider.value = "0";
+    updateSpeedText();
+  }
   showTripResult();
-  planResult.textContent += `\n${t.setSpeed}`;
+  planResult.textContent += `\n${trip.tookClock ? t.setSpeed : t.filmTime}`;
   trip.phase = "intro";
   trip.phaseStart = performance.now() / 1000;
   trip.warpTarget = 0;
@@ -4521,6 +4528,7 @@ function setNear(value) {
   camera.updateProjectionMatrix();
 }
 
+const CRUISE_SECONDS = 20; // how long the journey between two stars runs on the screen
 const TRIP_INTRO = 2.5; // seconds of the film, real time
 const TRIP_TURN = 2.5;
 const TRIP_JUMP = 1.2;
@@ -4548,9 +4556,12 @@ function setPhase(name, now) {
   }
   if (name === "cruise") {
     trip.jd0 = JD_AT_LOAD + solar.time * 365.25;
-    timeScale = trip.watchScale;
-    speedSlider.value = String((Math.log10(timeScale) / 8) * 100);
-    updateSpeedText();
+    trip.cruiseStart = now;
+    if (trip.tookClock) {
+      timeScale = trip.watchScale;
+      speedSlider.value = String((Math.log10(timeScale) / 8) * 100);
+      updateSpeedText();
+    }
   }
 }
 
@@ -4581,7 +4592,18 @@ function stepTrip(now) {
     showArrival(); // out of hyperspace at the target system: now on to the planet if one was chosen
   }
   const jd = JD_AT_LOAD + solar.time * 365.25;
-  const t = trip.phase === "cruise" ? Math.min(1, Math.max(0, (jd - trip.jd0) / trip.days)) : trip.phase === "exit" || trip.phase === "done" ? 1 : 0; // the share of the time that has passed
+  // How much of the way is behind us. On the clock of the world between planets, on the clock of the film
+  // between stars. The travel time in the box below is worked out from this share either way, so it stays the
+  // real time for the speed that was chosen.
+  const share =
+    trip.phase !== "cruise"
+      ? trip.phase === "exit" || trip.phase === "done"
+        ? 1
+        : 0
+      : trip.tookClock
+        ? (jd - trip.jd0) / trip.days
+        : (now - trip.cruiseStart) / CRUISE_SECONDS;
+  const t = Math.min(1, Math.max(0, share));
   trip.speedFactor = rampSpeed(t);
   trip.share = rampDistance(t); // the share of the hyperspace part, the ship starts and stops softly
   // The target system is put into the sky as soon as the start is behind us, so the approach shows it growing.
@@ -4614,7 +4636,7 @@ function stepTrip(now) {
   ship.visible = trip.phase !== "intro" && !egoOn;
   if (t >= 1 && trip.phase === "cruise") {
     trip.arrived = true; // the flight itself is over, the film goes on with the exit
-    restoreTimeSpeed();
+    if (trip.tookClock) restoreTimeSpeed();
     setPhase("exit", now);
   }
   if (trip.phase === "done" || now - tripShownAt < 0.3) return;
