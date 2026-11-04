@@ -534,15 +534,19 @@ html, body {
 #flight-caption {
   position: fixed;
   left: 50%;
-  bottom: 190px; /* set again from the real height of the box, see showCaption */
+  bottom: 190px; /* height and width come from the box below, see showCaption */
   transform: translateX(-50%);
   z-index: 9;
+  box-sizing: border-box;
   margin: 0;
-  max-width: min(640px, calc(100vw - 32px));
+  max-width: min(520px, calc(100vw - 32px));
+  padding: 8px 14px;
   text-align: center;
-  font-size: 16px;
+  font-size: 21px;
   letter-spacing: 0.01em;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.9);
+  background: rgba(10, 14, 24, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
   pointer-events: none;
   opacity: 1;
   transition: opacity 0.8s ease;
@@ -563,7 +567,7 @@ html, body {
   z-index: 9;
   box-sizing: border-box;
   max-width: min(520px, calc(100vw - 32px));
-  padding: 8px 14px 10px;
+  padding: 10px 26px 12px;
   text-align: center;
   background: rgba(10, 14, 24, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -571,6 +575,23 @@ html, body {
 }
 #trip-hud .plan-result {
   margin: 6px 0 0;
+}
+/* The x of the box, the same corner and size as the one of the planner. */
+#trip-hud #plan-stop {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  margin: 0;
+  padding: 0 7px;
+  font-size: 16px;
+  line-height: 22px;
+  background: none;
+  border: 0;
+  opacity: 0.65;
+}
+#trip-hud #plan-stop:hover {
+  background: none;
+  opacity: 1;
 }
 /* The heading of the trip: the two places, a fifth bigger than the rest and with air under it. */
 #trip-title {

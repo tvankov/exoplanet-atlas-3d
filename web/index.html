@@ -156,12 +156,12 @@
        landing and can be switched off in the settings. -->
   <p id="flight-caption" hidden></p>
   <div id="trip-hud" hidden>
+    <!-- Closing sits in the corner like everywhere else, a whole button row would only cost height. -->
+    <button id="plan-stop" type="button" aria-label="Close">&times;</button>
     <h3 id="trip-title"></h3>
-    <!-- The three figures of the trip, filled by showTripResult: a word on top, the number below. -->
+    <!-- The figures of the trip, filled by showTripResult: a word on top, the number below. -->
     <div id="trip-kpis"></div>
-    <p id="trip-board" class="hint"></p>
     <p id="plan-result" class="plan-result"></p>
-    <button id="plan-stop" type="button">Stop</button>
   </div>
   <section id="story" hidden>
     <div id="story-head">

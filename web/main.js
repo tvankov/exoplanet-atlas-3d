@@ -3792,8 +3792,9 @@ function showCaption(text, fadeAfter = 0) {
   caption.textContent = text;
   caption.hidden = false;
   caption.classList.remove("away");
-  // Above the box with the figures, whatever height that box happens to have.
-  caption.style.bottom = `${(tripHud.hidden ? 20 : tripHud.offsetHeight + 32)}px`;
+  // Sits on the box with the figures and is exactly as wide as it, so the two read as one thing.
+  caption.style.bottom = `${tripHud.hidden ? 20 : tripHud.offsetHeight + 12}px`;
+  caption.style.width = tripHud.hidden ? "" : `${tripHud.offsetWidth}px`;
   if (fadeAfter) captionTimer = setTimeout(() => caption.classList.add("away"), fadeAfter * 1000);
 }
 function hideCaption() {
@@ -3803,12 +3804,10 @@ function hideCaption() {
   caption.textContent = "";
 }
 const tripKpis = document.getElementById("trip-kpis");
-const tripBoard = document.getElementById("trip-board");
 // A message without a trip (an unknown place, two times the same one): the box only holds that one line.
 function showTripMessage(text) {
   tripTitle.textContent = "";
   tripKpis.replaceChildren();
-  tripBoard.textContent = "";
   planResult.textContent = text;
   tripHud.hidden = false;
 }
@@ -3861,7 +3860,7 @@ function buildPlanner() {
   );
   planGo.textContent = t.go;
   planRoute.textContent = routeLabel();
-  planStop.textContent = stopLabel();
+  planStop.title = stopLabel();
   plannerOpen.textContent = t.title;
   for (const id of ["plan-from-pick", "plan-to-pick"]) {
     document.getElementById(id).textContent = t.pick;
@@ -3946,12 +3945,6 @@ function kpiCell(label, value, sub, fiction = false) {
 function showTripResult() {
   const t = TRAVEL_UI[lang];
   const seconds = trip.days * 86400;
-  let board;
-  if (trip.beta < 1) {
-    board = `${duration(boardSeconds(seconds, trip.beta), lang)} ${t.gamma(fmt(lorentz(trip.beta), 3))}`;
-  } else {
-    board = trip.beta === 1 ? t.boardLight : t.boardFiction;
-  }
   tripTitle.textContent = t.between(placeLabel(trip.from), placeLabel(trip.to));
   let value;
   let sub;
@@ -3964,12 +3957,17 @@ function showTripResult() {
     sub = t.lightTravel(duration(trip.distanceAu * LIGHT_SECONDS_PER_AU, lang));
   }
   const fiction = trip.kind === "fiction" || trip.kind === "limit";
-  tripKpis.replaceChildren(
+  const cells = [
     kpiCell(t.distance, value, sub),
     kpiCell(t.speed, t.speedLabel[trip.speedId], "", fiction),
-    kpiCell(t.travelTime, duration(seconds, lang), "")
-  );
-  tripBoard.textContent = `${t.boardLabel}: ${board}`;
+    kpiCell(t.travelTime, duration(seconds, lang), ""),
+  ];
+  // Below the speed of light the clock on board runs slower, and that is worth a figure of its own. At it and
+  // above it there is nothing to show but a sentence about why there is nothing, so the figure is left out.
+  if (trip.beta < 1) {
+    cells.push(kpiCell(t.boardLabel, duration(boardSeconds(seconds, trip.beta), lang), t.gamma(fmt(lorentz(trip.beta), 3))));
+  }
+  tripKpis.replaceChildren(...cells);
 }
 const planetLabel = (name) => (name === "Earth" ? UI[lang].earthShort : solarName(name, lang));
 
@@ -4057,7 +4055,6 @@ function clearTrip() {
   hideCaption();
   tripTitle.textContent = "";
   tripKpis.replaceChildren();
-  tripBoard.textContent = "";
   warp = 0;
 }
 planStop.addEventListener("click", clearTrip);
@@ -4153,7 +4150,7 @@ planGo.addEventListener("click", () => {
   const t = TRAVEL_UI[lang];
   const { days, from } = trip;
   ship.visible = true;
-  planStop.textContent = stopLabel();
+  planStop.title = stopLabel();
   // The trip is a short film: the start is in view (intro), the ship turns towards the target (turn), jumps into
   // hyperspace (jump), flies (cruise) and comes out at the target (exit), where the target gets its view (done).
   // The cruise is made watchable: its time speed is set so that it takes about 20 seconds on the screen (never
@@ -4170,7 +4167,7 @@ planGo.addEventListener("click", () => {
     updateSpeedText();
   }
   showTripResult();
-  planResult.textContent = trip.tookClock ? t.setSpeed : t.filmTime;
+  planResult.textContent = ""; // how the film works is in the planner, under "How the trip is worked out"
   trip.phase = "intro";
   trip.phaseStart = performance.now() / 1000;
   trip.warpTarget = 0;
@@ -4188,7 +4185,7 @@ planRoute.addEventListener("click", () => {
   if (!planCourse()) return;
   trip.phase = "route";
   trip.follow = false;
-  planStop.textContent = stopLabel();
+  planStop.title = stopLabel();
   planRoute.textContent = routeLabel();
   planResult.textContent = TRAVEL_UI[lang].routeNote;
   showPlace(trip.from); // the start comes into view, from there the keys take over
@@ -4655,7 +4652,7 @@ function stepTrip(now) {
   else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
     setPhase("done", now);
     setNear(0.01);
-    planStop.textContent = stopLabel(); // "Stop" becomes "Close"
+    planStop.title = stopLabel(); // the x says what it does when the pointer rests on it
     leaveEgo();
     setQuiet(false);
     showTripResult();
