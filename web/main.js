@@ -3827,7 +3827,15 @@ function buildPlanner() {
   document.getElementById("plan-view-label").textContent = t.view;
   planView.options[0].textContent = t.viewThird;
   planView.options[1].textContent = t.viewEgo;
-  document.getElementById("plan-note").textContent = t.note;
+  document.getElementById("plan-note-title").textContent = t.noteTitle;
+  document.getElementById("plan-note").replaceChildren(
+    ...t.note.map((line) => {
+      const p = document.createElement("p");
+      p.className = "hint";
+      p.textContent = line;
+      return p;
+    })
+  );
   planGo.textContent = t.go;
   planRoute.textContent = routeLabel();
   planStop.textContent = stopLabel();

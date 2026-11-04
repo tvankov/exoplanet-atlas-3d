@@ -140,7 +140,11 @@
         <p id="plan-kind" class="hint"></p>
         <button id="plan-go" type="button">Plan and fly</button>
         <button id="plan-route" type="button">Show the route</button>
-        <p id="plan-note" class="hint"></p>
+        <!-- Folded away: it is the small print of the trip, not something to read before every flight. -->
+        <details class="menu" id="plan-note-box">
+          <summary id="plan-note-title">How the trip is worked out</summary>
+          <div id="plan-note"></div>
+        </details>
         <label><span id="fly-label">Flight speed (keys)</span> <select id="fly-speed"></select></label>
         <p id="fly-note" class="hint"></p>
     </div>
