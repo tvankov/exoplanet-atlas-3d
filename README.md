@@ -1,4 +1,4 @@
-# Exoplanet Atlas 3D
+# Space Explorer
 
 Interactive 3D map of all confirmed exoplanets and their host stars, placed at their real positions relative to the Sun.
 Includes a menu of habitable candidates, system views for the Solar System and exoplanet systems, and a short factual story
