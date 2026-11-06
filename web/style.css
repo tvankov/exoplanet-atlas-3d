@@ -968,3 +968,52 @@ html, body {
   line-height: 1.4;
   opacity: 0.7;
 }
+
+/* Phones: the Info button is a round button at the bottom right (in reach of the thumb), an "i" that becomes an "x" while the story panel is
+   open. The panel sits above it. It is not in the burger menu any more, and it steps aside while the box of a trip is on the screen. */
+@media (max-width: 640px) {
+  #info-button {
+    display: block;
+    top: auto;
+    right: 16px;
+    bottom: 16px;
+    z-index: 13;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    line-height: 0;
+    background: rgba(10, 14, 24, 0.85);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+  #info-button::before {
+    content: "i";
+    font-family: Georgia, serif;
+    font-size: 24px;
+    font-style: italic;
+    font-weight: 700;
+    line-height: 46px;
+  }
+  #info-button[aria-expanded="true"]::before {
+    content: "\00d7";
+    font-family: inherit;
+    font-style: normal;
+    font-size: 28px;
+  }
+  #info-button[hidden] {
+    display: none;
+  }
+  body:has(#trip-hud:not([hidden])) #info-button {
+    display: none;
+  }
+  #hud #info-story {
+    display: none;
+  }
+  #story {
+    bottom: 76px; /* above the round button */
+  }
+  #pick-hint {
+    bottom: 76px;
+  }
+}
