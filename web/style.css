@@ -761,3 +761,175 @@ html, body {
 #scale {
   width: 100%;
 }
+
+/* ---- Phones ---------------------------------------------------------------------------------------------------
+   The panel on the left starts folded to a small bar (title and a button), so the picture is free. Opened, it is as wide as the
+   screen. The other windows use the width of the screen too, with smaller type, and every control is big enough for a finger. */
+.hud-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.hud-head h1 {
+  margin: 0 0 6px;
+}
+#hud #hud-toggle {
+  display: none;
+  margin: 0 0 6px;
+  padding: 0 10px;
+}
+#hud.collapsed > :not(.hud-head) {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  #hud {
+    top: 8px;
+    left: 8px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - 64px);
+    box-sizing: border-box;
+  }
+  #hud:not(.collapsed) {
+    top: 56px; /* under the row of the Info and menu buttons */
+    right: 8px;
+  }
+  #hud.collapsed {
+    padding: 4px 6px 0 12px;
+  }
+  .hud-head h1 {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  #hud #hud-toggle {
+    display: block;
+  }
+  #burger {
+    top: 8px;
+    right: 8px;
+  }
+  #info-button {
+    top: 8px;
+    right: 52px;
+  }
+  #info {
+    top: 56px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - 64px);
+  }
+  #story {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: auto;
+    max-height: 34dvh;
+  }
+  #planner-panel {
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    padding: 10px 12px 12px;
+  }
+  #habitable {
+    max-height: 40dvh;
+  }
+
+  /* The flight: a narrow box with smaller type, the caption above it. */
+  #trip-hud,
+  #pick-hint {
+    bottom: 8px;
+    left: 8px; /* the whole width: from the middle (left: 50 %) the box would only get half of it */
+    right: 8px;
+    transform: none;
+    max-width: none;
+  }
+  #trip-hud {
+    padding: 8px 28px 10px 12px;
+  }
+  #trip-title {
+    margin: 0 0 8px;
+    font-size: 14px;
+  }
+  #trip-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* distance, travel time and time on board in a row ... */
+    gap: 6px 10px;
+  }
+  #trip-kpis > * {
+    min-width: 0;
+  }
+  #trip-kpis > :nth-child(2) {
+    order: 4; /* ... and the speed, the longest text, under them over the whole width */
+    grid-column: 1 / -1;
+  }
+  .kpi-label,
+  .kpi-sub {
+    font-size: 10px;
+  }
+  .kpi-value {
+    font-size: 13px;
+  }
+  #trip-hud .plan-result {
+    font-size: 12px;
+  }
+  #flight-caption {
+    max-width: calc(100vw - 16px);
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+}
+
+/* Touch: controls at least 44 px high, and 16 px type in fields (a smaller one makes the phone zoom into the page). */
+@media (pointer: coarse) {
+  #hud button,
+  #hud select,
+  #info button,
+  #info select,
+  #planner-panel button,
+  #planner-panel select,
+  #planner-panel input,
+  #story button,
+  #pick-hint button,
+  #trip-hud button,
+  #search {
+    min-height: 44px;
+  }
+  #search,
+  #planner-panel input,
+  #planner-panel select,
+  #hud select,
+  #info select {
+    font-size: 16px;
+  }
+  .menu > summary {
+    padding: 12px 0 10px;
+  }
+  .planet-list .row {
+    min-height: 40px;
+  }
+  #burger,
+  #info-button {
+    height: 44px;
+  }
+  #burger {
+    width: 44px;
+  }
+  #info-button {
+    right: 60px;
+  }
+  #story-actions button {
+    min-height: 36px;
+    padding: 3px 10px;
+  }
+  #planner-close,
+  #trip-hud #plan-stop {
+    min-width: 44px;
+    min-height: 44px;
+    top: 0;
+    right: 0;
+  }
+}

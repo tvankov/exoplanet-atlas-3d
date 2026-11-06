@@ -2910,6 +2910,23 @@ function toggleInfo(open = infoPanel.hidden) {
   burger.setAttribute("aria-expanded", String(open));
 }
 burger.addEventListener("click", () => toggleInfo());
+
+// On a phone the panel on the left starts folded (the picture is free), the button in its bar opens it. Choosing something from it
+// folds it again, so the chosen planet is in view.
+const hudPanel = document.getElementById("hud");
+const hudToggle = document.getElementById("hud-toggle");
+const phone = window.matchMedia("(max-width: 640px)");
+function setHudFolded(folded) {
+  hudPanel.classList.toggle("collapsed", folded);
+  hudToggle.setAttribute("aria-expanded", String(!folded));
+  layoutView();
+}
+setHudFolded(phone.matches);
+phone.addEventListener("change", () => setHudFolded(phone.matches));
+hudToggle.addEventListener("click", () => setHudFolded(!hudPanel.classList.contains("collapsed")));
+hudPanel.addEventListener("click", (e) => {
+  if (phone.matches && e.target.closest(".planet-list, #planner-open")) setTimeout(() => setHudFolded(true), 0);
+});
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !infoPanel.hidden) toggleInfo(false);
 });
