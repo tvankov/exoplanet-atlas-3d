@@ -765,6 +765,12 @@ html, body {
 /* ---- Phones ---------------------------------------------------------------------------------------------------
    The panel on the left starts folded to a small bar (title and a button), so the picture is free. Opened, it is as wide as the
    screen. The other windows use the width of the screen too, with smaller type, and every control is big enough for a finger. */
+#info #info-story {
+  display: none; /* only on a phone, see the media query below */
+}
+#info #info-story[hidden] {
+  display: none;
+}
 .hud-head {
   display: flex;
   align-items: center;
@@ -811,8 +817,12 @@ html, body {
     right: 8px;
   }
   #info-button {
-    top: 8px;
-    right: 52px;
+    display: none; /* on a phone it is the first entry of the burger menu */
+  }
+  #info #info-story {
+    display: block;
+    width: 100%;
+    text-align: left;
   }
   #info {
     top: 56px;

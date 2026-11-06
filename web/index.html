@@ -79,6 +79,8 @@
   <button id="info-button" type="button" aria-expanded="false" aria-controls="story">Info</button>
   <button id="burger" type="button" aria-expanded="false" aria-controls="info">&#9776;</button>
   <div id="info" hidden>
+    <!-- Only on a phone: there the Info button of the top bar lives in this menu (see style.css, main.js). -->
+    <button id="info-story" type="button" aria-expanded="false" aria-controls="story">Info</button>
     <details class="menu" open>
       <summary id="hints-title">Hints</summary>
     <p class="hint" id="hint">Drag to rotate, scroll to zoom, right drag to pan</p>

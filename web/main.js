@@ -2663,6 +2663,7 @@ let hasStory = false;
 function applyStoryVisibility() {
   storyPanel.hidden = quiet || !storyOpen;
   infoButton.hidden = quiet;
+  document.getElementById("info-story").hidden = quiet;
   if (!hasStory) {
     // No planet chosen yet: the window says so instead of staying empty.
     document.getElementById("story-title").textContent = "Info";
@@ -2676,6 +2677,7 @@ function applyStoryVisibility() {
     listenButton.hidden = false;
   }
   infoButton.setAttribute("aria-expanded", String(storyOpen));
+  document.getElementById("info-story").setAttribute("aria-expanded", String(storyOpen));
   layoutView();
 }
 infoButton.addEventListener("click", () => {
@@ -2924,6 +2926,25 @@ function setHudFolded(folded) {
 setHudFolded(phone.matches);
 phone.addEventListener("change", () => setHudFolded(phone.matches));
 hudToggle.addEventListener("click", () => setHudFolded(!hudPanel.classList.contains("collapsed")));
+// Tidier on a phone: the search sits in the Tools menu (not on top of the panel), and the Info button of the top bar is the first entry of
+// the burger menu. On a wider screen both are where they were.
+const searchBox = document.getElementById("search-box");
+const toolsMenu = document.getElementById("tools-menu");
+function placeSearch() {
+  const wanted = phone.matches ? toolsMenu : hudPanel;
+  if (searchBox.parentElement === wanted) return; // moving the field would take the keyboard away while typing
+  if (phone.matches) toolsMenu.querySelector("summary").after(searchBox);
+  else document.getElementById("speed-box").before(searchBox);
+}
+placeSearch();
+phone.addEventListener("change", placeSearch);
+window.addEventListener("resize", placeSearch);
+// The burger menu on a phone is a short list: Info, Hints, Credits, Settings, all folded.
+if (phone.matches) for (const d of document.querySelectorAll("#info details[open]")) d.open = false;
+document.getElementById("info-story").addEventListener("click", () => {
+  infoButton.click();
+  toggleInfo(false); // the menu closes, the story panel opens
+});
 hudPanel.addEventListener("click", (e) => {
   if (phone.matches && e.target.closest(".planet-list, #planner-open")) setTimeout(() => setHudFolded(true), 0);
 });
