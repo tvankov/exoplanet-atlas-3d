@@ -2911,7 +2911,8 @@ function toggleInfo(open = infoPanel.hidden) {
   infoPanel.hidden = !open;
   burger.setAttribute("aria-expanded", String(open));
 }
-burger.addEventListener("click", () => toggleInfo());
+// On a phone the burger button is the only menu: it opens the panel with everything in it (see movedMenus). Elsewhere it opens the info window.
+burger.addEventListener("click", () => (phone.matches ? setHudFolded(!hudPanel.classList.contains("collapsed")) : toggleInfo()));
 
 // On a phone the panel on the left starts folded (the picture is free), the button in its bar opens it. Choosing something from it
 // folds it again, so the chosen planet is in view.
@@ -2921,6 +2922,7 @@ const phone = window.matchMedia("(max-width: 640px)");
 function setHudFolded(folded) {
   hudPanel.classList.toggle("collapsed", folded);
   hudToggle.setAttribute("aria-expanded", String(!folded));
+  if (phone.matches) burger.setAttribute("aria-expanded", String(!folded));
   layoutView();
 }
 setHudFolded(phone.matches);
@@ -2939,11 +2941,27 @@ function placeSearch() {
 placeSearch();
 phone.addEventListener("change", placeSearch);
 window.addEventListener("resize", placeSearch);
+// One burger menu on a phone: the entries of the info window (Info, Hints, Credits, Settings) move to the end of the panel on the left, so
+// that button opens everything. On a wider screen they go back to the info window.
+const movedMenus = [...infoPanel.children];
+function placeMenus() {
+  const target = phone.matches ? hudPanel : infoPanel;
+  if (movedMenus[0].parentElement === target) return;
+  for (const node of movedMenus) {
+    node.classList.toggle("from-info", phone.matches);
+    target.append(node);
+  }
+  if (phone.matches) toggleInfo(false);
+}
+placeMenus();
+phone.addEventListener("change", placeMenus);
+window.addEventListener("resize", placeMenus);
 // The burger menu on a phone is a short list: Info, Hints, Credits, Settings, all folded.
-if (phone.matches) for (const d of document.querySelectorAll("#info details[open]")) d.open = false;
+if (phone.matches) for (const d of document.querySelectorAll("details.from-info[open]")) d.open = false;
 document.getElementById("info-story").addEventListener("click", () => {
   infoButton.click();
-  toggleInfo(false); // the menu closes, the story panel opens
+  if (phone.matches) setHudFolded(true);
+  else toggleInfo(false); // the menu closes, the story panel opens
 });
 hudPanel.addEventListener("click", (e) => {
   if (phone.matches && e.target.closest(".planet-list, #planner-open")) setTimeout(() => setHudFolded(true), 0);

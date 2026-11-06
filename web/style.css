@@ -786,7 +786,7 @@ html, body {
   padding: 0 10px;
 }
 #hud.collapsed > :not(.hud-head) {
-  display: none;
+  display: none !important; /* also the entries moved in from the info window */
 }
 
 @media (max-width: 640px) {
@@ -810,7 +810,10 @@ html, body {
     white-space: nowrap;
   }
   #hud #hud-toggle {
-    display: block;
+    display: none; /* the burger button at the top right is the only menu button */
+  }
+  #hud.collapsed {
+    padding-right: 14px;
   }
   #burger {
     top: 8px;
@@ -942,4 +945,26 @@ html, body {
     top: 0;
     right: 0;
   }
+}
+
+/* The entries of the info window, moved into the panel on the left on a phone (see placeMenus in main.js). */
+#hud .from-info select option {
+  color: #05060a;
+}
+#hud details.from-info > button,
+#hud details.from-info > select,
+#hud #info-story {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+#hud #info-story[hidden] {
+  display: none;
+}
+#hud #credits {
+  margin: 0 0 6px;
+  font-size: 10px;
+  line-height: 1.4;
+  opacity: 0.7;
 }
