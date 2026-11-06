@@ -411,6 +411,10 @@ third party source calls its licence ODbL, which CDS has not confirmed.
 - Saturn's rings use the known ring boundaries; the fine streaks inside them are schematic.
 - 3D: [three.js](https://threejs.org/) r160 (MIT), served from `web/vendor/three/` with its licence file, so no
   visitor data goes to a CDN.
+- Visit counting: [GoatCounter](https://www.goatcounter.com) (hosted, account `spaceexplorer`), no cookies. Its script
+  (`gc.zgo.at/count.js`) is the only one that is not served from this site; the visitor's IP address therefore reaches GoatCounter.
+  The privacy notice in `web/legal.html` says so. It still has a marked placeholder: check GoatCounter's own privacy terms
+  (what is stored, for how long, where) and whether a data processing agreement is needed before publishing.
 - Voices: Piper, trained on LJ Speech (public domain) and Multilingual LibriSpeech, Pratap et al.,
   licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The German audio was synthesized with a
   voice model trained on that dataset, the clips are new recordings made by the model.
