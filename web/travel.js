@@ -1,6 +1,7 @@
 // Travel planner (stage 1: planet to planet in the Solar System), flight speeds in multiples of c, spectral
 // classes and the texts for them. The maths here is plain and has no three.js in it, so it can be read and
 // checked on its own. main.js draws the result.
+import { TRAVEL_EXTRA } from "./i18n-extra.js";
 
 export const C_KMS = 299792.458; // speed of light in km/s (exact by definition of the metre)
 export const AU_KM = 149597870.7; // astronomical unit in km (exact since 2012)
@@ -259,3 +260,5 @@ export const TRAVEL_UI = {
       `${d.a} nach ${d.b}: ${d.ly} Lichtjahre (${d.pc} Parsec). Das Licht braucht ${d.ly} Jahre. Gerade Linie im echten Raum, auf der Karte gebogen, weil sie gestaucht ist. Die Katalogabstände haben Messfehler.`,
   },
 };
+// Japanese and Bulgarian: what is not translated shows in English (see i18n-extra.js).
+for (const l of Object.keys(TRAVEL_EXTRA)) TRAVEL_UI[l] = { ...TRAVEL_UI.en, ...TRAVEL_EXTRA[l] };

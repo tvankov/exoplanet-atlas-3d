@@ -2572,7 +2572,7 @@ ring.scale.set(0.07, 0.07, 1);
 ring.visible = false;
 scene.add(ring);
 
-const FLIGHT_MS = 1400;
+const FLIGHT_MS = 1400; // a flight may set its own (flight.ms)
 let flight = null;
 let current = null; // { star, system, follow } of the menu entry that is shown
 let activeExo = null; // the one exoplanet system that exists at a time
@@ -2761,7 +2761,7 @@ const savedLang = (() => {
     return null; // storage can be blocked, the app works without it
   }
 })();
-let lang = savedLang in UI ? savedLang : navigator.language?.startsWith("de") ? "de" : "en";
+let lang = savedLang in UI ? savedLang : ["de", "ja", "bg"].find((l) => navigator.language?.startsWith(l)) ?? "en";
 
 // Reading aloud: a recorded clip is played when there is one (the same voice on every device),
 // otherwise the browser's own voice reads the text. Clips come from src/make_audio.py.
@@ -3029,6 +3029,7 @@ function applyLanguage() {
   buildPlanner();
   stopSpeaking();
   if (current) showStory(current.star, current.planet);
+  applyWelcomeTexts();
 }
 
 // A manual drag takes over from a running flight.
@@ -3036,7 +3037,7 @@ controls.addEventListener("start", () => (flight = null));
 
 function stepFlight() {
   if (!flight) return;
-  const u = Math.min(1, (performance.now() - flight.start) / FLIGHT_MS);
+  const u = Math.min(1, (performance.now() - flight.start) / (flight.ms ?? FLIGHT_MS));
   const e = u * u * (3 - 2 * u); // smoothstep, soft start and stop
   const target = flight.getTarget();
   if (flight.spherical) {
@@ -3125,9 +3126,9 @@ function focusStar() {
 function updateSolarLabels() {
   for (const b of solar.bodies) {
     b.mesh.userData.label?.userData.setText(b.name === "Earth" ? UI[lang].earthShort : solarName(b.name, lang));
-    b.moon?.mesh.userData.label.userData.setText(lang === "de" ? "Mond" : "Moon");
+    b.moon?.mesh.userData.label.userData.setText(UI[lang].moonName);
   }
-  beltLabel.userData.setText(lang === "de" ? "Asteroidengürtel" : "Asteroid belt");
+  beltLabel.userData.setText(UI[lang].beltName);
 }
 
 // The eight planets of the Solar System, in order from the Sun. Every click shows the Solar System
@@ -4041,12 +4042,12 @@ function resolvePlace(text) {
   const q = text.trim().toLowerCase();
   if (!q) return null;
   const planet = PLANETS.find((p) =>
-    [p.name, solarName(p.name, "en"), solarName(p.name, "de"), ...(p.name === "Earth" ? [UI.en.earthShort, UI.de.earthShort] : [])].some(
+    [p.name, ...Object.keys(UI).map((l) => solarName(p.name, l)), ...(p.name === "Earth" ? Object.values(UI).map((u) => u.earthShort) : [])].some(
       (n) => n.toLowerCase() === q
     )
   );
   if (planet) return { kind: "planet", name: planet.name };
-  if (q === "sun" || q === "sonne") return { kind: "star", star: SUN_POINT };
+  if (q === "sun" || Object.values(TRAVEL_UI).some((u) => u.sun.toLowerCase() === q)) return { kind: "star", star: SUN_POINT };
   starByName ??= new Map(stars.map((s) => [s.hostname.toLowerCase(), s]));
   const star = starByName.get(q);
   if (star) return { kind: "star", star };
@@ -5003,6 +5004,9 @@ function pickMeasure(x, y) {
   showMeasure();
 }
 
+const welcome = document.getElementById("welcome");
+const hintLine = document.getElementById("hint-line");
+const TOUCH = window.matchMedia("(pointer: coarse)").matches;
 const res = await fetch("data/stars.json");
 const data = await res.json();
 stars = data.stars;
@@ -5015,6 +5019,71 @@ applyLanguage();
 animate();
 // The start screen goes away once the first frame is on its way.
 requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));
+// The first visit: a card with three things to try, and a line at the bottom that says how to move. The start is the Solar System with
+// Earth in view, reached in a slow flight, so there is something to look at behind the card.
+function applyWelcomeTexts() {
+  const t = UI[lang];
+  document.getElementById("welcome-text").textContent = t.welcomeText;
+  document.getElementById("welcome-mars").textContent = t.welcomeMars;
+  document.getElementById("welcome-habitable").textContent = t.welcomeHabitable;
+  document.getElementById("welcome-plan").textContent = t.welcomePlan;
+  document.getElementById("welcome-close").setAttribute("aria-label", t.welcomeClose);
+  hintLine.textContent = TOUCH ? t.hintLineTouch : t.hintLine;
+}
+function showHintLine() {
+  hintLine.hidden = false;
+  const hide = () => {
+    hintLine.hidden = true;
+    for (const e of ["pointerdown", "wheel", "keydown"]) window.removeEventListener(e, hide);
+  };
+  for (const e of ["pointerdown", "wheel", "keydown"]) window.addEventListener(e, hide, { once: true });
+  setTimeout(hide, 20000);
+}
+function closeWelcome() {
+  if (welcome.hidden) return;
+  welcome.hidden = true;
+  try {
+    localStorage.setItem("welcomed", "1");
+  } catch {
+    // not remembered, it shows again next time
+  }
+  showHintLine();
+}
+welcome.addEventListener("click", (e) => e.target === welcome && closeWelcome());
+document.getElementById("welcome-close").addEventListener("click", closeWelcome);
+window.addEventListener("keydown", (e) => e.key === "Escape" && closeWelcome());
+document.getElementById("welcome-mars").addEventListener("click", () => {
+  closeWelcome();
+  planFrom.value = "Earth";
+  planTo.value = "Mars";
+  planGo.click();
+});
+document.getElementById("welcome-habitable").addEventListener("click", () => {
+  closeWelcome();
+  if (phone.matches) setHudFolded(false);
+  const menu = document.getElementById("habitable").closest("details");
+  menu.open = true;
+  menu.scrollIntoView({ block: "nearest" });
+});
+document.getElementById("welcome-plan").addEventListener("click", () => {
+  closeWelcome();
+  togglePlanner(true);
+});
+for (const b of welcome.querySelectorAll("[data-lang]")) {
+  b.addEventListener("click", () => {
+    langSelect.value = b.dataset.lang;
+    langSelect.dispatchEvent(new Event("change"));
+  });
+}
+showSystem(EARTH.star, EARTH.planet);
+if (flight) flight.ms = 3200;
+let seen = false;
+try {
+  seen = localStorage.getItem("welcomed") === "1";
+} catch {
+  // storage blocked: the card shows every time
+}
+welcome.hidden = seen;
 // The two star layers are on by default (they load in the background); the deep layer is not offered on touch devices.
 gaiaButton.click();
 if (!IS_MOBILE) deepButton.click();

@@ -2,6 +2,8 @@
 // Every number comes from the table, the only hand-written facts are the textbook
 // explanations of the discovery methods. Anything unknown is left out instead of guessed.
 
+import { UI_EXTRA, TEXT_EXTRA, DURATION_EXTRA, SOLAR_TITLES, LOCALES } from "./i18n-extra.js";
+
 export const UI = {
   en: {
     speech: "en-US",
@@ -77,6 +79,15 @@ export const UI = {
     realTime: "Real time",
     rate: (duration) => `1 second = ${duration}`,
     elapsed: (duration) => `Time passed: ${duration}`,
+    hintLine: "Drag to rotate, scroll to zoom, click a planet",
+    hintLineTouch: "Swipe to rotate, pinch to zoom, tap a planet",
+    moonName: "Moon",
+    beltName: "Asteroid belt",
+    welcomeText: "Fly through real exoplanet data: real stars, real distances, real travel times.",
+    welcomeMars: "Fly to Mars",
+    welcomeHabitable: "See habitable worlds",
+    welcomePlan: "Plan a trip",
+    welcomeClose: "Close",
   },
   de: {
     speech: "de-DE",
@@ -150,8 +161,19 @@ export const UI = {
     realTime: "Echtzeit",
     rate: (duration) => `1 Sekunde = ${duration}`,
     elapsed: (duration) => `Vergangene Zeit: ${duration}`,
+    hintLine: "Ziehen zum Drehen, Scrollen zum Zoomen, Planeten anklicken",
+    hintLineTouch: "Wischen zum Drehen, zwei Finger zum Zoomen, Planeten antippen",
+    moonName: "Mond",
+    beltName: "Asteroidengürtel",
+    welcomeText: "Fliege durch echte Exoplaneten-Daten: echte Sterne, echte Entfernungen, echte Reisezeiten.",
+    welcomeMars: "Zum Mars fliegen",
+    welcomeHabitable: "Bewohnbare Welten ansehen",
+    welcomePlan: "Eine Reise planen",
+    welcomeClose: "Schließen",
   },
 };
+// Japanese and Bulgarian: what is not translated shows in English (see i18n-extra.js).
+for (const l of Object.keys(UI_EXTRA)) UI[l] = { ...UI.en, ...UI_EXTRA[l] };
 
 // Planet type from the radius alone, the usual rough classes in astronomy. The 1.6 limit is
 // the same one the candidate rule uses, so every candidate comes out as rocky.
@@ -174,13 +196,14 @@ function num(lang, value, digits) {
     digits == null
       ? { maximumFractionDigits: 3, useGrouping: false }
       : { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false };
-  return value.toLocaleString(lang === "de" ? "de-DE" : "en-US", options);
+  return value.toLocaleString(LOCALES[lang] ?? "en-US", options);
 }
 
 // A length of time in words, for the speed display: "5 minutes", "3.2 days", "2 years".
 const DURATION_UNITS = {
   en: [["second", "seconds"], ["minute", "minutes"], ["hour", "hours"], ["day", "days"], ["year", "years"]],
   de: [["Sekunde", "Sekunden"], ["Minute", "Minuten"], ["Stunde", "Stunden"], ["Tag", "Tage"], ["Jahr", "Jahre"]],
+  ...DURATION_EXTRA,
 };
 export function duration(seconds, lang) {
   const sizes = [1, 60, 3600, 86400, 365.25 * 86400];
@@ -289,6 +312,8 @@ const TEXT = {
       "Er steht auf dieser Liste, weil Größe und Temperatur zu einer einfachen Regel für Welten passen, die flüssiges Wasser halten könnten. Ob es dort Wasser, eine Atmosphäre oder Leben gibt, ist unbekannt.",
   },
 };
+
+for (const l of Object.keys(TEXT_EXTRA)) TEXT[l] = { ...TEXT.en, ...TEXT_EXTRA[l] };
 
 function classIndex(star) {
   if (star.st_teff == null || (star.st_rad != null && star.st_rad > 3)) return 0;
@@ -523,7 +548,7 @@ const fmtLight = (au, lang) => {
 
 export function objectStory(o, lang) {
   const de = lang === "de";
-  const blurb = VISITOR_BLURB[o.key]?.[lang];
+  const blurb = VISITOR_BLURB[o.key]?.[lang] ?? VISITOR_BLURB[o.key]?.en;
   const source = de
     ? `Quelle: NASA/JPL (Small-Body-Datenbank und Horizons). Die Lage ist aus den Bahndaten berechnet, Stand ${o.retrieved}, und ungefähr.`
     : `Source: NASA/JPL (Small-Body Database and Horizons). The position is worked out from the orbit data, retrieved ${o.retrieved}, and is approximate.`;
@@ -581,7 +606,7 @@ export function objectStory(o, lang) {
 }
 
 // Name of a Solar System planet in the menu. Earth has its own text in UI, the others reuse the story titles.
-export const solarName = (name, lang) => SOLAR_STORIES[name]?.title[lang] ?? name;
+export const solarName = (name, lang) => SOLAR_STORIES[name]?.title[lang] ?? SOLAR_TITLES[lang]?.[name] ?? name;
 
 export function buildStory(star, planet, lang) {
   const t = TEXT[lang];
@@ -589,7 +614,7 @@ export function buildStory(star, planet, lang) {
   if (planet.solarObject) return { title: planet.pl_name, paragraphs: objectStory(planet.solarObject, lang) };
   if (planet.solarOther) {
     const story = SOLAR_STORIES[planet.pl_name];
-    return story ? { title: story.title[lang], paragraphs: story[lang] } : { title: planet.pl_name, paragraphs: [] };
+    return story ? { title: story.title[lang] ?? SOLAR_TITLES[lang]?.[planet.pl_name] ?? story.title.en, paragraphs: story[lang] ?? story.en } : { title: planet.pl_name, paragraphs: [] };
   }
   if (star.solarSystem) return { title: UI[lang].earth.replace(/ \(.*\)/, ""), paragraphs: t.earth };
 
@@ -617,7 +642,7 @@ export function buildStory(star, planet, lang) {
   if (planet.pl_bmasse != null) facts.push(t.mass(n(planet.pl_bmasse, 2), planet.discoverymethod === "Radial Velocity"));
   if (planet.pl_orbper != null) facts.push(t.yearFact(t.year(n, planet.pl_orbper)));
   if (facts.length) {
-    const list = facts.length > 1 ? `${facts.slice(0, -1).join(", ")}${t.and}${facts.at(-1)}` : facts[0];
+    const list = facts.length > 1 ? `${facts.slice(0, -1).join(t.comma ?? ", ")}${t.and}${facts.at(-1)}` : facts[0];
     paragraphs.push(t.has(list));
   }
 
@@ -626,7 +651,7 @@ export function buildStory(star, planet, lang) {
   }
 
   const others = star.planets.filter((p) => p.pl_name !== planet.pl_name).map((p) => p.pl_name);
-  paragraphs.push(others.length ? t.others(others.length, others.join(", ")) : t.alone);
+  paragraphs.push(others.length ? t.others(others.length, others.join(t.comma ?? ", ")) : t.alone);
 
   paragraphs.push(planet.habitable ? t.caveat : t.caveatPlain);
 

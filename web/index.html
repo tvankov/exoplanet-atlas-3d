@@ -118,6 +118,8 @@
       <select id="lang" aria-label="Language">
         <option value="en">English</option>
         <option value="de">Deutsch</option>
+        <option value="ja">日本語</option>
+        <option value="bg">Български</option>
       </select>
       <button id="zone-toggle" type="button" aria-pressed="true">Candidate zone: on</button>
       <button id="caption-toggle" type="button" aria-pressed="true">Flight captions: on</button>
@@ -161,6 +163,27 @@
   <!-- What the ship is doing, written over the picture like a subtitle. It goes away by itself after the
        landing and can be switched off in the settings. -->
   <p id="flight-caption" hidden></p>
+  <!-- The first visit: what this is and three things to try, in the language of the page. See applyWelcomeTexts in main.js. -->
+  <div id="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title" hidden>
+    <div class="welcome-card">
+      <button id="welcome-close" type="button" aria-label="Close">&times;</button>
+      <h2 id="welcome-title">Space Explorer</h2>
+      <p id="welcome-text"></p>
+      <div class="welcome-actions">
+        <button id="welcome-mars" type="button"></button>
+        <button id="welcome-habitable" type="button"></button>
+        <button id="welcome-plan" type="button"></button>
+      </div>
+      <div class="welcome-langs">
+        <button type="button" data-lang="en">English</button>
+        <button type="button" data-lang="de">Deutsch</button>
+        <button type="button" data-lang="ja">日本語</button>
+        <button type="button" data-lang="bg">Български</button>
+      </div>
+    </div>
+  </div>
+  <!-- One line at the bottom that says how to move; it goes away with the first move. -->
+  <p id="hint-line" hidden></p>
   <div id="trip-hud" hidden>
     <!-- Closing sits in the corner like everywhere else, a whole button row would only cost height. -->
     <button id="plan-stop" type="button" aria-label="Close">&times;</button>
