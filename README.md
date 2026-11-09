@@ -420,8 +420,7 @@ third party source calls its licence ODbL, which CDS has not confirmed.
   visitor data goes to a CDN.
 - Visit counting: [GoatCounter](https://www.goatcounter.com) (hosted, account `spaceexplorer`), no cookies. Its script
   (`gc.zgo.at/count.js`) is the only one that is not served from this site; the visitor's IP address therefore reaches GoatCounter.
-  The privacy notice in `web/legal.html` says so. It still has a marked placeholder: check GoatCounter's own privacy terms
-  (what is stored, for how long, where) and whether a data processing agreement is needed before publishing.
+  The privacy notice in `web/legal.html` says so. It was checked against the privacy page of GoatCounter (8 June 2025) and the GitHub documentation on 2026-11-10; one marked note is left: GoatCounter names no data processing agreement and no retention time for its aggregate figures.
 - Voices: Piper, trained on LJ Speech (public domain) and Multilingual LibriSpeech, Pratap et al.,
   licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The German audio was synthesized with a
   voice model trained on that dataset, the clips are new recordings made by the model.
