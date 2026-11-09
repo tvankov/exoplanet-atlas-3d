@@ -126,5 +126,5 @@ export async function initDaily({ getLang, text, explore, onAnswer }) {
   document.getElementById("daily-close").addEventListener("click", () => togglePanel(false));
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && togglePanel(false));
   render();
-  return { render, entry, day, open: () => togglePanel(true) };
+  return { render, entry, day, open: () => togglePanel(true), answered: () => answeredToday() != null };
 }

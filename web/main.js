@@ -5037,6 +5037,7 @@ explorer = initExplorer({
     if (place) showPlace(place);
   },
 });
+if (daily.answered()) explorer.emit("answer"); // answered before the missions were opened, or in an earlier visit of the day
 applyWelcomeTexts(); // the card of the day is known now
 animate();
 // The start screen goes away once the first frame is on its way.

@@ -81,7 +81,7 @@ export function initExplorer({ getLang, text, explore }) {
   function emit(event, id = null) {
     let changed = false;
     for (const m of MISSIONS) {
-      if (m.event !== event) continue;
+      if (m.event !== event || isDone(m)) continue; // a finished mission does not count on
       const key = periodKey(m.period);
       let p = state.progress[m.id];
       if (!p || p.period !== key) p = state.progress[m.id] = { period: key, n: 0, ids: [] };
