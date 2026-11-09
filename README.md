@@ -1,8 +1,53 @@
 # Space Explorer
 
-Interactive 3D map of all confirmed exoplanets and their host stars, placed at their real positions relative to the Sun.
-Includes a menu of habitable candidates, system views for the Solar System and exoplanet systems, and a short factual story
-for each candidate in English and German, with audio.
+**Live: https://space.todorvankov.com**
+
+Fly through real exoplanet data in the browser: 1.2 million real stars and over 6,000 confirmed exoplanets at their real positions,
+the Solar System at real size, a travel planner with real distances and travel times, and a new discovery every day. It runs on
+desktop and on phones, in English, German, Japanese and Bulgarian. A private, non commercial portfolio project.
+
+| Start screen | Map with the dock | Explorer log | Phone |
+| --- | --- | --- | --- |
+| ![Start screen](docs/screenshots/start-screen.jpg) | ![Map and dock](docs/screenshots/map-and-dock.jpg) | ![Explorer log](docs/screenshots/explorer-log.jpg) | ![Phone](docs/screenshots/phone.jpg) |
+
+## What it does
+
+- **Map:** 4,819 stars with 6,423 known planets from the NASA Exoplanet Archive, plus about 246,000 nearby stars and the bright far
+  stars of ESA Gaia, all at their real positions (the Sun at the origin). 36 planets pass a simple rule for worlds that could hold liquid
+  water; they are listed as "habitable candidates" with the limits of that rule stated.
+- **Solar System:** the eight planets where their orbital elements put them today, with real sizes and distances in the "real scale".
+- **Travel planner:** pick any two places (planets, the Sun, stars, exoplanets) and a speed from Voyager to a fictional 100,000 c. It
+  works out the intercept course, the travel time and the time on board (time dilation below the speed of light) and flies the trip as
+  a short film, in first or third person. What is invented (the hyperspace, the speeds above c) is marked as fiction.
+- **Every day:** a hand written discovery with a question and a link into the 3D map, favourites, the planets looked at lately and seven
+  missions (daily and weekly). All of it stays in the browser, there is no account.
+- **Honest labels:** the picture of an exoplanet is invented and says so; numbers that are worked out (a radius from a mass, a
+  temperature from starlight alone) are marked as worked out.
+
+## Data and tools
+
+| Part | What |
+| --- | --- |
+| Data | NASA Exoplanet Archive (`pscomppars`), ESA Gaia DR3, JPL Solar System Dynamics, SIMBAD (star names), NASA / USGS maps |
+| Pipeline | Python (pandas, numpy): download as dated CSV or JSON, clean, compute x, y, z in light years, colours, flags; export to JSON and SQLite |
+| Exploration | Jupyter notebooks in `notebooks/` (the first look at the data, a Plotly prototype) |
+| Frontend | three.js without a build step, plain JavaScript modules, post processing (bloom, tone mapping), WebGL shaders for the diffraction spikes and the planets |
+| Hosting | GitHub Pages (workflow in `.github/workflows/pages.yml`), own domain |
+| Analytics | GoatCounter: no cookies, only aggregate figures (see the privacy notice in the app) |
+| Languages | English, German, Japanese, Bulgarian (the last two are machine written and not yet checked by native speakers) |
+
+## What I would point out
+
+- A small but complete data pipeline: source, cleaning rules, derived columns, documented assumptions, and a check of what the data
+  cannot say (for example, that "habitable" here only means a temperature and a size).
+- Care with sources: every dataset has its licence noted (`THIRD_PARTY_NOTICES.md`); the Gaia data are CC BY NC, so the site stays
+  non commercial.
+- A product side: a start screen, a daily reason to come back, missions without an account, a phone layout, a preview when the link is
+  shared, and an imprint and privacy notice.
+
+## Details
+
+The rest of this file is the technical documentation of the individual parts.
 
 ## How it works
 
