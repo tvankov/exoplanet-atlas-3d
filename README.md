@@ -3,7 +3,7 @@
 **Live: https://space.todorvankov.com**
 
 Fly through real exoplanet data in the browser: 1.2 million real stars and over 6,000 confirmed exoplanets at their real positions,
-the Solar System at real size, a travel planner with real distances and travel times, and a new discovery every day. It runs on
+the Solar System with its planets where they are today, a travel planner with real distances and travel times, and a new discovery every day. It runs on
 desktop and on phones, in English, German, Japanese and Bulgarian. A private, non commercial portfolio project.
 
 | Start screen | Map with the dock | Explorer log | Phone |
@@ -15,7 +15,8 @@ desktop and on phones, in English, German, Japanese and Bulgarian. A private, no
 - **Map:** 4,819 stars with 6,423 known planets from the NASA Exoplanet Archive, plus about 246,000 nearby stars and the bright far
   stars of ESA Gaia, all at their real positions (the Sun at the origin). 36 planets pass a simple rule for worlds that could hold liquid
   water; they are listed as "habitable candidates" with the limits of that rule stated.
-- **Solar System:** the eight planets where their orbital elements put them today, with real sizes and distances in the "real scale".
+- **Solar System:** the eight planets where their orbital elements put them today, on their real orbits (distances and sizes are squeezed
+  so that everything fits on the screen and says so). A "real scale" mode with real sizes and distances is built but switched off for now.
 - **Travel planner:** pick any two places (planets, the Sun, stars, exoplanets) and a speed from Voyager to a fictional 100,000 c. It
   works out the intercept course, the travel time and the time on board (time dilation below the speed of light) and flies the trip as
   a short film, in first or third person. What is invented (the hyperspace, the speeds above c) is marked as fiction.
