@@ -10,7 +10,8 @@ const HISTORY_MAX = 12;
 
 // event: what counts. "planet" is a planet looked at (the story opened), "candidate" the same for a habitable candidate, "answer" the
 // question of the day answered, "trip" a trip that arrived, "starTrip" such a trip to another star, "measure" a distance measured,
-// "favourite" a planet saved. unique: the goal counts different planets (or places), not the same one again.
+// "favourite" a planet saved. unique: the goal counts different planets (or places), not the same one again. live: the goal shows how many
+// there are now (the favourites saved), so it goes down when one is removed; a mission that was finished stays finished.
 export const MISSIONS = [
   {
     id: "d-answer", period: "day", event: "answer", target: 1,
@@ -37,7 +38,7 @@ export const MISSIONS = [
     en: "Fly to another star", de: "Fliege zu einem anderen Stern", ja: "別の恒星へ飛ぶ", bg: "Полети до друга звезда",
   },
   {
-    id: "w-favourites", period: "week", event: "favourite", target: 3, unique: true,
+    id: "w-favourites", period: "week", event: "favourite", target: 3, live: true,
     en: "Save 3 planets as favourites", de: "Speichere 3 Planeten als Favoriten", ja: "3つの惑星をお気に入りに保存する", bg: "Запази 3 планети като любими",
   },
 ];
@@ -69,6 +70,7 @@ export function initExplorer({ getLang, text, explore }) {
   };
 
   const valueOf = (m) => {
+    if (m.live) return state.favourites.length;
     const p = state.progress[m.id];
     if (!p || p.period !== periodKey(m.period)) return 0;
     return m.unique ? p.ids.length : p.n;
@@ -83,6 +85,14 @@ export function initExplorer({ getLang, text, explore }) {
     for (const m of MISSIONS) {
       if (m.event !== event || isDone(m)) continue; // a finished mission does not count on
       const key = periodKey(m.period);
+      if (m.live) {
+        changed = true;
+        if (valueOf(m) >= m.target) {
+          state.done[m.id] = key;
+          toast(`${text("missionDone")}: ${label(m)}`);
+        }
+        continue;
+      }
       let p = state.progress[m.id];
       if (!p || p.period !== key) p = state.progress[m.id] = { period: key, n: 0, ids: [] };
       if (m.unique) {
@@ -150,7 +160,7 @@ export function initExplorer({ getLang, text, explore }) {
     return e;
   }
   function missionRow(m) {
-    const v = Math.min(valueOf(m), m.target);
+    const v = isDone(m) ? m.target : Math.min(valueOf(m), m.target);
     const row = el("div", `mission${isDone(m) ? " done" : ""}`);
     row.append(el("span", "mission-mark", isDone(m) ? "✓" : ""), el("span", "mission-text", label(m)));
     row.append(el("span", "mission-count", `${v} / ${m.target}`));
