@@ -1,3 +1,4 @@
+import { initDaily } from "./daily.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -3030,6 +3031,7 @@ function applyLanguage() {
   stopSpeaking();
   if (current) showStory(current.star, current.planet);
   applyWelcomeTexts();
+  daily?.render();
 }
 
 // A manual drag takes over from a running flight.
@@ -5004,6 +5006,7 @@ function pickMeasure(x, y) {
   showMeasure();
 }
 
+let daily = null; // the daily discovery, see daily.js
 const welcome = document.getElementById("welcome");
 const hintLine = document.getElementById("hint-line");
 const TOUCH = window.matchMedia("(pointer: coarse)").matches;
@@ -5016,6 +5019,14 @@ const sunZone = zoneAu({ st_rad: 1, st_teff: 5772 });
 addZone(solar, 0.3 * Math.sqrt(sunZone.inner), 0.3 * Math.sqrt(sunZone.outer));
 buildPoints();
 applyLanguage();
+daily = await initDaily({
+  getLang: () => lang,
+  text: (key) => UI[lang][key],
+  explore: (name) => {
+    const place = resolvePlace(name);
+    if (place) showPlace(place);
+  },
+});
 animate();
 // The start screen goes away once the first frame is on its way.
 requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));

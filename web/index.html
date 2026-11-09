@@ -30,6 +30,7 @@
          the mode itself still works (setRealScale in main.js) and comes back when it is ready. -->
     <button id="scale" type="button" aria-pressed="false" hidden>Real scale: off</button>
     <button id="planner-open" type="button" aria-expanded="false" aria-controls="planner-panel">Travel planner</button>
+    <button id="daily-open" type="button" aria-expanded="false" aria-controls="daily-panel">Today's discovery</button>
     <div id="search-box">
       <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
       <ul id="search-results" class="planet-list" hidden></ul>
@@ -155,6 +156,13 @@
           <div id="plan-note"></div>
         </details>
     </div>
+  </section>
+  <!-- The daily discovery, see daily.js. -->
+  <section id="daily-panel" hidden aria-labelledby="daily-title">
+    <button id="daily-close" type="button" aria-label="Close">&times;</button>
+    <p id="daily-label" class="daily-label"></p>
+    <h2 id="daily-title"></h2>
+    <div id="daily-body"></div>
   </section>
   <div id="pick-hint" hidden>
     <p id="pick-hint-text"></p>
