@@ -5027,18 +5027,51 @@ daily = await initDaily({
     if (place) showPlace(place);
   },
 });
+applyWelcomeTexts(); // the card of the day is known now
 animate();
 // The start screen goes away once the first frame is on its way.
 requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));
 // The first visit: a card with three things to try, and a line at the bottom that says how to move. The start is the Solar System with
 // Earth in view, reached in a slow flight, so there is something to look at behind the card.
+// The nearest planet that the catalogue calls a candidate, for the card of the start screen.
+function nearestCandidate() {
+  let best = null;
+  for (const star of stars) {
+    for (const planet of star.planets) {
+      if (planet.habitable && (!best || star.dist_ly < best.star.dist_ly)) best = { star, planet };
+    }
+  }
+  return best;
+}
 function applyWelcomeTexts() {
   const t = UI[lang];
-  document.getElementById("welcome-text").textContent = t.welcomeText;
-  document.getElementById("welcome-mars").textContent = t.welcomeMars;
-  document.getElementById("welcome-habitable").textContent = t.welcomeHabitable;
-  document.getElementById("welcome-plan").textContent = t.welcomePlan;
+  const set = (id, value) => (document.getElementById(id).textContent = value);
+  const [h1, h2, h3] = t.welcomeHead;
+  set("wl-h1", h1);
+  set("wl-h2", h2);
+  set("wl-h3", h3);
+  set("welcome-text", t.welcomeText);
+  set("welcome-mars", t.welcomeMars);
+  set("welcome-map", t.welcomeMap);
   document.getElementById("welcome-close").setAttribute("aria-label", t.welcomeClose);
+  // The figures are counted from the data of the map.
+  const planets = stars.reduce((n, s) => n + s.planets.length, 0);
+  const candidates = stars.reduce((n, s) => n + s.planets.filter((p) => p.habitable).length, 0);
+  set("stat-hosts", stars.length.toLocaleString(lang));
+  set("stat-hosts-l", t.statHosts);
+  set("stat-planets", planets.toLocaleString(lang));
+  set("stat-planets-l", t.statPlanets);
+  set("stat-candidates", candidates.toLocaleString(lang));
+  set("stat-candidates-l", t.statCandidates);
+  set("wl-daily-k", t.welcomeDailyKicker);
+  set("wl-daily-t", daily ? (daily.entry[lang] ?? daily.entry.en).title : "");
+  const near = nearestCandidate();
+  set("wl-near-k", t.welcomeNear);
+  set("wl-near-t", near ? near.planet.pl_name : "");
+  set("wl-near-s", near ? `${near.star.dist_ly.toFixed(1)} ${t.lightYears}` : "");
+  set("wl-plan-k", TRAVEL_UI[lang].title);
+  set("wl-plan-t", t.welcomePlan);
+  set("wl-plan-s", t.welcomePlanSub);
   hintLine.textContent = TOUCH ? t.hintLineTouch : t.hintLine;
 }
 function showHintLine() {
@@ -5071,10 +5104,14 @@ document.getElementById("welcome-mars").addEventListener("click", () => {
 });
 document.getElementById("welcome-habitable").addEventListener("click", () => {
   closeWelcome();
-  if (phone.matches) setHudFolded(false);
-  const menu = document.getElementById("habitable").closest("details");
-  menu.open = true;
-  menu.scrollIntoView({ block: "nearest" });
+  const near = nearestCandidate();
+  const place = near && resolvePlace(near.planet.pl_name);
+  if (place) showPlace(place);
+});
+document.getElementById("welcome-map").addEventListener("click", closeWelcome);
+document.getElementById("wl-daily").addEventListener("click", () => {
+  closeWelcome();
+  daily?.open();
 });
 document.getElementById("welcome-plan").addEventListener("click", () => {
   closeWelcome();

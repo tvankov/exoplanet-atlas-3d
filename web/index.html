@@ -173,21 +173,35 @@
   <p id="flight-caption" hidden></p>
   <!-- The first visit: what this is and three things to try, in the language of the page. See applyWelcomeTexts in main.js. -->
   <div id="welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title" hidden>
-    <div class="welcome-card">
-      <button id="welcome-close" type="button" aria-label="Close">&times;</button>
-      <h2 id="welcome-title">Space Explorer</h2>
-      <p id="welcome-text"></p>
-      <div class="welcome-actions">
-        <button id="welcome-mars" type="button"></button>
-        <button id="welcome-habitable" type="button"></button>
-        <button id="welcome-plan" type="button"></button>
-      </div>
+    <div class="wl-top">
+      <span class="wl-brand">SPACE EXPLORER</span>
       <div class="welcome-langs">
-        <button type="button" data-lang="en">English</button>
-        <button type="button" data-lang="de">Deutsch</button>
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="de">DE</button>
         <button type="button" data-lang="ja">日本語</button>
-        <button type="button" data-lang="bg">Български</button>
+        <button type="button" data-lang="bg">БГ</button>
       </div>
+      <button id="welcome-close" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="wl-main">
+      <div class="wl-hero">
+        <h2 id="welcome-title"><span id="wl-h1"></span><span id="wl-h2"></span><span id="wl-h3" class="accent"></span></h2>
+        <p id="welcome-text"></p>
+        <div class="wl-actions">
+          <button id="welcome-mars" type="button" class="primary"></button>
+          <button id="welcome-map" type="button" class="ghost"></button>
+        </div>
+      </div>
+      <ul class="wl-stats">
+        <li><b id="stat-hosts"></b><span id="stat-hosts-l"></span></li>
+        <li><b id="stat-planets"></b><span id="stat-planets-l"></span></li>
+        <li><b id="stat-candidates"></b><span id="stat-candidates-l"></span></li>
+      </ul>
+    </div>
+    <div class="wl-cards">
+      <button id="wl-daily" type="button" class="wl-card"><small id="wl-daily-k"></small><strong id="wl-daily-t"></strong><span class="wl-arrow">&#8599;</span></button>
+      <button id="welcome-habitable" type="button" class="wl-card"><small id="wl-near-k"></small><strong id="wl-near-t"></strong><span id="wl-near-s"></span><span class="wl-arrow">&#8599;</span></button>
+      <button id="welcome-plan" type="button" class="wl-card"><small id="wl-plan-k"></small><strong id="wl-plan-t"></strong><span id="wl-plan-s"></span><span class="wl-arrow">&#8599;</span></button>
     </div>
   </div>
   <!-- One line at the bottom that says how to move; it goes away with the first move. -->
