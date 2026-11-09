@@ -1400,3 +1400,122 @@ body:has(#welcome:not([hidden])) #hint-line {
     padding: 6px 10px;
   }
 }
+
+/* The dock at the bottom of the map: the three cards of the start screen, smaller. It steps aside while something else uses the bottom
+   of the screen (the start screen, the story panel, the box of a trip, the hint of picking, the caption of the flight). */
+#dock {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 5;
+  box-sizing: border-box;
+  width: min(780px, calc(100vw - 32px));
+  transform: translateX(-50%);
+}
+#dock-toggle {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  width: 44px;
+  height: 26px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+  background: rgba(10, 14, 24, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 13px;
+}
+.dock-cards {
+  display: flex;
+  gap: 10px;
+}
+#dock.folded .dock-cards {
+  display: none;
+}
+#dock.folded #dock-toggle {
+  transform: rotate(180deg);
+}
+.dock-card {
+  position: relative;
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 44px 10px 14px;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  background: rgba(10, 14, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.dock-card:hover {
+  background: rgba(40, 52, 80, 0.8);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.dock-card small {
+  overflow: hidden;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.6;
+}
+.dock-card strong {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dock-card .wl-arrow {
+  right: 10px;
+  bottom: 50%;
+  width: 26px;
+  height: 26px;
+  margin-bottom: -13px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+body:has(#welcome:not([hidden])) #dock,
+body:has(#story:not([hidden])) #dock,
+body:has(#trip-hud:not([hidden])) #dock,
+body:has(#pick-hint:not([hidden])) #dock,
+body:has(#flight-caption:not([hidden])) #dock {
+  display: none;
+}
+#hud {
+  z-index: 6; /* above the dock when the panel on the left is open on a phone */
+}
+#hint-line {
+  bottom: 96px; /* above the dock */
+}
+@media (max-width: 640px) {
+  #dock {
+    left: 8px;
+    right: 76px; /* the round Info button is at the right */
+    bottom: 12px;
+    width: auto;
+    transform: none;
+  }
+  .dock-cards {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .dock-card {
+    flex: 0 0 210px;
+    scroll-snap-align: start;
+  }
+  #dock-toggle {
+    right: 0;
+    top: -34px;
+  }
+}

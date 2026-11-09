@@ -5072,6 +5072,14 @@ function applyWelcomeTexts() {
   set("wl-plan-k", TRAVEL_UI[lang].title);
   set("wl-plan-t", t.welcomePlan);
   set("wl-plan-s", t.welcomePlanSub);
+  // The dock at the bottom of the map holds the same three cards in a smaller form.
+  set("dock-daily-k", t.welcomeDailyKicker);
+  set("dock-daily-t", daily ? (daily.entry[lang] ?? daily.entry.en).title : "");
+  set("dock-near-k", t.welcomeNear);
+  set("dock-near-t", near ? `${near.planet.pl_name} · ${near.star.dist_ly.toFixed(1)} ${t.lightYears}` : "");
+  set("dock-plan-k", TRAVEL_UI[lang].title);
+  set("dock-plan-t", t.welcomePlan);
+  document.getElementById("dock-toggle").setAttribute("aria-label", t.dockToggle);
   hintLine.textContent = TOUCH ? t.hintLineTouch : t.hintLine;
 }
 function showHintLine() {
@@ -5109,6 +5117,30 @@ document.getElementById("welcome-habitable").addEventListener("click", () => {
   if (place) showPlace(place);
 });
 document.getElementById("welcome-map").addEventListener("click", closeWelcome);
+// The dock: the same actions as the cards of the start screen. It can be folded, and stays folded for the next visit.
+const dock = document.getElementById("dock");
+function setDockFolded(folded) {
+  dock.classList.toggle("folded", folded);
+  document.getElementById("dock-toggle").setAttribute("aria-expanded", String(!folded));
+  try {
+    localStorage.setItem("dock", folded ? "folded" : "open");
+  } catch {
+    // not remembered
+  }
+}
+try {
+  if (localStorage.getItem("dock") === "folded") setDockFolded(true);
+} catch {
+  // storage blocked, the dock starts open
+}
+document.getElementById("dock-toggle").addEventListener("click", () => setDockFolded(!dock.classList.contains("folded")));
+document.getElementById("dock-daily").addEventListener("click", () => daily?.open());
+document.getElementById("dock-near").addEventListener("click", () => {
+  const near = nearestCandidate();
+  const place = near && resolvePlace(near.planet.pl_name);
+  if (place) showPlace(place);
+});
+document.getElementById("dock-plan").addEventListener("click", () => togglePlanner(true));
 document.getElementById("wl-daily").addEventListener("click", () => {
   closeWelcome();
   daily?.open();

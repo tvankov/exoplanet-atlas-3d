@@ -204,6 +204,15 @@
       <button id="welcome-plan" type="button" class="wl-card"><small id="wl-plan-k"></small><strong id="wl-plan-t"></strong><span id="wl-plan-s"></span><span class="wl-arrow">&#8599;</span></button>
     </div>
   </div>
+  <!-- The dock at the bottom of the map: the three cards of the start screen stay here (see applyWelcomeTexts in main.js). -->
+  <nav id="dock" aria-label="Shortcuts">
+    <button id="dock-toggle" type="button" aria-expanded="true" aria-label="Shortcuts">&#8964;</button>
+    <div class="dock-cards">
+    <button id="dock-daily" type="button" class="dock-card"><small id="dock-daily-k"></small><strong id="dock-daily-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-near" type="button" class="dock-card"><small id="dock-near-k"></small><strong id="dock-near-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-plan" type="button" class="dock-card"><small id="dock-plan-k"></small><strong id="dock-plan-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    </div>
+  </nav>
   <!-- One line at the bottom that says how to move; it goes away with the first move. -->
   <p id="hint-line" hidden></p>
   <div id="trip-hud" hidden>
