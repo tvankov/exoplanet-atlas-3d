@@ -29,8 +29,6 @@
     <!-- The real scale is parked while the explanation mode is being finished: the button is hidden,
          the mode itself still works (setRealScale in main.js) and comes back when it is ready. -->
     <button id="scale" type="button" aria-pressed="false" hidden>Real scale: off</button>
-    <button id="planner-open" type="button" aria-expanded="false" aria-controls="planner-panel">Travel planner</button>
-    <button id="daily-open" type="button" aria-expanded="false" aria-controls="daily-panel">Today's discovery</button>
     <div id="search-box">
       <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
       <ul id="search-results" class="planet-list" hidden></ul>
@@ -208,9 +206,9 @@
   <nav id="dock" aria-label="Shortcuts">
     <button id="dock-toggle" type="button" aria-expanded="true" aria-label="Shortcuts">&#8964;</button>
     <div class="dock-cards">
-    <button id="dock-daily" type="button" class="dock-card"><small id="dock-daily-k"></small><strong id="dock-daily-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-daily" type="button" class="dock-card" aria-expanded="false" aria-controls="daily-panel"><small id="dock-daily-k"></small><strong id="dock-daily-t"></strong><span class="wl-arrow">&#8599;</span></button>
     <button id="dock-near" type="button" class="dock-card"><small id="dock-near-k"></small><strong id="dock-near-t"></strong><span class="wl-arrow">&#8599;</span></button>
-    <button id="dock-plan" type="button" class="dock-card"><small id="dock-plan-k"></small><strong id="dock-plan-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-plan" type="button" class="dock-card" aria-expanded="false" aria-controls="planner-panel"><small id="dock-plan-k"></small><strong id="dock-plan-t"></strong><span class="wl-arrow">&#8599;</span></button>
     </div>
   </nav>
   <!-- One line at the bottom that says how to move; it goes away with the first move. -->

@@ -48,7 +48,7 @@ export async function initDaily({ getLang, text, explore }) {
   }
   const day = dayNumber();
   const entry = entryOfDay(entries, day);
-  const button = document.getElementById("daily-open");
+  const button = document.getElementById("dock-daily"); // the card of the dock
   const panel = document.getElementById("daily-panel");
   const body = document.getElementById("daily-body");
   const answeredToday = () => {
@@ -60,7 +60,6 @@ export async function initDaily({ getLang, text, explore }) {
     const lang = getLang();
     const content = entry[lang] ?? entry.en;
     const t = text;
-    button.textContent = t("dailyButton");
     button.classList.toggle("fresh", read("daily-seen") !== day);
     document.getElementById("daily-label").textContent = t("dailyLabel");
     document.getElementById("daily-close").setAttribute("aria-label", t("dailyClose"));

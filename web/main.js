@@ -2072,6 +2072,7 @@ const EXO_SHOW = 4;
 // grows in the window during the approach instead of appearing out of nothing at the arrival.
 let tripTarget = null;
 
+const MAX_SPIN = 0.04; // turns per second of the screen, about 14 degrees per second
 // Planets only move along their orbit around the star. They do not spin on their own axis.
 function stepSystem(system, dt) {
   system.time += (dt * timeScale) / SECONDS_PER_YEAR;
@@ -2094,8 +2095,15 @@ function stepSystem(system, dt) {
     // The star sits in the middle of the group, so the light comes from the opposite of the position.
     b.mesh.material.uniforms?.uLightDir.value.copy(b.mesh.position).negate().normalize();
     b.mesh.userData.ringMaterial?.uniforms.uLightDir.value.copy(b.mesh.position).negate().normalize();    if (b.rotHours) {
-      // Turns so far, only the fraction matters. The clock counts years, a year has 8766 hours.
-      const turns = (system.time * 8766) / b.rotHours;
+      // The turns so far, only the fraction matters. The first time it is the true phase of the clock (the clock counts years, a year has 8766
+      // hours); after that the planet turns as the clock says, but never faster than MAX_SPIN turns per second of the screen. At the speed
+      // of a trip (a few days in 20 seconds) the true spin would be a blur, and nobody can follow the day and the night at that speed anyway.
+      if (b.spinTurns === undefined) b.spinTurns = (system.time * 8766) / b.rotHours;
+      else {
+        const wanted = (dt * timeScale) / 3600 / b.rotHours;
+        b.spinTurns += Math.max(-MAX_SPIN * dt, Math.min(MAX_SPIN * dt, wanted));
+      }
+      const turns = b.spinTurns;
       const spin = (turns - Math.floor(turns)) * Math.PI * 2;
       const uniforms = b.mesh.material.uniforms;
       if (uniforms?.uSpin) uniforms.uSpin.value = spin;
@@ -2965,7 +2973,7 @@ document.getElementById("info-story").addEventListener("click", () => {
   else toggleInfo(false); // the menu closes, the story panel opens
 });
 hudPanel.addEventListener("click", (e) => {
-  if (phone.matches && e.target.closest(".planet-list, #planner-open")) setTimeout(() => setHudFolded(true), 0);
+  if (phone.matches && e.target.closest(".planet-list")) setTimeout(() => setHudFolded(true), 0);
 });
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !infoPanel.hidden) toggleInfo(false);
@@ -3811,7 +3819,7 @@ const planGo = document.getElementById("plan-go");
 const planRoute = document.getElementById("plan-route");
 const planStop = document.getElementById("plan-stop");
 const plannerPanel = document.getElementById("planner-panel");
-const plannerOpen = document.getElementById("planner-open");
+const plannerOpen = document.getElementById("dock-plan"); // the button of the travel planner is in the dock
 const tripHud = document.getElementById("trip-hud");
 function togglePlanner(open = plannerPanel.hidden) {
   plannerPanel.hidden = !open;
@@ -3920,8 +3928,7 @@ function buildPlanner() {
   planGo.textContent = t.go;
   planRoute.textContent = routeLabel();
   planStop.title = stopLabel();
-  plannerOpen.textContent = t.title;
-  for (const id of ["plan-from-pick", "plan-to-pick"]) {
+    for (const id of ["plan-from-pick", "plan-to-pick"]) {
     document.getElementById(id).textContent = t.pick;
     document.getElementById(id).title = t.pickTitle;
   }
@@ -5134,13 +5141,11 @@ try {
   // storage blocked, the dock starts open
 }
 document.getElementById("dock-toggle").addEventListener("click", () => setDockFolded(!dock.classList.contains("folded")));
-document.getElementById("dock-daily").addEventListener("click", () => daily?.open());
 document.getElementById("dock-near").addEventListener("click", () => {
   const near = nearestCandidate();
   const place = near && resolvePlace(near.planet.pl_name);
   if (place) showPlace(place);
 });
-document.getElementById("dock-plan").addEventListener("click", () => togglePlanner(true));
 document.getElementById("wl-daily").addEventListener("click", () => {
   closeWelcome();
   daily?.open();

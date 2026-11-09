@@ -1274,13 +1274,12 @@ html, body {
 #daily-open {
   width: 100%;
 }
-#daily-open.fresh::after {
+#dock-daily.fresh small::after {
   content: "";
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   margin-left: 8px;
-  vertical-align: middle;
   border-radius: 50%;
   background: #7cffb2;
 }
