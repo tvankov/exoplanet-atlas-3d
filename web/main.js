@@ -2939,19 +2939,6 @@ function setHudFolded(folded) {
 setHudFolded(phone.matches);
 phone.addEventListener("change", () => setHudFolded(phone.matches));
 hudToggle.addEventListener("click", () => setHudFolded(!hudPanel.classList.contains("collapsed")));
-// Tidier on a phone: the search sits in the Tools menu (not on top of the panel), and the Info button of the top bar is the first entry of
-// the burger menu. On a wider screen both are where they were.
-const searchBox = document.getElementById("search-box");
-const toolsMenu = document.getElementById("tools-menu");
-function placeSearch() {
-  const wanted = phone.matches ? toolsMenu : hudPanel;
-  if (searchBox.parentElement === wanted) return; // moving the field would take the keyboard away while typing
-  if (phone.matches) toolsMenu.querySelector("summary").after(searchBox);
-  else document.getElementById("speed-box").before(searchBox);
-}
-placeSearch();
-phone.addEventListener("change", placeSearch);
-window.addEventListener("resize", placeSearch);
 // One burger menu on a phone: the entries of the info window (Info, Hints, Credits, Settings) move to the end of the panel on the left, so
 // that button opens everything. On a wider screen they go back to the info window.
 const movedMenus = [...infoPanel.children];

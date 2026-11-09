@@ -29,10 +29,6 @@
     <!-- The real scale is parked while the explanation mode is being finished: the button is hidden,
          the mode itself still works (setRealScale in main.js) and comes back when it is ready. -->
     <button id="scale" type="button" aria-pressed="false" hidden>Real scale: off</button>
-    <div id="search-box">
-      <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
-      <ul id="search-results" class="planet-list" hidden></ul>
-    </div>
     <div id="speed-box">
       <label id="speed-title" for="speed">Time speed</label>
       <!-- The slider is logarithmic: 10 ** (value / 100 * 8) seconds per second. 25.99 is one second = two minutes. -->
@@ -59,6 +55,10 @@
     </details>
     <details class="menu" id="tools-menu">
       <summary id="tools-title">Tools</summary>
+      <div id="search-box">
+        <input id="search" type="search" placeholder="Search a star or planet" autocomplete="off" spellcheck="false" aria-label="Search">
+        <ul id="search-results" class="planet-list" hidden></ul>
+      </div>
       <select id="facility" aria-label="Discovered by"></select>
       <p id="facility-note" class="hint" hidden></p>
       <select id="spectral-mode" aria-label="Spectral class filter">
