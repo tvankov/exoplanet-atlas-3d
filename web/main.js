@@ -1,4 +1,5 @@
 import { initDaily } from "./daily.js";
+import { initExplorer } from "./explorer.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -2815,7 +2816,7 @@ function speakWithBrowser() {
 
 let hasClip = false; // only the candidates and Earth have a recording, the rest uses the browser voice
 
-function showStory(star, planet) {
+function showStory(star, planet, quiet = false) {
   stopSpeaking();
   storyId = slug(planet.pl_name);
   hasClip = !!(planet.habitable || star.solarSystem) && !planet.solarObject; // the visitors have no recording
@@ -2848,6 +2849,7 @@ function showStory(star, planet) {
   hasStory = true;
   applyStoryVisibility();
   updateCloseupButton();
+  if (!quiet) explorer?.viewed(planet.pl_name, !!planet.habitable);
 }
 
 listenButton.addEventListener("click", () => {
@@ -3037,8 +3039,9 @@ function applyLanguage() {
   showBackgroundState();
   buildPlanner();
   stopSpeaking();
-  if (current) showStory(current.star, current.planet);
+  if (current) showStory(current.star, current.planet, true); // a change of language is not a visit
   applyWelcomeTexts();
+  explorer?.render();
   daily?.render();
 }
 
@@ -4720,6 +4723,8 @@ function stepTrip(now) {
   else if (trip.phase === "jump" && elapsed >= TRIP_JUMP) setPhase("cruise", now);
   else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
     setPhase("done", now);
+    explorer?.emit("trip");
+    if (trip.mode === "star") explorer?.emit("starTrip");
     setNear(0.01);
     planStop.title = stopLabel(); // the x says what it does when the pointer rests on it
     leaveEgo();
@@ -5008,12 +5013,14 @@ function pickMeasure(x, y) {
     measureB = null;
   } else if (best !== measureA) {
     measureB = best;
+    explorer?.emit("measure");
   }
   drawMeasure();
   showMeasure();
 }
 
 let daily = null; // the daily discovery, see daily.js
+let explorer = null; // favourites, history and missions, see explorer.js
 const welcome = document.getElementById("welcome");
 const hintLine = document.getElementById("hint-line");
 const TOUCH = window.matchMedia("(pointer: coarse)").matches;
@@ -5027,6 +5034,15 @@ addZone(solar, 0.3 * Math.sqrt(sunZone.inner), 0.3 * Math.sqrt(sunZone.outer));
 buildPoints();
 applyLanguage();
 daily = await initDaily({
+  getLang: () => lang,
+  text: (key) => UI[lang][key],
+  explore: (name) => {
+    const place = resolvePlace(name);
+    if (place) showPlace(place);
+  },
+  onAnswer: () => explorer?.emit("answer"),
+});
+explorer = initExplorer({
   getLang: () => lang,
   text: (key) => UI[lang][key],
   explore: (name) => {
@@ -5160,7 +5176,13 @@ for (const b of welcome.querySelectorAll("[data-lang]")) {
     langSelect.dispatchEvent(new Event("change"));
   });
 }
-showSystem(EARTH.star, EARTH.planet);
+{
+  // The start is not a visit: the missions and the history do not count it.
+  const keep = explorer;
+  explorer = null;
+  showSystem(EARTH.star, EARTH.planet);
+  explorer = keep;
+}
 if (flight) flight.ms = 3200;
 let seen = false;
 try {

@@ -37,7 +37,7 @@ const write = (key, value) => {
 };
 
 // getLang() gives the language of the page, text(key) the interface texts, explore(name) flies to the object in the 3D map.
-export async function initDaily({ getLang, text, explore }) {
+export async function initDaily({ getLang, text, explore, onAnswer }) {
   let entries = [FALLBACK];
   try {
     const res = await fetch("data/daily.json");
@@ -94,6 +94,7 @@ export async function initDaily({ getLang, text, explore }) {
       }
       b.addEventListener("click", () => {
         write("daily", { day, id: entry.id, choice: i });
+        onAnswer?.();
         render();
       });
       list.append(b);

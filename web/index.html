@@ -162,6 +162,13 @@
     <h2 id="daily-title"></h2>
     <div id="daily-body"></div>
   </section>
+  <!-- Favourites, the planets looked at lately and the missions, see explorer.js. -->
+  <section id="log-panel" hidden aria-labelledby="log-title">
+    <button id="log-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="log-title"></h2>
+    <div id="log-body"></div>
+  </section>
+  <p id="toast" role="status" hidden></p>
   <div id="pick-hint" hidden>
     <p id="pick-hint-text"></p>
     <button id="pick-cancel" type="button">Cancel</button>
@@ -226,6 +233,13 @@
         <circle cx="88" cy="24" r="4.6" fill="#d9674a"/>
         <circle cx="52" cy="28" r="6" fill="#7fe3ff" fill-opacity=".25"/><circle cx="52" cy="28" r="2.6" fill="#e9fbff"/>
       </svg><small id="dock-plan-k"></small><strong id="dock-plan-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-log" type="button" class="dock-card" aria-expanded="false" aria-controls="log-panel"><svg class="dock-art log-art" viewBox="0 0 100 80" aria-hidden="true">
+        <g fill="none" stroke="#fff" stroke-opacity=".22"><rect x="14" y="10" width="72" height="16" rx="8"/><rect x="14" y="32" width="72" height="16" rx="8"/><rect x="14" y="54" width="72" height="16" rx="8"/></g>
+        <circle cx="26" cy="18" r="5" fill="#7cffb2"/><path d="M23.5 18l2 2 3.5-4" fill="none" stroke="#05060a" stroke-width="1.6"/>
+        <circle cx="26" cy="40" r="5" fill="#7cffb2"/><path d="M23.5 40l2 2 3.5-4" fill="none" stroke="#05060a" stroke-width="1.6"/>
+        <circle cx="26" cy="62" r="5" fill="none" stroke="#fff" stroke-opacity=".4"/>
+        <rect x="38" y="16" width="34" height="4" rx="2" fill="#fff" fill-opacity=".5"/><rect x="38" y="38" width="26" height="4" rx="2" fill="#fff" fill-opacity=".5"/><rect x="38" y="60" width="30" height="4" rx="2" fill="#fff" fill-opacity=".25"/>
+      </svg><small id="dock-log-k"></small><strong id="dock-log-t"></strong><span class="wl-arrow">&#8599;</span></button>
     </div>
   </nav>
   <!-- One line at the bottom that says how to move; it goes away with the first move. -->
@@ -242,6 +256,7 @@
     <div id="story-head">
       <h2 id="story-title"></h2>
       <div id="story-actions">
+        <button id="story-fav" type="button" hidden>&#9734;</button>
         <button id="story-listen" type="button">Listen</button>
         <button id="story-closeup" type="button" hidden>Close-up</button>
       </div>
