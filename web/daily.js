@@ -56,6 +56,11 @@ export async function initDaily({ getLang, text, explore }) {
     return saved?.day === day && saved.id === entry.id ? saved.choice : null;
   };
 
+  // The colour of the planet on the card: one hue per entry, so the picture changes with the day.
+  let hash = 0;
+  for (const ch of entry.id) hash = (hash * 31 + ch.charCodeAt(0)) % 360;
+  document.getElementById("dock-daily").style.setProperty("--hue", String(hash));
+
   function render() {
     const lang = getLang();
     const content = entry[lang] ?? entry.en;

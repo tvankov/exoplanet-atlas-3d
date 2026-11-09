@@ -206,9 +206,26 @@
   <nav id="dock" aria-label="Shortcuts">
     <button id="dock-toggle" type="button" aria-expanded="true" aria-label="Shortcuts">&#8964;</button>
     <div class="dock-cards">
-    <button id="dock-daily" type="button" class="dock-card" aria-expanded="false" aria-controls="daily-panel"><small id="dock-daily-k"></small><strong id="dock-daily-t"></strong><span class="wl-arrow">&#8599;</span></button>
-    <button id="dock-near" type="button" class="dock-card"><small id="dock-near-k"></small><strong id="dock-near-t"></strong><span class="wl-arrow">&#8599;</span></button>
-    <button id="dock-plan" type="button" class="dock-card" aria-expanded="false" aria-controls="planner-panel"><small id="dock-plan-k"></small><strong id="dock-plan-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-daily" type="button" class="dock-card" aria-expanded="false" aria-controls="daily-panel"><svg class="dock-art daily-art" viewBox="0 0 100 80" aria-hidden="true">
+        <defs><radialGradient id="art-planet" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".35" stop-color="currentColor"/><stop offset="1" stop-color="#05060a"/></radialGradient></defs>
+        <ellipse cx="54" cy="42" rx="44" ry="13" fill="none" stroke="#fff" stroke-opacity=".22" transform="rotate(-18 54 42)"/>
+        <circle cx="54" cy="40" r="24" fill="url(#art-planet)"/>
+        <circle cx="90" cy="22" r="3" fill="#fff" fill-opacity=".8"/>
+        <circle cx="10" cy="14" r="1.2" fill="#fff" fill-opacity=".6"/><circle cx="22" cy="68" r="1" fill="#fff" fill-opacity=".5"/><circle cx="94" cy="64" r="1.2" fill="#fff" fill-opacity=".6"/>
+      </svg><small id="dock-daily-k"></small><strong id="dock-daily-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-near" type="button" class="dock-card"><svg class="dock-art near-art" viewBox="0 0 100 80" aria-hidden="true">
+        <circle cx="50" cy="40" r="26" fill="none" stroke="#7cffb2" stroke-opacity=".22" stroke-width="9"/>
+        <circle cx="50" cy="40" r="14" fill="none" stroke="#fff" stroke-opacity=".2"/><circle cx="50" cy="40" r="26" fill="none" stroke="#fff" stroke-opacity=".2"/><circle cx="50" cy="40" r="38" fill="none" stroke="#fff" stroke-opacity=".14"/>
+        <circle cx="50" cy="40" r="9" fill="#ffb27a" fill-opacity=".25"/><circle cx="50" cy="40" r="4.5" fill="#ffc98a"/>
+        <circle cx="72.5" cy="27" r="3.6" fill="#b8e6c1"/>
+        <circle cx="35" cy="22" r="2.2" fill="#fff" fill-opacity=".7"/>
+      </svg><small id="dock-near-k"></small><strong id="dock-near-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-plan" type="button" class="dock-card" aria-expanded="false" aria-controls="planner-panel"><svg class="dock-art plan-art" viewBox="0 0 100 80" aria-hidden="true">
+        <path d="M14 58 Q 44 8 88 24" fill="none" stroke="#7fe3ff" stroke-opacity=".7" stroke-width="1.6" stroke-dasharray="3 4"/>
+        <circle cx="14" cy="58" r="7" fill="#4f9dff"/><circle cx="12" cy="56" r="2.6" fill="#9fe0a8" fill-opacity=".8"/>
+        <circle cx="88" cy="24" r="4.6" fill="#d9674a"/>
+        <circle cx="52" cy="28" r="6" fill="#7fe3ff" fill-opacity=".25"/><circle cx="52" cy="28" r="2.6" fill="#e9fbff"/>
+      </svg><small id="dock-plan-k"></small><strong id="dock-plan-t"></strong><span class="wl-arrow">&#8599;</span></button>
     </div>
   </nav>
   <!-- One line at the bottom that says how to move; it goes away with the first move. -->
