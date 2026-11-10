@@ -1,6 +1,7 @@
 import { initDaily } from "./daily.js";
 import { initExplorer } from "./explorer.js";
 import { track } from "./stats.js";
+import { initConstellations } from "./constellations.js";
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -3032,6 +3033,8 @@ function applyLanguage() {
   if (current) showStory(current.star, current.planet, true); // a change of language is not a visit
   applyWelcomeTexts();
   explorer?.render();
+  showSkyState();
+  sky?.refresh();
   daily?.render();
 }
 
@@ -3682,6 +3685,8 @@ function animate() {
   const now = performance.now() / 1000;
   const dt = Math.min(0.1, now - lastFrame); // capped so a background tab does not make a big jump
   lastFrame = now;
+  // The constellations are right only as seen from the Sun: not in the real scale and not while a ship flies somewhere else.
+  if (sky) sky.group.visible = skyOn && !realScale && !(trip && trip.phase !== "done" && trip.phase !== "route");
   stepSystem(solar, dt);
   if (activeExo) stepSystem(activeExo, dt);
   stepTrip(now);
@@ -5015,9 +5020,34 @@ function pickMeasure(x, y) {
 let daily = null; // the daily discovery, see daily.js
 let explorer = null; // favourites, history and missions, see explorer.js
 let zoneGame = null; // the zone quiz, see zonegame.js
+let sky = null; // the constellations, see constellations.js
+let skyOn = false;
+try {
+  skyOn = localStorage.getItem("constellations") === "on";
+} catch {
+  // storage blocked: off
+}
 const tourBar = document.getElementById("tour");
 let tourList = [];
 let tourIndex = 0;
+const skyButton = document.getElementById("constellations");
+const skyNote = document.getElementById("constellations-note");
+function showSkyState() {
+  skyButton.textContent = skyOn ? UI[lang].constellationsOn : UI[lang].constellationsOff;
+  skyButton.setAttribute("aria-pressed", String(skyOn));
+  skyNote.textContent = UI[lang].constellationsNote;
+  skyNote.hidden = !skyOn;
+}
+skyButton.addEventListener("click", () => {
+  skyOn = !skyOn;
+  try {
+    localStorage.setItem("constellations", skyOn ? "on" : "off");
+  } catch {
+    // not remembered
+  }
+  if (skyOn) track("constellations-on");
+  showSkyState();
+});
 const welcome = document.getElementById("welcome");
 const hintLine = document.getElementById("hint-line");
 const TOUCH = window.matchMedia("(pointer: coarse)").matches;
@@ -5062,6 +5092,8 @@ zoneGame = initZoneGame({
   },
 });
 applyWelcomeTexts(); // the card of the day is known now
+sky = await initConstellations({ scene, getLang: () => lang });
+showSkyState();
 animate();
 // The start screen goes away once the first frame is on its way.
 requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));
