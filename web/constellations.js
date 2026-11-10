@@ -230,7 +230,7 @@ export async function initConstellations({ scene, getLang, toMap }) {
     selection = addMarker(focusGroup, s.position, ringTexture, 0.045);
     return s.position.clone();
   }
-  // The two camera places for a figure, on the map: from the Earth (a little off the Sun, looking at the figure: it looks as we know it)
+  // The two camera places for a figure, on the map: from the Earth (a little off the Sun towards the figure, so that the Sun is behind the camera, looking at the figure: it looks as we know it)
   // and from the side (looking at the middle of the figure from the side, so that the distances show).
   function views(id) {
     const c = byId[id];
@@ -246,7 +246,7 @@ export async function initConstellations({ scene, getLang, toMap }) {
     if (side.lengthSq() < 1e-4) side.set(1, 0, 0);
     side.normalize();
     return {
-      earth: { position: away.clone().multiplyScalar(-0.35), target: away.clone().multiplyScalar(Math.max(centre.length(), 5)) },
+      earth: { position: away.clone().multiplyScalar(0.35), target: away.clone().multiplyScalar(Math.max(centre.length(), 5)) },
       side: { position: centre.clone().addScaledVector(side, extent * 2.4 + 4).add(new THREE.Vector3(0, extent * 0.5, 0)), target: centre },
     };
   }
