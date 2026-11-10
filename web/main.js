@@ -3686,7 +3686,7 @@ function animate() {
   const dt = Math.min(0.1, now - lastFrame); // capped so a background tab does not make a big jump
   lastFrame = now;
   // The constellations are right only as seen from the Sun: not in the real scale and not while a ship flies somewhere else.
-  if (sky) sky.group.visible = skyOn && !realScale && !(trip && trip.phase !== "done" && trip.phase !== "route");
+  if (sky) sky.show(skyMode, !realScale && !(trip && trip.phase !== "done" && trip.phase !== "route"));
   stepSystem(solar, dt);
   if (activeExo) stepSystem(activeExo, dt);
   stepTrip(now);
@@ -5021,9 +5021,10 @@ let daily = null; // the daily discovery, see daily.js
 let explorer = null; // favourites, history and missions, see explorer.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
-let skyOn = false;
+let skyMode = "off"; // "off", "sphere" (as seen from the Sun) or "real" (between the real stars)
 try {
-  skyOn = localStorage.getItem("constellations") === "on";
+  const saved = localStorage.getItem("constellations");
+  if (saved === "sphere" || saved === "real") skyMode = saved;
 } catch {
   // storage blocked: off
 }
@@ -5033,19 +5034,21 @@ let tourIndex = 0;
 const skyButton = document.getElementById("constellations");
 const skyNote = document.getElementById("constellations-note");
 function showSkyState() {
-  skyButton.textContent = skyOn ? UI[lang].constellationsOn : UI[lang].constellationsOff;
-  skyButton.setAttribute("aria-pressed", String(skyOn));
-  skyNote.textContent = UI[lang].constellationsNote;
-  skyNote.hidden = !skyOn;
+  const t = UI[lang];
+  skyButton.textContent = skyMode === "sphere" ? t.constellationsSphere : skyMode === "real" ? t.constellationsReal : t.constellationsOff;
+  skyButton.setAttribute("aria-pressed", String(skyMode !== "off"));
+  skyNote.textContent = skyMode === "real" ? t.constellationsNoteReal : t.constellationsNote;
+  skyNote.hidden = skyMode === "off";
 }
+// One button, three states: off, the sky as seen from the Sun, the figures between the real stars.
 skyButton.addEventListener("click", () => {
-  skyOn = !skyOn;
+  skyMode = skyMode === "off" ? "sphere" : skyMode === "sphere" ? "real" : "off";
   try {
-    localStorage.setItem("constellations", skyOn ? "on" : "off");
+    localStorage.setItem("constellations", skyMode);
   } catch {
     // not remembered
   }
-  if (skyOn) track("constellations-on");
+  if (skyMode !== "off") track(`constellations-${skyMode}`);
   showSkyState();
 });
 const welcome = document.getElementById("welcome");
@@ -5092,7 +5095,7 @@ zoneGame = initZoneGame({
   },
 });
 applyWelcomeTexts(); // the card of the day is known now
-sky = await initConstellations({ scene, getLang: () => lang });
+sky = await initConstellations({ scene, getLang: () => lang, toMap: (x, y, z, out) => toMapPosition({ x, y, z }, out) });
 showSkyState();
 animate();
 // The start screen goes away once the first frame is on its way.
