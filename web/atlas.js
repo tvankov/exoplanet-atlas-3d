@@ -21,6 +21,15 @@ export const ATLAS_TEXT = {
     testName: "Quiz: which one is it?",
     testStar: "Quiz: which star is the nearest?",
     view3d: "See the figures in 3D",
+    more: "More about this figure",
+    about: "About this figure",
+    listen: "Read aloud",
+    stopListen: "Stop reading",
+    enOnly: "This text is only available in English.",
+    clickHint: "Click a star in the picture or in the list to look at it.",
+    starLight: (n) => `Its light has travelled about ${n} years to reach us.`,
+    starMag: (m) => `Brightness ${m} (a smaller number is brighter; about 6 is the limit of the naked eye)`,
+    hip: (id) => `Hipparcos number ${id}`,
     frontZodiac: "Which zodiac sign is this?",
     frontOther: "Which constellation is this?",
     flip: "Turn the card",
@@ -63,6 +72,15 @@ export const ATLAS_TEXT = {
     testName: "Quiz: Welches ist es?",
     testStar: "Quiz: Welcher Stern ist am nächsten?",
     view3d: "Die Figuren in 3D ansehen",
+    more: "Mehr zu dieser Figur",
+    about: "Über diese Figur",
+    listen: "Vorlesen",
+    stopListen: "Vorlesen beenden",
+    enOnly: "Dieser Text gibt es nur auf Englisch.",
+    clickHint: "Klicke einen Stern im Bild oder in der Liste an, um ihn anzusehen.",
+    starLight: (n) => `Sein Licht war etwa ${n} Jahre zu uns unterwegs.`,
+    starMag: (m) => `Helligkeit ${m} (kleinere Zahl ist heller; etwa 6 ist die Grenze des bloßen Auges)`,
+    hip: (id) => `Hipparcos-Nummer ${id}`,
     frontZodiac: "Welches Sternzeichen ist das?",
     frontOther: "Welches Sternbild ist das?",
     flip: "Karte umdrehen",
@@ -105,6 +123,15 @@ export const ATLAS_TEXT = {
     testName: "クイズ：どの星座？",
     testStar: "クイズ：いちばん近い星は？",
     view3d: "図形を3Dで見る",
+    more: "この図形について",
+    about: "この図形について",
+    listen: "読み上げる",
+    stopListen: "読み上げを止める",
+    enOnly: "このテキストは英語のみです。",
+    clickHint: "図の星または一覧の星をクリックすると見られます。",
+    starLight: (n) => `その光は地球に届くまでに約${n}年かかっています。`,
+    starMag: (m) => `明るさ ${m}（数字が小さいほど明るく、6が肉眼の限界）`,
+    hip: (id) => `ヒッパルコス番号 ${id}`,
     frontZodiac: "これはどの星座？",
     frontOther: "これはどの星座？",
     flip: "カードをめくる",
@@ -147,6 +174,15 @@ export const ATLAS_TEXT = {
     testName: "Викторина: кое е?",
     testStar: "Викторина: коя звезда е най-близка?",
     view3d: "Виж фигурите в 3D",
+    more: "Повече за фигурата",
+    about: "За фигурата",
+    listen: "Прочети на глас",
+    stopListen: "Спри четенето",
+    enOnly: "Този текст е само на английски.",
+    clickHint: "Щракнете върху звезда в картинката или в списъка, за да я разгледате.",
+    starLight: (n) => `Светлината ѝ е пътувала около ${n} години до нас.`,
+    starMag: (m) => `Яркост ${m} (по-малкото число е по-ярко; около 6 е границата на окото)`,
+    hip: (id) => `Номер по Хипаркос ${id}`,
     frontZodiac: "Кой зодиакален знак е това?",
     frontOther: "Кое съзвездие е това?",
     flip: "Обърни картата",
@@ -189,9 +225,9 @@ const shuffle = (list) => {
   return a;
 };
 
-// getSky() is the constellations module, getLang() the language, unit() the unit of a distance (ly), flyTo(view) moves the camera,
-// onVisit(id) and onQuizEnd(score, total) tell the missions.
-export function initAtlas({ getSky, getLang, unit, flyTo, onVisit, onQuizEnd }) {
+// getSky() is the constellations module, getLang() the language, speechLang() the language code of the voice, unit() the unit of a distance (ly),
+// flyTo(view) moves the camera, panTo(point) moves it so that a point is in the middle, onVisit(id) and onQuizEnd(score, total) tell the missions.
+export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, onVisit, onQuizEnd }) {
   const panel = document.getElementById("atlas-panel");
   const body = document.getElementById("atlas-body");
   const t = () => ATLAS_TEXT[getLang()] ?? ATLAS_TEXT.en;
@@ -200,6 +236,10 @@ export function initAtlas({ getSky, getLang, unit, flyTo, onVisit, onQuizEnd }) 
   let cards = null; // { queue, known, total, flipped, index }
   let quiz = null;
   let selected = null;
+  let selectedStar = null; // a star of the figure that was clicked
+  let figureBack = "list"; // where "Back" leads from the figure: the list, or the flashcard
+  let signs = {}; // the texts about the zodiac signs (data/signs.json), to read and to listen to
+  fetch("data/signs.json").then((r) => r.json()).then((d) => (signs = d)).catch(() => {});
 
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -275,6 +315,7 @@ export function initAtlas({ getSky, getLang, unit, flyTo, onVisit, onQuizEnd }) 
   // a figure on the map: bright, with the distances, and the camera to the Earth or to the side
   function look(id, where = "earth") {
     const sky = getSky();
+    selectedStar = null;
     sky.focus(id, unit());
     flyTo(sky.views(id)[where]);
     track("atlas-select");
@@ -293,7 +334,7 @@ export function initAtlas({ getSky, getLang, unit, flyTo, onVisit, onQuizEnd }) 
       b.setAttribute("aria-pressed", String(deck === key));
       row.append(b);
     }
-    parts.push(row, button(tx.learn, "atlas-main", startCards), button(tx.testName, "atlas-wide", startName), button(tx.testStar, "atlas-wide", startStar), button(tx.view3d, "atlas-wide", () => ((screen = "list"), render())));
+    parts.push(row, button(tx.learn, "atlas-main", startCards), button(tx.view3d, "atlas-wide", () => ((screen = "list"), render())), button(tx.testName, "atlas-wide", startName), button(tx.testStar, "atlas-wide", startStar));
     body.replaceChildren(...parts);
     return sky;
   }
@@ -326,7 +367,7 @@ export function initAtlas({ getSky, getLang, unit, flyTo, onVisit, onQuizEnd }) 
       if (hosts.length) parts.push(el("p", "atlas-hosts", `${tx.hosts}: ${hosts.map((s) => `${s.host} (${s.planets})`).join(", ")}`));
       const views = el("div", "atlas-views");
       views.append(button(tx.earth, "", () => look(id, "earth")), button(tx.side, "", () => look(id, "side")));
-      parts.push(views);
+      parts.push(views, button(tx.more, "atlas-wide", () => openFigure(id, "cards")));
       const answer = el("div", "atlas-views");
       answer.append(
         button(tx.practise, "", () => {
@@ -448,32 +489,102 @@ export function initAtlas({ getSky, getLang, unit, flyTo, onVisit, onQuizEnd }) 
     const { constellations, nameOf: name } = getSky().data;
     const parts = [el("h3", "", tx.deckZodiac)];
     const grid = el("div", "atlas-grid");
-    for (const id of ZODIAC_ORDER) grid.append(button(nameOf(id), "", () => ((selected = id), (screen = "figure"), look(id, "earth"), render())));
+    for (const id of ZODIAC_ORDER) grid.append(button(nameOf(id), "", () => openFigure(id, "list")));
     parts.push(grid, el("h3", "", tx.others));
     const choose = el("select", "atlas-select");
     choose.setAttribute("aria-label", tx.others);
     choose.append(new Option(tx.choose, ""));
     for (const c of [...constellations].filter((x) => !x.zodiac).sort((a, b) => name(a, lang).localeCompare(name(b, lang), lang))) choose.append(new Option(name(c, lang), c.id));
-    choose.addEventListener("change", () => choose.value && ((selected = choose.value), (screen = "figure"), look(selected, "earth"), render()));
+    choose.addEventListener("change", () => choose.value && openFigure(choose.value, "list"));
     parts.push(choose, button(tx.back, "atlas-wide", () => ((screen = "home"), getSky().clearFocus(), render())));
     body.replaceChildren(...parts);
   }
+  function openFigure(id, from) {
+    stopReading();
+    selected = id;
+    figureBack = from;
+    screen = "figure";
+    look(id, "earth");
+    render();
+  }
+  // a click on a star (in the list, or in the picture): a ring around it, the camera to it, and its card
+  function chooseStar(id) {
+    stopReading();
+    selectedStar = id;
+    const position = getSky().selectStar(id);
+    if (position) panTo?.(position);
+    track("atlas-star");
+    render();
+  }
+  // ---- reading aloud: the text of a sign, sentence by sentence (long texts get cut off by some browsers)
+  let listenButton = null;
+  function stopReading() {
+    window.speechSynthesis?.cancel();
+    if (listenButton) listenButton.textContent = t().listen;
+  }
+  function read(text, lang) {
+    if (!("speechSynthesis" in window)) return;
+    speechSynthesis.cancel();
+    const sentences = text.match(/[^.!?。]+[.!?。]?/g) ?? [text];
+    sentences.forEach((sentence, i) => {
+      const u = new SpeechSynthesisUtterance(sentence.trim());
+      u.lang = lang;
+      if (i === sentences.length - 1) u.onend = u.onerror = () => listenButton && (listenButton.textContent = t().listen);
+      speechSynthesis.speak(u);
+    });
+    track("atlas-listen");
+  }
+  function starCard(s) {
+    const tx = t();
+    const sky = getSky();
+    const name = sky.starName(s.id);
+    const card = el("div", "atlas-card");
+    card.append(el("h3", "atlas-name", name ?? s.host ?? `${tx.star} ${s.id}`));
+    card.append(el("p", "", `${number(s.dist)} ${unit()}. ${tx.starLight(number(s.dist))}`));
+    card.append(el("p", "", tx.starMag(s.mag.toFixed(1))));
+    if (s.planets) card.append(el("p", "atlas-hosts", `${tx.planets(s.planets)}${name && s.host ? ` (${s.host})` : ""}`));
+    card.append(el("p", "hint", tx.hip(s.id)));
+    return card;
+  }
   function renderFigure() {
     const tx = t();
+    const lang = getLang();
     const info = getSky().data.info(selected);
     const parts = [el("h3", "atlas-name", nameOf(selected))];
     parts.push(el("p", "", tx.facts(info.stars.length, number(info.nearest.dist), number(info.farthest.dist), unit())));
     const row = el("div", "atlas-views");
     row.append(button(tx.earth, "", () => look(selected, "earth")), button(tx.side, "", () => look(selected, "side")));
-    parts.push(row, el("h3", "", tx.brightest));
+    parts.push(row);
+    // the text about a zodiac sign, which can be read aloud
+    const sign = signs[selected];
+    if (sign) {
+      const textLang = sign[lang] ? lang : "en";
+      const text = sign[textLang];
+      parts.push(el("h3", "", tx.about), el("p", "atlas-about", text));
+      if (textLang !== lang) parts.push(el("p", "hint", tx.enOnly));
+      if ("speechSynthesis" in window) {
+        listenButton = button(tx.listen, "atlas-wide", () => {
+          if (speechSynthesis.speaking) {
+            stopReading();
+            return;
+          }
+          listenButton.textContent = t().stopListen;
+          read(text, textLang === lang ? speechLang() : "en-US");
+        });
+        parts.push(listenButton);
+      }
+    }
+    const picked = info.stars.find((s) => s.id === selectedStar);
+    parts.push(el("h3", "", tx.brightest));
+    parts.push(picked ? starCard(picked) : el("p", "hint", tx.clickHint));
     const table = el("div", "atlas-stars");
-    for (const s of info.stars.slice(0, 8)) {
-      const line = el("div", "atlas-star");
-      line.append(el("span", "", s.host ? s.host : `${tx.star} ${s.id}`), el("span", "atlas-dist", `${number(s.dist)} ${unit()}`));
+    for (const s of info.stars.slice(0, 12)) {
+      const line = button("", `atlas-star${s.id === selectedStar ? " on" : ""}`, () => chooseStar(s.id));
+      line.append(el("span", "", getSky().starName(s.id) ?? s.host ?? `${tx.star} ${s.id}`), el("span", "atlas-dist", `${number(s.dist)} ${unit()}`));
       if (s.planets) line.append(el("span", "atlas-planets", tx.planets(s.planets)));
       table.append(line);
     }
-    parts.push(table, el("p", "hint", tx.note), button(tx.back, "atlas-wide", () => ((screen = "list"), getSky().clearFocus(), render())));
+    parts.push(table, el("p", "hint", tx.note), button(tx.back, "atlas-wide", () => ((screen = figureBack), stopReading(), (selectedStar = null), getSky().clearFocus(), render())));
     body.replaceChildren(...parts);
   }
 
@@ -497,10 +608,26 @@ export function initAtlas({ getSky, getLang, unit, flyTo, onVisit, onQuizEnd }) 
       cards = null;
       track("atlas-open");
       render();
-    } else getSky()?.clearFocus();
+    } else {
+      stopReading();
+      selectedStar = null;
+      getSky()?.clearFocus();
+    }
     window.dispatchEvent(new Event("resize")); // the picture is centred in the free space beside the panel (layoutView)
   }
   document.getElementById("atlas-close").addEventListener("click", () => toggle(false));
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
-  return { open: () => toggle(true), render, label: () => t().button };
+  return {
+    open: () => toggle(true),
+    // a click on the map: true if it hit a star of the figure that is shown
+    pick: (x, y, camera) => {
+      if (panel.hidden || screen !== "figure") return false;
+      const id = getSky().pickStar(x, y, camera, innerWidth, innerHeight);
+      if (!id) return false;
+      chooseStar(id);
+      return true;
+    },
+    render,
+    label: () => t().button,
+  };
 }

@@ -1,0 +1,51 @@
+{
+  "note": "Short texts about the 12 zodiac signs, to be read aloud. Written for this site (English and German); the Japanese and Bulgarian pages show the English text. The distances are rounded values of the Hipparcos and NASA data used in the app. The dates are the days on which the Sun stands in the constellation (the boundaries of the International Astronomical Union), about, and they differ from the dates of astrology by about three weeks because the direction of the Earth's axis has shifted since the signs were fixed (precession). Review before relying on it.",
+  "Ari": {
+    "en": "Aries, the Ram, is a small constellation of the northern sky. In Greek myth it is the golden ram whose fleece Jason and the Argonauts set out to win. Its brightest star, Hamal, is about 66 light years away. The Sun stands in Aries from about 19 April to 13 May, not from 21 March as in astrology: since the signs were fixed, the direction of the Earth's axis has shifted.",
+    "de": "Der Widder ist ein kleines Sternbild des Nordhimmels. In der griechischen Sage ist er der goldene Widder, dessen Vlies Jason und die Argonauten holen wollten. Sein hellster Stern, Hamal, ist etwa 66 Lichtjahre entfernt. Die Sonne steht etwa vom 19. April bis zum 13. Mai im Widder, nicht ab dem 21. März wie in der Astrologie: Seit die Zeichen festgelegt wurden, hat sich die Richtung der Erdachse verschoben."
+  },
+  "Tau": {
+    "en": "Taurus, the Bull, is one of the oldest known constellations. Its brightest star is the orange giant Aldebaran, the eye of the bull, about 67 light years away. Taurus holds two star clusters: the Hyades, which seem to form the face, and the Pleiades, about 440 light years away. The Crab Nebula, the remains of a supernova seen in the year 1054, lies here too. The Sun stands in Taurus from about 14 May to 19 June.",
+    "de": "Der Stier ist eines der ältesten bekannten Sternbilder. Sein hellster Stern ist der orangefarbene Riese Aldebaran, das Auge des Stiers, etwa 67 Lichtjahre entfernt. Im Stier liegen zwei Sternhaufen: die Hyaden, die das Gesicht zu bilden scheinen, und die Plejaden, etwa 440 Lichtjahre entfernt. Auch der Krebsnebel liegt hier, der Rest einer Supernova, die man im Jahr 1054 sah. Die Sonne steht etwa vom 14. Mai bis zum 19. Juni im Stier."
+  },
+  "Gem": {
+    "en": "Gemini, the Twins, shows Castor and Pollux, the two brothers of Greek myth. The two bright stars at the heads of the twins carry their names. Pollux is only 34 light years away and has a known planet. Castor is a system of six stars, about 51 light years away. The Sun stands in Gemini from about 20 June to 20 July.",
+    "de": "Die Zwillinge zeigen Kastor und Pollux, die zwei Brüder der griechischen Sage. Die beiden hellen Sterne an den Köpfen der Zwillinge tragen ihre Namen. Pollux ist nur 34 Lichtjahre entfernt und hat einen bekannten Planeten. Kastor ist ein System aus sechs Sternen, etwa 51 Lichtjahre entfernt. Die Sonne steht etwa vom 20. Juni bis zum 20. Juli in den Zwillingen."
+  },
+  "Cnc": {
+    "en": "Cancer, the Crab, is the faintest of the zodiac constellations. In Greek myth it is the crab that pinched Heracles in his fight with the Hydra. Its best known object is the Beehive Cluster, about 600 light years away, which shows as a faint patch to the naked eye. The star 55 Cancri has at least five known planets, and one of them, 55 Cancri e, circles its star in less than a day. The Sun stands in Cancer from about 21 July to 9 August.",
+    "de": "Der Krebs ist das lichtschwächste der Tierkreissternbilder. In der griechischen Sage ist er der Krebs, der Herakles im Kampf mit der Hydra in die Ferse zwickte. Sein bekanntestes Objekt ist der Krippenhaufen, etwa 600 Lichtjahre entfernt, der mit bloßem Auge als schwacher Fleck zu sehen ist. Der Stern 55 Cancri hat mindestens fünf bekannte Planeten, einer davon, 55 Cancri e, umkreist seinen Stern in weniger als einem Tag. Die Sonne steht etwa vom 21. Juli bis zum 9. August im Krebs."
+  },
+  "Leo": {
+    "en": "Leo, the Lion, looks like a resting lion. In Greek myth it is the Nemean lion that Heracles defeated. Its brightest star, Regulus, about 79 light years away, lies almost on the ecliptic and spins so fast that it is flattened. The Sun stands in Leo from about 10 August to 15 September.",
+    "de": "Der Löwe sieht aus wie ein ruhender Löwe. In der griechischen Sage ist er der Nemeische Löwe, den Herakles besiegte. Sein hellster Stern, Regulus, etwa 79 Lichtjahre entfernt, liegt fast auf der Ekliptik und dreht sich so schnell, dass er abgeplattet ist. Die Sonne steht etwa vom 10. August bis zum 15. September im Löwen."
+  },
+  "Vir": {
+    "en": "Virgo, the Maiden, is the second largest of all constellations and the largest of the zodiac. Its brightest star is Spica, about 250 light years away. In the direction of Virgo lies a cluster of more than a thousand galaxies, the Virgo Cluster, about 50 million light years away. The Sun stands in Virgo longer than in any other sign, from about 16 September to 30 October.",
+    "de": "Die Jungfrau ist das zweitgrößte aller Sternbilder und das größte des Tierkreises. Ihr hellster Stern ist Spica, etwa 250 Lichtjahre entfernt. In Richtung der Jungfrau liegt ein Haufen aus mehr als tausend Galaxien, der Virgo-Haufen, etwa 50 Millionen Lichtjahre entfernt. Die Sonne steht in der Jungfrau länger als in jedem anderen Zeichen, etwa vom 16. September bis zum 30. Oktober."
+  },
+  "Lib": {
+    "en": "Libra, the Scales, is the only sign of the zodiac that is an object, not a person or an animal. Its two brightest stars have Arabic names that mean the southern and the northern claw, Zubenelgenubi and Zubeneschamali, because the claws of the Scorpion once reached this far. Near them lies Gliese 581, a red dwarf about 20 light years away with several planets. The Sun stands in Libra from about 31 October to 22 November.",
+    "de": "Die Waage ist das einzige Zeichen des Tierkreises, das ein Gegenstand ist, kein Mensch und kein Tier. Ihre beiden hellsten Sterne haben arabische Namen, die südliche und nördliche Schere bedeuten, Zubenelgenubi und Zubeneschamali, weil die Scheren des Skorpions einst bis hierher reichten. In ihrer Nähe liegt Gliese 581, ein Roter Zwerg, etwa 20 Lichtjahre entfernt, mit mehreren Planeten. Die Sonne steht etwa vom 31. Oktober bis zum 22. November in der Waage."
+  },
+  "Sco": {
+    "en": "Scorpius, the Scorpion, is one of the few constellations that really look like their name. Its red heart is Antares, a supergiant about 550 light years away; the name means rival of Mars, because of its colour. In myth the scorpion killed the hunter Orion, which is why Orion sets when Scorpius rises. Next to it, in Sagittarius, lies the direction of the centre of our galaxy. The Sun stands in Scorpius for only about a week, from 23 to 29 November.",
+    "de": "Der Skorpion ist eines der wenigen Sternbilder, die wirklich so aussehen wie ihr Name. Sein rotes Herz ist Antares, ein Überriese, etwa 550 Lichtjahre entfernt; der Name bedeutet Rivale des Mars, wegen seiner Farbe. In der Sage tötete der Skorpion den Jäger Orion, deshalb geht Orion unter, wenn der Skorpion aufgeht. Daneben, im Schützen, liegt die Richtung zur Mitte unserer Galaxis. Die Sonne steht nur etwa eine Woche im Skorpion, vom 23. bis zum 29. November."
+  },
+  "Sgr": {
+    "en": "Sagittarius, the Archer, is drawn as a centaur with a bow. In its direction lies the centre of our galaxy, about 26,000 light years away, with a black hole of about four million Suns. Its brightest star, Kaus Australis, is about 140 light years away. The Sun stands in Sagittarius from about 18 December to 18 January.",
+    "de": "Der Schütze wird als Zentaur mit einem Bogen gezeichnet. In seiner Richtung liegt die Mitte unserer Galaxis, etwa 26.000 Lichtjahre entfernt, mit einem Schwarzen Loch von rund vier Millionen Sonnenmassen. Sein hellster Stern, Kaus Australis, ist etwa 140 Lichtjahre entfernt. Die Sonne steht etwa vom 18. Dezember bis zum 18. Januar im Schützen."
+  },
+  "Cap": {
+    "en": "Capricornus, the Sea-Goat, has the head of a goat and the tail of a fish. It is one of the oldest constellations, already known in Babylon. Its brightest star, Deneb Algedi, is only about 39 light years away. The Sun stands in Capricornus from about 19 January to 15 February.",
+    "de": "Der Steinbock hat den Kopf einer Ziege und den Schwanz eines Fisches. Er ist eines der ältesten Sternbilder, schon in Babylon bekannt. Sein hellster Stern, Deneb Algedi, ist nur etwa 39 Lichtjahre entfernt. Die Sonne steht etwa vom 19. Januar bis zum 15. Februar im Steinbock."
+  },
+  "Aqr": {
+    "en": "Aquarius, the Water Bearer, is a figure pouring water from a jar. TRAPPIST-1, a small red star with seven Earth sized planets, lies in Aquarius, about 40 light years away. Its brightest stars, Sadalsuud and Sadalmelik, are both more than 500 light years away. The Sun stands in Aquarius from about 16 February to 11 March.",
+    "de": "Der Wassermann ist eine Figur, die Wasser aus einem Krug gießt. TRAPPIST-1, ein kleiner roter Stern mit sieben erdgroßen Planeten, liegt im Wassermann, etwa 40 Lichtjahre entfernt. Seine hellsten Sterne, Sadalsuud und Sadalmelik, sind beide mehr als 500 Lichtjahre entfernt. Die Sonne steht etwa vom 16. Februar bis zum 11. März im Wassermann."
+  },
+  "Psc": {
+    "en": "Pisces, the Fishes, shows two fish tied together by a cord. In Greek myth Aphrodite and her son Eros turned into fish to escape the monster Typhon and tied themselves together. The constellation is faint; its brightest star, Eta Piscium, is about 350 light years away. The point where the Sun crosses the equator of the sky in March, the spring equinox, lies in Pisces today.",
+    "de": "Die Fische zeigen zwei Fische, die durch eine Schnur verbunden sind. In der griechischen Sage verwandelten sich Aphrodite und ihr Sohn Eros in Fische, um dem Ungeheuer Typhon zu entkommen, und banden sich aneinander. Das Sternbild ist lichtschwach; sein hellster Stern, Eta Piscium, ist etwa 350 Lichtjahre entfernt. Der Punkt, an dem die Sonne im März den Himmelsäquator überquert, der Frühlingspunkt, liegt heute in den Fischen."
+  }
+}

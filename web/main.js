@@ -2610,10 +2610,15 @@ function flyTo({ star, system }) {
 }
 
 // A flight to a place and a point to look at, both given (the atlas: from the Earth, from the side).
-function flyToView(view) {
+function flyToView(view, ms = 2600) {
   leaveCloseup();
   ring.visible = false;
-  flight = { start: performance.now(), fromPos: camera.position.clone(), fromTarget: controls.target.clone(), view, ms: 2600 };
+  flight = { start: performance.now(), fromPos: camera.position.clone(), fromTarget: controls.target.clone(), view, ms };
+}
+// The same distance and direction, but a point in the middle of the view (a star of the atlas that was clicked).
+function panToPoint(point) {
+  const delta = point.clone().sub(controls.target);
+  flyToView({ position: camera.position.clone().add(delta), target: point.clone() }, 900);
 }
 
 // The target is a function because a planet keeps moving while the camera flies to it.
@@ -2900,6 +2905,7 @@ canvas.addEventListener("pointerup", (e) => {
   if (!pressAt) return;
   const moved = Math.hypot(e.clientX - pressAt.x, e.clientY - pressAt.y);
   pressAt = null;
+  if (moved < 5 && atlas?.pick(e.clientX, e.clientY, camera)) return; // a star of a constellation in the learning panel
   if (moved < 5) (picking ? pickForPlanner : measuring ? pickMeasure : pickPlanet)(e.clientX, e.clientY);
 });
 
@@ -5127,8 +5133,10 @@ showSkyState();
 atlas = initAtlas({
   getSky: () => sky,
   getLang: () => lang,
+  speechLang: () => UI[lang].speech,
   unit: () => UI[lang].lightYears,
   flyTo: flyToView,
+  panTo: panToPoint,
   onVisit: (id) => explorer?.emit("constellation", id),
   onQuizEnd: () => explorer?.emit("atlasQuiz"),
 });

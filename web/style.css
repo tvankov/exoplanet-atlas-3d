@@ -2298,3 +2298,33 @@ body:has(#tour:not([hidden])) #dock {
   font-size: 13px;
   color: #7cffb2;
 }
+
+/* The figure in the learning panel: the text about a sign, the card of a clicked star, and the star list as buttons. */
+#atlas-body .atlas-about {
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.atlas-card {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  background: rgba(124, 255, 178, 0.08);
+  border: 1px solid rgba(124, 255, 178, 0.35);
+  border-radius: 8px;
+}
+.atlas-card h3 {
+  margin: 0 0 4px;
+}
+.atlas-card p {
+  margin: 4px 0;
+}
+#atlas-panel button.atlas-star {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+#atlas-panel button.atlas-star.on {
+  background: rgba(124, 255, 178, 0.2);
+  border-color: rgba(124, 255, 178, 0.6);
+}

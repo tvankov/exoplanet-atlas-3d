@@ -19,6 +19,10 @@ const SEGMENTS = 12;
 // toMap(x, y, z, out): a position in light years (the axes of the data) to the map, which squeezes the distances.
 export async function initConstellations({ scene, getLang, toMap }) {
   const { stars, constellations } = await (await fetch("data/constellations.json")).json();
+  // The proper names of the well-known stars (Hipparcos number -> name), written by hand for the bright stars of the figures; a star without
+  // one is shown by the name of its planet host or its Hipparcos number.
+  const properNames = await fetch("data/star-names.json").then((r) => r.json()).catch(() => ({}));
+  const starName = (id) => properNames[id] ?? null;
   const byId = Object.fromEntries(constellations.map((c) => [c.id, c]));
   const nameOf = (c, lang) => (lang === "bg" ? c.la : (c[lang] ?? c.en));
   const lineMaterial = (color, opacity) => new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false });
@@ -128,6 +132,8 @@ export async function initConstellations({ scene, getLang, toMap }) {
   const focusGroup = new THREE.Group();
   focusGroup.visible = false;
   let focusLabels = [];
+  let focusStars = []; // { id, position } of the stars of the figure in focus, for clicking
+  let selection = null; // the ring around the star that was clicked
   let unit = "ly";
   const infoOf = (c) => {
     const ids = [...new Set(c.lines.flat())].filter((id) => stars[id][2] != null);
@@ -165,6 +171,8 @@ export async function initConstellations({ scene, getLang, toMap }) {
       child.material?.dispose();
     }
     focusLabels = [];
+    focusStars = [];
+    selection = null;
     focusGroup.visible = false;
     zodiacLines.material.opacity = 0.9;
     othersLines.material.opacity = 0.55;
@@ -182,17 +190,45 @@ export async function initConstellations({ scene, getLang, toMap }) {
     for (const s of info.stars) {
       const position = onMap(s.id);
       addMarker(focusGroup, position, dotTexture, 0.012);
+      focusStars.push({ id: s.id, position });
       const canvas = document.createElement("canvas");
       const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), sizeAttenuation: false, depthTest: false, transparent: true }));
       sprite.position.copy(position);
       focusGroup.add(sprite);
-      focusLabels.push({ canvas, sprite, text: () => `${Math.round(s.dist)} ${unit}`, style: "dist" });
+      const name = starName(s.id);
+      focusLabels.push({ canvas, sprite, text: () => `${name ? `${name} · ` : ""}${Math.round(s.dist)} ${unit}`, style: "dist" });
     }
     zodiacLines.material.opacity = 0.3;
     othersLines.material.opacity = 0.15;
     focusGroup.visible = true;
     drawLabels();
     return info;
+  }
+  // The star of the focused figure that is nearest to a point on the screen (x, y in pixels), if it is close enough to be meant.
+  const probe = new THREE.Vector3();
+  function pickStar(x, y, camera, width, height) {
+    if (!focusGroup.visible) return null;
+    let best = null;
+    let bestDistance = 28; // pixels
+    for (const s of focusStars) {
+      probe.copy(s.position).project(camera);
+      if (probe.z > 1) continue; // behind the camera
+      const d = Math.hypot((probe.x * 0.5 + 0.5) * width - x, (-probe.y * 0.5 + 0.5) * height - y);
+      if (d < bestDistance) (best = s, (bestDistance = d));
+    }
+    return best?.id ?? null;
+  }
+  // a ring around a star of the figure (null: none), and its place on the map
+  function selectStar(id) {
+    if (selection) {
+      focusGroup.remove(selection);
+      selection.material.dispose();
+      selection = null;
+    }
+    const s = focusStars.find((x) => x.id === id);
+    if (!s) return null;
+    selection = addMarker(focusGroup, s.position, ringTexture, 0.045);
+    return s.position.clone();
   }
   // The two camera places for a figure, on the map: from the Earth (a little off the Sun, looking at the figure: it looks as we know it)
   // and from the side (looking at the middle of the figure from the side, so that the distances show).
@@ -227,6 +263,9 @@ export async function initConstellations({ scene, getLang, toMap }) {
     focus,
     clearFocus,
     views,
+    pickStar,
+    selectStar,
+    starName,
     // the data for the learning panel
     data: { stars, constellations, nameOf, info: (id) => infoOf(byId[id]) },
   };
