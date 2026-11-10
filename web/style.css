@@ -1769,3 +1769,87 @@ body:has(#flight-caption:not([hidden])) #dock {
     bottom: 160px;
   }
 }
+
+/* The tour of the habitable candidates: a bar at the bottom with the arrows, in place of the dock while the tour runs. */
+#tour {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: min(520px, calc(100vw - 32px));
+  padding: 10px 12px;
+  transform: translateX(-50%);
+  background: rgba(10, 14, 24, 0.86);
+  border: 1px solid rgba(124, 255, 178, 0.45);
+  border-radius: 20px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+#tour[hidden] {
+  display: none;
+}
+#tour button {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 26px;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+}
+#tour button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+#tour #tour-close {
+  width: 34px;
+  height: 34px;
+  font-size: 20px;
+  background: none;
+  border: 0;
+  opacity: 0.7;
+}
+#tour-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+#tour-text small {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7cffb2;
+}
+#tour-text strong {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#tour-text span {
+  font-size: 12px;
+  opacity: 0.7;
+}
+body:has(#tour:not([hidden])) #dock {
+  display: none;
+}
+@media (max-width: 640px) {
+  #tour {
+    left: 8px;
+    right: 76px; /* the round Info button is at the right */
+    bottom: 14px;
+    width: auto;
+    transform: none;
+    padding: 8px;
+  }
+}

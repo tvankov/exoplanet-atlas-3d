@@ -227,6 +227,13 @@
       <button id="welcome-plan" type="button" class="wl-card"><small id="wl-plan-k"></small><strong id="wl-plan-t"></strong><span id="wl-plan-s"></span><span class="wl-arrow">&#8599;</span></button>
     </div>
   </div>
+  <!-- The tour of the habitable candidates, from the nearest to the farthest, one system after the other (see tourStart in main.js). -->
+  <div id="tour" hidden role="group" aria-label="Tour">
+    <button id="tour-prev" type="button" aria-label="Previous">&#8249;</button>
+    <div id="tour-text"><small id="tour-k"></small><strong id="tour-name"></strong><span id="tour-info"></span></div>
+    <button id="tour-next" type="button" aria-label="Next">&#8250;</button>
+    <button id="tour-close" type="button" aria-label="End tour">&times;</button>
+  </div>
   <!-- The dock at the bottom of the map: the three cards of the start screen stay here (see applyWelcomeTexts in main.js). -->
   <nav id="dock" aria-label="Shortcuts">
     <button id="dock-toggle" type="button" aria-expanded="true" aria-label="Shortcuts">&#8964;</button>

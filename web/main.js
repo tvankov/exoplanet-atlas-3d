@@ -4231,6 +4231,7 @@ planGo.addEventListener("click", () => {
   planResult.textContent = ""; // how the film works is in the planner, under "How the trip is worked out"
   trip.phase = "intro";
   track(`trip-start-${trip.mode}`);
+  tourEnd(); // a trip ends the tour
   trip.phaseStart = performance.now() / 1000;
   trip.warpTarget = 0;
   showPlace(from);
@@ -5012,6 +5013,9 @@ function pickMeasure(x, y) {
 
 let daily = null; // the daily discovery, see daily.js
 let explorer = null; // favourites, history and missions, see explorer.js
+const tourBar = document.getElementById("tour");
+let tourList = [];
+let tourIndex = 0;
 const welcome = document.getElementById("welcome");
 const hintLine = document.getElementById("hint-line");
 const TOUCH = window.matchMedia("(pointer: coarse)").matches;
@@ -5090,6 +5094,11 @@ function applyWelcomeTexts() {
   // The dock at the bottom of the map holds the same three cards in a smaller form.
   set("dock-daily-k", t.welcomeDailyKicker);
   set("dock-daily-t", daily ? (daily.entry[lang] ?? daily.entry.en).title : "");
+  set("tour-k", t.tourKicker);
+  document.getElementById("tour-prev").setAttribute("aria-label", t.tourPrev);
+  document.getElementById("tour-next").setAttribute("aria-label", t.tourNext);
+  document.getElementById("tour-close").setAttribute("aria-label", t.tourClose);
+  showTourStop();
   set("dock-near-k", t.welcomeNear);
   set("dock-near-t", near ? `${near.planet.pl_name} · ${near.star.dist_ly.toFixed(1)} ${t.lightYears}` : "");
   set("dock-plan-k", TRAVEL_UI[lang].title);
@@ -5128,9 +5137,7 @@ document.getElementById("welcome-mars").addEventListener("click", () => {
 });
 document.getElementById("welcome-habitable").addEventListener("click", () => {
   closeWelcome();
-  const near = nearestCandidate();
-  const place = near && resolvePlace(near.planet.pl_name);
-  if (place) showPlace(place);
+  tourStart();
 });
 document.getElementById("welcome-map").addEventListener("click", closeWelcome);
 // What is used on the start screen and in the dock: only the name of the button is counted (see stats.js).
@@ -5154,11 +5161,35 @@ try {
   // storage blocked, the dock starts open
 }
 document.getElementById("dock-toggle").addEventListener("click", () => setDockFolded(!dock.classList.contains("folded")));
-document.getElementById("dock-near").addEventListener("click", () => {
-  const near = nearestCandidate();
-  const place = near && resolvePlace(near.planet.pl_name);
-  if (place) showPlace(place);
-});
+// The tour of the habitable candidates: the system of each one, from the nearest to the farthest, with the green zone in view. The arrows go
+// on and back round, and what is looked at counts for the missions like any other visit.
+function showTourStop() {
+  if (tourBar.hidden || !tourList.length) return;
+  const { star, planet } = tourList[tourIndex];
+  const t = UI[lang];
+  document.getElementById("tour-name").textContent = planet.pl_name;
+  document.getElementById("tour-info").textContent = `${tourIndex + 1} / ${tourList.length} · ${star.dist_ly.toFixed(1)} ${t.lightYears}`;
+}
+function tourGo(i) {
+  tourIndex = (i + tourList.length) % tourList.length;
+  const place = resolvePlace(tourList[tourIndex].planet.pl_name);
+  if (place) showPlace(place, false, true); // the whole system, so that the green zone is in view
+  showTourStop();
+  track("tour-step");
+}
+function tourStart() {
+  tourList = stars.flatMap((star) => star.planets.filter((p) => p.habitable).map((planet) => ({ star, planet }))).sort((a, b) => a.star.dist_ly - b.star.dist_ly);
+  if (!tourList.length) return;
+  tourBar.hidden = false;
+  tourGo(0);
+}
+function tourEnd() {
+  tourBar.hidden = true;
+}
+document.getElementById("tour-prev").addEventListener("click", () => tourGo(tourIndex - 1));
+document.getElementById("tour-next").addEventListener("click", () => tourGo(tourIndex + 1));
+document.getElementById("tour-close").addEventListener("click", tourEnd);
+document.getElementById("dock-near").addEventListener("click", tourStart);
 document.getElementById("wl-daily").addEventListener("click", () => {
   closeWelcome();
   daily?.open();
