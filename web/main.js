@@ -2,6 +2,7 @@ import { initDaily } from "./daily.js";
 import { initExplorer } from "./explorer.js";
 import { track } from "./stats.js";
 import { initConstellations } from "./constellations.js";
+import { initAtlas, ATLAS_TEXT } from "./atlas.js";
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -2601,6 +2602,13 @@ function flyTo({ star, system }) {
   ring.visible = true;
 }
 
+// A flight to a place and a point to look at, both given (the atlas: from the Earth, from the side).
+function flyToView(view) {
+  leaveCloseup();
+  ring.visible = false;
+  flight = { start: performance.now(), fromPos: camera.position.clone(), fromTarget: controls.target.clone(), view, ms: 2600 };
+}
+
 // The target is a function because a planet keeps moving while the camera flies to it.
 function startFlight(getTarget, distance, direction = VIEW_DIRECTION, spherical = false) {
   flight = {
@@ -2725,7 +2733,9 @@ function layoutView() {
   storyPanel.classList.remove("compact");
   const w = window.innerWidth;
   const left = document.getElementById("hud").getBoundingClientRect().right;
-  const right = storyPanel.hidden ? w : storyPanel.getBoundingClientRect().left;
+  // The atlas sits at the right on a wide screen, so the map is centred in the free space left of it.
+  const atlasPanel = document.getElementById("atlas-panel");
+  const right = !atlasPanel.hidden ? atlasPanel.getBoundingClientRect().left : storyPanel.hidden ? w : storyPanel.getBoundingClientRect().left;
   const roomy = right - left >= MIN_FREE_PX;
   storyPanel.classList.toggle("compact", closeup && !roomy);
   if (roomy) camera.setViewOffset(w, window.innerHeight, w / 2 - (left + right) / 2, 0, w, window.innerHeight);
@@ -3035,6 +3045,8 @@ function applyLanguage() {
   explorer?.render();
   showSkyState();
   sky?.refresh();
+  document.getElementById("atlas-open").textContent = (ATLAS_TEXT[lang] ?? ATLAS_TEXT.en).button;
+  atlas?.render();
   daily?.render();
 }
 
@@ -3045,6 +3057,12 @@ function stepFlight() {
   if (!flight) return;
   const u = Math.min(1, (performance.now() - flight.start) / (flight.ms ?? FLIGHT_MS));
   const e = u * u * (3 - 2 * u); // smoothstep, soft start and stop
+  if (flight.view) {
+    camera.position.lerpVectors(flight.fromPos, flight.view.position, e);
+    controls.target.lerpVectors(flight.fromTarget, flight.view.target, e);
+    if (u === 1) flight = null;
+    return;
+  }
   const target = flight.getTarget();
   if (flight.spherical) {
     flightDir.copy(flight.dir0).applyQuaternion(flightQ.identity().slerp(flight.turn, e));
@@ -3686,7 +3704,7 @@ function animate() {
   const dt = Math.min(0.1, now - lastFrame); // capped so a background tab does not make a big jump
   lastFrame = now;
   // The constellations are right only as seen from the Sun: not in the real scale and not while a ship flies somewhere else.
-  if (sky) sky.show(skyMode, !realScale && !(trip && trip.phase !== "done" && trip.phase !== "route"));
+  if (sky) sky.show(skyMode === "real" && !realScale && !(trip && trip.phase !== "done" && trip.phase !== "route"));
   stepSystem(solar, dt);
   if (activeExo) stepSystem(activeExo, dt);
   stepTrip(now);
@@ -5021,10 +5039,11 @@ let daily = null; // the daily discovery, see daily.js
 let explorer = null; // favourites, history and missions, see explorer.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
-let skyMode = "off"; // "off", "sphere" (as seen from the Sun) or "real" (between the real stars)
+let atlas = null; // the constellation atlas, see atlas.js
+let skyMode = "off"; // "off" or "real" (the figures between the real stars)
 try {
   const saved = localStorage.getItem("constellations");
-  if (saved === "sphere" || saved === "real") skyMode = saved;
+  if (saved === "sphere" || saved === "real") skyMode = "real"; // "sphere" was an earlier form, it is the same figure seen from the Sun
 } catch {
   // storage blocked: off
 }
@@ -5035,20 +5054,20 @@ const skyButton = document.getElementById("constellations");
 const skyNote = document.getElementById("constellations-note");
 function showSkyState() {
   const t = UI[lang];
-  skyButton.textContent = skyMode === "sphere" ? t.constellationsSphere : skyMode === "real" ? t.constellationsReal : t.constellationsOff;
+  skyButton.textContent = skyMode === "real" ? t.constellationsReal : t.constellationsOff;
   skyButton.setAttribute("aria-pressed", String(skyMode !== "off"));
-  skyNote.textContent = skyMode === "real" ? t.constellationsNoteReal : t.constellationsNote;
+  skyNote.textContent = t.constellationsNoteReal;
   skyNote.hidden = skyMode === "off";
 }
-// One button, three states: off, the sky as seen from the Sun, the figures between the real stars.
+// One button: the figures between the real stars on or off.
 skyButton.addEventListener("click", () => {
-  skyMode = skyMode === "off" ? "sphere" : skyMode === "sphere" ? "real" : "off";
+  skyMode = skyMode === "off" ? "real" : "off";
   try {
     localStorage.setItem("constellations", skyMode);
   } catch {
     // not remembered
   }
-  if (skyMode !== "off") track(`constellations-${skyMode}`);
+  if (skyMode !== "off") track("constellations-real");
   showSkyState();
 });
 const welcome = document.getElementById("welcome");
@@ -5097,6 +5116,27 @@ zoneGame = initZoneGame({
 applyWelcomeTexts(); // the card of the day is known now
 sky = await initConstellations({ scene, getLang: () => lang, toMap: (x, y, z, out) => toMapPosition({ x, y, z }, out) });
 showSkyState();
+atlas = initAtlas({
+  getSky: () => sky,
+  getLang: () => lang,
+  unit: () => UI[lang].lightYears,
+  flyTo: flyToView,
+  ensureOn: () => {
+    if (skyMode !== "real") {
+      skyMode = "real";
+      try {
+        localStorage.setItem("constellations", skyMode);
+      } catch {
+        // not remembered
+      }
+      showSkyState();
+    }
+  },
+  onVisit: (id) => explorer?.emit("constellation", id),
+  onQuizEnd: () => explorer?.emit("atlasQuiz"),
+});
+document.getElementById("atlas-open").addEventListener("click", () => atlas.open());
+document.getElementById("atlas-open").textContent = (ATLAS_TEXT[lang] ?? ATLAS_TEXT.en).button;
 animate();
 // The start screen goes away once the first frame is on its way.
 requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));

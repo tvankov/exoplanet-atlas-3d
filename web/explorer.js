@@ -35,6 +35,14 @@ export const MISSIONS = [
     en: "Get 4 of 5 right in the zone quiz", de: "Löse 4 von 5 im Zonen-Quiz richtig", ja: "ゾーンクイズで5問中4問正解する", bg: "Отговори вярно на 4 от 5 във викторината за зоната",
   },
   {
+    id: "d-atlas-quiz", period: "day", event: "atlasQuiz", target: 1,
+    en: "Play the star distance quiz in the atlas", de: "Spiele das Entfernungs-Quiz im Atlas", ja: "アトラスで距離クイズを遊ぶ", bg: "Изиграй викторината за разстоянията в атласа",
+  },
+  {
+    id: "w-atlas", period: "week", event: "constellation", target: 6, unique: true,
+    en: "Look at 6 constellations in the atlas", de: "Sieh dir 6 Sternbilder im Atlas an", ja: "アトラスで6つの星座を見る", bg: "Разгледай 6 съзвездия в атласа",
+  },
+  {
     id: "w-candidates", period: "week", event: "candidate", target: 5, unique: true,
     en: "Visit 5 habitable candidates", de: "Besuche 5 bewohnbare Kandidaten", ja: "居住可能な候補を5つ訪れる", bg: "Посети 5 кандидати за обитаеми светове",
   },
