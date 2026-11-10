@@ -32,7 +32,6 @@ export const ZONE_TEXT = {
     again: "Play again",
     close: "Close",
     empty: "No round could be made from the data.",
-    network: (count, total) => `On the map behind: the ${count} stars that have habitable candidates, joined by the shortest network, about ${total} light years in all.`,
   },
   de: {
     button: "Zonen-Quiz",
@@ -57,7 +56,6 @@ export const ZONE_TEXT = {
     again: "Noch einmal spielen",
     close: "Schließen",
     empty: "Aus den Daten ließ sich keine Runde bilden.",
-    network: (count, total) => `Auf der Karte dahinter: die ${count} Sterne mit bewohnbaren Kandidaten, verbunden durch das kürzeste Netz, insgesamt etwa ${total} Lichtjahre.`,
   },
   ja: {
     button: "ゾーンクイズ",
@@ -82,7 +80,6 @@ export const ZONE_TEXT = {
     again: "もう一度遊ぶ",
     close: "閉じる",
     empty: "データから問題を作れませんでした。",
-    network: (count, total) => `背後の地図：居住可能な候補をもつ${count}個の恒星を、最短のネットワーク（合計約${total}光年）で結んでいます。`,
   },
   bg: {
     button: "Викторина за зоната",
@@ -107,7 +104,6 @@ export const ZONE_TEXT = {
     again: "Играй отново",
     close: "Затвори",
     empty: "От данните не можа да се направи рунд.",
-    network: (count, total) => `На картата отзад: ${count} звезди с кандидати за обитаеми светове, свързани с най-късата мрежа, общо около ${total} светлинни години.`,
   },
 };
 
@@ -132,7 +128,7 @@ function makeRound(star, zone) {
 }
 
 // getStars() gives the catalogue, zoneAu(star) the zone, explore(name) flies to the system, onEnd(score, total) is told when a game is over.
-export function initZoneGame({ getStars, zoneAu, getLang, explore, onEnd, onOpen, onClose, getNetwork }) {
+export function initZoneGame({ getStars, zoneAu, getLang, explore, onEnd }) {
   const panel = document.getElementById("zone-panel");
   const body = document.getElementById("zone-body");
   const t = () => ZONE_TEXT[getLang()] ?? ZONE_TEXT.en;
@@ -202,8 +198,6 @@ export function initZoneGame({ getStars, zoneAu, getLang, explore, onEnd, onOpen
       again.type = "button";
       again.addEventListener("click", start);
       end.append(again, el("p", "hint", tx.caveat));
-      const net = getNetwork?.();
-      if (net) end.append(el("p", "hint", tx.network(net.count, net.total)));
       return body.replaceChildren(end);
     }
     const round = game.rounds[game.index];
@@ -261,8 +255,6 @@ export function initZoneGame({ getStars, zoneAu, getLang, explore, onEnd, onOpen
       });
       parts.push(next, look, el("p", "hint", tx.caveat));
     }
-    const net = getNetwork?.();
-    if (net) parts.push(el("p", "hint", tx.network(net.count, net.total)));
     body.replaceChildren(...parts);
   }
 
@@ -278,10 +270,7 @@ export function initZoneGame({ getStars, zoneAu, getLang, explore, onEnd, onOpen
   }
   function toggle(open = panel.hidden) {
     panel.hidden = !open;
-    if (open) {
-      start();
-      onOpen?.();
-    } else onClose?.();
+    if (open) start();
   }
   document.getElementById("zone-close").addEventListener("click", () => toggle(false));
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));

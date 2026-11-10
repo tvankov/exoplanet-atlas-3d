@@ -2016,23 +2016,3 @@ body:has(#tour:not([hidden])) #dock {
     animation: none;
   }
 }
-
-/* The quiz at the right on a wide screen (the map is centred left of it, the network of the habitable systems is in view), at the bottom on a phone. */
-@media (min-width: 900px) {
-  #zone-panel {
-    left: auto;
-    right: 16px;
-    transform: translateY(-50%);
-  }
-}
-@media (max-width: 640px) {
-  #zone-panel {
-    top: auto;
-    bottom: 12px;
-    left: 8px;
-    right: 8px;
-    width: auto;
-    max-height: 64dvh;
-    transform: none;
-  }
-}

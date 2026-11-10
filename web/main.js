@@ -2724,9 +2724,7 @@ function layoutView() {
   storyPanel.classList.remove("compact");
   const w = window.innerWidth;
   const left = document.getElementById("hud").getBoundingClientRect().right;
-  // The quiz sits at the right on a wide screen, so the map is centred in the free space left of it (the network is behind the quiz).
-  const quiz = document.getElementById("zone-panel");
-  const right = !quiz.hidden ? quiz.getBoundingClientRect().left : storyPanel.hidden ? w : storyPanel.getBoundingClientRect().left;
+  const right = storyPanel.hidden ? w : storyPanel.getBoundingClientRect().left;
   const roomy = right - left >= MIN_FREE_PX;
   storyPanel.classList.toggle("compact", closeup && !roomy);
   if (roomy) camera.setViewOffset(w, window.innerHeight, w / 2 - (left + right) / 2, 0, w, window.innerHeight);
@@ -5062,24 +5060,6 @@ zoneGame = initZoneGame({
     explorer?.emit("zoneGame");
     if (score >= 4) explorer?.emit("zoneWin");
   },
-  // While the quiz is open the map behind it shows the network of the habitable systems, from a distance where all of it is in view.
-  onOpen: () => {
-    quizOpen = true;
-    updateHabitatNet();
-    layoutView();
-    if (!realScale) {
-      leaveCloseup();
-      const net = habitatNet;
-      startFlight(() => (net ? net.center : new THREE.Vector3()), net ? Math.max(net.radius * 2.6, 14) : 100);
-      ring.visible = false;
-    }
-  },
-  onClose: () => {
-    quizOpen = false;
-    updateHabitatNet();
-    layoutView();
-  },
-  getNetwork: habitatNetInfo,
 });
 applyWelcomeTexts(); // the card of the day is known now
 animate();
@@ -5216,79 +5196,14 @@ function tourGo(i) {
   showTourStop();
   track("tour-step");
 }
-// The network of the habitable systems: the 27 stars that have candidates, joined by the shortest network that connects them all (a minimum
-// spanning tree of the real distances). It is drawn on the map while the quiz or the tour is open. The map squeezes distances, so the
-// lines are bent; the lengths are the real ones. It is not drawn in the real scale.
-let habitatNet = null;
-let quizOpen = false;
-function buildHabitatNet() {
-  const hosts = stars.filter((s) => s.planets.some((p) => p.habitable));
-  const gap = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
-  const inTree = [hosts[0]];
-  const rest = hosts.slice(1);
-  const edges = [];
-  let total = 0;
-  while (rest.length) {
-    let best = null;
-    for (const a of inTree) for (const b of rest) if (!best || gap(a, b) < best.length) best = { a, b, length: gap(a, b) };
-    edges.push(best);
-    total += best.length;
-    inTree.push(best.b);
-    rest.splice(rest.indexOf(best.b), 1);
-  }
-  const SEGMENTS = 24;
-  const tmp = new THREE.Vector3();
-  const positions = [];
-  for (const { a, b } of edges) {
-    for (let i = 0; i < SEGMENTS; i++) {
-      for (const u of [i / SEGMENTS, (i + 1) / SEGMENTS]) {
-        toMapPosition({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, z: a.z + (b.z - a.z) * u }, tmp);
-        positions.push(tmp.x, tmp.y, tmp.z);
-      }
-    }
-  }
-  const group = new THREE.Group();
-  const lines = new THREE.LineSegments(
-    new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(positions, 3)),
-    new THREE.LineBasicMaterial({ color: 0x7cffb2, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending })
-  );
-  lines.frustumCulled = false;
-  group.add(lines);
-  for (const host of hosts) {
-    const node = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTexture(), sizeAttenuation: false, depthTest: false, transparent: true, color: 0x7cffb2 }));
-    node.scale.set(0.04, 0.04, 1);
-    toMapPosition(host, node.position);
-    group.add(node);
-  }
-  scene.add(group);
-  // The middle and the radius of the network on the map, to fly to a place where all of it is in view.
-  const center = new THREE.Vector3();
-  const nodes = group.children.slice(1);
-  for (const n of nodes) center.add(n.position);
-  center.divideScalar(nodes.length);
-  const radius = Math.max(...nodes.map((n) => n.position.distanceTo(center)));
-  return { group, count: hosts.length, total: Math.round(total / 10) * 10, center, radius };
-}
-function updateHabitatNet() {
-  const want = (quizOpen || !tourBar.hidden) && !realScale;
-  if (want && !habitatNet) habitatNet = buildHabitatNet();
-  if (habitatNet) habitatNet.group.visible = want;
-}
-function habitatNetInfo() {
-  if (realScale) return null;
-  habitatNet ??= buildHabitatNet();
-  return { count: habitatNet.count, total: habitatNet.total.toLocaleString(lang) };
-}
 function tourStart() {
   tourList = stars.flatMap((star) => star.planets.filter((p) => p.habitable).map((planet) => ({ star, planet }))).sort((a, b) => a.star.dist_ly - b.star.dist_ly);
   if (!tourList.length) return;
   tourBar.hidden = false;
-  updateHabitatNet();
   tourGo(0);
 }
 function tourEnd() {
   tourBar.hidden = true;
-  updateHabitatNet();
 }
 document.getElementById("tour-prev").addEventListener("click", () => tourGo(tourIndex - 1));
 document.getElementById("tour-next").addEventListener("click", () => tourGo(tourIndex + 1));
