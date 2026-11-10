@@ -27,6 +27,14 @@ export const MISSIONS = [
     en: "Fly a trip with the travel planner", de: "Fliege eine Reise mit dem Reiseplaner", ja: "旅行プランナーで旅をする", bg: "Направи пътуване с планировчика",
   },
   {
+    id: "d-zone", period: "day", event: "zoneGame", target: 1,
+    en: "Play the zone quiz", de: "Spiele das Zonen-Quiz", ja: "ゾーンクイズを遊ぶ", bg: "Изиграй викторината за зоната",
+  },
+  {
+    id: "w-zone-win", period: "week", event: "zoneWin", target: 1,
+    en: "Get 4 of 5 right in the zone quiz", de: "Löse 4 von 5 im Zonen-Quiz richtig", ja: "ゾーンクイズで5問中4問正解する", bg: "Отговори вярно на 4 от 5 във викторината за зоната",
+  },
+  {
     id: "w-candidates", period: "week", event: "candidate", target: 5, unique: true,
     en: "Visit 5 habitable candidates", de: "Besuche 5 bewohnbare Kandidaten", ja: "居住可能な候補を5つ訪れる", bg: "Посети 5 кандидати за обитаеми светове",
   },

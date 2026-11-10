@@ -1,6 +1,7 @@
 import { initDaily } from "./daily.js";
 import { initExplorer } from "./explorer.js";
 import { track } from "./stats.js";
+import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -5013,6 +5014,7 @@ function pickMeasure(x, y) {
 
 let daily = null; // the daily discovery, see daily.js
 let explorer = null; // favourites, history and missions, see explorer.js
+let zoneGame = null; // the zone quiz, see zonegame.js
 const tourBar = document.getElementById("tour");
 let tourList = [];
 let tourIndex = 0;
@@ -5046,6 +5048,19 @@ explorer = initExplorer({
   },
 });
 if (daily.answered()) explorer.emit("answer"); // answered before the missions were opened, or in an earlier visit of the day
+zoneGame = initZoneGame({
+  getStars: () => stars,
+  zoneAu,
+  getLang: () => lang,
+  explore: (name) => {
+    const place = resolvePlace(name);
+    if (place) showPlace(place, false, true); // the whole system, with the green zone in view
+  },
+  onEnd: (score) => {
+    explorer?.emit("zoneGame");
+    if (score >= 4) explorer?.emit("zoneWin");
+  },
+});
 applyWelcomeTexts(); // the card of the day is known now
 animate();
 // The start screen goes away once the first frame is on its way.
@@ -5095,6 +5110,8 @@ function applyWelcomeTexts() {
   set("dock-daily-k", t.welcomeDailyKicker);
   set("dock-daily-t", daily ? (daily.entry[lang] ?? daily.entry.en).title : "");
   set("tour-k", t.tourKicker);
+  set("tour-quiz", (ZONE_TEXT[lang] ?? ZONE_TEXT.en).button);
+  zoneGame?.render();
   document.getElementById("tour-prev").setAttribute("aria-label", t.tourPrev);
   document.getElementById("tour-next").setAttribute("aria-label", t.tourNext);
   document.getElementById("tour-close").setAttribute("aria-label", t.tourClose);
@@ -5189,6 +5206,7 @@ function tourEnd() {
 document.getElementById("tour-prev").addEventListener("click", () => tourGo(tourIndex - 1));
 document.getElementById("tour-next").addEventListener("click", () => tourGo(tourIndex + 1));
 document.getElementById("tour-close").addEventListener("click", tourEnd);
+document.getElementById("tour-quiz").addEventListener("click", () => zoneGame?.open());
 document.getElementById("dock-near").addEventListener("click", tourStart);
 document.getElementById("wl-daily").addEventListener("click", () => {
   closeWelcome();
