@@ -3152,6 +3152,16 @@ function viewButtons(star, planet) {
   return views;
 }
 
+// The atlas: fly to the planets of a host star of a constellation (the name as in the NASA list).
+function goToHost(hostname) {
+  const star = stars.find((s) => s.hostname === hostname);
+  if (!star?.planets.length) return;
+  showSystem(star, star.planets[0]);
+  updateCloseupButton();
+  buildSolarMenu();
+  buildHabitableMenu();
+}
+
 // Close-up of the star of the system on screen. Its story stays the one of the chosen planet, a star has no text.
 function focusStar() {
   current.follow = current.system === solar ? sun : current.system.starMesh;
@@ -5137,6 +5147,7 @@ atlas = initAtlas({
   unit: () => UI[lang].lightYears,
   flyTo: flyToView,
   panTo: panToPoint,
+  goToHost,
   onVisit: (id) => explorer?.emit("constellation", id),
   onQuizEnd: () => explorer?.emit("atlasQuiz"),
 });

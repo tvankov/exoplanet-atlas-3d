@@ -30,6 +30,8 @@ export const ATLAS_TEXT = {
     starLight: (n) => `Its light has travelled about ${n} years to reach us.`,
     starMag: (m) => `Brightness ${m} (a smaller number is brighter; about 6 is the limit of the naked eye)`,
     hip: (id) => `Hipparcos number ${id}`,
+    flyPlanets: "Fly to its planets",
+    hostsHint: "Click a name to fly to its planets.",
     frontZodiac: "Which zodiac sign is this?",
     frontOther: "Which constellation is this?",
     flip: "Turn the card",
@@ -81,6 +83,8 @@ export const ATLAS_TEXT = {
     starLight: (n) => `Sein Licht war etwa ${n} Jahre zu uns unterwegs.`,
     starMag: (m) => `Helligkeit ${m} (kleinere Zahl ist heller; etwa 6 ist die Grenze des bloßen Auges)`,
     hip: (id) => `Hipparcos-Nummer ${id}`,
+    flyPlanets: "Zu den Planeten fliegen",
+    hostsHint: "Klicke einen Namen an, um zu den Planeten zu fliegen.",
     frontZodiac: "Welches Sternzeichen ist das?",
     frontOther: "Welches Sternbild ist das?",
     flip: "Karte umdrehen",
@@ -132,6 +136,8 @@ export const ATLAS_TEXT = {
     starLight: (n) => `その光は地球に届くまでに約${n}年かかっています。`,
     starMag: (m) => `明るさ ${m}（数字が小さいほど明るく、6が肉眼の限界）`,
     hip: (id) => `ヒッパルコス番号 ${id}`,
+    flyPlanets: "惑星へ飛ぶ",
+    hostsHint: "名前をクリックすると惑星へ飛びます。",
     frontZodiac: "これはどの星座？",
     frontOther: "これはどの星座？",
     flip: "カードをめくる",
@@ -183,6 +189,8 @@ export const ATLAS_TEXT = {
     starLight: (n) => `Светлината ѝ е пътувала около ${n} години до нас.`,
     starMag: (m) => `Яркост ${m} (по-малкото число е по-ярко; около 6 е границата на окото)`,
     hip: (id) => `Номер по Хипаркос ${id}`,
+    flyPlanets: "Полет до планетите",
+    hostsHint: "Щракнете върху име, за да полетите до планетите.",
     frontZodiac: "Кой зодиакален знак е това?",
     frontOther: "Кое съзвездие е това?",
     flip: "Обърни картата",
@@ -226,8 +234,8 @@ const shuffle = (list) => {
 };
 
 // getSky() is the constellations module, getLang() the language, speechLang() the language code of the voice, unit() the unit of a distance (ly),
-// flyTo(view) moves the camera, panTo(point) moves it so that a point is in the middle, onVisit(id) and onQuizEnd(score, total) tell the missions.
-export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, onVisit, onQuizEnd }) {
+// flyTo(view) moves the camera, panTo(point) moves it so that a point is in the middle, goToHost(name) flies to the planets of a host star, onVisit(id) and onQuizEnd(score, total) tell the missions.
+export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goToHost, onVisit, onQuizEnd }) {
   const panel = document.getElementById("atlas-panel");
   const body = document.getElementById("atlas-body");
   const t = () => ATLAS_TEXT[getLang()] ?? ATLAS_TEXT.en;
@@ -322,6 +330,14 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, onV
     onVisit?.(id);
   }
 
+  // a star with planets: a button that flies to its system
+  function hostButton(s, label) {
+    return button(label, "", () => {
+      track("atlas-fly-planets");
+      goToHost?.(s.host);
+    });
+  }
+
   // ---------------------------------------------------------------- the screens
   function home() {
     const tx = t();
@@ -364,7 +380,11 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, onV
       parts.push(el("h3", "atlas-name", nameOf(id)));
       parts.push(el("p", "", tx.facts(info.stars.length, number(info.nearest.dist), number(info.farthest.dist), unit())));
       const hosts = info.stars.filter((s) => s.planets);
-      if (hosts.length) parts.push(el("p", "atlas-hosts", `${tx.hosts}: ${hosts.map((s) => `${s.host} (${s.planets})`).join(", ")}`));
+      if (hosts.length) {
+        const list = el("div", "atlas-names");
+        for (const s of hosts) list.append(hostButton(s, `${getSky().starName(s.id) ?? s.host} · ${tx.planets(s.planets)}`));
+        parts.push(el("p", "atlas-hosts", tx.hosts), list);
+      }
       const views = el("div", "atlas-views");
       views.append(button(tx.earth, "", () => look(id, "earth")), button(tx.side, "", () => look(id, "side")));
       parts.push(views, button(tx.more, "atlas-wide", () => openFigure(id, "cards")));
@@ -543,6 +563,7 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, onV
     card.append(el("p", "", `${number(s.dist)} ${unit()}. ${tx.starLight(number(s.dist))}`));
     card.append(el("p", "", tx.starMag(s.mag.toFixed(1))));
     if (s.planets) card.append(el("p", "atlas-hosts", `${tx.planets(s.planets)}${name && s.host ? ` (${s.host})` : ""}`));
+    if (s.planets && s.host) card.append(hostButton(s, tx.flyPlanets));
     card.append(el("p", "hint", tx.hip(s.id)));
     return card;
   }
@@ -573,6 +594,12 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, onV
         });
         parts.push(listenButton);
       }
+    }
+    const hosts = info.stars.filter((s) => s.planets);
+    if (hosts.length) {
+      const list = el("div", "atlas-names");
+      for (const s of hosts) list.append(hostButton(s, `${getSky().starName(s.id) ?? s.host} · ${tx.planets(s.planets)}`));
+      parts.push(el("h3", "", tx.hosts), el("p", "hint", tx.hostsHint), list);
     }
     const picked = info.stars.find((s) => s.id === selectedStar);
     parts.push(el("h3", "", tx.brightest));
