@@ -2267,3 +2267,34 @@ body:has(#tour:not([hidden])) #dock {
   font-size: 13px;
   opacity: 0.75;
 }
+
+/* The learning panel of the zodiac signs: decks, flashcards and quizzes. */
+.atlas-decks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+#atlas-panel button.on {
+  background: rgba(124, 255, 178, 0.2);
+  border-color: rgba(124, 255, 178, 0.6);
+}
+#atlas-panel .atlas-wide {
+  display: block;
+  width: 100%;
+  margin: 6px 0 0;
+}
+.atlas-names {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+#atlas-panel button.right-btn {
+  background: rgba(124, 255, 178, 0.2);
+  border-color: rgba(124, 255, 178, 0.6);
+}
+.atlas-hosts {
+  font-size: 13px;
+  color: #7cffb2;
+}

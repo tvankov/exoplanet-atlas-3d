@@ -3711,7 +3711,10 @@ function animate() {
   const dt = Math.min(0.1, now - lastFrame); // capped so a background tab does not make a big jump
   lastFrame = now;
   // The constellations are right only as seen from the Sun: not in the real scale and not while a ship flies somewhere else.
-  if (sky) sky.show(skyMode === "real" && !realScale && !(trip && trip.phase !== "done" && trip.phase !== "route"));
+  if (sky) {
+    const shown = !realScale && !(trip && trip.phase !== "done" && trip.phase !== "route");
+    sky.show({ zodiac: skyZodiac && shown, others: skyOthers && shown, focus: shown });
+  }
   stepSystem(solar, dt);
   if (activeExo) stepSystem(activeExo, dt);
   stepTrip(now);
@@ -5047,23 +5050,32 @@ let explorer = null; // favourites, history and missions, see explorer.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
-let skyMode = "off"; // "off" or "real" (the figures between the real stars); always off at the start, it is not remembered
+let skyZodiac = false; // the 12 zodiac signs between the real stars; always off at the start, not remembered
+let skyOthers = false; // the other constellations, a separate switch
 const tourBar = document.getElementById("tour");
 let tourList = [];
 let tourIndex = 0;
 const skyButton = document.getElementById("constellations");
 const skyNote = document.getElementById("constellations-note");
+const skyOthersButton = document.getElementById("constellations-others");
 function showSkyState() {
   const t = UI[lang];
-  skyButton.textContent = skyMode === "real" ? t.constellationsReal : t.constellationsOff;
-  skyButton.setAttribute("aria-pressed", String(skyMode !== "off"));
-  skyNote.textContent = t.constellationsNoteReal;
-  skyNote.hidden = skyMode === "off";
+  skyButton.textContent = skyZodiac ? t.zodiacOn : t.zodiacOff;
+  skyButton.setAttribute("aria-pressed", String(skyZodiac));
+  skyOthersButton.textContent = skyOthers ? t.othersOn : t.othersOff;
+  skyOthersButton.setAttribute("aria-pressed", String(skyOthers));
+  skyNote.textContent = t.zodiacNote;
+  skyNote.hidden = !(skyZodiac || skyOthers);
 }
-// One button: the figures between the real stars on or off.
+// Two switches, the zodiac and the other constellations, so that the map is not full of lines.
 skyButton.addEventListener("click", () => {
-  skyMode = skyMode === "off" ? "real" : "off";
-  if (skyMode !== "off") track("constellations-real");
+  skyZodiac = !skyZodiac;
+  if (skyZodiac) track("constellations-zodiac");
+  showSkyState();
+});
+skyOthersButton.addEventListener("click", () => {
+  skyOthers = !skyOthers;
+  if (skyOthers) track("constellations-others");
   showSkyState();
 });
 const welcome = document.getElementById("welcome");
@@ -5117,29 +5129,12 @@ atlas = initAtlas({
   getLang: () => lang,
   unit: () => UI[lang].lightYears,
   flyTo: flyToView,
-  ensureOn: () => {
-    if (skyMode !== "real") {
-      skyMode = "real";
-      showSkyState();
-    }
-  },
   onVisit: (id) => explorer?.emit("constellation", id),
   onQuizEnd: () => explorer?.emit("atlasQuiz"),
 });
 document.getElementById("atlas-open").addEventListener("click", () => atlas.open());
-// The games: one card in the dock opens a list with the zone quiz, the star distance quiz and the constellation atlas.
-const gamesPanel = document.getElementById("games-panel");
-const dockGames = document.getElementById("dock-games");
-function toggleGames(open = gamesPanel.hidden) {
-  gamesPanel.hidden = !open;
-  dockGames.setAttribute("aria-expanded", String(open));
-}
-dockGames.addEventListener("click", () => toggleGames());
-document.getElementById("games-close").addEventListener("click", () => toggleGames(false));
-window.addEventListener("keydown", (e) => e.key === "Escape" && !gamesPanel.hidden && toggleGames(false));
-document.getElementById("game-zone").addEventListener("click", () => (toggleGames(false), zoneGame?.open()));
-document.getElementById("game-stars").addEventListener("click", () => (toggleGames(false), atlas?.openQuiz()));
-document.getElementById("game-atlas").addEventListener("click", () => (toggleGames(false), atlas?.open()));
+// The card "Sternzeichen" in the dock opens the learning panel (flashcards, quizzes, the view in 3D).
+document.getElementById("dock-games").addEventListener("click", () => atlas?.open());
 document.getElementById("atlas-open").textContent = (ATLAS_TEXT[lang] ?? ATLAS_TEXT.en).button;
 animate();
 // The start screen goes away once the first frame is on its way.
@@ -5198,13 +5193,8 @@ function applyWelcomeTexts() {
   document.getElementById("tour-close").setAttribute("aria-label", t.tourClose);
   showTourStop();
   set("dock-near-k", t.welcomeNear);
-  set("dock-games-k", t.gamesKicker);
-  set("dock-games-t", t.gamesCardTitle);
-  set("games-title", t.gamesTitle);
-  for (const [id, title, text] of [["game-zone", t.gamesZone, t.gamesZoneText], ["game-stars", t.gamesStars, t.gamesStarsText], ["game-atlas", t.gamesAtlas, t.gamesAtlasText]]) {
-    set(`${id}-t`, title);
-    set(`${id}-s`, text);
-  }
+  set("dock-games-k", t.zodiacKicker);
+  set("dock-games-t", t.zodiacCardTitle);
   set("dock-near-t", near ? `${near.planet.pl_name} · ${near.star.dist_ly.toFixed(1)} ${t.lightYears}` : "");
   set("dock-plan-k", TRAVEL_UI[lang].title);
   set("dock-plan-t", t.welcomePlan);

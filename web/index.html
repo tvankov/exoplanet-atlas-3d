@@ -91,9 +91,10 @@
       <button id="measure" type="button" aria-pressed="false">Measure distance</button>
       <p id="measure-note" class="hint" hidden></p>
       <button id="measure-plan" type="button" hidden>Plan a trip between them</button>
-      <button id="constellations" type="button" aria-pressed="false">Constellations: off</button>
+      <button id="constellations" type="button" aria-pressed="false">Zodiac signs: off</button>
+      <button id="constellations-others" type="button" aria-pressed="false">Other constellations: off</button>
       <p id="constellations-note" class="hint" hidden></p>
-      <button id="atlas-open" type="button" aria-controls="atlas-panel">Constellation atlas</button>
+      <button id="atlas-open" type="button" aria-controls="atlas-panel">Zodiac signs</button>
     </details>
   </div>
   <button id="info-button" type="button" aria-expanded="false" aria-controls="story">Info</button>
@@ -192,17 +193,7 @@
     <h2 id="log-title"></h2>
     <div id="log-body"></div>
   </section>
-  <!-- The games: the zone quiz, the star distance quiz and the constellation atlas, one card each. -->
-  <section id="games-panel" hidden aria-labelledby="games-title">
-    <button id="games-close" type="button" aria-label="Close">&times;</button>
-    <h2 id="games-title"></h2>
-    <div class="games-list">
-      <button id="game-zone" type="button" class="game-card"><strong id="game-zone-t"></strong><span id="game-zone-s"></span></button>
-      <button id="game-stars" type="button" class="game-card"><strong id="game-stars-t"></strong><span id="game-stars-s"></span></button>
-      <button id="game-atlas" type="button" class="game-card"><strong id="game-atlas-t"></strong><span id="game-atlas-s"></span></button>
-    </div>
-  </section>
-  <!-- The constellation atlas and its quiz, see atlas.js. -->
+  <!-- The zodiac signs: flashcards, quizzes and the view in 3D, see atlas.js. -->
   <section id="atlas-panel" hidden aria-labelledby="atlas-title">
     <button id="atlas-close" type="button" aria-label="Close">&times;</button>
     <h2 id="atlas-title"></h2>

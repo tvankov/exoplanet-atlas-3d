@@ -1,12 +1,13 @@
 // The constellations between the real stars at their real distances (Hipparcos parallaxes), on the map. Seen from the Sun a figure looks as we know
 // it, because the map keeps the direction of every star; seen from the side it shows itself as what it is, a chance picture of stars at very
-// different distances. The 12 of the zodiac are green. Rings mark the stars of the figures that have known planets, with the name of the host and the
-// number of planets. Data: d3-celestial (BSD-3, Olaf Frohn) for the figures and names, Hipparcos (new reduction, ESA) for the stars, the NASA
-// Exoplanet Archive for the planets; see src/build_constellation_stars.py and THIRD_PARTY_NOTICES.md. The names exist in English, German and
-// Japanese; Bulgarian shows the Latin names.
+// different distances. The 12 of the zodiac and the other constellations are two separate sets, each with its own switch, so that the map is not
+// full of lines: the zodiac (green, with the names) and the others (blue, with the names of the more important ones). Rings mark the stars of the
+// figures that have known planets, with the name of the host and the number of planets. Data: d3-celestial (BSD-3, Olaf Frohn) for the figures and
+// names, Hipparcos (new reduction, ESA) for the stars, the NASA Exoplanet Archive for the planets; see src/build_constellation_stars.py and
+// THIRD_PARTY_NOTICES.md. The names exist in English, German and Japanese; Bulgarian shows the Latin names.
 //
-// The module also serves the atlas (atlas.js): focus(id) draws one figure bright with the distance of each star, and views(id) gives the two
-// camera places, from the Earth (the figure as we know it) and from the side.
+// The module also serves the learning panel (atlas.js): focus(id) draws one figure bright with the distance of each star, and views(id) gives the
+// two camera places, from the Earth (the figure as we know it) and from the side.
 
 import * as THREE from "three";
 
@@ -83,17 +84,19 @@ export async function initConstellations({ scene, getLang, toMap }) {
     }
   }
 
-  // ---------------------------------------------------------------- all the figures
-  const group = new THREE.Group();
-  group.visible = false;
-  const lines = { zodiac: [], other: [] };
+  // ---------------------------------------------------------------- the two sets: the zodiac and the others
+  const zodiacGroup = new THREE.Group();
+  const othersGroup = new THREE.Group();
+  zodiacGroup.visible = othersGroup.visible = false;
+  const positions = { zodiac: [], others: [] };
   for (const c of constellations) {
-    const target = c.zodiac ? lines.zodiac : lines.other;
+    const target = c.zodiac ? positions.zodiac : positions.others;
     for (const line of c.lines) for (let i = 0; i + 1 < line.length; i++) segments(line[i], line[i + 1], (s, e) => target.push(s.x, s.y, s.z, e.x, e.y, e.z));
   }
-  const otherLines = lineMesh(lines.other, BLUE, 0.55);
-  const zodiacLines = lineMesh(lines.zodiac, GREEN, 0.9);
-  group.add(otherLines, zodiacLines);
+  const zodiacLines = lineMesh(positions.zodiac, GREEN, 0.9);
+  const othersLines = lineMesh(positions.others, BLUE, 0.55);
+  zodiacGroup.add(zodiacLines);
+  othersGroup.add(othersLines);
   // the name of a figure at the middle of its real stars
   const mid = new THREE.Vector3();
   const tmp = new THREE.Vector3();
@@ -102,10 +105,20 @@ export async function initConstellations({ scene, getLang, toMap }) {
     mid.set(0, 0, 0);
     let n = 0;
     for (const id of new Set(c.lines.flat())) if (onMap(id, tmp)) (mid.add(tmp), n++);
-    if (n) addLabel(group, mid.clone().divideScalar(n), (lang) => nameOf(c, lang), c.zodiac ? "zodiac" : "plain");
+    if (n) addLabel(c.zodiac ? zodiacGroup : othersGroup, mid.clone().divideScalar(n), (lang) => nameOf(c, lang), c.zodiac ? "zodiac" : "plain");
   }
-  for (const [id, s] of Object.entries(stars)) {
-    if (!s[4] || s[2] == null) continue;
+  // the rings of the stars with planets belong to the set of their figure (to the zodiac if a star is in both)
+  const ringOf = {};
+  for (const c of constellations) {
+    for (const id of new Set(c.lines.flat())) {
+      if (!stars[id][4] || stars[id][2] == null) continue;
+      if (c.zodiac) ringOf[id] = "zodiac";
+      else ringOf[id] ??= "others";
+    }
+  }
+  for (const [id, set] of Object.entries(ringOf)) {
+    const s = stars[id];
+    const group = set === "zodiac" ? zodiacGroup : othersGroup;
     const position = onMap(id);
     addMarker(group, position, ringTexture, 0.02); // small: the stars of the map are small dots, a big ring would be bigger than the system it marks
     addLabel(group, position, () => `${s[4]} · ${s[5]}`, "host");
@@ -153,17 +166,18 @@ export async function initConstellations({ scene, getLang, toMap }) {
     }
     focusLabels = [];
     focusGroup.visible = false;
-    for (const m of [otherLines, zodiacLines]) m.material.opacity = m === zodiacLines ? 0.9 : 0.55;
+    zodiacLines.material.opacity = 0.9;
+    othersLines.material.opacity = 0.55;
   }
-  // The figure bright, the others dim, and the distance of each star (in light years) next to it.
+  // The figure bright, the other figures that are shown dim, and the distance of each star (in light years) next to it.
   function focus(id, distanceUnit = "ly") {
     clearFocus();
     unit = distanceUnit;
     const c = byId[id];
     if (!c) return null;
-    const positions = [];
-    for (const line of c.lines) for (let i = 0; i + 1 < line.length; i++) segments(line[i], line[i + 1], (s, e) => positions.push(s.x, s.y, s.z, e.x, e.y, e.z));
-    focusGroup.add(lineMesh(positions, 0xffffff, 1));
+    const lineData = [];
+    for (const line of c.lines) for (let i = 0; i + 1 < line.length; i++) segments(line[i], line[i + 1], (s, e) => lineData.push(s.x, s.y, s.z, e.x, e.y, e.z));
+    focusGroup.add(lineMesh(lineData, 0xffffff, 1));
     const info = infoOf(c);
     for (const s of info.stars) {
       const position = onMap(s.id);
@@ -174,8 +188,8 @@ export async function initConstellations({ scene, getLang, toMap }) {
       focusGroup.add(sprite);
       focusLabels.push({ canvas, sprite, text: () => `${Math.round(s.dist)} ${unit}`, style: "dist" });
     }
-    otherLines.material.opacity = 0.15;
-    zodiacLines.material.opacity = c.zodiac ? 0.35 : 0.2;
+    zodiacLines.material.opacity = 0.3;
+    othersLines.material.opacity = 0.15;
     focusGroup.visible = true;
     drawLabels();
     return info;
@@ -201,17 +215,19 @@ export async function initConstellations({ scene, getLang, toMap }) {
     };
   }
   drawLabels();
-  scene.add(group, focusGroup);
+  scene.add(zodiacGroup, othersGroup, focusGroup);
   return {
-    show(visible) {
-      group.visible = visible;
-      if (focusGroup.children.length) focusGroup.visible = visible;
+    // zodiac and others: the two sets on or off; focus: the figure of the learning panel (when one is chosen)
+    show({ zodiac = false, others = false, focus: showFocus = false } = {}) {
+      zodiacGroup.visible = zodiac;
+      othersGroup.visible = others;
+      focusGroup.visible = showFocus && focusGroup.children.length > 0;
     },
     refresh: drawLabels,
     focus,
     clearFocus,
     views,
-    // the data for the atlas and its quiz
+    // the data for the learning panel
     data: { stars, constellations, nameOf, info: (id) => infoOf(byId[id]) },
   };
 }

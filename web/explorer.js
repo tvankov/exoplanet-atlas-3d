@@ -36,11 +36,11 @@ export const MISSIONS = [
   },
   {
     id: "d-atlas-quiz", period: "day", event: "atlasQuiz", target: 1,
-    en: "Play the star distance quiz in the atlas", de: "Spiele das Entfernungs-Quiz im Atlas", ja: "アトラスで距離クイズを遊ぶ", bg: "Изиграй викторината за разстоянията в атласа",
+    en: "Play a quiz about the zodiac signs", de: "Spiele ein Quiz zu den Sternzeichen", ja: "黄道十二星座のクイズを遊ぶ", bg: "Изиграй викторина за зодиакалните знаци",
   },
   {
     id: "w-atlas", period: "week", event: "constellation", target: 6, unique: true,
-    en: "Look at 6 constellations in the atlas", de: "Sieh dir 6 Sternbilder im Atlas an", ja: "アトラスで6つの星座を見る", bg: "Разгледай 6 съзвездия в атласа",
+    en: "Look at 6 constellations in 3D", de: "Sieh dir 6 Sternbilder in 3D an", ja: "6つの星座を3Dで見る", bg: "Разгледай 6 съзвездия в 3D",
   },
   {
     id: "w-candidates", period: "week", event: "candidate", target: 5, unique: true,
