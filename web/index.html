@@ -192,6 +192,16 @@
     <h2 id="log-title"></h2>
     <div id="log-body"></div>
   </section>
+  <!-- The games: the zone quiz, the star distance quiz and the constellation atlas, one card each. -->
+  <section id="games-panel" hidden aria-labelledby="games-title">
+    <button id="games-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="games-title"></h2>
+    <div class="games-list">
+      <button id="game-zone" type="button" class="game-card"><strong id="game-zone-t"></strong><span id="game-zone-s"></span></button>
+      <button id="game-stars" type="button" class="game-card"><strong id="game-stars-t"></strong><span id="game-stars-s"></span></button>
+      <button id="game-atlas" type="button" class="game-card"><strong id="game-atlas-t"></strong><span id="game-atlas-s"></span></button>
+    </div>
+  </section>
   <!-- The constellation atlas and its quiz, see atlas.js. -->
   <section id="atlas-panel" hidden aria-labelledby="atlas-title">
     <button id="atlas-close" type="button" aria-label="Close">&times;</button>
@@ -272,6 +282,11 @@
         <circle cx="72.5" cy="27" r="3.6" fill="#b8e6c1"/>
         <circle cx="35" cy="22" r="2.2" fill="#fff" fill-opacity=".7"/>
       </svg><small id="dock-near-k"></small><strong id="dock-near-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-games" type="button" class="dock-card" aria-expanded="false" aria-controls="games-panel"><svg class="dock-art games-art" viewBox="0 0 100 80" aria-hidden="true">
+        <g fill="none" stroke="#8fa8d8" stroke-opacity=".7" stroke-width="1.6"><path d="M16 56 L34 34 L56 42 L74 20 L88 30"/><path d="M34 34 L40 14"/></g>
+        <circle cx="16" cy="56" r="4" fill="#fff"/><circle cx="34" cy="34" r="5.5" fill="#7cffb2"/><circle cx="56" cy="42" r="3.5" fill="#fff"/><circle cx="74" cy="20" r="6.5" fill="#9fd0ff"/><circle cx="88" cy="30" r="3" fill="#fff"/><circle cx="40" cy="14" r="3" fill="#fff"/>
+        <text x="74" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="#05060a">?</text>
+      </svg><small id="dock-games-k"></small><strong id="dock-games-t"></strong><span class="wl-arrow">&#8599;</span></button>
     <button id="dock-plan" type="button" class="dock-card" aria-expanded="false" aria-controls="planner-panel"><svg class="dock-art plan-art" viewBox="0 0 100 80" aria-hidden="true">
         <path d="M14 58 Q 44 8 88 24" fill="none" stroke="#7fe3ff" stroke-opacity=".7" stroke-width="1.6" stroke-dasharray="3 4"/>
         <circle cx="14" cy="58" r="7" fill="#4f9dff"/><circle cx="12" cy="56" r="2.6" fill="#9fe0a8" fill-opacity=".8"/>

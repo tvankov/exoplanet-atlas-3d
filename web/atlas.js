@@ -358,5 +358,13 @@ export function initAtlas({ getSky, getLang, unit, flyTo, ensureOn, onVisit, onQ
   }
   document.getElementById("atlas-close").addEventListener("click", () => toggle(false));
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
-  return { open: () => toggle(true), render, label: () => t().button };
+  return {
+    open: () => toggle(true),
+    openQuiz: () => {
+      toggle(true);
+      startQuiz();
+    },
+    render,
+    label: () => t().button,
+  };
 }

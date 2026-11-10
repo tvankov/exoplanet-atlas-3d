@@ -2196,3 +2196,74 @@ body:has(#tour:not([hidden])) #dock {
     transform: none;
   }
 }
+
+/* The games card of the dock and its list. Five cards in the dock: it is wider. */
+#dock {
+  width: min(1180px, calc(100vw - 32px));
+}
+#games-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 12;
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  padding: 16px 18px 16px;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 14, 24, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+#games-panel[hidden] {
+  display: none;
+}
+#games-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 0 8px;
+  font-size: 20px;
+  line-height: 28px;
+  color: inherit;
+  background: none;
+  border: 0;
+  opacity: 0.7;
+  cursor: pointer;
+}
+#games-title {
+  margin: 0 28px 12px 0;
+  font-size: 18px;
+}
+.games-list {
+  display: grid;
+  gap: 10px;
+}
+.game-card {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+}
+.game-card:hover {
+  background: rgba(124, 255, 178, 0.12);
+  border-color: rgba(124, 255, 178, 0.5);
+}
+.game-card strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+.game-card span {
+  font-size: 13px;
+  opacity: 0.75;
+}

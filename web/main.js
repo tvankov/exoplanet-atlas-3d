@@ -5040,13 +5040,7 @@ let explorer = null; // favourites, history and missions, see explorer.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
-let skyMode = "off"; // "off" or "real" (the figures between the real stars)
-try {
-  const saved = localStorage.getItem("constellations");
-  if (saved === "sphere" || saved === "real") skyMode = "real"; // "sphere" was an earlier form, it is the same figure seen from the Sun
-} catch {
-  // storage blocked: off
-}
+let skyMode = "off"; // "off" or "real" (the figures between the real stars); always off at the start, it is not remembered
 const tourBar = document.getElementById("tour");
 let tourList = [];
 let tourIndex = 0;
@@ -5062,11 +5056,6 @@ function showSkyState() {
 // One button: the figures between the real stars on or off.
 skyButton.addEventListener("click", () => {
   skyMode = skyMode === "off" ? "real" : "off";
-  try {
-    localStorage.setItem("constellations", skyMode);
-  } catch {
-    // not remembered
-  }
   if (skyMode !== "off") track("constellations-real");
   showSkyState();
 });
@@ -5124,11 +5113,6 @@ atlas = initAtlas({
   ensureOn: () => {
     if (skyMode !== "real") {
       skyMode = "real";
-      try {
-        localStorage.setItem("constellations", skyMode);
-      } catch {
-        // not remembered
-      }
       showSkyState();
     }
   },
@@ -5136,6 +5120,19 @@ atlas = initAtlas({
   onQuizEnd: () => explorer?.emit("atlasQuiz"),
 });
 document.getElementById("atlas-open").addEventListener("click", () => atlas.open());
+// The games: one card in the dock opens a list with the zone quiz, the star distance quiz and the constellation atlas.
+const gamesPanel = document.getElementById("games-panel");
+const dockGames = document.getElementById("dock-games");
+function toggleGames(open = gamesPanel.hidden) {
+  gamesPanel.hidden = !open;
+  dockGames.setAttribute("aria-expanded", String(open));
+}
+dockGames.addEventListener("click", () => toggleGames());
+document.getElementById("games-close").addEventListener("click", () => toggleGames(false));
+window.addEventListener("keydown", (e) => e.key === "Escape" && !gamesPanel.hidden && toggleGames(false));
+document.getElementById("game-zone").addEventListener("click", () => (toggleGames(false), zoneGame?.open()));
+document.getElementById("game-stars").addEventListener("click", () => (toggleGames(false), atlas?.openQuiz()));
+document.getElementById("game-atlas").addEventListener("click", () => (toggleGames(false), atlas?.open()));
 document.getElementById("atlas-open").textContent = (ATLAS_TEXT[lang] ?? ATLAS_TEXT.en).button;
 animate();
 // The start screen goes away once the first frame is on its way.
@@ -5194,6 +5191,13 @@ function applyWelcomeTexts() {
   document.getElementById("tour-close").setAttribute("aria-label", t.tourClose);
   showTourStop();
   set("dock-near-k", t.welcomeNear);
+  set("dock-games-k", t.gamesKicker);
+  set("dock-games-t", t.gamesCardTitle);
+  set("games-title", t.gamesTitle);
+  for (const [id, title, text] of [["game-zone", t.gamesZone, t.gamesZoneText], ["game-stars", t.gamesStars, t.gamesStarsText], ["game-atlas", t.gamesAtlas, t.gamesAtlasText]]) {
+    set(`${id}-t`, title);
+    set(`${id}-s`, text);
+  }
   set("dock-near-t", near ? `${near.planet.pl_name} · ${near.star.dist_ly.toFixed(1)} ${t.lightYears}` : "");
   set("dock-plan-k", TRAVEL_UI[lang].title);
   set("dock-plan-t", t.welcomePlan);
@@ -5235,7 +5239,7 @@ document.getElementById("welcome-habitable").addEventListener("click", () => {
 });
 document.getElementById("welcome-map").addEventListener("click", closeWelcome);
 // What is used on the start screen and in the dock: only the name of the button is counted (see stats.js).
-for (const id of ["welcome-mars", "welcome-habitable", "welcome-map", "welcome-quiz", "wl-daily", "welcome-plan", "dock-daily", "dock-near", "dock-plan", "dock-log"]) {
+for (const id of ["welcome-mars", "welcome-habitable", "welcome-map", "welcome-quiz", "wl-daily", "welcome-plan", "dock-daily", "dock-near", "dock-games", "dock-plan", "dock-log"]) {
   document.getElementById(id).addEventListener("click", () => track(id));
 }
 // The dock: the same actions as the cards of the start screen. It can be folded, and stays folded for the next visit.
