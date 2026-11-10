@@ -2552,9 +2552,16 @@ function disposeSystem(system) {
   system.group.traverse((o) => {
     o.geometry?.dispose();
     o.material?.map?.dispose();
+    // the textures held by the uniforms of a shader material (a planet's surface, a ring) are not freed by dispose() of the material
+    for (const uniform of Object.values(o.material?.uniforms ?? {})) if (uniform?.value?.isTexture) uniform.value.dispose();
     o.material?.dispose();
   });
 }
+
+// The graphics card can take the drawing context away (memory, a driver reset, another tab): the picture then goes black or stays in pieces.
+// The context is given back by the browser; the page is built again from scratch then, which is the only sure way to have everything on the card.
+renderer.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault());
+renderer.domElement.addEventListener("webglcontextrestored", () => location.reload());
 
 function resize() {
   renderer.setSize(window.innerWidth, window.innerHeight, false);
