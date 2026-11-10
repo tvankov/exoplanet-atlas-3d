@@ -5111,6 +5111,8 @@ function applyWelcomeTexts() {
   set("dock-daily-t", daily ? (daily.entry[lang] ?? daily.entry.en).title : "");
   set("tour-k", t.tourKicker);
   set("tour-quiz", (ZONE_TEXT[lang] ?? ZONE_TEXT.en).button);
+  set("welcome-quiz", (ZONE_TEXT[lang] ?? ZONE_TEXT.en).button);
+  document.getElementById("tour-quiz").title = (ZONE_TEXT[lang] ?? ZONE_TEXT.en).hint;
   zoneGame?.render();
   document.getElementById("tour-prev").setAttribute("aria-label", t.tourPrev);
   document.getElementById("tour-next").setAttribute("aria-label", t.tourNext);
@@ -5158,7 +5160,7 @@ document.getElementById("welcome-habitable").addEventListener("click", () => {
 });
 document.getElementById("welcome-map").addEventListener("click", closeWelcome);
 // What is used on the start screen and in the dock: only the name of the button is counted (see stats.js).
-for (const id of ["welcome-mars", "welcome-habitable", "welcome-map", "wl-daily", "welcome-plan", "dock-daily", "dock-near", "dock-plan", "dock-log"]) {
+for (const id of ["welcome-mars", "welcome-habitable", "welcome-map", "welcome-quiz", "wl-daily", "welcome-plan", "dock-daily", "dock-near", "dock-plan", "dock-log"]) {
   document.getElementById(id).addEventListener("click", () => track(id));
 }
 // The dock: the same actions as the cards of the start screen. It can be folded, and stays folded for the next visit.
@@ -5206,7 +5208,27 @@ function tourEnd() {
 document.getElementById("tour-prev").addEventListener("click", () => tourGo(tourIndex - 1));
 document.getElementById("tour-next").addEventListener("click", () => tourGo(tourIndex + 1));
 document.getElementById("tour-close").addEventListener("click", tourEnd);
-document.getElementById("tour-quiz").addEventListener("click", () => zoneGame?.open());
+// The quiz button of the tour pulses until the quiz has been opened once (remembered), so that it is found.
+const quizButton = document.getElementById("tour-quiz");
+try {
+  quizButton.classList.toggle("fresh", localStorage.getItem("zone-seen") !== "1");
+} catch {
+  quizButton.classList.add("fresh");
+}
+function openQuiz() {
+  quizButton.classList.remove("fresh");
+  try {
+    localStorage.setItem("zone-seen", "1");
+  } catch {
+    // not remembered
+  }
+  zoneGame?.open();
+}
+quizButton.addEventListener("click", openQuiz);
+document.getElementById("welcome-quiz").addEventListener("click", () => {
+  closeWelcome();
+  openQuiz();
+});
 document.getElementById("dock-near").addEventListener("click", tourStart);
 document.getElementById("wl-daily").addEventListener("click", () => {
   closeWelcome();

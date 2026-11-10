@@ -1998,3 +1998,21 @@ body:has(#tour:not([hidden])) #dock {
     max-width: 84px;
   }
 }
+
+/* The quiz button of the tour pulses until it was opened once; on the start screen it sits next to the other two buttons. */
+#tour .tour-quiz.fresh {
+  animation: quiz-pulse 1.8s ease-in-out infinite;
+}
+@keyframes quiz-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 255, 178, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(124, 255, 178, 0); }
+}
+.wl-actions .ghost.quiz {
+  border-color: rgba(124, 255, 178, 0.5);
+  background: rgba(124, 255, 178, 0.1);
+}
+@media (prefers-reduced-motion: reduce) {
+  #tour .tour-quiz.fresh {
+    animation: none;
+  }
+}

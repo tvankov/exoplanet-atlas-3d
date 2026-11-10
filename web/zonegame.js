@@ -11,6 +11,7 @@ const ROUNDS = 5;
 export const ZONE_TEXT = {
   en: {
     button: "Zone quiz",
+    hint: "Test your knowledge: which orbit is in the zone?",
     title: "In the zone?",
     round: (n, total) => `Round ${n} of ${total}`,
     question: (star) => `Which planet of ${star} orbits inside the candidate zone?`,
@@ -34,6 +35,7 @@ export const ZONE_TEXT = {
   },
   de: {
     button: "Zonen-Quiz",
+    hint: "Teste dein Wissen: welche Bahn liegt in der Zone?",
     title: "In der Zone?",
     round: (n, total) => `Runde ${n} von ${total}`,
     question: (star) => `Welcher Planet von ${star} läuft innerhalb der Kandidatenzone?`,
@@ -57,6 +59,7 @@ export const ZONE_TEXT = {
   },
   ja: {
     button: "ゾーンクイズ",
+    hint: "知識を試そう：どの軌道がゾーンの中にある？",
     title: "ゾーンの中？",
     round: (n, total) => `${total}問中${n}問目`,
     question: (star) => `${star}のどの惑星が候補ゾーンの内側を回っていますか？`,
@@ -80,6 +83,7 @@ export const ZONE_TEXT = {
   },
   bg: {
     button: "Викторина за зоната",
+    hint: "Проверете знанията си: коя орбита е в зоната?",
     title: "В зоната ли е?",
     round: (n, total) => `Рунд ${n} от ${total}`,
     question: (star) => `Коя планета на ${star} обикаля в зоната на кандидатите?`,
