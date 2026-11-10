@@ -54,7 +54,7 @@ export async function initConstellations({ scene, getLang, toMap }) {
     c.width = c.height = 64;
     const g = c.getContext("2d");
     g.strokeStyle = "#7cffb2";
-    g.lineWidth = 4;
+    g.lineWidth = 3;
     g.beginPath();
     g.arc(32, 32, 24, 0, Math.PI * 2);
     g.stroke();
@@ -62,7 +62,7 @@ export async function initConstellations({ scene, getLang, toMap }) {
   })();
   function addRing(group, position) {
     const ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTexture, sizeAttenuation: false, depthTest: false, transparent: true }));
-    ring.scale.set(0.034, 0.034, 1);
+    ring.scale.set(0.02, 0.02, 1); // small: the stars of the map are small dots, a big ring would be bigger than the star system it marks
     ring.position.copy(position);
     group.add(ring);
   }
@@ -169,8 +169,9 @@ export async function initConstellations({ scene, getLang, toMap }) {
       g.fillText(t, w / 2, 25);
       sprite.material.map.dispose();
       sprite.material.map = new THREE.CanvasTexture(canvas);
-      sprite.scale.set(0.034 * (w / 36), 0.034, 1);
-      if (style === "host") sprite.center.set(0.5, -0.5); // above the ring
+      const height = style === "host" ? 0.022 : 0.03;
+      sprite.scale.set(height * (w / 36), height, 1);
+      if (style === "host") sprite.center.set(0.5, -0.45); // above the ring
     }
   }
   drawLabels();
