@@ -3,6 +3,8 @@
 // the file cannot be loaded, a built-in entry (Mars) is shown instead. Nothing leaves the browser: what was answered is kept in
 // localStorage ("daily"), and the dot on the button says that today's entry has not been opened yet ("daily-seen").
 
+import { track } from "./stats.js";
+
 const FALLBACK = {
   id: "mars-fallback",
   target: "Mars",
@@ -94,6 +96,7 @@ export async function initDaily({ getLang, text, explore, onAnswer }) {
       }
       b.addEventListener("click", () => {
         write("daily", { day, id: entry.id, choice: i });
+        track(`daily-answer-${i === content.answer ? "right" : "wrong"}`);
         onAnswer?.();
         render();
       });
@@ -107,6 +110,7 @@ export async function initDaily({ getLang, text, explore, onAnswer }) {
     explore3d.textContent = t("dailyExplore");
     explore3d.addEventListener("click", () => {
       togglePanel(false);
+      track("daily-explore");
       explore(entry.target);
     });
     parts.push(explore3d);

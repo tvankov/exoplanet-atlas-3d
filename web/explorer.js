@@ -4,6 +4,7 @@
 // to Sunday), and counts only what happened in that period. The texts of the missions are here in English, German, Japanese and Bulgarian.
 
 import { dayNumber } from "./daily.js";
+import { track } from "./stats.js";
 
 const KEY = "explorer";
 const HISTORY_MAX = 12;
@@ -89,7 +90,8 @@ export function initExplorer({ getLang, text, explore }) {
         changed = true;
         if (valueOf(m) >= m.target) {
           state.done[m.id] = key;
-          toast(`${text("missionDone")}: ${label(m)}`);
+          track(`mission-done-${m.id}`);
+        toast(`${text("missionDone")}: ${label(m)}`);
         }
         continue;
       }
@@ -102,6 +104,7 @@ export function initExplorer({ getLang, text, explore }) {
       changed = true;
       if (!isDone(m) && valueOf(m) >= m.target) {
         state.done[m.id] = key;
+        track(`mission-done-${m.id}`);
         toast(`${text("missionDone")}: ${label(m)}`);
       }
     }
@@ -127,6 +130,7 @@ export function initExplorer({ getLang, text, explore }) {
     if (isFavourite(name)) state.favourites = state.favourites.filter((f) => f.name !== name);
     else {
       state.favourites = [{ name, t: Date.now() }, ...state.favourites];
+      track("favourite-add");
       emit("favourite", name);
     }
     save();

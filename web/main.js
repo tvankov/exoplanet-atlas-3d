@@ -1,5 +1,6 @@
 import { initDaily } from "./daily.js";
 import { initExplorer } from "./explorer.js";
+import { track } from "./stats.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -2972,6 +2973,7 @@ const langSelect = document.getElementById("lang");
 langSelect.value = lang;
 langSelect.addEventListener("change", () => {
   lang = langSelect.value;
+  track(`language-${lang}`);
   try {
     localStorage.setItem("lang", lang);
   } catch {
@@ -4228,6 +4230,7 @@ planGo.addEventListener("click", () => {
   showTripResult();
   planResult.textContent = ""; // how the film works is in the planner, under "How the trip is worked out"
   trip.phase = "intro";
+  track(`trip-start-${trip.mode}`);
   trip.phaseStart = performance.now() / 1000;
   trip.warpTarget = 0;
   showPlace(from);
@@ -4711,6 +4714,7 @@ function stepTrip(now) {
   else if (trip.phase === "exit" && elapsed >= TRIP_EXIT) {
     setPhase("done", now);
     explorer?.emit("trip");
+    track(`trip-arrived-${trip.mode}`);
     if (trip.mode === "star") explorer?.emit("starTrip");
     setNear(0.01);
     planStop.title = stopLabel(); // the x says what it does when the pointer rests on it
@@ -5105,6 +5109,7 @@ function showHintLine() {
 function closeWelcome() {
   if (welcome.hidden) return;
   welcome.hidden = true;
+  track("welcome-closed");
   try {
     localStorage.setItem("welcomed", "1");
   } catch {
@@ -5128,6 +5133,10 @@ document.getElementById("welcome-habitable").addEventListener("click", () => {
   if (place) showPlace(place);
 });
 document.getElementById("welcome-map").addEventListener("click", closeWelcome);
+// What is used on the start screen and in the dock: only the name of the button is counted (see stats.js).
+for (const id of ["welcome-mars", "welcome-habitable", "welcome-map", "wl-daily", "welcome-plan", "dock-daily", "dock-near", "dock-plan", "dock-log"]) {
+  document.getElementById(id).addEventListener("click", () => track(id));
+}
 // The dock: the same actions as the cards of the start screen. It can be folded, and stays folded for the next visit.
 const dock = document.getElementById("dock");
 function setDockFolded(folded) {
