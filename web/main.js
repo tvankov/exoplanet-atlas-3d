@@ -5388,6 +5388,16 @@ try {
   // storage blocked: the card shows every time
 }
 welcome.hidden = seen;
-// The two star layers are on by default (they load in the background); the deep layer is not offered on touch devices.
-gaiaButton.click();
-if (!IS_MOBILE) deepButton.click();
+// The two star layers are on by default (they load in the background); the deep layer is not offered on touch devices. They start after the
+// first flight: a layer that arrives in the middle of it is handed to the graphics card in one go, and the flight stops for a moment.
+{
+  const giveUp = performance.now() + 9000; // a visitor who keeps flying does not wait for ever
+  const timer = setInterval(() => {
+    if (flight && performance.now() < giveUp) return;
+    clearInterval(timer);
+    setTimeout(() => {
+      if (!gaiaOn) gaiaButton.click();
+      if (!IS_MOBILE) setTimeout(() => !deepOn && deepButton.click(), 1500); // one after the other, so that the two uploads do not meet
+    }, 400);
+  }, 250);
+}
