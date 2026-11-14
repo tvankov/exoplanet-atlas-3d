@@ -2747,6 +2747,15 @@ function layoutView() {
   const left = document.getElementById("hud").getBoundingClientRect().right;
   // The atlas sits at the right on a wide screen, so the map is centred in the free space left of it.
   const atlasPanel = document.getElementById("atlas-panel");
+  // On a phone the atlas and the zone quiz are sheets at the bottom: the picture is centred in the part above the sheet (a sheet that is
+  // pushed down, see below, leaves the whole screen).
+  const sheet = w <= 640 ? [atlasPanel, document.getElementById("zone-panel")].find((p) => !p.hidden) : null;
+  if (sheet) {
+    const h = window.innerHeight;
+    camera.setViewOffset(w, h, 0, h / 2 - Math.min(sheet.getBoundingClientRect().top, h) / 2, w, h);
+    camera.updateProjectionMatrix();
+    return;
+  }
   const right = !atlasPanel.hidden ? atlasPanel.getBoundingClientRect().left : storyPanel.hidden ? w : storyPanel.getBoundingClientRect().left;
   const roomy = right - left >= MIN_FREE_PX;
   storyPanel.classList.toggle("compact", closeup && !roomy);
@@ -5155,6 +5164,31 @@ document.getElementById("atlas-open").addEventListener("click", () => atlas.open
 // The card "Sternzeichen" in the dock opens the learning panel (flashcards, quizzes, the view in 3D).
 document.getElementById("dock-games").addEventListener("click", () => atlas?.open());
 document.getElementById("atlas-open").textContent = (ATLAS_TEXT[lang] ?? ATLAS_TEXT.en).button;
+// On a phone the sheets at the bottom (atlas, zone quiz) cover the picture. A tap on the bar at the top or on the title pushes the sheet down so
+// that only its title stays; another tap brings it back up. Opening a sheet always shows it whole.
+for (const id of ["atlas-panel", "zone-panel"]) {
+  const panel = document.getElementById(id);
+  const title = panel.querySelector("h2");
+  const handle = document.createElement("button");
+  handle.type = "button";
+  handle.className = "sheet-toggle";
+  handle.setAttribute("aria-labelledby", title.id);
+  handle.setAttribute("aria-expanded", "true");
+  panel.prepend(handle);
+  const toggleSheet = () => {
+    const down = panel.classList.toggle("sheet-down");
+    handle.setAttribute("aria-expanded", String(!down));
+    layoutView();
+  };
+  handle.addEventListener("click", toggleSheet);
+  title.addEventListener("click", () => innerWidth <= 640 && toggleSheet());
+  panel.addEventListener("transitionend", (e) => e.target === panel && layoutView());
+  new MutationObserver(() => {
+    if (panel.hidden) return;
+    panel.classList.remove("sheet-down");
+    handle.setAttribute("aria-expanded", "true");
+  }).observe(panel, { attributes: true, attributeFilter: ["hidden"] });
+}
 animate();
 // The start screen goes away once the first frame is on its way.
 requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));

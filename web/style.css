@@ -2328,3 +2328,60 @@ body:has(#tour:not([hidden])) #dock {
   background: rgba(124, 255, 178, 0.2);
   border-color: rgba(124, 255, 178, 0.6);
 }
+
+/* The sheets at the bottom of a phone (the zodiac signs, the zone quiz) can be pushed down: only the title stays, a tap brings them back. */
+.sheet-toggle {
+  display: none;
+}
+@media (max-width: 640px) {
+  #zone-panel {
+    top: auto;
+    bottom: 12px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-height: 60dvh;
+    transform: none;
+  }
+  #atlas-panel,
+  #zone-panel {
+    transition: transform 0.25s ease;
+  }
+  #atlas-panel.sheet-down,
+  #zone-panel.sheet-down {
+    overflow: hidden;
+    transform: translateY(calc(100% - 48px));
+  }
+  .sheet-toggle {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    display: block;
+    width: 80px;
+    height: 20px;
+    padding: 0;
+    background: none;
+    border: 0;
+    transform: translateX(-50%);
+    cursor: pointer;
+  }
+  .sheet-toggle::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: 7px auto 0;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.45);
+  }
+  #atlas-title,
+  #zone-title {
+    margin-top: 6px;
+    cursor: pointer;
+  }
+  /* the sheet takes the place of the dock cards */
+  body:has(#atlas-panel:not([hidden])) #dock,
+  body:has(#zone-panel:not([hidden])) #dock {
+    display: none;
+  }
+}
