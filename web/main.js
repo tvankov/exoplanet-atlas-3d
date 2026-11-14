@@ -5212,33 +5212,12 @@ function applyWelcomeTexts() {
   set("wl-h2", h2);
   set("wl-h3", h3);
   set("welcome-text", t.welcomeText);
-  set("welcome-mars", t.welcomeMars);
-  set("welcome-map", t.welcomeMap);
-  document.getElementById("welcome-close").setAttribute("aria-label", t.welcomeClose);
-  // The figures are counted from the data of the map.
-  const planets = stars.reduce((n, s) => n + s.planets.length, 0);
-  const candidates = stars.reduce((n, s) => n + s.planets.filter((p) => p.habitable).length, 0);
-  set("stat-hosts", stars.length.toLocaleString(lang));
-  set("stat-hosts-l", t.statHosts);
-  set("stat-planets", planets.toLocaleString(lang));
-  set("stat-planets-l", t.statPlanets);
-  set("stat-candidates", candidates.toLocaleString(lang));
-  set("stat-candidates-l", t.statCandidates);
-  set("wl-daily-k", t.welcomeDailyKicker);
-  set("wl-daily-t", daily ? (daily.entry[lang] ?? daily.entry.en).title : "");
-  const near = nearestCandidate();
-  set("wl-near-k", t.welcomeNear);
-  set("wl-near-t", near ? near.planet.pl_name : "");
-  set("wl-near-s", near ? `${near.star.dist_ly.toFixed(1)} ${t.lightYears}` : "");
-  set("wl-plan-k", TRAVEL_UI[lang].title);
-  set("wl-plan-t", t.welcomePlan);
-  set("wl-plan-s", t.welcomePlanSub);
   // The dock at the bottom of the map holds the same three cards in a smaller form.
+  const near = nearestCandidate();
   set("dock-daily-k", t.welcomeDailyKicker);
   set("dock-daily-t", daily ? (daily.entry[lang] ?? daily.entry.en).title : "");
   set("tour-k", t.tourKicker);
   set("tour-quiz", (ZONE_TEXT[lang] ?? ZONE_TEXT.en).button);
-  set("welcome-quiz", (ZONE_TEXT[lang] ?? ZONE_TEXT.en).button);
   document.getElementById("tour-quiz").title = (ZONE_TEXT[lang] ?? ZONE_TEXT.en).hint;
   zoneGame?.render();
   document.getElementById("tour-prev").setAttribute("aria-label", t.tourPrev);
@@ -5266,30 +5245,10 @@ function showHintLine() {
 function closeWelcome() {
   if (welcome.hidden) return;
   welcome.hidden = true;
-  track("welcome-closed");
-  try {
-    localStorage.setItem("welcomed", "1");
-  } catch {
-    // not remembered, it shows again next time
-  }
   showHintLine();
 }
-welcome.addEventListener("click", (e) => e.target === welcome && closeWelcome());
-document.getElementById("welcome-close").addEventListener("click", closeWelcome);
-window.addEventListener("keydown", (e) => e.key === "Escape" && closeWelcome());
-document.getElementById("welcome-mars").addEventListener("click", () => {
-  closeWelcome();
-  planFrom.value = "Earth";
-  planTo.value = "Mars";
-  planGo.click();
-});
-document.getElementById("welcome-habitable").addEventListener("click", () => {
-  closeWelcome();
-  tourStart();
-});
-document.getElementById("welcome-map").addEventListener("click", closeWelcome);
-// What is used on the start screen and in the dock: only the name of the button is counted (see stats.js).
-for (const id of ["welcome-mars", "welcome-habitable", "welcome-map", "welcome-quiz", "wl-daily", "welcome-plan", "dock-daily", "dock-near", "dock-games", "dock-plan", "dock-log"]) {
+// What is used in the dock: only the name of the button is counted (see stats.js).
+for (const id of ["dock-daily", "dock-near", "dock-games", "dock-plan", "dock-log"]) {
   document.getElementById(id).addEventListener("click", () => track(id));
 }
 // The dock: the same actions as the cards of the start screen. It can be folded, and stays folded for the next visit.
@@ -5354,25 +5313,7 @@ function openQuiz() {
   zoneGame?.open();
 }
 quizButton.addEventListener("click", openQuiz);
-document.getElementById("welcome-quiz").addEventListener("click", () => {
-  closeWelcome();
-  openQuiz();
-});
 document.getElementById("dock-near").addEventListener("click", tourStart);
-document.getElementById("wl-daily").addEventListener("click", () => {
-  closeWelcome();
-  daily?.open();
-});
-document.getElementById("welcome-plan").addEventListener("click", () => {
-  closeWelcome();
-  togglePlanner(true);
-});
-for (const b of welcome.querySelectorAll("[data-lang]")) {
-  b.addEventListener("click", () => {
-    langSelect.value = b.dataset.lang;
-    langSelect.dispatchEvent(new Event("change"));
-  });
-}
 {
   // The start is not a visit: the missions and the history do not count it.
   const keep = explorer;
@@ -5381,13 +5322,11 @@ for (const b of welcome.querySelectorAll("[data-lang]")) {
   explorer = keep;
 }
 if (flight) flight.ms = 3200;
-let seen = false;
-try {
-  seen = localStorage.getItem("welcomed") === "1";
-} catch {
-  // storage blocked: the card shows every time
-}
-welcome.hidden = seen;
+// The slogan shows for five seconds on every visit (the animation of the page, see #welcome in style.css), then the line at the bottom says how
+// to move. The animation ends it, so a slow start does not cut it short; the timer is only for a browser that does not run it.
+welcome.hidden = false;
+welcome.addEventListener("animationend", closeWelcome);
+setTimeout(closeWelcome, 12000);
 // The two star layers are on by default (they load in the background); the deep layer is not offered on touch devices. They start after the
 // first flight: a layer that arrives in the middle of it is handed to the graphics card in one go, and the flight stops for a moment.
 {

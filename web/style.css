@@ -1018,77 +1018,6 @@ html, body {
   }
 }
 
-/* The first visit: a start screen. A headline, two buttons and three real figures over the map, and a row of cards at the bottom. The
-   figures and the nearest candidate come from the data of the map, nothing in it is made up. */
-#welcome {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  padding: 20px clamp(16px, 4vw, 56px) 24px;
-  overflow-y: auto;
-  background: linear-gradient(90deg, rgba(5, 6, 10, 0.88) 0%, rgba(5, 6, 10, 0.6) 45%, rgba(5, 6, 10, 0.12) 100%);
-  animation: panel-in 0.5s ease-out;
-}
-#welcome[hidden] {
-  display: none;
-}
-.wl-top {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.wl-brand {
-  flex: 1;
-  font-size: 13px;
-  letter-spacing: 0.4em;
-  opacity: 0.85;
-}
-.welcome-langs {
-  display: flex;
-  gap: 4px;
-}
-#welcome button {
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-.welcome-langs button {
-  white-space: nowrap;
-  padding: 6px 12px;
-  font-size: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  opacity: 0.8;
-}
-.welcome-langs button:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.12);
-}
-#welcome-close {
-  width: 36px;
-  height: 36px;
-  font-size: 22px;
-  line-height: 1;
-  background: none;
-  border: 0;
-  opacity: 0.7;
-}
-.wl-main {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  min-height: 0;
-  padding: 24px 0;
-}
-.wl-hero {
-  max-width: 560px;
-}
 #welcome-title {
   margin: 0 0 18px;
   font-size: clamp(34px, 6.4vw, 76px);
@@ -1110,98 +1039,6 @@ html, body {
   line-height: 1.55;
   opacity: 0.8;
 }
-.wl-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.wl-actions button {
-  min-height: 46px;
-  padding: 0 22px;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-radius: 12px;
-}
-#welcome .wl-actions .primary {
-  color: #05060a;
-  font-weight: 600;
-  background: #f2f5fa;
-  border: 0;
-}
-.wl-actions .primary:hover {
-  background: #ffffff;
-}
-.wl-actions .ghost {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-.wl-actions .ghost:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-.wl-stats {
-  display: grid;
-  gap: 22px;
-  margin: 0;
-  padding: 0 0 0 28px;
-  list-style: none;
-  text-align: center;
-  border-left: 1px solid rgba(255, 255, 255, 0.14);
-}
-.wl-stats li {
-  display: grid;
-  gap: 4px;
-}
-.wl-stats b {
-  font-size: 30px;
-  font-weight: 400;
-}
-.wl-stats span {
-  max-width: 120px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-.wl-cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-.wl-card {
-  position: relative;
-  display: grid;
-  align-content: end;
-  gap: 4px;
-  min-height: 120px;
-  padding: 16px 52px 16px 18px;
-  text-align: left;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  transition: background 0.18s ease, border-color 0.18s ease;
-}
-.wl-card:hover {
-  background: rgba(255, 255, 255, 0.11);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-.wl-card small {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-.wl-card strong {
-  font-size: 17px;
-  font-weight: 500;
-  line-height: 1.25;
-}
-.wl-card span:not(.wl-arrow) {
-  font-size: 13px;
-  opacity: 0.7;
-}
 .wl-arrow {
   position: absolute;
   right: 14px;
@@ -1213,40 +1050,6 @@ html, body {
   font-size: 16px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
-}
-@media (max-width: 760px) {
-  #welcome {
-    background: rgba(5, 6, 10, 0.78);
-  }
-  .wl-main {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 18px 0;
-  }
-  .wl-stats {
-    display: flex;
-    gap: 18px;
-    padding: 14px 0 0;
-    border-left: 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-    text-align: left;
-  }
-  .wl-stats b {
-    font-size: 22px;
-  }
-  .wl-cards {
-    grid-template-columns: none;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(220px, 78%);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding-bottom: 4px;
-  }
-  .wl-card {
-    min-height: 104px;
-    scroll-snap-align: start;
-  }
 }
 #hint-line {
   position: fixed;
@@ -1383,22 +1186,7 @@ html, body {
   margin: 0 !important;
 }
 
-/* While the start screen is open, the panels of the map are out of the way. */
-body:has(#welcome:not([hidden])) #hud,
-body:has(#welcome:not([hidden])) #burger,
-body:has(#welcome:not([hidden])) #info-button,
-body:has(#welcome:not([hidden])) #hint-line {
-  visibility: hidden;
-}
 
-@media (max-width: 480px) {
-  .wl-brand {
-    visibility: hidden; /* the row has room only for the languages and the close button */
-  }
-  .welcome-langs button {
-    padding: 6px 10px;
-  }
-}
 
 /* The dock at the bottom of the map: the three cards of the start screen, smaller. It steps aside while something else uses the bottom
    of the screen (the start screen, the story panel, the box of a trip, the hint of picking, the caption of the flight). */
@@ -1484,7 +1272,6 @@ body:has(#welcome:not([hidden])) #hint-line {
   font-size: 13px;
   border-radius: 8px;
 }
-body:has(#welcome:not([hidden])) #dock,
 body:has(#story:not([hidden])) #dock,
 body:has(#trip-hud:not([hidden])) #dock,
 body:has(#pick-hint:not([hidden])) #dock,
@@ -2007,10 +1794,6 @@ body:has(#tour:not([hidden])) #dock {
   0%, 100% { box-shadow: 0 0 0 0 rgba(124, 255, 178, 0.5); }
   50% { box-shadow: 0 0 0 8px rgba(124, 255, 178, 0); }
 }
-.wl-actions .ghost.quiz {
-  border-color: rgba(124, 255, 178, 0.5);
-  background: rgba(124, 255, 178, 0.1);
-}
 @media (prefers-reduced-motion: reduce) {
   #tour .tour-quiz.fresh {
     animation: none;
@@ -2384,4 +2167,36 @@ body:has(#tour:not([hidden])) #dock {
   body:has(#zone-panel:not([hidden])) #dock {
     display: none;
   }
+}
+
+/* The slogan of the start: three words over the map that fade out after five seconds (the page hides it then). It lets every click through. */
+#welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  pointer-events: none;
+  animation: slogan 5s ease forwards;
+}
+#welcome[hidden] {
+  display: none;
+}
+#welcome-title {
+  margin-bottom: 14px;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.8);
+}
+#welcome-text {
+  margin: 0 auto;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.9);
+}
+@keyframes slogan {
+  0% { opacity: 0; transform: translateY(8px); }
+  12% { opacity: 1; transform: none; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
