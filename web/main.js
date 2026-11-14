@@ -3076,7 +3076,7 @@ function applyLanguage() {
 controls.addEventListener("start", () => (flight = null));
 
 function stepFlight() {
-  if (!flight) return;
+  if (!flight || flight.hold) return; // a held flight waits (the first flight, until the pictures are on the graphics card)
   const u = Math.min(1, (performance.now() - flight.start) / (flight.ms ?? FLIGHT_MS));
   const e = u * u * (3 - 2 * u); // smoothstep, soft start and stop
   if (flight.view) {
@@ -5190,8 +5190,6 @@ for (const id of ["atlas-panel", "zone-panel"]) {
   }).observe(panel, { attributes: true, attributeFilter: ["hidden"] });
 }
 animate();
-// The start screen goes away once the first frame is on its way.
-requestAnimationFrame(() => document.getElementById("loading")?.classList.add("done"));
 // The first visit: a card with three things to try, and a line at the bottom that says how to move. The start is the Solar System with
 // Earth in view, reached in a slow flight, so there is something to look at behind the card.
 // The nearest planet that the catalogue calls a candidate, for the card of the start screen.
@@ -5322,15 +5320,54 @@ document.getElementById("dock-near").addEventListener("click", tourStart);
   explorer = keep;
 }
 if (flight) flight.ms = 3200;
-// The slogan shows for five seconds on every visit (the animation of the page, see #welcome in style.css), then the line at the bottom says how
-// to move. The animation ends it, so a slow start does not cut it short; the timer is only for a browser that does not run it.
-welcome.hidden = false;
-welcome.addEventListener("animationend", closeWelcome);
-setTimeout(closeWelcome, 12000);
+// The first flight starts when the pictures (the planets, the Milky Way) are loaded AND on the graphics card. A picture of 4096 by 2048 points
+// that is handed over in the middle of the flight makes the picture stop for a moment, so they are handed over now, behind the loading screen.
+// The slogan shows for five seconds (the animation of the page, see #welcome in style.css), then the line at the bottom says how to move. The
+// animation ends it, so a slow start does not cut it short; the timer is only for a browser that does not run it.
+{
+  const intro = flight;
+  if (intro) intro.hold = true;
+  const manager = THREE.DefaultLoadingManager;
+  const picturesLoaded = new Promise((resolve) => {
+    if (manager.itemsLoaded >= manager.itemsTotal) return resolve();
+    const done = manager.onLoad;
+    manager.onLoad = () => {
+      done?.();
+      resolve();
+    };
+    setTimeout(resolve, 8000); // a slow connection does not keep the visitor from the map
+  });
+  picturesLoaded.then(() => {
+    try {
+      scene.traverse((o) => {
+        for (const material of Array.isArray(o.material) ? o.material : o.material ? [o.material] : []) {
+          for (const v of [material.map, ...Object.values(material.uniforms ?? {}).map((u) => u.value)]) if (v?.isTexture && v.image) renderer.initTexture(v);
+        }
+      });
+    } catch (error) {
+      console.warn(error); // the flight starts anyway
+    }
+    let started = false;
+    const start = () => {
+      if (started) return;
+      started = true;
+      document.getElementById("loading")?.classList.add("done");
+      if (intro) {
+        intro.hold = false;
+        intro.start = performance.now();
+      }
+      welcome.hidden = false;
+      welcome.addEventListener("animationend", closeWelcome);
+      setTimeout(closeWelcome, 12000);
+    };
+    requestAnimationFrame(() => requestAnimationFrame(start)); // after two frames with the pictures
+    setTimeout(start, 600); // a page in the background draws no frames
+  });
+}
 // The two star layers are on by default (they load in the background); the deep layer is not offered on touch devices. They start after the
 // first flight: a layer that arrives in the middle of it is handed to the graphics card in one go, and the flight stops for a moment.
 {
-  const giveUp = performance.now() + 9000; // a visitor who keeps flying does not wait for ever
+  const giveUp = performance.now() + 16000; // a visitor who keeps flying does not wait for ever
   const timer = setInterval(() => {
     if (flight && performance.now() < giveUp) return;
     clearInterval(timer);
