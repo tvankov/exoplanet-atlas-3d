@@ -599,14 +599,54 @@ const MILKY_WAY_FRAGMENT = `
     gl_FragColor = vec4(mix(painted, photo, uPhotoMix) + nebula, 1.0);
     #include <colorspace_fragment>
   }`;
-const milkyWayPhoto = new THREE.TextureLoader().load("textures/milkyway.jpg", () => {
+// Big pictures that the first view does not need (Mercury, Mars, Jupiter and the photo of the Milky Way, 7 MB together) load after the first
+// flight, one after the other. Until then a plain colour stands in for them (a picture of one point). Loaded in the middle of the flight, a picture
+// makes the flight stop for a moment, and the visitor waited for all of them before the map opened. ready(texture, upload) sets the picture up,
+// calls upload() (it goes to the graphics card now, not at the next frame) and puts it in place of the colour.
+const lateQueue = [];
+let lateOpen = false;
+let latePumping = false;
+function lateTexture(file, ready, colour = 0x000000) {
+  const placeholder = new THREE.DataTexture(new Uint8Array([(colour >> 16) & 255, (colour >> 8) & 255, colour & 255, 255]), 1, 1);
+  placeholder.colorSpace = THREE.SRGBColorSpace;
+  placeholder.needsUpdate = true;
+  lateQueue.push({ file, ready });
+  if (lateOpen) pumpLate();
+  return placeholder;
+}
+function pumpLate() {
+  if (latePumping) return;
+  const item = lateQueue.shift();
+  if (!item) return;
+  latePumping = true;
+  const next = () => {
+    latePumping = false;
+    setTimeout(pumpLate, 350); // the next one only after this one is on the graphics card
+  };
+  new THREE.TextureLoader().load(
+    item.file,
+    (texture) => {
+      item.ready(texture, () => renderer.initTexture(texture));
+      next();
+    },
+    undefined,
+    next
+  );
+}
+function openLateLoads() {
+  lateOpen = true;
+  pumpLate();
+}
+const milkyWayPhoto = lateTexture("textures/milkyway.jpg", (texture, upload) => {
+  texture.colorSpace = THREE.SRGBColorSpace;
+  // No mipmaps: the seam of the photo (longitude 180 degrees) would show as a line, and the photo is about
+  // as fine as the screen, so it needs none.
+  texture.generateMipmaps = false;
+  texture.minFilter = THREE.LinearFilter;
+  upload();
+  milkyWay.material.uniforms.uPhoto.value = texture;
   milkyWay.material.uniforms.uPhotoMix.value = 1;
 });
-milkyWayPhoto.colorSpace = THREE.SRGBColorSpace;
-// No mipmaps: the seam of the photo (longitude 180 degrees) would show as a line, and the photo is about
-// as fine as the screen, so it needs none.
-milkyWayPhoto.generateMipmaps = false;
-milkyWayPhoto.minFilter = THREE.LinearFilter;
 const milkyWay = new THREE.Mesh(
   new THREE.SphereGeometry(50000, 48, 32),
   new THREE.ShaderMaterial({
@@ -1117,6 +1157,21 @@ function labelSprite(text, width = Math.max(128, Math.ceil((text.length * 11 + 2
 // A textured planet is lit by the star, so it shows a day and a night side. Plain planets
 // are just coloured and need no light.
 const textureLoader = new THREE.TextureLoader();
+// The pictures that the first view needs (the Earth and the Moon): the start waits for them, see the first flight at the end of this file.
+const startupPictures = [];
+{
+  const load = textureLoader.load.bind(textureLoader);
+  textureLoader.load = (file, onLoad, onProgress, onError) => {
+    let settle;
+    startupPictures.push(new Promise((resolve) => (settle = resolve)));
+    return load(
+      file,
+      (texture) => (onLoad?.(texture), settle()),
+      onProgress,
+      (error) => (onError?.(error), settle())
+    );
+  };
+}
 
 // Look of an exoplanet. Nobody has seen the surface of one, so this is a schematic that only
 // uses what is measured: the type comes from the radius, the tint from the temperature and the
@@ -1922,10 +1977,17 @@ const GAS_FRAGMENT = `
   }`;
 
 function gasMaterial(p) {
-  const map = textureLoader.load(p.texture);
-  map.colorSpace = THREE.SRGBColorSpace;
-  map.wrapS = THREE.RepeatWrapping; // the map is read past its seam while the planet turns
-  return new THREE.ShaderMaterial({
+  const map = lateTexture(
+    p.texture,
+    (texture, upload) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.wrapS = THREE.RepeatWrapping; // the map is read past its seam while the planet turns
+      upload();
+      material.uniforms.uMap.value = texture;
+    },
+    p.color
+  );
+  const material = new THREE.ShaderMaterial({
     uniforms: {
       uMap: { value: map },
       uFlatten: { value: p.flatten },
@@ -1937,6 +1999,7 @@ function gasMaterial(p) {
     vertexShader: GAS_VERTEX,
     fragmentShader: GAS_FRAGMENT,
   });
+  return material;
 }
 
 // Planets whose invented look was chosen by hand instead of by temperature and name: the kind of
@@ -1965,12 +2028,21 @@ function planetMaterial(p) {
   // The plain planets of our own system are lit by the Sun like the textured ones, so they show a
   // day and a night side instead of a flat disc.
   if (!p.texture) return new THREE.MeshLambertMaterial({ color: p.color });
-  const map = textureLoader.load(p.texture);
-  map.colorSpace = THREE.SRGBColorSpace;
-  map.wrapS = THREE.RepeatWrapping; // the spin moves the map sideways through texture.offset
+  const map = lateTexture(
+    p.texture,
+    (texture, upload) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.wrapS = THREE.RepeatWrapping; // the spin moves the map sideways through texture.offset
+      upload();
+      material.map = texture;
+      if (material.bumpMap) material.bumpMap = texture;
+    },
+    p.color
+  );
   // Relief for Mercury: the brightness of the map is used as a height guess, so craters and ridges
   // catch the light. It is not a measured height map (the map has enhanced colours), see README.
-  return new THREE.MeshLambertMaterial(p.bump ? { map, bumpMap: map, bumpScale: p.bump } : { map });
+  const material = new THREE.MeshLambertMaterial(p.bump ? { map, bumpMap: map, bumpScale: p.bump } : { map });
+  return material;
 }
 scene.add(new THREE.AmbientLight(0xffffff, 0.7)); // keeps the night side from turning fully black, and the small planets of the overview readable
 
@@ -5327,16 +5399,10 @@ if (flight) flight.ms = 3200;
 {
   const intro = flight;
   if (intro) intro.hold = true;
-  const manager = THREE.DefaultLoadingManager;
-  const picturesLoaded = new Promise((resolve) => {
-    if (manager.itemsLoaded >= manager.itemsTotal) return resolve();
-    const done = manager.onLoad;
-    manager.onLoad = () => {
-      done?.();
-      resolve();
-    };
-    setTimeout(resolve, 8000); // a slow connection does not keep the visitor from the map
-  });
+  const picturesLoaded = Promise.race([
+    Promise.all(startupPictures),
+    new Promise((resolve) => setTimeout(resolve, 5000)), // a slow connection does not keep the visitor from the map
+  ]);
   picturesLoaded.then(() => {
     try {
       scene.traverse((o) => {
@@ -5367,13 +5433,14 @@ if (flight) flight.ms = 3200;
 // The two star layers are on by default (they load in the background); the deep layer is not offered on touch devices. They start after the
 // first flight: a layer that arrives in the middle of it is handed to the graphics card in one go, and the flight stops for a moment.
 {
-  const giveUp = performance.now() + 16000; // a visitor who keeps flying does not wait for ever
+  const giveUp = performance.now() + 10000; // a visitor who keeps flying does not wait for ever
   const timer = setInterval(() => {
     if (flight && performance.now() < giveUp) return;
     clearInterval(timer);
+    openLateLoads(); // the big pictures of the planets and of the Milky Way first,
     setTimeout(() => {
-      if (!gaiaOn) gaiaButton.click();
-      if (!IS_MOBILE) setTimeout(() => !deepOn && deepButton.click(), 1500); // one after the other, so that the two uploads do not meet
-    }, 400);
+      if (!gaiaOn) gaiaButton.click(); // then the star layers
+      if (!IS_MOBILE) setTimeout(() => !deepOn && deepButton.click(), 1500); // one after the other, so that the uploads do not meet
+    }, 4000);
   }, 250);
 }
