@@ -65,6 +65,27 @@ const warpPass = new ShaderPass({
 });
 warpPass.enabled = false;
 composer.addPass(warpPass);
+// Soft motion blur for the flights of the camera (the start, a click on a planet, the atlas): the picture is smeared a little towards the
+// point that the camera flies to, most where the flight is fastest, and the average of the samples is taken (not the maximum like the streaks
+// above), so it is a soft zoom blur and no lines. Switched off when there is no flight, then it costs nothing.
+const motionPass = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uStrength: { value: 0 }, uCenter: { value: new THREE.Vector2(0.5, 0.5) } },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float uStrength;
+    uniform vec2 uCenter;
+    varying vec2 vUv;
+    void main() {
+      vec2 dir = (vUv - uCenter) * uStrength;
+      float jitter = fract(sin(dot(vUv, vec2(12.9898, 78.233))) * 43758.5453) - 0.5; // a different offset per pixel, so the steps do not show
+      vec3 sum = vec3(0.0);
+      for (int i = 0; i < 10; i++) sum += texture2D(tDiffuse, vUv - dir * ((float(i) + jitter) / 10.0)).rgb;
+      gl_FragColor = vec4(sum / 10.0, 1.0);
+    }`,
+});
+motionPass.enabled = false;
+composer.addPass(motionPass);
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.5, 0.92); // strength, radius, threshold
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
@@ -3836,6 +3857,7 @@ function animate() {
   if (activeExo) stepSystem(activeExo, dt);
   stepTrip(now);
   stepWarp(dt);
+  stepMotionBlur(dt);
   stepSoft(now, dt);
   if (realScale) {
     updateCameraRange();
@@ -4954,6 +4976,27 @@ function stepWarp(dt) {
   }
 }
 const warpAhead = new THREE.Vector3();
+
+// The strength of the motion blur follows the speed of the flight (the slope of its smooth start and stop: zero at both ends, highest in the
+// middle). Not for a visitor who asked for less motion.
+const REDUCED_MOTION = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+let motion = 0;
+function stepMotionBlur(dt) {
+  let target = 0;
+  if (flight && !flight.hold && !REDUCED_MOTION && !warpPass.enabled) {
+    const u = Math.min(1, Math.max(0, (performance.now() - flight.start) / (flight.ms ?? FLIGHT_MS)));
+    target = 0.09 * (4 * u * (1 - u));
+  }
+  motion += (target - motion) * Math.min(1, dt * 12);
+  motionPass.enabled = motion > 0.004;
+  motionPass.uniforms.uStrength.value = motion;
+  if (motionPass.enabled) {
+    // the point that the camera looks at, where it lands on the screen (the panels shift the picture, see layoutView)
+    camera.updateMatrixWorld();
+    warpAhead.copy(controls.target).project(camera);
+    motionPass.uniforms.uCenter.value.set(warpAhead.x * 0.5 + 0.5, warpAhead.y * 0.5 + 0.5);
+  }
+}
 
 // The streaks of the blur are made from stars that stand still, so they do not move, and it does not look like we fly past anything. In the
 // hyperspace, streaks therefore fly towards us and past us from the point we look at, like stars would: a field of short lines in the space of
