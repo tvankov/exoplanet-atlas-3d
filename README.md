@@ -33,7 +33,7 @@ desktop and on phones, in English, German, Japanese and Bulgarian. A private, no
 | Pipeline | Python (pandas, numpy): download as dated CSV or JSON, clean, compute x, y, z in light years, colours, flags; export to JSON and SQLite |
 | Exploration | Jupyter notebooks in `notebooks/` (the first look at the data, a Plotly prototype) |
 | Frontend | three.js without a build step, plain JavaScript modules, post processing (bloom, tone mapping), WebGL shaders for the diffraction spikes and the planets |
-| Hosting | GitHub Pages (workflow in `.github/workflows/pages.yml`), own domain |
+| Hosting | GitHub Pages (workflow in `.github/workflows/pages.yml`, which stamps the script addresses with the commit, `src/stamp_version.py`), own domain |
 | Analytics | GoatCounter: no cookies, only aggregate figures (see the privacy notice in the app) |
 | Languages | English, German, Japanese, Bulgarian (the last two are machine written and not yet checked by native speakers) |
 

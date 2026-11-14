@@ -23,6 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # The browsers keep files for ten minutes: without a version in the addresses a visitor can get the new page with an old script.
+      - name: Stamp the addresses of the scripts with the commit
+        run: python3 src/stamp_version.py ${{ github.sha }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web
