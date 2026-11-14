@@ -645,7 +645,14 @@ const milkyWayPhoto = lateTexture("textures/milkyway.jpg", (texture, upload) => 
   texture.minFilter = THREE.LinearFilter;
   upload();
   milkyWay.material.uniforms.uPhoto.value = texture;
-  milkyWay.material.uniforms.uPhotoMix.value = 1;
+  // The photo comes in softly over the painted sky that stands in until it is loaded (1.5 s), not with a jump.
+  const from = performance.now();
+  const fade = () => {
+    const u = Math.min(1, (performance.now() - from) / 1500);
+    milkyWay.material.uniforms.uPhotoMix.value = u;
+    if (u < 1) requestAnimationFrame(fade);
+  };
+  fade();
 });
 const milkyWay = new THREE.Mesh(
   new THREE.SphereGeometry(50000, 48, 32),
