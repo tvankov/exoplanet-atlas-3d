@@ -65,7 +65,8 @@ const warpPass = new ShaderPass({
 });
 warpPass.enabled = false;
 composer.addPass(warpPass);
-// Soft motion blur for the flights of the camera (the start, a click on a planet, the atlas): the picture is smeared a little towards the
+// Soft motion blur for the first flight of the camera, the one of the start (flight.blur, see the end of this file; the trips have their own streaks
+// below): the picture is smeared a little towards the
 // point that the camera flies to, most where the flight is fastest, and the average of the samples is taken (not the maximum like the streaks
 // above), so it is a soft zoom blur and no lines. Switched off when there is no flight, then it costs nothing.
 const motionPass = new ShaderPass({
@@ -4983,7 +4984,7 @@ const REDUCED_MOTION = window.matchMedia?.("(prefers-reduced-motion: reduce)").m
 let motion = 0;
 function stepMotionBlur(dt) {
   let target = 0;
-  if (flight && !flight.hold && !REDUCED_MOTION && !warpPass.enabled) {
+  if (flight?.blur && !flight.hold && !REDUCED_MOTION && !warpPass.enabled) {
     const u = Math.min(1, Math.max(0, (performance.now() - flight.start) / (flight.ms ?? FLIGHT_MS)));
     target = 0.09 * (4 * u * (1 - u));
   }
@@ -5461,7 +5462,10 @@ if (flight) flight.ms = 3200;
 // animation ends it, so a slow start does not cut it short; the timer is only for a browser that does not run it.
 {
   const intro = flight;
-  if (intro) intro.hold = true;
+  if (intro) {
+    intro.hold = true;
+    intro.blur = true; // only the first flight has the soft motion blur (the other flights looked artificial with it)
+  }
   const picturesLoaded = Promise.race([
     Promise.all(startupPictures),
     new Promise((resolve) => setTimeout(resolve, 5000)), // a slow connection does not keep the visitor from the map
