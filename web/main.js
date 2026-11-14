@@ -345,6 +345,17 @@ const GAIA_MAG_MAX = 18;
 gaiaMaterial.uniforms.uMagRange.value.set(GAIA_MAG_MIN, GAIA_MAG_MAX);
 gaiaMaterial.uniforms.uWhiten.value = BACKGROUND_WHITENING;
 gaiaMaterial.uniforms.uTint.value = 0.9; // the near layer is a touch quieter than the deep one
+// A layer that has just loaded comes in softly (2 s) instead of appearing in one frame: the brightness of its stars runs up to its own value.
+function fadeIn(material) {
+  const target = material.uniforms.uGain.value;
+  const from = performance.now();
+  const step = () => {
+    const u = Math.min(1, (performance.now() - from) / 2000);
+    material.uniforms.uGain.value = target * u;
+    if (u < 1) requestAnimationFrame(step);
+  };
+  step();
+}
 gaiaMaterial.uniforms.uSky.value = SKY_RADIUS;
 let gaia = null; // { points, xyz } once the file has been read
 
@@ -445,6 +456,7 @@ gaiaButton.addEventListener("click", async () => {
     if (!gaia) {
       showGaiaState("loading");
       await loadGaia();
+      fadeIn(gaiaMaterial);
     }
     setGaiaVisible(true);
     showGaiaState();
@@ -3382,6 +3394,7 @@ deepButton.addEventListener("click", async () => {
     if (!deep) {
       showDeepState("loading");
       await loadDeep();
+      fadeIn(deepMaterial);
     }
     deep.points.visible = true;
     deep.drawn = deep.count; // start with all of them again
