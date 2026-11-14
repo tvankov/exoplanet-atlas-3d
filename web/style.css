@@ -2200,3 +2200,58 @@ body:has(#tour:not([hidden])) #dock {
   80% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* Level, XP and badges in the log. */
+.xp-card {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: rgba(124, 255, 178, 0.07);
+  border: 1px solid rgba(124, 255, 178, 0.3);
+  border-radius: 10px;
+}
+.xp-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.xp-level {
+  font-size: 18px;
+  font-weight: 600;
+}
+.xp-total {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.xp-card .hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+.xp-how summary {
+  margin-top: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+.badges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.badge {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  font-size: 12px;
+  opacity: 0.5;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+.badge strong {
+  font-size: 13px;
+}
+.badge.earned {
+  opacity: 1;
+  background: rgba(124, 255, 178, 0.1);
+  border: 1px solid rgba(124, 255, 178, 0.5);
+}

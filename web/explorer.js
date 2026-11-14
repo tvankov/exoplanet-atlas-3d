@@ -60,6 +60,112 @@ export const MISSIONS = [
   },
 ];
 
+
+// ---------------------------------------------------------------- experience points, levels and badges
+// The rules are the same for everybody and are shown in the panel. Experience (XP) comes from three things only: a finished mission (20 for a
+// daily one, 50 for a weekly one, once per period), the first look at a planet (2), at a habitable candidate (5 more) and at a constellation (2).
+// A level needs more than the one before (level n starts at 25 n (n - 1) XP: 50, 150, 300, 500 ...). A badge is a milestone, earned once, and
+// stays; the ones that are not earned yet are shown with what they need, so it is clear how they are earned. Nothing is lost when a day is
+// skipped, there are no streaks. All of it stays in this browser like the rest of the log.
+const XP_MISSION = { day: 20, week: 50 };
+const XP_PLANET = 2;
+const XP_CANDIDATE = 5;
+const XP_CONSTELLATION = 2;
+const xpForLevel = (level) => 25 * level * (level - 1);
+function levelOf(xp) {
+  let level = 1;
+  while (xp >= xpForLevel(level + 1)) level++;
+  return level;
+}
+
+// test: whether the badge is earned, from the totals that are counted from the first visit on (state.total).
+const BADGES = [
+  {
+    id: "first-look", test: (t) => (t.planets?.length ?? 0) >= 1,
+    en: ["First look", "Looked at your first planet"], de: ["Erster Blick", "Den ersten Planeten angesehen"],
+    ja: ["最初の観察", "最初の惑星を見た"], bg: ["Първи поглед", "Разгледа първата си планета"],
+  },
+  {
+    id: "planets-25", test: (t) => (t.planets?.length ?? 0) >= 25,
+    en: ["Planet watcher", "Looked at 25 different planets"], de: ["Planetenbeobachter", "25 verschiedene Planeten angesehen"],
+    ja: ["惑星ウォッチャー", "25個の異なる惑星を見た"], bg: ["Наблюдател на планети", "Разгледа 25 различни планети"],
+  },
+  {
+    id: "candidates-10", test: (t) => (t.candidates?.length ?? 0) >= 10,
+    en: ["Habitable hunter", "Visited 10 habitable candidates"], de: ["Jäger bewohnbarer Welten", "10 bewohnbare Kandidaten besucht"],
+    ja: ["居住可能ハンター", "居住可能な候補を10個訪れた"], bg: ["Ловец на обитаеми светове", "Посети 10 кандидати за обитаеми светове"],
+  },
+  {
+    id: "first-trip", test: (t) => (t.trip ?? 0) >= 1,
+    en: ["First trip", "Flew a trip with the travel planner"], de: ["Erste Reise", "Eine Reise mit dem Reiseplaner geflogen"],
+    ja: ["初めての旅", "旅行プランナーで旅をした"], bg: ["Първо пътуване", "Направи пътуване с планировчика"],
+  },
+  {
+    id: "star-trip", test: (t) => (t.starTrip ?? 0) >= 1,
+    en: ["Interstellar", "Flew to another star"], de: ["Interstellar", "Zu einem anderen Stern geflogen"],
+    ja: ["恒星間飛行", "別の恒星へ飛んだ"], bg: ["Междузвезден", "Полетя до друга звезда"],
+  },
+  {
+    id: "zone-expert", test: (t) => (t.zoneWin ?? 0) >= 1,
+    en: ["Zone expert", "Got 4 of 5 right in the zone quiz"], de: ["Zonen-Experte", "4 von 5 im Zonen-Quiz richtig gelöst"],
+    ja: ["ゾーンの達人", "ゾーンクイズで5問中4問正解した"], bg: ["Експерт по зоната", "Отговори вярно на 4 от 5 във викторината за зоната"],
+  },
+  {
+    id: "sky-reader", test: (t) => (t.constellations?.length ?? 0) >= 12,
+    en: ["Sky reader", "Looked at 12 constellations in 3D"], de: ["Himmelsleser", "12 Sternbilder in 3D angesehen"],
+    ja: ["星空の読み手", "12の星座を3Dで見た"], bg: ["Четец на небето", "Разгледа 12 съзвездия в 3D"],
+  },
+  {
+    id: "collector", test: (t) => (t.favourite ?? 0) >= 5,
+    en: ["Collector", "Saved 5 planets as favourites"], de: ["Sammler", "5 Planeten als Favoriten gespeichert"],
+    ja: ["コレクター", "5つの惑星をお気に入りに保存した"], bg: ["Колекционер", "Запази 5 планети като любими"],
+  },
+  {
+    id: "regular", test: (t) => (t.missions ?? 0) >= 10,
+    en: ["Regular", "Finished 10 missions"], de: ["Stammgast", "10 Missionen abgeschlossen"],
+    ja: ["常連", "10個のミッションを完了した"], bg: ["Редовен", "Завърши 10 мисии"],
+  },
+];
+
+const XP_TEXT = {
+  en: {
+    level: (n) => `Level ${n}`,
+    toNext: (x, n) => `${x} XP to level ${n}`,
+    howTitle: "How XP works",
+    how: `A finished mission gives ${XP_MISSION.day} XP (daily) or ${XP_MISSION.week} XP (weekly). The first look at a planet gives ${XP_PLANET} XP, at a habitable candidate ${XP_CANDIDATE} more, and at a constellation ${XP_CONSTELLATION}. Nothing is lost when you skip a day. It is all stored in this browser.`,
+    badgesTitle: "Badges",
+    badge: "Badge",
+    levelUp: (n) => `Level ${n} reached`,
+  },
+  de: {
+    level: (n) => `Stufe ${n}`,
+    toNext: (x, n) => `${x} XP bis Stufe ${n}`,
+    howTitle: "So funktionieren XP",
+    how: `Eine abgeschlossene Mission gibt ${XP_MISSION.day} XP (täglich) oder ${XP_MISSION.week} XP (wöchentlich). Der erste Blick auf einen Planeten gibt ${XP_PLANET} XP, auf einen bewohnbaren Kandidaten ${XP_CANDIDATE} mehr, auf ein Sternbild ${XP_CONSTELLATION}. Wer einen Tag auslässt, verliert nichts. Alles bleibt in diesem Browser gespeichert.`,
+    badgesTitle: "Abzeichen",
+    badge: "Abzeichen",
+    levelUp: (n) => `Stufe ${n} erreicht`,
+  },
+  ja: {
+    level: (n) => `レベル${n}`,
+    toNext: (x, n) => `レベル${n}まであと${x} XP`,
+    howTitle: "XPのしくみ",
+    how: `ミッションを完了すると、毎日のものは${XP_MISSION.day} XP、毎週のものは${XP_MISSION.week} XPがもらえます。惑星を初めて見ると${XP_PLANET} XP、居住可能な候補ならさらに${XP_CANDIDATE} XP、星座を初めて見ると${XP_CONSTELLATION} XPです。1日休んでも何も失いません。すべてこのブラウザに保存されます。`,
+    badgesTitle: "バッジ",
+    badge: "バッジ",
+    levelUp: (n) => `レベル${n}に到達`,
+  },
+  bg: {
+    level: (n) => `Ниво ${n}`,
+    toNext: (x, n) => `${x} XP до ниво ${n}`,
+    howTitle: "Как работят XP",
+    how: `Завършена мисия дава ${XP_MISSION.day} XP (дневна) или ${XP_MISSION.week} XP (седмична). Първият поглед към планета дава ${XP_PLANET} XP, към кандидат за обитаем свят още ${XP_CANDIDATE}, към съзвездие ${XP_CONSTELLATION}. Нищо не се губи, ако пропуснеш ден. Всичко се пази в този браузър.`,
+    badgesTitle: "Значки",
+    badge: "Значка",
+    levelUp: (n) => `Достигнато ниво ${n}`,
+  },
+};
+
 // The number of the current week, Monday to Sunday (day 0 of the count was a Thursday).
 const weekNumber = (day) => Math.floor((day + 3) / 7);
 const periodKey = (period) => (period === "day" ? dayNumber() : weekNumber(dayNumber()));
@@ -67,11 +173,11 @@ const periodKey = (period) => (period === "day" ? dayNumber() : weekNumber(dayNu
 function load() {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
-    if (saved && typeof saved === "object") return { favourites: [], history: [], progress: {}, done: {}, ...saved };
+    if (saved && typeof saved === "object") return { favourites: [], history: [], progress: {}, done: {}, total: {}, xp: 0, badges: [], ...saved };
   } catch {
     // storage blocked or damaged: start empty
   }
-  return { favourites: [], history: [], progress: {}, done: {} };
+  return { favourites: [], history: [], progress: {}, done: {}, total: {}, xp: 0, badges: [] };
 }
 
 // getLang() is the language of the page, text(key) the interface text, explore(name) flies to the planet on the map.
@@ -95,20 +201,55 @@ export function initExplorer({ getLang, text, explore }) {
   const isDone = (m) => state.done[m.id] === periodKey(m.period);
   const counts = () => ({ done: MISSIONS.filter(isDone).length, total: MISSIONS.length });
   const label = (m) => m[getLang()] ?? m.en;
+  const xpText = () => XP_TEXT[getLang()] ?? XP_TEXT.en;
+
+  // XP are only given at the moment a thing happens for the first time (a mission is finished, a planet is seen for the first time), so a
+  // reward cannot be given twice.
+  function award(points) {
+    const before = levelOf(state.xp);
+    state.xp += points;
+    const after = levelOf(state.xp);
+    if (after > before) toast(xpText().levelUp(after));
+  }
+  function finish(m, key) {
+    state.done[m.id] = key;
+    state.total.missions = (state.total.missions ?? 0) + 1;
+    award(XP_MISSION[m.period]);
+    track(`mission-done-${m.id}`);
+    toast(`${text("missionDone")}: ${label(m)} (+${XP_MISSION[m.period]} XP)`);
+  }
+  // the first time something happens: true once per id (the total keeps the ids)
+  function first(kind, id) {
+    const list = (state.total[kind] ??= []);
+    if (id == null || list.includes(id)) return false;
+    list.push(id);
+    return true;
+  }
+  function countTotals(event, id) {
+    if (event === "planet") first("planets", id) && award(XP_PLANET);
+    else if (event === "candidate") first("candidates", id) && award(XP_CANDIDATE);
+    else if (event === "constellation") first("constellations", id) && award(XP_CONSTELLATION);
+    else state.total[event] = (state.total[event] ?? 0) + 1;
+  }
+  function checkBadges() {
+    for (const b of BADGES) {
+      if (state.badges.some((x) => x.id === b.id) || !b.test(state.total)) continue;
+      state.badges.push({ id: b.id, t: Date.now() });
+      track(`badge-${b.id}`);
+      toast(`${xpText().badge}: ${(b[getLang()] ?? b.en)[0]}`);
+    }
+  }
 
   // A thing happened on the map. id tells which planet or place (for the goals that count different ones).
   function emit(event, id = null) {
-    let changed = false;
+    let changed = true; // the totals of the badges change with every event
+    countTotals(event, id);
     for (const m of MISSIONS) {
       if (m.event !== event || isDone(m)) continue; // a finished mission does not count on
       const key = periodKey(m.period);
       if (m.live) {
         changed = true;
-        if (valueOf(m) >= m.target) {
-          state.done[m.id] = key;
-          track(`mission-done-${m.id}`);
-        toast(`${text("missionDone")}: ${label(m)}`);
-        }
+        if (valueOf(m) >= m.target) finish(m, key);
         continue;
       }
       let p = state.progress[m.id];
@@ -118,12 +259,9 @@ export function initExplorer({ getLang, text, explore }) {
         p.ids.push(id);
       } else p.n += 1;
       changed = true;
-      if (!isDone(m) && valueOf(m) >= m.target) {
-        state.done[m.id] = key;
-        track(`mission-done-${m.id}`);
-        toast(`${text("missionDone")}: ${label(m)}`);
-      }
+      if (!isDone(m) && valueOf(m) >= m.target) finish(m, key);
     }
+    checkBadges();
     if (changed) {
       save();
       render();
@@ -183,7 +321,7 @@ export function initExplorer({ getLang, text, explore }) {
     const v = isDone(m) ? m.target : Math.min(valueOf(m), m.target);
     const row = el("div", `mission${isDone(m) ? " done" : ""}`);
     row.append(el("span", "mission-mark", isDone(m) ? "✓" : ""), el("span", "mission-text", label(m)));
-    row.append(el("span", "mission-count", `${v} / ${m.target}`));
+    row.append(el("span", "mission-count", `${v} / ${m.target} · +${XP_MISSION[m.period]} XP`));
     const bar = el("div", "mission-bar");
     const fill = el("div", "mission-fill");
     fill.style.width = `${(v / m.target) * 100}%`;
@@ -215,7 +353,8 @@ export function initExplorer({ getLang, text, explore }) {
 
   function render() {
     const { done, total } = counts();
-    document.getElementById("dock-log-k").textContent = text("explorerKicker");
+    const level = levelOf(state.xp);
+    document.getElementById("dock-log-k").textContent = `${text("explorerKicker")} · ${xpText().level(level)}`;
     document.getElementById("dock-log-t").textContent = text("explorerProgress")(done, total);
     document.getElementById("log-title").textContent = text("explorerTitle");
     favButton.textContent = isFavourite(current) ? "★" : "☆";
@@ -228,9 +367,34 @@ export function initExplorer({ getLang, text, explore }) {
       s.append(el("h3", "", title), ...children);
       return s;
     };
+    // the level, the XP towards the next one, and how it works
+    const low = xpForLevel(level);
+    const high = xpForLevel(level + 1);
+    const xpCard = el("div", "xp-card");
+    const head = el("div", "xp-head");
+    head.append(el("strong", "xp-level", xpText().level(level)), el("span", "xp-total", `${state.xp} XP`));
+    const xpBar = el("div", "mission-bar");
+    const xpFill = el("div", "mission-fill");
+    xpFill.style.width = `${((state.xp - low) / (high - low)) * 100}%`;
+    xpBar.append(xpFill);
+    xpCard.append(head, xpBar, el("p", "hint", xpText().toNext(high - state.xp, level + 1)));
+    const how = el("details", "xp-how");
+    how.append(el("summary", "", xpText().howTitle), el("p", "hint", xpText().how));
+    xpCard.append(how);
+    // the badges: earned ones lit, the others dim with what they need
+    const grid = el("div", "badges");
+    for (const b of BADGES) {
+      const got = state.badges.some((x) => x.id === b.id);
+      const [name, need] = b[getLang()] ?? b.en;
+      const cell = el("div", `badge${got ? " earned" : ""}`);
+      cell.append(el("strong", "", `${got ? "★ " : ""}${name}`), el("span", "", need));
+      grid.append(cell);
+    }
     body.replaceChildren(
+      xpCard,
       section(text("missionsDaily"), ...MISSIONS.filter((m) => m.period === "day").map(missionRow)),
       section(text("missionsWeekly"), ...MISSIONS.filter((m) => m.period === "week").map(missionRow)),
+      section(xpText().badgesTitle, grid),
       section(text("favouritesTitle"), ...placeList(state.favourites, text("favouritesEmpty"), true)),
       section(text("recentTitle"), ...placeList(state.history.slice(0, 8), text("recentEmpty"), false))
     );
