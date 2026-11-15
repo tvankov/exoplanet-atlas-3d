@@ -2813,9 +2813,9 @@ body:has(#sky-panel:not([hidden])) #dock {
 
 /* The journal: in the info panel of a planet (a note, the collections) and in My Universe. */
 #story-journal {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  margin: 6px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 #story-journal[hidden] {
   display: none;
