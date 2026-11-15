@@ -2440,3 +2440,22 @@ body:has(#tour:not([hidden])) #dock {
   background: none;
   border: 0;
 }
+
+/* On a phone the zone quiz button of the tour sits outside the box, above its left corner: inside it squeezed the arrows and the name. */
+@media (max-width: 640px) {
+  #tour .tour-quiz {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    height: 40px;
+    max-width: none;
+    padding: 0 14px;
+    font-size: 12px;
+    white-space: nowrap;
+    background: rgba(10, 14, 24, 0.88);
+    border-color: rgba(124, 255, 178, 0.5);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
