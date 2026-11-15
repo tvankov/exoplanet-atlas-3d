@@ -2810,3 +2810,99 @@ body:has(#sky-panel:not([hidden])) #dock {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* The journal: in the info panel of a planet (a note, the collections) and in My Universe. */
+#story-journal {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+#story-journal[hidden] {
+  display: none;
+}
+.journal-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+#story-journal button,
+#story-journal select,
+#story-journal input {
+  padding: 5px 9px;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 7px;
+  cursor: pointer;
+}
+#story-journal select option {
+  color: #000;
+}
+#story-journal input {
+  flex: 1;
+  min-width: 120px;
+  cursor: text;
+}
+#story-journal button.journal-main {
+  background: rgba(124, 255, 178, 0.16);
+  border-color: rgba(124, 255, 178, 0.5);
+}
+.journal-text {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 8px;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+.journal-note {
+  margin: 4px 0 0;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  border-left: 3px solid rgba(124, 255, 178, 0.6);
+}
+.journal-note small {
+  display: block;
+  margin-top: 4px;
+  font-style: normal;
+  opacity: 0.6;
+}
+.journal-item {
+  margin: 4px 0 8px;
+}
+.journal-item p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+.journal-item .hint {
+  margin-left: 6px;
+  font-size: 11px;
+}
+.journal-collection {
+  margin: 4px 0 8px;
+}
+.journal-collection summary {
+  font-size: 13px;
+  cursor: pointer;
+}
+#profile-panel button.uni-place:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#universe-body button.account-danger {
+  background: rgba(255, 120, 100, 0.18);
+  border-color: rgba(255, 120, 100, 0.6);
+}

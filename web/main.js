@@ -6,6 +6,7 @@ import { initAtlas, ATLAS_TEXT } from "./atlas.js";
 import { initAuth } from "./auth.js";
 import { initEvents } from "./events.js";
 import { initUniverse } from "./universe.js";
+import { initJournal } from "./journal.js";
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -3199,6 +3200,7 @@ function applyLanguage() {
   applyWelcomeTexts();
   explorer?.render();
   auth?.render();
+  journal?.render();
   skyEvents?.render();
   showSkyState();
   sky?.refresh();
@@ -5237,6 +5239,7 @@ let explorer = null; // favourites, history and missions, see explorer.js
 let auth = null; // the optional account, see auth.js
 let skyEvents = null; // eclipses and meteor showers, see events.js
 let universe = null; // the personal layer, see universe.js
+let journal = null; // notes and collections, see journal.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
@@ -5297,10 +5300,21 @@ explorer = initExplorer({
     if (place) showPlace(place);
   },
 });
+journal = initJournal({
+  getLang: () => lang,
+  explorer,
+  explore: (name) => {
+    const place = resolvePlace(name);
+    if (place) showPlace(place);
+  },
+  exists: (name) => !!resolvePlace(name),
+  onChange: () => auth?.render(), // the dashboard of My Universe shows the journal
+});
 universe = initUniverse({
   getLang: () => lang,
   explorer,
   daily,
+  journal,
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);

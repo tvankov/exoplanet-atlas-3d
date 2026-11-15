@@ -5,6 +5,7 @@
 // the favourites and the ones counted by the missions are not lost.
 
 import { mergeProfile, mergeLast } from "./profile.js";
+import { mergeNotes, mergeCollections } from "./journal-data.js";
 
 const HISTORY_MAX = 12;
 const text = (x) => typeof x === "string" && x.length > 0 && x.length < 200;
@@ -62,7 +63,11 @@ export function mergeState(local = {}, remote = {}) {
   }
   const profile = mergeProfile(local.profile, remote.profile);
   const last = mergeLast(local.last, remote.last);
+  const notes = mergeNotes(local.notes, remote.notes);
+  const collections = mergeCollections(local.collections, remote.collections);
   return {
+    ...(Object.keys(notes).length ? { notes } : {}),
+    ...(collections.length ? { collections } : {}),
     ...(profile ? { profile } : {}),
     ...(last ? { last } : {}),
     favourites: joinByName(local.favourites, remote.favourites),

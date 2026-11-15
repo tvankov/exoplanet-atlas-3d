@@ -206,6 +206,19 @@ export function initExplorer({ getLang, text, explore }) {
     save();
   }
   const getLast = () => (state.last && typeof state.last.name === "string" ? state.last : null);
+  // A change made by another module (the journal): the change, then saving and drawing again.
+  function update(mutate) {
+    mutate(state);
+    save();
+    render();
+  }
+  // Everything back to an empty log (the journal's "delete everything"); with an account, the empty log is saved to it.
+  function resetAll() {
+    state = { favourites: [], history: [], progress: {}, done: {}, total: {}, xp: 0, badges: [] };
+    save();
+    render();
+  }
+  const renderListeners = []; // other modules that draw from the log (the journal in the info panel)
   // the label of the first mission that is not done, or null
   function nextMission() {
     const m = MISSIONS.find((x) => !isDone(x));
@@ -428,6 +441,7 @@ export function initExplorer({ getLang, text, explore }) {
     favButton.setAttribute("aria-label", isFavourite(current) ? text("favRemove") : text("favAdd"));
     favButton.title = favButton.getAttribute("aria-label");
     favButton.hidden = !current;
+    for (const fn of renderListeners) fn();
     const section = (title, ...children) => {
       const s = el("section", "log-section");
       s.append(el("h3", "", title), ...children);
@@ -455,5 +469,5 @@ export function initExplorer({ getLang, text, explore }) {
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   favButton.addEventListener("click", () => toggleFavourite());
   render();
-  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf };
+  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf, update, resetAll, getCurrent: () => current, onRender: (fn) => renderListeners.push(fn) };
 }
