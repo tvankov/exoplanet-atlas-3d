@@ -4,6 +4,7 @@
 // to Sunday), and counts only what happened in that period. The texts of the missions are here in English, German, Japanese and Bulgarian.
 
 import { dayNumber } from "./daily.js";
+import { mergeState } from "./state-merge.js";
 import { track } from "./stats.js";
 
 const KEY = "explorer";
@@ -184,13 +185,21 @@ function load() {
 export function initExplorer({ getLang, text, explore }) {
   let state = load();
   let current = null; // the planet whose story is shown
+  let changeListener = null; // the account (auth.js) saves the log when it changes
   const save = () => {
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
     } catch {
       // not remembered
     }
+    changeListener?.();
   };
+  // The log of the account comes in at the sign-in: both are merged, see state-merge.js.
+  function merge(remote) {
+    state = { ...state, ...mergeState(state, remote) };
+    save();
+    render();
+  }
 
   const valueOf = (m) => {
     if (m.live) return state.favourites.length;
@@ -410,5 +419,5 @@ export function initExplorer({ getLang, text, explore }) {
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   favButton.addEventListener("click", () => toggleFavourite());
   render();
-  return { emit, viewed, render, open: () => toggle(true), counts };
+  return { emit, viewed, render, open: () => toggle(true), counts, getState: () => state, merge, onChange: (fn) => (changeListener = fn) };
 }

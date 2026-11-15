@@ -3,6 +3,7 @@ import { initExplorer } from "./explorer.js";
 import { track } from "./stats.js";
 import { initConstellations } from "./constellations.js";
 import { initAtlas, ATLAS_TEXT } from "./atlas.js";
+import { initAuth } from "./auth.js";
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -3178,6 +3179,7 @@ function applyLanguage() {
   if (current) showStory(current.star, current.planet, true); // a change of language is not a visit
   applyWelcomeTexts();
   explorer?.render();
+  auth?.render();
   showSkyState();
   sky?.refresh();
   document.getElementById("atlas-open").textContent = (ATLAS_TEXT[lang] ?? ATLAS_TEXT.en).button;
@@ -5208,6 +5210,7 @@ function pickMeasure(x, y) {
 
 let daily = null; // the daily discovery, see daily.js
 let explorer = null; // favourites, history and missions, see explorer.js
+let auth = null; // the optional account, see auth.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
@@ -5268,6 +5271,7 @@ explorer = initExplorer({
     if (place) showPlace(place);
   },
 });
+auth = initAuth({ getLang: () => lang, explorer });
 if (daily.answered()) explorer.emit("answer"); // answered before the missions were opened, or in an earlier visit of the day
 zoneGame = initZoneGame({
   getStars: () => stars,

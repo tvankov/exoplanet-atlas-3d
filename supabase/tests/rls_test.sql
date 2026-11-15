@@ -76,6 +76,17 @@ begin
 end $$;
 rollback;
 
+-- ---------------------------------------------------------------- a visitor may ask whether a user name is free (and nothing more)
+begin;
+set local role anon;
+do $$
+begin
+  if public.username_available('alice_1') then raise exception 'FAIL: a taken name was reported free'; end if;
+  if public.username_available('ALICE_1') then raise exception 'FAIL: a taken name was reported free in another case'; end if;
+  if not public.username_available('somebody_else') then raise exception 'FAIL: a free name was reported taken'; end if;
+end $$;
+rollback;
+
 -- ---------------------------------------------------------------- the checks of the data
 begin;
 set local role authenticated;

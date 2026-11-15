@@ -17,6 +17,9 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
+-- one user name once, whatever the case ("Alice" and "alice" are the same name)
+create unique index if not exists profiles_username_lower on public.profiles (lower(username));
+
 create table if not exists public.explorer_state (
   user_id uuid primary key references auth.users (id) on delete cascade,
   state jsonb not null default '{}'::jsonb
@@ -82,3 +85,18 @@ $$;
 
 revoke all on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
+
+-- ---------------------------------------------------------------- is a user name free?
+-- Asked by the registration before the account is made. It tells only yes or no for one name: the profiles themselves stay unreadable for
+-- everybody but their owner.
+create or replace function public.username_available(name text) returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select not exists (select 1 from public.profiles where lower(username) = lower(name));
+$$;
+
+revoke all on function public.username_available(text) from public;
+grant execute on function public.username_available(text) to anon, authenticated;

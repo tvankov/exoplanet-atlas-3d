@@ -1,0 +1,27 @@
+# Tests of the small pure parts of the page that run without a browser (tests/). Runs when the code of the page or the tests change.
+name: Unit tests
+
+on:
+  push:
+    paths:
+      - "web/*.js"
+      - "tests/**"
+      - ".github/workflows/unit-tests.yml"
+  pull_request:
+    paths:
+      - "web/*.js"
+      - "tests/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node --test tests/state-merge.test.mjs

@@ -2255,3 +2255,110 @@ body:has(#tour:not([hidden])) #dock {
   background: rgba(124, 255, 178, 0.1);
   border: 1px solid rgba(124, 255, 178, 0.5);
 }
+
+/* The optional account at the top of the log. */
+#account-box {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+}
+#account-box h3 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7cffb2;
+}
+#account-box p {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+#account-box .hint {
+  font-size: 12px;
+  opacity: 0.75;
+}
+.account-ok {
+  color: #7cffb2;
+}
+.account-error {
+  color: #ff9a86;
+}
+.account-form {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.account-field {
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+}
+.account-field input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 10px;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+.account-field small {
+  opacity: 0.65;
+}
+.account-consent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: start;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.account-consent input {
+  margin-top: 2px;
+}
+.account-consent a {
+  color: #7cffb2;
+  grid-column: 2;
+}
+.account-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+#account-box button {
+  padding: 8px 12px;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+#account-box button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#account-box button.account-main {
+  background: rgba(124, 255, 178, 0.16);
+  border-color: rgba(124, 255, 178, 0.5);
+}
+#account-box button.account-danger {
+  background: rgba(255, 120, 100, 0.18);
+  border-color: rgba(255, 120, 100, 0.6);
+}
+#account-box button.account-link {
+  display: block;
+  padding: 4px 0;
+  text-align: left;
+  font-size: 12px;
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  opacity: 0.8;
+}
