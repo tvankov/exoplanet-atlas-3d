@@ -39,3 +39,43 @@ export function startSessionStats() {
     while (step < STAY.length && seconds >= STAY[step][0]) track(STAY[step++][1]);
   }, TICK * 1000);
 }
+
+// Technical measurements, again as events without a person. They tell how the page runs on the computers of the visitors, in a few steps
+// (never an exact value, never the graphics card): "load-under-2s" ... "load-over-10s" (the time from the start of the page until the map is
+// shown), "fps-under-20", "fps-20-40", "fps-over-40" (the average frame rate over 15 seconds, measured 10 seconds after the start, and only if
+// the page stayed visible), "webgl-context-lost" (sent from main.js) and "js-error" (a script error of this site, once per visit, without the
+// text of the error). A visit sends each of them at most once.
+const sent = new Set();
+export function trackOnce(name) {
+  if (sent.has(name)) return;
+  sent.add(name);
+  track(name);
+}
+
+// ms: the time since the start of the page, when the map is shown. A few seconds later: the counter script loads asynchronously.
+export function trackLoadTime(ms) {
+  const step = ms < 2000 ? "under-2s" : ms < 5000 ? "2-5s" : ms < 10000 ? "5-10s" : "over-10s";
+  setTimeout(() => trackOnce(`load-${step}`), 4000);
+}
+
+export function startTechStats() {
+  window.addEventListener("error", (e) => {
+    if (e.filename && !e.filename.startsWith(location.origin)) return; // a script of somebody else
+    trackOnce("js-error");
+  });
+  window.addEventListener("unhandledrejection", () => trackOnce("js-error"));
+  setTimeout(() => {
+    let frames = 0;
+    let spoiled = document.visibilityState !== "visible";
+    const from = performance.now();
+    const count = () => {
+      if (document.visibilityState !== "visible") spoiled = true; // a page in the background is slowed down by the browser
+      frames++;
+      if (performance.now() - from < 15000) return requestAnimationFrame(count);
+      if (spoiled) return;
+      const fps = (frames * 1000) / (performance.now() - from);
+      trackOnce(fps < 20 ? "fps-under-20" : fps < 40 ? "fps-20-40" : "fps-over-40");
+    };
+    requestAnimationFrame(count);
+  }, 10000);
+}

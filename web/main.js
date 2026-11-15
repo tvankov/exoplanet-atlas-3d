@@ -1,6 +1,6 @@
 import { initDaily } from "./daily.js";
 import { initExplorer } from "./explorer.js";
-import { track, startSessionStats } from "./stats.js";
+import { track, trackOnce, trackLoadTime, startSessionStats, startTechStats } from "./stats.js";
 import { initConstellations } from "./constellations.js";
 import { initAtlas, ATLAS_TEXT } from "./atlas.js";
 import { initAuth } from "./auth.js";
@@ -472,7 +472,8 @@ function showGaiaState(state = gaiaOn ? "on" : "off") {
   if (gaia) note.textContent = t.gaiaNote(gaia.count.toLocaleString(lang));
   updateCount(); // the headline says how many stars are in the sky, that changes with this switch
 }
-gaiaButton.addEventListener("click", async () => {
+gaiaButton.addEventListener("click", async (event) => {
+  if (event.isTrusted) track("gaia-toggle"); // a click of the visitor, not the automatic switching on after the first flight
   if (gaiaOn) {
     gaiaOn = false;
     if (gaia) setGaiaVisible(false);
@@ -2678,7 +2679,10 @@ function disposeSystem(system) {
 
 // The graphics card can take the drawing context away (memory, a driver reset, another tab): the picture then goes black or stays in pieces.
 // The context is given back by the browser; the page is built again from scratch then, which is the only sure way to have everything on the card.
-renderer.domElement.addEventListener("webglcontextlost", (e) => e.preventDefault());
+renderer.domElement.addEventListener("webglcontextlost", (e) => {
+  e.preventDefault();
+  trackOnce("webgl-context-lost");
+});
 renderer.domElement.addEventListener("webglcontextrestored", () => location.reload());
 
 function resize() {
@@ -2833,6 +2837,7 @@ function applyStoryVisibility() {
 }
 infoButton.addEventListener("click", () => {
   storyOpen = !storyOpen;
+  if (storyOpen) trackOnce("info-open");
   applyStoryVisibility();
 });
 const listenButton = document.getElementById("story-listen");
@@ -3011,6 +3016,7 @@ function showStory(star, planet, quiet = false) {
 listenButton.addEventListener("click", () => {
   if (playing) return stopSpeaking();
   playing = true;
+  track("listen-start");
   listenButton.textContent = UI[lang].stop;
   if (!hasClip) return speakWithBrowser(); // no recording exists, do not ask the server for one
 
@@ -3047,7 +3053,10 @@ function pickPlanet(x, y) {
   const hit = raycaster.intersectObjects(targets, false)[0]?.object;
   for (const system of systems) {
     const body = system.bodies.find((b) => b.hit === hit);
-    if (body) return selectBody(system, body);
+    if (body) {
+      track("planet-click");
+      return selectBody(system, body);
+    }
   }
 }
 
@@ -3415,7 +3424,8 @@ function showDeepState(state = deepOn ? "on" : "off") {
   if (deep) deepNote.textContent = t.deepNote(deep.count.toLocaleString(lang));
   updateCount();
 }
-deepButton.addEventListener("click", async () => {
+deepButton.addEventListener("click", async (event) => {
+  if (event.isTrusted) track("deep-toggle");
   if (deepOn) {
     deepOn = false;
     if (deep) deep.points.visible = false;
@@ -3518,6 +3528,7 @@ function runSearch() {
   searchResults.replaceChildren();
   searchResults.hidden = query.length < 2;
   if (query.length < 2) return;
+  trackOnce("search-used");
   searchIndex ??= stars.flatMap((star) =>
     star.planets.map((planet) => ({ key: `${planet.pl_name} ${star.hostname}`.toLowerCase(), star, planet }))
   );
@@ -4000,6 +4011,7 @@ const tripHud = document.getElementById("trip-hud");
 function togglePlanner(open = plannerPanel.hidden) {
   plannerPanel.hidden = !open;
   plannerOpen.setAttribute("aria-expanded", String(open));
+  if (open) trackOnce("planner-open");
 }
 plannerOpen.addEventListener("click", () => togglePlanner());
 document.getElementById("planner-close").addEventListener("click", () => togglePlanner(false));
@@ -5211,6 +5223,7 @@ function pickMeasure(x, y) {
   } else if (best !== measureA) {
     measureB = best;
     explorer?.emit("measure");
+    track("measure-use");
   }
   drawMeasure();
   showMeasure();
@@ -5281,6 +5294,7 @@ explorer = initExplorer({
 });
 auth = initAuth({ getLang: () => lang, explorer });
 startSessionStats();
+startTechStats();
 if (daily.answered()) explorer.emit("answer"); // answered before the missions were opened, or in an earlier visit of the day
 zoneGame = initZoneGame({
   getStars: () => stars,
@@ -5426,6 +5440,7 @@ function showTourStop() {
 }
 function tourGo(i) {
   tourIndex = (i + tourList.length) % tourList.length;
+  if (tourIndex === tourList.length - 1) trackOnce("tour-complete");
   const place = resolvePlace(tourList[tourIndex].planet.pl_name);
   if (place) showPlace(place, false, true); // the whole system, so that the green zone is in view
   showTourStop();
@@ -5498,6 +5513,7 @@ if (flight) flight.ms = 3200;
       if (started) return;
       started = true;
       document.getElementById("loading")?.classList.add("done");
+      trackLoadTime(performance.now());
       if (intro) {
         intro.hold = false;
         intro.start = performance.now();

@@ -45,3 +45,5 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
       - name: Test the access rules and the deletion of an account
         run: psql -v ON_ERROR_STOP=1 -f supabase/tests/rls_test.sql
+      - name: Run the queries of supabase/analytics.sql on sample accounts
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/analytics_test.sql
