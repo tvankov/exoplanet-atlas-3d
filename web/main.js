@@ -2862,7 +2862,7 @@ const MIN_FREE_PX = 240;
 function layoutView() {
   storyPanel.classList.remove("compact");
   const w = window.innerWidth;
-  const left = document.getElementById("hud").getBoundingClientRect().right;
+  const hudRight = document.getElementById("hud").getBoundingClientRect().right;
   // The atlas sits at the right on a wide screen, so the map is centred in the free space left of it.
   const atlasPanel = document.getElementById("atlas-panel");
   // On a phone the atlas and the zone quiz are sheets at the bottom: the picture is centred in the part above the sheet (a sheet that is
@@ -2875,6 +2875,9 @@ function layoutView() {
     return;
   }
   const right = !atlasPanel.hidden ? atlasPanel.getBoundingClientRect().left : storyPanel.hidden ? w : storyPanel.getBoundingClientRect().left;
+  // Without a panel at the right (the start, the plain map) the picture is centred in the window: the small menu at the left does not push it
+  // to the right, which looked like a flight that is not centred. With a panel at the right it is centred between the menu and the panel.
+  const left = right < w ? hudRight : 0;
   const roomy = right - left >= MIN_FREE_PX;
   storyPanel.classList.toggle("compact", closeup && !roomy);
   if (roomy) camera.setViewOffset(w, window.innerHeight, w / 2 - (left + right) / 2, 0, w, window.innerHeight);
