@@ -1,0 +1,47 @@
+# Tests of the database of the accounts (supabase/schema.sql) on a plain PostgreSQL: that nobody can read or change the data of another person,
+# that a visitor without a login can do nothing, and that deleting an account deletes its data. It runs when something in supabase/ changes,
+# and by hand (Actions, Database tests, Run workflow).
+name: Database tests
+
+on:
+  push:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/database-tests.yml"
+  pull_request:
+    paths:
+      - "supabase/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rls:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make the part of Supabase that the schema needs
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/00_mock_supabase.sql
+      - name: Create the schema
+        run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - name: Create it a second time (it must be possible to run it again)
+        run: psql -v ON_ERROR_STOP=1 -f supabase/schema.sql
+      - name: Test the access rules and the deletion of an account
+        run: psql -v ON_ERROR_STOP=1 -f supabase/tests/rls_test.sql
