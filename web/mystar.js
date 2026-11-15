@@ -278,8 +278,9 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
     }
     // the age on the planets, and the way round the Sun
     const list = el("div", "star-ages");
-    for (const p of planets()) {
-      if (p.years === 1) continue;
+    // the Earth first (its year is the age itself), then the others from the Sun outwards
+    const ordered = [...planets()].sort((p, q) => (q.years === 1) - (p.years === 1));
+    for (const p of ordered) {
       const cell = el("div", "uni-stat");
       cell.append(el("b", "", fmt(ageOn(age, p.years), ageOn(age, p.years) < 10 ? 1 : 0)), el("span", "", p.name));
       list.append(cell);
