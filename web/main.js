@@ -5522,6 +5522,7 @@ document.getElementById("dock-near").addEventListener("click", tourStart);
   explorer = null;
   showSystem(EARTH.star, EARTH.planet);
   explorer = keep;
+  explorer?.showing(EARTH.planet.pl_name); // the star and the note in the info panel work for the Earth too
 }
 if (flight) flight.ms = 3200;
 // The first flight starts when the pictures (the planets, the Milky Way) are loaded AND on the graphics card. A picture of 4096 by 2048 points

@@ -206,6 +206,11 @@ export function initExplorer({ getLang, text, explore }) {
     save();
   }
   const getLast = () => (state.last && typeof state.last.name === "string" ? state.last : null);
+  // The planet whose story is shown, without counting a visit (the Earth of the start): the star for the favourites and the journal follow it.
+  function showing(name) {
+    current = name;
+    render();
+  }
   // A change made by another module (the journal): the change, then saving and drawing again.
   function update(mutate) {
     mutate(state);
@@ -469,5 +474,5 @@ export function initExplorer({ getLang, text, explore }) {
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   favButton.addEventListener("click", () => toggleFavourite());
   render();
-  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf, update, resetAll, getCurrent: () => current, onRender: (fn) => renderListeners.push(fn) };
+  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf, update, resetAll, showing, getCurrent: () => current, onRender: (fn) => renderListeners.push(fn) };
 }
