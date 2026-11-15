@@ -8,6 +8,8 @@
 //
 // The log of this browser and the one of the account are merged at the sign-in (state-merge.js) and saved again at every change.
 
+import { track } from "./stats.js";
+
 const SUPABASE_URL = "https://hkfdvsteynrtyhzhbqkl.supabase.co";
 const SUPABASE_KEY = "sb_publishable_HbhnZFf4NAslbfV-clhcuA_BWZ9XzCR"; // public by design, see above
 const SESSION_KEY = "sb-hkfdvsteynrtyhzhbqkl-auth-token"; // where the library keeps the session in this browser
@@ -232,6 +234,7 @@ export function initAuth({ getLang, explorer }) {
     run(async () => {
       const { error } = await client.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      track("account-signin");
       view = "home";
       notice = { text: t().signedInNow };
     });
@@ -242,6 +245,7 @@ export function initAuth({ getLang, explorer }) {
       if (!free.error && free.data === false) throw new Error(t().nameTaken);
       const { error } = await client.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname, data: { username: name } } });
       if (error) throw error;
+      track("account-signup");
       view = "home";
       notice = { text: t().checkMail };
     });
@@ -272,6 +276,7 @@ export function initAuth({ getLang, explorer }) {
       stopSaving();
       const { error } = await client.rpc("delete_my_account");
       if (error) throw error;
+      track("account-delete");
       await client.auth.signOut();
       user = null;
       confirmDelete = false;

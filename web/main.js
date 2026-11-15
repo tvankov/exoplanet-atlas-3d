@@ -1,6 +1,6 @@
 import { initDaily } from "./daily.js";
 import { initExplorer } from "./explorer.js";
-import { track } from "./stats.js";
+import { track, startSessionStats } from "./stats.js";
 import { initConstellations } from "./constellations.js";
 import { initAtlas, ATLAS_TEXT } from "./atlas.js";
 import { initAuth } from "./auth.js";
@@ -5280,6 +5280,7 @@ explorer = initExplorer({
   },
 });
 auth = initAuth({ getLang: () => lang, explorer });
+startSessionStats();
 if (daily.answered()) explorer.emit("answer"); // answered before the missions were opened, or in an earlier visit of the day
 zoneGame = initZoneGame({
   getStars: () => stars,
