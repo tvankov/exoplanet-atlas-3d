@@ -4,6 +4,8 @@
 // which part of them both sides already hold. Whoever uses two devices at the same time can therefore lose the XP of one of them; the badges,
 // the favourites and the ones counted by the missions are not lost.
 
+import { mergeProfile, mergeLast } from "./profile.js";
+
 const HISTORY_MAX = 12;
 const text = (x) => typeof x === "string" && x.length > 0 && x.length < 200;
 const number = (x) => (typeof x === "number" && Number.isFinite(x) ? x : 0);
@@ -58,7 +60,11 @@ export function mergeState(local = {}, remote = {}) {
     const old = badges.get(b.id);
     if (!old || number(b.t) < number(old.t)) badges.set(b.id, { id: b.id, t: number(b.t) });
   }
+  const profile = mergeProfile(local.profile, remote.profile);
+  const last = mergeLast(local.last, remote.last);
   return {
+    ...(profile ? { profile } : {}),
+    ...(last ? { last } : {}),
     favourites: joinByName(local.favourites, remote.favourites),
     history: joinByName(local.history, remote.history).slice(0, HISTORY_MAX),
     progress: mergeProgress(local.progress, remote.progress),

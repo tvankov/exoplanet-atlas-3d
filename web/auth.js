@@ -120,7 +120,7 @@ export const AUTH_TEXT = {
 };
 
 // explorer: the module of the log (explorer.js): getState(), merge(remote), onChange(fn), open(). getLang() is the language of the page.
-export function initAuth({ getLang, explorer }) {
+export function initAuth({ getLang, explorer, universe }) {
   const box = document.getElementById("account-box");
   const panel = document.getElementById("profile-panel");
   const button = document.getElementById("account-button");
@@ -336,7 +336,6 @@ export function initAuth({ getLang, explorer }) {
     panel.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
     if (!open) return;
-    if (!user && view === "home") view = "signin";
     notice = view === "home" ? notice : null;
     confirmDelete = false;
     render();
@@ -349,12 +348,13 @@ export function initAuth({ getLang, explorer }) {
   function render() {
     const tx = t();
     const parts = [];
-    document.getElementById("profile-title").textContent = user ? tx.profile : tx.title;
+    document.getElementById("profile-title").textContent = universe.title();
     document.getElementById("profile-close").setAttribute("aria-label", tx.back);
     // the button at the top: "Sign in", or the name of the person
     const who = username ?? user?.email?.split("@")[0] ?? "";
-    button.textContent = user ? who : tx.signIn;
+    button.textContent = user ? who : universe.buttonLabel();
     button.title = user ? tx.signedAs(username, user.email) : tx.open;
+    parts.push(el("h3", "", tx.title));
     if (notice) parts.push(el("p", notice.error ? "account-error" : "account-ok", notice.text));
     if (user && view !== "newpassword") {
       parts.push(el("p", "", tx.signedAs(username, user.email)));
@@ -411,6 +411,7 @@ export function initAuth({ getLang, explorer }) {
       parts.push(form([password], tx.savePassword, () => (password.input.value.length < 8 ? fail(tx.badPassword) : savePassword(password.input.value))));
     }
     box.replaceChildren(...parts);
+    universe.render(document.getElementById("universe-body")); // the dashboard, the greeting
   }
   function fail(text) {
     notice = { text, error: true };
@@ -436,5 +437,5 @@ export function initAuth({ getLang, explorer }) {
       .catch(() => {});
   if (fromMail) start();
   else if (hasSession) setTimeout(start, 6000); // not during the first flight
-  return { render, open: () => toggle(true) };
+  return { render, open: () => toggle(true), close: () => toggle(false) };
 }

@@ -5,6 +5,7 @@ import { initConstellations } from "./constellations.js";
 import { initAtlas, ATLAS_TEXT } from "./atlas.js";
 import { initAuth } from "./auth.js";
 import { initEvents } from "./events.js";
+import { initUniverse } from "./universe.js";
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -5235,6 +5236,7 @@ let daily = null; // the daily discovery, see daily.js
 let explorer = null; // favourites, history and missions, see explorer.js
 let auth = null; // the optional account, see auth.js
 let skyEvents = null; // eclipses and meteor showers, see events.js
+let universe = null; // the personal layer, see universe.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
@@ -5295,7 +5297,20 @@ explorer = initExplorer({
     if (place) showPlace(place);
   },
 });
-auth = initAuth({ getLang: () => lang, explorer });
+universe = initUniverse({
+  getLang: () => lang,
+  explorer,
+  daily,
+  explore: (name) => {
+    const place = resolvePlace(name);
+    if (place) showPlace(place);
+  },
+  openSky: () => skyEvents?.open(),
+  openAtlas: () => atlas?.open(),
+  closePanel: () => auth?.close(),
+});
+auth = initAuth({ getLang: () => lang, explorer, universe });
+universe.setOnChange(() => auth.render());
 skyEvents = await initEvents({
   getLang: () => lang,
   explore: (name) => {
@@ -5417,6 +5432,7 @@ function closeWelcome() {
   if (welcome.hidden) return;
   welcome.hidden = true;
   showHintLine();
+  setTimeout(() => universe?.maybeOnboard(), 800); // the first visit: a small card, only if the visitor has not been through it or skipped it
 }
 // What is used in the dock: only the name of the button is counted (see stats.js).
 for (const id of ["dock-daily", "dock-near", "dock-games", "dock-sky", "dock-plan", "dock-log"]) {

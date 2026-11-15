@@ -4,6 +4,7 @@
 // localStorage ("daily"), and the dot on the button says that today's entry has not been opened yet ("daily-seen").
 
 import { track } from "./stats.js";
+import { entryForInterest, readStoredProfile } from "./profile.js";
 
 const FALLBACK = {
   id: "mars-fallback",
@@ -49,7 +50,8 @@ export async function initDaily({ getLang, text, explore, onAnswer }) {
     // the built-in entry stays
   }
   const day = dayNumber();
-  const entry = entryOfDay(entries, day);
+  // the interest of the profile chooses among the entries of the kind (the planets of the Solar System, or the exoplanets), see profile.js
+  const entry = entryForInterest(entries, day, readStoredProfile()?.interest);
   const button = document.getElementById("dock-daily"); // the card of the dock
   const panel = document.getElementById("daily-panel");
   const body = document.getElementById("daily-body");

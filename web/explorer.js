@@ -5,6 +5,7 @@
 
 import { dayNumber } from "./daily.js";
 import { mergeState } from "./state-merge.js";
+import { cleanProfile } from "./profile.js";
 import { track } from "./stats.js";
 
 const KEY = "explorer";
@@ -194,6 +195,22 @@ export function initExplorer({ getLang, text, explore }) {
     }
     changeListener?.();
   };
+  // The profile (name, interest, level, see profile.js) and the last place that was looked at, for "My Universe" (universe.js).
+  const getProfile = () => cleanProfile(state.profile) ?? {};
+  function setProfile(patch) {
+    state.profile = cleanProfile({ ...getProfile(), ...patch, updated: Date.now() });
+    save();
+  }
+  function resetProfile() {
+    state.profile = { updated: Date.now(), skipped: true }; // not asked again, but it can be filled in
+    save();
+  }
+  const getLast = () => (state.last && typeof state.last.name === "string" ? state.last : null);
+  // the label of the first mission that is not done, or null
+  function nextMission() {
+    const m = MISSIONS.find((x) => !isDone(x));
+    return m ? label(m) : null;
+  }
   // The log of the account comes in at the sign-in: both are merged, see state-merge.js.
   function merge(remote) {
     state = { ...state, ...mergeState(state, remote) };
@@ -281,6 +298,7 @@ export function initExplorer({ getLang, text, explore }) {
   function viewed(name, habitable) {
     current = name;
     state.history = [{ name, t: Date.now() }, ...state.history.filter((h) => h.name !== name)].slice(0, HISTORY_MAX);
+    state.last = { name, t: Date.now() }; // "continue exploring" starts here
     save();
     emit("planet", name);
     if (habitable) emit("candidate", name);
@@ -437,5 +455,5 @@ export function initExplorer({ getLang, text, explore }) {
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   favButton.addEventListener("click", () => toggleFavourite());
   render();
-  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn) };
+  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf };
 }
