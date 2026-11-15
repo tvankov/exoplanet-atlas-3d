@@ -2982,3 +2982,19 @@ body:has(#sky-panel:not([hidden])) #dock {
 .birthsky p {
   line-height: 1.5;
 }
+
+/* The ascendant inside "the sky at your birth". */
+#universe-body h3.birthsky-sub {
+  margin-top: 12px;
+}
+#universe-body input.birthsky-search {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 10px;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
