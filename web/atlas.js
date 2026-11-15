@@ -646,6 +646,12 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goT
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   return {
     open: () => toggle(true),
+    // one constellation, opened from elsewhere ("the sky at your birth"): the panel with its figure, the map with it in view
+    showFigure: (id) => {
+      if (!getSky()?.data.constellations.some((c) => c.id === id)) return;
+      toggle(true);
+      openFigure(id, "list");
+    },
     // a click on the map: true if it hit a star of the figure that is shown
     pick: (x, y, camera) => {
       if (panel.hidden || screen !== "figure") return false;

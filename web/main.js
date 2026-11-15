@@ -8,6 +8,7 @@ import { initEvents } from "./events.js";
 import { initUniverse } from "./universe.js";
 import { initJournal } from "./journal.js";
 import { initMyStar } from "./mystar.js";
+import { initBirthSky } from "./birthsky.js";
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -5242,6 +5243,7 @@ let skyEvents = null; // eclipses and meteor showers, see events.js
 let universe = null; // the personal layer, see universe.js
 let journal = null; // notes and collections, see journal.js
 let myStar = null; // the star of the year of birth, see mystar.js
+let birthSky = null; // astrology next to the real sky, see birthsky.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
@@ -5311,7 +5313,7 @@ journal = initJournal({
   },
   exists: (name) => !!resolvePlace(name),
   onChange: () => auth?.render(), // the dashboard of My Universe shows the journal
-  onDeleteAll: () => myStar?.forget(),
+  onDeleteAll: () => (myStar?.forget(), birthSky?.forget()),
 });
 // "Your star": the host stars of the NASA list (the map can fly to them) and the named bright stars of the constellations (Hipparcos).
 let hostList = null;
@@ -5339,12 +5341,22 @@ myStar = initMyStar({
   },
   onChange: () => auth?.render(),
 });
+birthSky = initBirthSky({
+  getLang: () => lang,
+  nameOf: (id) => {
+    const c = sky?.data.constellations.find((x) => x.id === id);
+    return c ? sky.data.nameOf(c, lang) : id;
+  },
+  showFigure: (id) => atlas?.showFigure(id),
+  onChange: () => auth?.render(),
+});
 universe = initUniverse({
   getLang: () => lang,
   explorer,
   daily,
   journal,
   myStar,
+  birthSky,
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);

@@ -2948,3 +2948,37 @@ body:has(#sky-panel:not([hidden])) #dock {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* The sky at your birth: astrology next to the real sky. */
+.birthsky-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.birthsky-card {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.birthsky-card small {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.birthsky-card strong {
+  font-size: 15px;
+}
+.birthsky-card.astrology {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+}
+.birthsky-card.sky {
+  background: rgba(124, 255, 178, 0.08);
+  border: 1px solid rgba(124, 255, 178, 0.45);
+}
+.birthsky p {
+  line-height: 1.5;
+}

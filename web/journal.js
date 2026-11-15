@@ -50,7 +50,7 @@ export const JOURNAL_TEXT = {
 };
 
 // The keys of this site in localStorage that hold the visitor's own data (not the language and the look).
-const OWN_KEYS = ["explorer", "daily", "daily-seen", "last-visit", "zone-seen", "dock", "birth-year"];
+const OWN_KEYS = ["explorer", "daily", "daily-seen", "last-visit", "zone-seen", "dock", "birth-year", "birth-date"];
 
 // explorer: the log (explorer.js). explore(name) flies to a place, exists(name) says whether it can be found. onChange() is called after a change
 // that the dashboard shows.
@@ -239,7 +239,13 @@ export function initJournal({ getLang, explorer, explore, exists, onChange, onDe
         } catch {
           // not readable: left out
         }
-        const blob = new Blob([JSON.stringify(exportBundle(explorer.getState(), { daily, birthYear }), null, 2)], { type: "application/json" });
+        let birthDate = null;
+        try {
+          birthDate = localStorage.getItem("birth-date"); // "the sky at your birth", see birthsky.js
+        } catch {
+          // not readable: left out
+        }
+        const blob = new Blob([JSON.stringify(exportBundle(explorer.getState(), { daily, birthYear, birthDate }), null, 2)], { type: "application/json" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         a.download = `space-explorer-${new Date().toISOString().slice(0, 10)}.json`;
