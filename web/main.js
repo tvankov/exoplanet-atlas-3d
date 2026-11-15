@@ -20,8 +20,11 @@ import { buildStory, duration, planetType, PLANET_TYPES, slug, solarName, UI } f
 
 const DEFAULT_RADIUS = 1; // solar radii, display only, used where st_rad is missing
 
+// A page opened with ?safe in the address draws in the plainest way (no smoothing of the edges, no glow, normal colour depth instead of a float
+// image). It is for finding out whether a picture error on one computer comes from the graphics driver: a black rectangle over the map.
+const SAFE = new URLSearchParams(location.search).has("safe");
 const canvas = document.getElementById("map");
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !SAFE });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const scene = new THREE.Scene();
@@ -35,7 +38,7 @@ camera.position.set(0, 0, 60);
 // shaders that write screen colours themselves (the star dots) convert to linear light first, see there.
 const composer = new EffectComposer(
   renderer,
-  new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 })
+  new THREE.WebGLRenderTarget(1, 1, { type: SAFE ? THREE.UnsignedByteType : THREE.HalfFloatType, samples: SAFE ? 0 : 4 })
 );
 composer.addPass(new RenderPass(scene, camera));
 // Star streaks at high speed: every pixel is smeared outwards from the middle of the screen, keeping the
@@ -89,6 +92,7 @@ const motionPass = new ShaderPass({
 motionPass.enabled = false;
 composer.addPass(motionPass);
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.5, 0.92); // strength, radius, threshold
+bloomPass.enabled = !SAFE;
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
