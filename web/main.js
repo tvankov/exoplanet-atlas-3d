@@ -2863,7 +2863,7 @@ function layoutView() {
   storyPanel.classList.remove("compact");
   const w = window.innerWidth;
   const hudRight = document.getElementById("hud").getBoundingClientRect().right;
-  // The atlas sits at the right on a wide screen, so the map is centred in the free space left of it.
+  // The atlas sits at the right on a wide screen (it lies over the picture, see below).
   const atlasPanel = document.getElementById("atlas-panel");
   // On a phone the atlas and the zone quiz are sheets at the bottom: the picture is centred in the part above the sheet (a sheet that is
   // pushed down, see below, leaves the whole screen).
@@ -2875,12 +2875,13 @@ function layoutView() {
     return;
   }
   const right = !atlasPanel.hidden ? atlasPanel.getBoundingClientRect().left : storyPanel.hidden ? w : storyPanel.getBoundingClientRect().left;
-  // Without a panel at the right (the start, the plain map) the picture is centred in the window: the small menu at the left does not push it
-  // to the right, which looked like a flight that is not centred. With a panel at the right it is centred between the menu and the panel.
-  const left = right < w ? hudRight : 0;
-  const roomy = right - left >= MIN_FREE_PX;
+  // The picture stays in the middle of the window as long as the middle is free: a panel at the right (Info, the atlas) lies over the right
+  // side and does not move the picture, so that opening it does not make the camera jump. Only when the panel reaches over the middle (a
+  // narrow window) the picture is centred between the menu at the left and the panel, so that it is not hidden behind it.
+  const roomy = right - hudRight >= MIN_FREE_PX;
+  const middleFree = right >= w / 2 + 150;
   storyPanel.classList.toggle("compact", closeup && !roomy);
-  if (roomy) camera.setViewOffset(w, window.innerHeight, w / 2 - (left + right) / 2, 0, w, window.innerHeight);
+  if (!middleFree && roomy) camera.setViewOffset(w, window.innerHeight, w / 2 - (hudRight + right) / 2, 0, w, window.innerHeight);
   else camera.clearViewOffset();
   camera.updateProjectionMatrix();
 }
