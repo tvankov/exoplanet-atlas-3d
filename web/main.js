@@ -7,6 +7,7 @@ import { initAuth } from "./auth.js";
 import { initEvents } from "./events.js";
 import { initUniverse } from "./universe.js";
 import { initJournal } from "./journal.js";
+import { initMyStar } from "./mystar.js";
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -5240,6 +5241,7 @@ let auth = null; // the optional account, see auth.js
 let skyEvents = null; // eclipses and meteor showers, see events.js
 let universe = null; // the personal layer, see universe.js
 let journal = null; // notes and collections, see journal.js
+let myStar = null; // the star of the year of birth, see mystar.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
@@ -5309,12 +5311,40 @@ journal = initJournal({
   },
   exists: (name) => !!resolvePlace(name),
   onChange: () => auth?.render(), // the dashboard of My Universe shows the journal
+  onDeleteAll: () => myStar?.forget(),
+});
+// "Your star": the host stars of the NASA list (the map can fly to them) and the named bright stars of the constellations (Hipparcos).
+let hostList = null;
+let namedList = null;
+myStar = initMyStar({
+  getLang: () => lang,
+  hosts: () => (hostList ??= stars.map((s) => ({ name: s.hostname, dist: s.dist_ly, planets: s.planets.length }))),
+  named: () => {
+    if (!sky) return [];
+    if (namedList) return namedList.map((s) => ({ ...s, constellation: s.figure ? sky.data.nameOf(s.figure, lang) : null }));
+    const { stars: hip, constellations } = sky.data;
+    const figureOf = new Map();
+    for (const c of constellations) for (const id of new Set(c.lines.flat())) if (!figureOf.has(id)) figureOf.set(id, c);
+    namedList = [];
+    for (const [id, s] of Object.entries(hip)) {
+      const name = sky.starName(id);
+      if (name && s[2] != null) namedList.push({ name, dist: s[2], mag: s[3], figure: figureOf.get(id) ?? null });
+    }
+    return namedList.map((s) => ({ ...s, constellation: s.figure ? sky.data.nameOf(s.figure, lang) : null }));
+  },
+  planets: () => PLANETS.map((p) => ({ name: solarName(p.name, lang), years: p.years })),
+  explore: (name) => {
+    const place = resolvePlace(name);
+    if (place) showPlace(place);
+  },
+  onChange: () => auth?.render(),
 });
 universe = initUniverse({
   getLang: () => lang,
   explorer,
   daily,
   journal,
+  myStar,
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);

@@ -50,11 +50,11 @@ export const JOURNAL_TEXT = {
 };
 
 // The keys of this site in localStorage that hold the visitor's own data (not the language and the look).
-const OWN_KEYS = ["explorer", "daily", "daily-seen", "last-visit", "zone-seen", "dock"];
+const OWN_KEYS = ["explorer", "daily", "daily-seen", "last-visit", "zone-seen", "dock", "birth-year"];
 
 // explorer: the log (explorer.js). explore(name) flies to a place, exists(name) says whether it can be found. onChange() is called after a change
 // that the dashboard shows.
-export function initJournal({ getLang, explorer, explore, exists, onChange }) {
+export function initJournal({ getLang, explorer, explore, exists, onChange, onDeleteAll }) {
   const t = () => JOURNAL_TEXT[getLang()] ?? JOURNAL_TEXT.en;
   const area = document.getElementById("story-journal");
   const el = (tag, cls, content) => {
@@ -233,7 +233,13 @@ export function initJournal({ getLang, explorer, explore, exists, onChange }) {
         } catch {
           // not readable: left out
         }
-        const blob = new Blob([JSON.stringify(exportBundle(explorer.getState(), { daily }), null, 2)], { type: "application/json" });
+        let birthYear = null;
+        try {
+          birthYear = Number(localStorage.getItem("birth-year")) || null; // "your star", see mystar.js
+        } catch {
+          // not readable: left out
+        }
+        const blob = new Blob([JSON.stringify(exportBundle(explorer.getState(), { daily, birthYear }), null, 2)], { type: "application/json" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         a.download = `space-explorer-${new Date().toISOString().slice(0, 10)}.json`;
@@ -257,6 +263,7 @@ export function initJournal({ getLang, explorer, explore, exists, onChange }) {
             }
           }
           explorer.resetAll(); // with an account, the empty log is saved to it (auth.js)
+          onDeleteAll?.();
           track("journal-delete-all");
           confirmDelete = false;
           doneMessage = tx.deleted;

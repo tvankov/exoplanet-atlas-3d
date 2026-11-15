@@ -2906,3 +2906,45 @@ body:has(#sky-panel:not([hidden])) #dock {
   background: rgba(255, 120, 100, 0.18);
   border-color: rgba(255, 120, 100, 0.6);
 }
+
+/* Your star, in My Universe. */
+.star-section p {
+  line-height: 1.5;
+}
+.star-card {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  background: radial-gradient(circle at 90% 10%, rgba(255, 210, 150, 0.16), rgba(255, 255, 255, 0.04) 60%);
+  border: 1px solid rgba(255, 210, 150, 0.4);
+  border-radius: 10px;
+}
+.star-card strong {
+  font-size: 15px;
+}
+.star-named {
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.star-ages {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin: 4px 0 8px;
+}
+#universe-body input.star-year {
+  width: 9em;
+  padding: 7px 10px;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+@media (max-width: 480px) {
+  .star-ages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
