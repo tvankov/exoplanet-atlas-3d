@@ -206,6 +206,12 @@
     <h2 id="atlas-title"></h2>
     <div id="atlas-body"></div>
   </section>
+  <!-- The events in the sky: eclipses and meteor showers, see events.js. -->
+  <section id="sky-panel" hidden aria-labelledby="sky-title">
+    <button id="sky-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="sky-title"></h2>
+    <div id="sky-body"></div>
+  </section>
   <!-- The zone quiz, see zonegame.js. -->
   <section id="zone-panel" hidden aria-labelledby="zone-title">
     <button id="zone-close" type="button" aria-label="Close">&times;</button>
@@ -257,6 +263,13 @@
         <circle cx="16" cy="56" r="4" fill="#fff"/><circle cx="34" cy="34" r="5.5" fill="#7cffb2"/><circle cx="56" cy="42" r="3.5" fill="#fff"/><circle cx="74" cy="20" r="6.5" fill="#9fd0ff"/><circle cx="88" cy="30" r="3" fill="#fff"/><circle cx="40" cy="14" r="3" fill="#fff"/>
         <text x="74" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="#05060a">?</text>
       </svg><small id="dock-games-k"></small><strong id="dock-games-t"></strong><span class="wl-arrow">&#8599;</span></button>
+    <button id="dock-sky" type="button" class="dock-card" aria-expanded="false" aria-controls="sky-panel"><svg class="dock-art sky-art" viewBox="0 0 100 80" aria-hidden="true">
+        <circle cx="42" cy="40" r="24" fill="#d9dde8"/>
+        <circle cx="56" cy="40" r="24" fill="#0a0e18"/>
+        <circle cx="56" cy="40" r="24" fill="none" stroke="#ffd166" stroke-opacity=".8" stroke-width="2.5"/>
+        <path d="M84 12 L70 30" stroke="#fff" stroke-opacity=".8" stroke-width="1.6" stroke-linecap="round"/><circle cx="84" cy="12" r="2" fill="#fff"/>
+        <path d="M94 28 L86 38" stroke="#fff" stroke-opacity=".5" stroke-width="1.2" stroke-linecap="round"/>
+      </svg><small id="dock-sky-k"></small><strong id="dock-sky-t"></strong><span class="wl-arrow">&#8599;</span></button>
     <button id="dock-plan" type="button" class="dock-card" aria-expanded="false" aria-controls="planner-panel"><svg class="dock-art plan-art" viewBox="0 0 100 80" aria-hidden="true">
         <path d="M14 58 Q 44 8 88 24" fill="none" stroke="#7fe3ff" stroke-opacity=".7" stroke-width="1.6" stroke-dasharray="3 4"/>
         <circle cx="14" cy="58" r="7" fill="#4f9dff"/><circle cx="12" cy="56" r="2.6" fill="#9fe0a8" fill-opacity=".8"/>

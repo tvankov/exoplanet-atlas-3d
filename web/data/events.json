@@ -1,0 +1,148 @@
+{
+  "note": "Events in the sky from November 2026 to December 2027, written by hand from the sources named in each entry (facts only: dates, times, rates and the places of visibility; the sentences are our own). Eclipse times are the times of greatest eclipse in UT: NASA gives them in Terrestrial Dynamical Time (TD) and they were converted with delta T = 69 s, then rounded to the minute. A meteor shower has an expected maximum, a calendar value that can shift by hours (precision 'day': only the date is shown). The language of the texts: en and de; the Japanese and Bulgarian pages show the English text.",
+  "updated": "2026-11-15",
+  "sources": {
+    "imo2026": { "name": "IMO Meteor Shower Calendar 2026, edited by Jürgen Rendtel", "url": "https://www.imo.net/the-2026-meteor-shower-calendar-is-here/" },
+    "imo2027": { "name": "IMO Meteor Shower Calendar 2027, edited by Jürgen Rendtel", "url": "https://www.imo.net/meteor-shower-calendar-2027/" },
+    "nasa-se": { "name": "Eclipse Predictions by Fred Espenak, NASA's GSFC (Solar Eclipses 2021 to 2030)", "url": "https://eclipse.gsfc.nasa.gov/SEdecade/SEdecade2021.html" },
+    "nasa-le": { "name": "Eclipse Predictions by Fred Espenak, NASA's GSFC (Lunar Eclipses 2021 to 2030)", "url": "https://eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html" }
+  },
+  "events": [
+    {
+      "id": "leonids-2026", "kind": "meteor", "date": "2026-11-17", "certainty": "expected", "source": "imo2026",
+      "title": { "en": "Leonids", "de": "Leoniden" },
+      "text": {
+        "en": "A weak shower this year: about 15 meteors per hour under a perfect sky. The calendar gives the maximum on 17 November (23:45 UT, another estimate says 16:00 UT). The Moon is near first quarter, so the second half of the night is dark.",
+        "de": "Dieses Jahr ein schwacher Strom: etwa 15 Sternschnuppen pro Stunde unter perfektem Himmel. Der Kalender nennt das Maximum am 17. November (23:45 UT, eine andere Schätzung nennt 16:00 UT). Der Mond steht nahe dem ersten Viertel, die zweite Nachthälfte ist also dunkel."
+      }
+    },
+    {
+      "id": "geminids-2026", "kind": "meteor", "utc": "2026-12-14T14:00:00Z", "certainty": "expected", "source": "imo2026",
+      "title": { "en": "Geminids", "de": "Geminiden" },
+      "text": {
+        "en": "The best and most reliable of the big annual showers: up to 150 meteors per hour, many of them bright. The maximum is broad, centred on 14 December at 14:00 UT: the rate stays above 100 for about 10 to 12 hours. Only a thin waxing crescent Moon is up, so no moonlight disturbs it.",
+        "de": "Der beste und verlässlichste der großen jährlichen Ströme: bis zu 150 Sternschnuppen pro Stunde, viele davon hell. Das Maximum ist breit und liegt am 14. Dezember um 14:00 UT: Die Rate bleibt etwa 10 bis 12 Stunden über 100. Es steht nur eine schmale zunehmende Mondsichel am Himmel, Mondlicht stört also nicht."
+      }
+    },
+    {
+      "id": "ursids-2026", "kind": "meteor", "utc": "2026-12-22T22:00:00Z", "certainty": "expected", "source": "imo2026",
+      "title": { "en": "Ursids", "de": "Ursiden" },
+      "text": {
+        "en": "A small shower near the Little Dipper: about 10 meteors per hour. The maximum is expected on 22 December at 22:00 UT, but the Moon is 96 % lit two days before full moon, so only the brightest meteors will be seen.",
+        "de": "Ein kleiner Strom beim Kleinen Wagen: etwa 10 Sternschnuppen pro Stunde. Das Maximum wird am 22. Dezember um 22:00 UT erwartet, doch der Mond ist zwei Tage vor Vollmond zu 96 % beleuchtet, es sind nur die hellsten Meteore zu sehen."
+      }
+    },
+    {
+      "id": "quadrantids-2027", "kind": "meteor", "utc": "2027-01-04T03:25:00Z", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Quadrantids", "de": "Quadrantiden" },
+      "text": {
+        "en": "One of the three strongest annual showers: about 80 meteors per hour, in some years from 60 to 200. The peak is short, expected on 4 January at 03:25 UT, with an uncertainty of a few hours. The Moon is nearly new, so conditions are perfect this year.",
+        "de": "Einer der drei stärksten jährlichen Ströme: etwa 80 Sternschnuppen pro Stunde, in manchen Jahren zwischen 60 und 200. Der Höhepunkt ist kurz und wird am 4. Januar um 03:25 UT erwartet, mit einer Unsicherheit von einigen Stunden. Der Mond ist fast neu, die Bedingungen sind dieses Jahr perfekt."
+      }
+    },
+    {
+      "id": "solar-annular-2027", "kind": "eclipse", "utc": "2027-02-06T16:00:00Z", "certainty": "calculated", "source": "nasa-se",
+      "title": { "en": "Annular solar eclipse", "de": "Ringförmige Sonnenfinsternis" },
+      "text": {
+        "en": "The Moon is a little too small to cover the Sun, so a bright ring stays visible for up to 7 minutes 51 seconds. The path of the ring crosses Chile, Argentina and the Atlantic. A partial eclipse is seen from South America, Antarctica and western and southern Africa. It is not visible from Europe. Greatest eclipse at 16:00 UT.",
+        "de": "Der Mond ist etwas zu klein, um die Sonne ganz zu bedecken, deshalb bleibt bis zu 7 Minuten und 51 Sekunden ein heller Ring sichtbar. Der Streifen des Rings führt über Chile, Argentinien und den Atlantik. Eine partielle Finsternis sieht man von Südamerika, der Antarktis und dem westlichen und südlichen Afrika. Von Europa aus ist sie nicht zu sehen. Größte Finsternis um 16:00 UT."
+      }
+    },
+    {
+      "id": "lunar-penumbral-2027-02", "kind": "eclipse", "utc": "2027-02-20T23:13:00Z", "certainty": "calculated", "source": "nasa-le",
+      "title": { "en": "Penumbral lunar eclipse", "de": "Halbschatten-Mondfinsternis" },
+      "text": {
+        "en": "The Moon passes only through the faint outer shadow of the Earth, so it dims very slightly and no dark bite is seen. Greatest eclipse at 23:13 UT. Visible from the Americas, Europe, Africa and Asia, wherever the Moon is up.",
+        "de": "Der Mond zieht nur durch den schwachen äußeren Schatten der Erde, er wird nur ganz leicht dunkler, ein dunkler Biss ist nicht zu sehen. Größte Finsternis um 23:13 UT. Sichtbar von Amerika, Europa, Afrika und Asien, überall wo der Mond am Himmel steht."
+      }
+    },
+    {
+      "id": "lyrids-2027", "kind": "meteor", "utc": "2027-04-23T01:40:00Z", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Lyrids", "de": "Lyriden" },
+      "text": {
+        "en": "A moderate shower of about 18 meteors per hour, expected at its maximum on 23 April at 01:40 UT. The worst case for this year: the Moon is three days past full and lights the sky just when the radiant is high.",
+        "de": "Ein mäßiger Strom von etwa 18 Sternschnuppen pro Stunde, mit dem Maximum am 23. April um 01:40 UT. Der ungünstigste Fall dieses Jahres: Der Mond ist drei Tage nach Vollmond und hellt den Himmel gerade dann auf, wenn der Radiant hoch steht."
+      }
+    },
+    {
+      "id": "eta-aquariids-2027", "kind": "meteor", "utc": "2027-05-06T09:00:00Z", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Eta Aquariids", "de": "Eta-Aquariden" },
+      "text": {
+        "en": "Pieces of Halley's comet: about 50 meteors per hour (between 40 and 80 in different years). The maximum is expected on 6 May at 09:00 UT, with good moon conditions this year.",
+        "de": "Trümmer des Halleyschen Kometen: etwa 50 Sternschnuppen pro Stunde (zwischen 40 und 80 in verschiedenen Jahren). Das Maximum wird am 6. Mai um 09:00 UT erwartet, mit günstigen Mondverhältnissen in diesem Jahr."
+      }
+    },
+    {
+      "id": "lunar-penumbral-2027-07", "kind": "eclipse", "utc": "2027-07-18T16:03:00Z", "certainty": "calculated", "source": "nasa-le",
+      "title": { "en": "Penumbral lunar eclipse", "de": "Halbschatten-Mondfinsternis" },
+      "text": {
+        "en": "Again only the faint outer shadow of the Earth, so the Moon dims very slightly. Greatest eclipse at 16:03 UT. Visible from eastern Africa, Asia, Australia and the Pacific.",
+        "de": "Wieder nur der schwache äußere Schatten der Erde, der Mond wird nur ganz leicht dunkler. Größte Finsternis um 16:03 UT. Sichtbar von Ostafrika, Asien, Australien und dem Pazifik."
+      }
+    },
+    {
+      "id": "southern-delta-aquariids-2027", "kind": "meteor", "date": "2027-07-31", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Southern delta Aquariids", "de": "Südliche Delta-Aquariden" },
+      "text": {
+        "en": "About 25 meteors per hour around 31 July, with no moonlight interference this year.",
+        "de": "Etwa 25 Sternschnuppen pro Stunde um den 31. Juli, in diesem Jahr ohne Störung durch Mondlicht."
+      }
+    },
+    {
+      "id": "solar-total-2027", "kind": "eclipse", "utc": "2027-08-02T10:07:00Z", "certainty": "calculated", "source": "nasa-se",
+      "title": { "en": "Total solar eclipse", "de": "Totale Sonnenfinsternis" },
+      "text": {
+        "en": "A long total eclipse: the Sun is fully covered for up to 6 minutes 23 seconds. The path of totality crosses Morocco, Spain, Algeria, Libya, Egypt, Saudi Arabia, Yemen and Somalia. A partial eclipse is seen from Africa, Europe, the Middle East and western and southern Asia. Greatest eclipse at 10:07 UT. Never look at the Sun without proper eclipse glasses.",
+        "de": "Eine lange totale Finsternis: Die Sonne ist bis zu 6 Minuten und 23 Sekunden ganz bedeckt. Der Streifen der Totalität führt über Marokko, Spanien, Algerien, Libyen, Ägypten, Saudi-Arabien, Jemen und Somalia. Eine partielle Finsternis sieht man von Afrika, Europa, dem Nahen Osten und West- und Südasien. Größte Finsternis um 10:07 UT. Schau niemals ohne geeignete Finsternisbrille in die Sonne."
+      }
+    },
+    {
+      "id": "perseids-2027", "kind": "meteor", "utc": "2027-08-13T09:00:00Z", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Perseids", "de": "Perseiden" },
+      "text": {
+        "en": "The best known shower of the summer: about 110 meteors per hour or more. The maximum is expected on 13 August between 08:00 and 10:00 UT. The Moon is waxing this year and will brighten the evening sky.",
+        "de": "Der bekannteste Strom des Sommers: etwa 110 Sternschnuppen pro Stunde oder mehr. Das Maximum wird am 13. August zwischen 08:00 und 10:00 UT erwartet. Der Mond ist in diesem Jahr zunehmend und hellt den Abendhimmel auf."
+      }
+    },
+    {
+      "id": "lunar-penumbral-2027-08", "kind": "eclipse", "utc": "2027-08-17T07:14:00Z", "certainty": "calculated", "source": "nasa-le",
+      "title": { "en": "Penumbral lunar eclipse", "de": "Halbschatten-Mondfinsternis" },
+      "text": {
+        "en": "A third faint penumbral eclipse of this period. Greatest eclipse at 07:14 UT. Visible from the Pacific and the Americas.",
+        "de": "Die dritte schwache Halbschatten-Finsternis dieses Zeitraums. Größte Finsternis um 07:14 UT. Sichtbar vom Pazifik und von Amerika."
+      }
+    },
+    {
+      "id": "orionids-2027", "kind": "meteor", "date": "2027-10-22", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Orionids", "de": "Orioniden" },
+      "text": {
+        "en": "More pieces of Halley's comet: about 20 meteors per hour around 22 October. The waning gibbous Moon (up to last quarter) troubles the observation.",
+        "de": "Noch einmal Trümmer des Halleyschen Kometen: etwa 20 Sternschnuppen pro Stunde um den 22. Oktober. Der abnehmende Mond (bis zum letzten Viertel) stört die Beobachtung."
+      }
+    },
+    {
+      "id": "leonids-2027", "kind": "meteor", "utc": "2027-11-18T06:00:00Z", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Leonids", "de": "Leoniden" },
+      "text": {
+        "en": "About 15 meteors per hour or a little more, expected at the maximum on 18 November at 06:00 UT. The waning Moon near last quarter troubles the observation.",
+        "de": "Etwa 15 Sternschnuppen pro Stunde oder etwas mehr, das Maximum wird am 18. November um 06:00 UT erwartet. Der abnehmende Mond nahe dem letzten Viertel stört die Beobachtung."
+      }
+    },
+    {
+      "id": "geminids-2027", "kind": "meteor", "date": "2027-12-14", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Geminids", "de": "Geminiden" },
+      "text": {
+        "en": "Again the strongest shower of the year, up to 150 meteors per hour, around 14 December. This time the Moon is full on 13 December and outshines all but the brightest meteors.",
+        "de": "Wieder der stärkste Strom des Jahres, bis zu 150 Sternschnuppen pro Stunde, um den 14. Dezember. Diesmal ist am 13. Dezember Vollmond und überstrahlt alle bis auf die hellsten Meteore."
+      }
+    },
+    {
+      "id": "ursids-2027", "kind": "meteor", "utc": "2027-12-23T04:00:00Z", "certainty": "expected", "source": "imo2027",
+      "title": { "en": "Ursids", "de": "Ursiden" },
+      "text": {
+        "en": "A small shower of about 10 meteors per hour, expected at its maximum on 23 December at 04:00 UT, with good moon conditions this year.",
+        "de": "Ein kleiner Strom von etwa 10 Sternschnuppen pro Stunde, das Maximum wird am 23. Dezember um 04:00 UT erwartet, mit günstigen Mondverhältnissen in diesem Jahr."
+      }
+    }
+  ]
+}
