@@ -16,7 +16,7 @@ const USERNAME = /^[A-Za-z0-9_]{3,20}$/;
 
 export const AUTH_TEXT = {
   en: {
-    title: "Account (optional)",
+    title: "Account (optional)", profile: "Profile",
     intro: "Save your log on all your devices. Without an account everything stays in this browser.",
     open: "Sign in or create an account",
     email: "E-mail", password: "Password", passwordHint: "At least 8 characters",
@@ -41,7 +41,7 @@ export const AUTH_TEXT = {
     loadFailed: "The sign-in could not be loaded. Check the connection and try again.", failed: "That did not work: ",
   },
   de: {
-    title: "Konto (freiwillig)",
+    title: "Konto (freiwillig)", profile: "Profil",
     intro: "Speichere dein Logbuch auf allen Geräten. Ohne Konto bleibt alles in diesem Browser.",
     open: "Anmelden oder Konto erstellen",
     email: "E-Mail", password: "Passwort", passwordHint: "Mindestens 8 Zeichen",
@@ -66,7 +66,7 @@ export const AUTH_TEXT = {
     loadFailed: "Die Anmeldung konnte nicht geladen werden. Prüfe die Verbindung und versuche es noch einmal.", failed: "Das hat nicht geklappt: ",
   },
   ja: {
-    title: "アカウント（任意）",
+    title: "アカウント（任意）", profile: "プロフィール",
     intro: "記録をすべての端末に保存できます。アカウントがなければ、すべてこのブラウザ内に残ります。",
     open: "ログインまたはアカウント作成",
     email: "メールアドレス", password: "パスワード", passwordHint: "8文字以上",
@@ -91,7 +91,7 @@ export const AUTH_TEXT = {
     loadFailed: "ログイン機能を読み込めませんでした。接続を確認してもう一度お試しください。", failed: "うまくいきませんでした：",
   },
   bg: {
-    title: "Профил (по желание)",
+    title: "Профил (по желание)", profile: "Профил",
     intro: "Запази дневника си на всичките си устройства. Без профил всичко остава в този браузър.",
     open: "Вход или създаване на профил",
     email: "Имейл", password: "Парола", passwordHint: "Поне 8 знака",
@@ -120,6 +120,8 @@ export const AUTH_TEXT = {
 // explorer: the module of the log (explorer.js): getState(), merge(remote), onChange(fn), open(). getLang() is the language of the page.
 export function initAuth({ getLang, explorer }) {
   const box = document.getElementById("account-box");
+  const panel = document.getElementById("profile-panel");
+  const button = document.getElementById("account-button");
   const t = () => AUTH_TEXT[getLang()] ?? AUTH_TEXT.en;
   let client = null;
   let loading = null;
@@ -277,14 +279,14 @@ export function initAuth({ getLang, explorer }) {
       notice = { text: t().deleted };
     });
 
-  // ---------------------------------------------------------------- the box in the log
+  // ---------------------------------------------------------------- the profile panel and the button at the top
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
     if (content != null) e.textContent = content;
     return e;
   };
-  const button = (label, cls, onClick) => {
+  const makeButton = (label, cls, onClick) => {
     const b = el("button", cls, label);
     b.type = "button";
     b.disabled = busy;
@@ -307,7 +309,7 @@ export function initAuth({ getLang, explorer }) {
     const f = el("form", "account-form");
     f.noValidate = true;
     f.append(...fields.map((x) => x.wrap), ...extra);
-    const submit = button(submitLabel, "account-main", () => {});
+    const submit = makeButton(submitLabel, "account-main", () => {});
     submit.type = "submit";
     f.append(submit);
     f.addEventListener("submit", (e) => {
@@ -316,7 +318,7 @@ export function initAuth({ getLang, explorer }) {
     });
     return f;
   }
-  const link = (label, onClick) => button(label, "account-link", onClick);
+  const link = (label, onClick) => makeButton(label, "account-link", onClick);
   function go(next) {
     view = next;
     notice = null;
@@ -324,26 +326,47 @@ export function initAuth({ getLang, explorer }) {
     render();
     if (next !== "home") loadClient().catch(() => {}); // ready by the time the form is sent
   }
+  // the panel: a click on the button at the top opens it (the sign-in if nobody is signed in), another click or the cross closes it
+  function toggle(open = panel.hidden) {
+    panel.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    if (!open) return;
+    if (!user && view === "home") view = "signin";
+    notice = view === "home" ? notice : null;
+    confirmDelete = false;
+    render();
+    if (!user) loadClient().catch(() => {});
+  }
+  button.addEventListener("click", () => toggle());
+  document.getElementById("profile-close").addEventListener("click", () => toggle(false));
+  window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
 
   function render() {
     const tx = t();
-    const parts = [el("h3", "", tx.title)];
+    const parts = [];
+    document.getElementById("profile-title").textContent = user ? tx.profile : tx.title;
+    document.getElementById("profile-close").setAttribute("aria-label", tx.back);
+    // the button at the top: "Sign in", or the name of the person
+    const who = username ?? user?.email?.split("@")[0] ?? "";
+    button.textContent = user ? who : tx.signIn;
+    button.title = user ? tx.signedAs(username, user.email) : tx.open;
     if (notice) parts.push(el("p", notice.error ? "account-error" : "account-ok", notice.text));
     if (user && view !== "newpassword") {
       parts.push(el("p", "", tx.signedAs(username, user.email)));
+      parts.push(explorer.profileEl());
       if (saved !== null) parts.push(el("p", "hint", saved ? tx.saved : tx.saveFailed));
       if (confirmDelete) {
         parts.push(el("p", "account-error", tx.deleteAsk));
         const row = el("div", "account-row");
-        row.append(button(tx.deleteYes, "account-danger", deleteAccount), button(tx.cancel, "", () => ((confirmDelete = false), render())));
+        row.append(makeButton(tx.deleteYes, "account-danger", deleteAccount), makeButton(tx.cancel, "", () => ((confirmDelete = false), render())));
         parts.push(row);
       } else {
         const row = el("div", "account-row");
-        row.append(button(tx.signOut, "", signOut), button(tx.deleteAccount, "account-link", () => ((confirmDelete = true), render())));
+        row.append(makeButton(tx.signOut, "", signOut), makeButton(tx.deleteAccount, "account-link", () => ((confirmDelete = true), render())));
         parts.push(row);
       }
     } else if (view === "home") {
-      parts.push(el("p", "hint", tx.intro), button(tx.open, "account-main", () => go("signin")));
+      parts.push(el("p", "hint", tx.intro), makeButton(tx.open, "account-main", () => go("signin")));
     } else if (view === "signin") {
       const email = field(tx.email, "email", "email", null, "email");
       const password = field(tx.password, "password", "password", null, "current-password");
@@ -403,10 +426,10 @@ export function initAuth({ getLang, explorer }) {
   const start = () =>
     loadClient()
       .then(() => {
-        if (fromMail) explorer.open();
+        if (fromMail) toggle(true);
       })
       .catch(() => {});
   if (fromMail) start();
   else if (hasSession) setTimeout(start, 6000); // not during the first flight
-  return { render, open: () => go("signin") };
+  return { render, open: () => toggle(true) };
 }

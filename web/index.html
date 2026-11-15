@@ -97,6 +97,7 @@
       <button id="atlas-open" type="button" aria-controls="atlas-panel">Zodiac signs</button>
     </details>
   </div>
+  <button id="account-button" type="button" aria-expanded="false" aria-controls="profile-panel"></button>
   <button id="info-button" type="button" aria-expanded="false" aria-controls="story">Info</button>
   <button id="burger" type="button" aria-expanded="false" aria-controls="info">&#9776;</button>
   <div id="info" hidden>
@@ -191,9 +192,13 @@
   <section id="log-panel" hidden aria-labelledby="log-title">
     <button id="log-close" type="button" aria-label="Close">&times;</button>
     <h2 id="log-title"></h2>
-    <!-- The optional account, see auth.js. -->
-    <div id="account-box"></div>
     <div id="log-body"></div>
+  </section>
+  <!-- The profile of the person: the sign-in when nobody is signed in, the profile and the account when somebody is. See auth.js. -->
+  <section id="profile-panel" hidden aria-labelledby="profile-title">
+    <button id="profile-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="profile-title"></h2>
+    <div id="account-box"></div>
   </section>
   <!-- The zodiac signs: flashcards, quizzes and the view in 3D, see atlas.js. -->
   <section id="atlas-panel" hidden aria-labelledby="atlas-title">

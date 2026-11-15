@@ -360,6 +360,45 @@ export function initExplorer({ getLang, text, explore }) {
     });
   }
 
+  // the level, the XP towards the next one, and how it works
+  function buildXpCard() {
+    const level = levelOf(state.xp);
+    const low = xpForLevel(level);
+    const high = xpForLevel(level + 1);
+    const xpCard = el("div", "xp-card");
+    const head = el("div", "xp-head");
+    head.append(el("strong", "xp-level", xpText().level(level)), el("span", "xp-total", `${state.xp} XP`));
+    const xpBar = el("div", "mission-bar");
+    const xpFill = el("div", "mission-fill");
+    xpFill.style.width = `${((state.xp - low) / (high - low)) * 100}%`;
+    xpBar.append(xpFill);
+    xpCard.append(head, xpBar, el("p", "hint", xpText().toNext(high - state.xp, level + 1)));
+    const how = el("details", "xp-how");
+    how.append(el("summary", "", xpText().howTitle), el("p", "hint", xpText().how));
+    xpCard.append(how);
+    return xpCard;
+  }
+  // the badges: earned ones lit, the others dim with what they need
+  function buildBadges() {
+    const grid = el("div", "badges");
+    for (const b of BADGES) {
+      const got = state.badges.some((x) => x.id === b.id);
+      const [name, need] = b[getLang()] ?? b.en;
+      const cell = el("div", `badge${got ? " earned" : ""}`);
+      cell.append(el("strong", "", `${got ? "★ " : ""}${name}`), el("span", "", need));
+      grid.append(cell);
+    }
+    return grid;
+  }
+  // what the profile shows (auth.js): the level card and the badges
+  function profileEl() {
+    const wrap = el("div", "profile-summary");
+    const section = el("section", "log-section");
+    section.append(el("h3", "", xpText().badgesTitle), buildBadges());
+    wrap.append(buildXpCard(), section);
+    return wrap;
+  }
+
   function render() {
     const { done, total } = counts();
     const level = levelOf(state.xp);
@@ -376,29 +415,8 @@ export function initExplorer({ getLang, text, explore }) {
       s.append(el("h3", "", title), ...children);
       return s;
     };
-    // the level, the XP towards the next one, and how it works
-    const low = xpForLevel(level);
-    const high = xpForLevel(level + 1);
-    const xpCard = el("div", "xp-card");
-    const head = el("div", "xp-head");
-    head.append(el("strong", "xp-level", xpText().level(level)), el("span", "xp-total", `${state.xp} XP`));
-    const xpBar = el("div", "mission-bar");
-    const xpFill = el("div", "mission-fill");
-    xpFill.style.width = `${((state.xp - low) / (high - low)) * 100}%`;
-    xpBar.append(xpFill);
-    xpCard.append(head, xpBar, el("p", "hint", xpText().toNext(high - state.xp, level + 1)));
-    const how = el("details", "xp-how");
-    how.append(el("summary", "", xpText().howTitle), el("p", "hint", xpText().how));
-    xpCard.append(how);
-    // the badges: earned ones lit, the others dim with what they need
-    const grid = el("div", "badges");
-    for (const b of BADGES) {
-      const got = state.badges.some((x) => x.id === b.id);
-      const [name, need] = b[getLang()] ?? b.en;
-      const cell = el("div", `badge${got ? " earned" : ""}`);
-      cell.append(el("strong", "", `${got ? "★ " : ""}${name}`), el("span", "", need));
-      grid.append(cell);
-    }
+    const xpCard = buildXpCard();
+    const grid = buildBadges();
     body.replaceChildren(
       xpCard,
       section(text("missionsDaily"), ...MISSIONS.filter((m) => m.period === "day").map(missionRow)),
@@ -419,5 +437,5 @@ export function initExplorer({ getLang, text, explore }) {
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   favButton.addEventListener("click", () => toggleFavourite());
   render();
-  return { emit, viewed, render, open: () => toggle(true), counts, getState: () => state, merge, onChange: (fn) => (changeListener = fn) };
+  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn) };
 }
