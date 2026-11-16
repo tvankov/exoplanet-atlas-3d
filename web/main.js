@@ -3086,15 +3086,25 @@ function selectBody(system, body, keepView = false) {
   buildSolarMenu();
 }
 
-// The burger button at the top right opens the hints and the credits.
+// The burger button at the top right opens the one menu: the lists (Solar System, habitable candidates, named stars), the tools, the hints,
+// the credits and the settings. Every part of it is folded when it opens, so that it starts as a short list.
 const burger = document.getElementById("burger");
 const infoPanel = document.getElementById("info");
+const foldMenus = (panel) => {
+  for (const d of panel.querySelectorAll(":scope > details.menu")) d.open = false;
+};
 function toggleInfo(open = infoPanel.hidden) {
+  if (open) foldMenus(infoPanel);
   infoPanel.hidden = !open;
   burger.setAttribute("aria-expanded", String(open));
 }
 // On a phone the burger button is the only menu: it opens the panel with everything in it (see movedMenus). Elsewhere it opens the info window.
-burger.addEventListener("click", () => (phone.matches ? setHudFolded(!hudPanel.classList.contains("collapsed")) : toggleInfo()));
+burger.addEventListener("click", () => {
+  if (!phone.matches) return toggleInfo();
+  const opening = hudPanel.classList.contains("collapsed");
+  if (opening) foldMenus(hudPanel);
+  setHudFolded(!opening);
+});
 
 // On a phone the panel on the left starts folded (the picture is free), the button in its bar opens it. Choosing something from it
 // folds it again, so the chosen planet is in view.
@@ -3110,17 +3120,21 @@ function setHudFolded(folded) {
 setHudFolded(phone.matches);
 phone.addEventListener("change", () => setHudFolded(phone.matches));
 hudToggle.addEventListener("click", () => setHudFolded(!hudPanel.classList.contains("collapsed")));
-// One burger menu on a phone: the entries of the info window (Info, Hints, Credits, Settings) move to the end of the panel on the left, so
-// that button opens everything. On a wider screen they go back to the info window.
+// One burger menu, in the same order everywhere: the lists and the tools of the panel on the left (Solar System, habitable candidates, named
+// stars, tools), then Info, Hints, Credits, Settings. On a phone everything is in the panel on the left, which the burger button opens; on a
+// wider screen everything is in the window at the top right, and the panel on the left keeps only the title, the count and the time.
 const movedMenus = [...infoPanel.children];
+const hudMenus = [...hudPanel.querySelectorAll(":scope > details.menu")];
 function placeMenus() {
   const target = phone.matches ? hudPanel : infoPanel;
-  if (movedMenus[0].parentElement === target) return;
+  if (movedMenus[0].parentElement === target && hudMenus[0].parentElement === target) return;
+  for (const node of hudMenus) target.append(node);
   for (const node of movedMenus) {
     node.classList.toggle("from-info", phone.matches);
     target.append(node);
   }
   if (phone.matches) toggleInfo(false);
+  layoutView();
 }
 placeMenus();
 phone.addEventListener("change", placeMenus);
@@ -3132,9 +3146,22 @@ document.getElementById("info-story").addEventListener("click", () => {
   if (phone.matches) setHudFolded(true);
   else toggleInfo(false); // the menu closes, the story panel opens
 });
-hudPanel.addEventListener("click", (e) => {
-  if (phone.matches && e.target.closest(".planet-list")) setTimeout(() => setHudFolded(true), 0);
-});
+// Choosing a planet or a star from a list closes the menu, so that it is in view. The check runs before the click reaches the button
+// (capture): the button rebuilds its list, and afterwards the clicked element is no longer inside it.
+hudPanel.addEventListener(
+  "click",
+  (e) => {
+    if (phone.matches && e.target.closest(".planet-list")) setTimeout(() => setHudFolded(true), 0);
+  },
+  true
+);
+infoPanel.addEventListener(
+  "click",
+  (e) => {
+    if (!phone.matches && e.target.closest(".planet-list .views button, #star-list button")) setTimeout(() => toggleInfo(false), 0);
+  },
+  true
+);
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !infoPanel.hidden) toggleInfo(false);
 });
