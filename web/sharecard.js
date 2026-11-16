@@ -421,6 +421,16 @@ const EMBLEM = {
     g.fill();
     g.restore();
   },
+  // the Solar System: the Sun with an orbit and a small Earth on it
+  "solar-scholar": async (g, r) => {
+    drawStar(g, r, r, r * 0.6, starColor(5772));
+    g.strokeStyle = "rgba(180,200,255,0.6)";
+    g.lineWidth = r * 0.04;
+    g.beginPath();
+    g.ellipse(r, r, r * 0.62, r * 0.24, -0.3, 0, TAU);
+    g.stroke();
+    await drawPlanet(g, "Earth", r * 1.55, r * 0.78, r * 0.13);
+  },
   // ten missions: ten lights round the number
   regular: (g, r) => {
     for (let i = 0; i < 10; i++) {

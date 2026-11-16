@@ -3956,3 +3956,206 @@ body:has(#day-flight:not([hidden])) #tour {
 #profile-panel {
   height: min(860px, calc(100dvh - 64px));
 }
+
+/* Learning paths (learn.js) in the area Learn of My Universe: the path card with its progress, the steps as rows, a step with its goal, the
+   sentence for the visitor, the task in 3D, the questions with their explanations, and the result of the final test. */
+.learn-path {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 14px;
+  background: radial-gradient(circle at 12% 30%, rgba(230, 210, 160, 0.14), transparent 55%), rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+.learn-path-head {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+.learn-path-pic {
+  display: block;
+  width: 64px;
+  height: 64px;
+}
+.learn-path-head strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 650;
+}
+#universe-body .learn-path-head p {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+#universe-body .learn-path-head small {
+  letter-spacing: 0;
+  text-transform: none;
+}
+#universe-body .learn-path .uni-bar {
+  margin: 0;
+}
+#universe-body button.learn-step.done strong {
+  opacity: 0.75;
+}
+#universe-body button.learn-step.next {
+  background: rgba(124, 255, 178, 0.07);
+}
+#universe-body button.learn-step:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+#universe-body button.learn-step.done .uni-arrow {
+  color: #7cffb2;
+  opacity: 1;
+}
+#universe-body button.learn-back {
+  margin-bottom: 8px;
+}
+.learn-step-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+#universe-body .learn-step-head small {
+  letter-spacing: 0.08em;
+}
+#universe-body h3.learn-title {
+  margin: 2px 0 0;
+  font-size: 20px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #fff;
+}
+#universe-body p.learn-goal {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.learn-goal strong {
+  color: #7cffb2;
+}
+.learn-you {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: radial-gradient(circle at 90% 20%, rgba(255, 200, 140, 0.16), transparent 60%), rgba(255, 255, 255, 0.04);
+  border-left: 3px solid #ffd27a;
+  border-radius: 12px;
+}
+#universe-body .learn-you small {
+  color: #ffd27a;
+}
+#universe-body .learn-you p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+#universe-body p.learn-text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.learn-task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin: 14px 0 18px;
+  padding: 12px 14px;
+  background: rgba(120, 160, 255, 0.08);
+  border: 1px solid rgba(120, 160, 255, 0.3);
+  border-radius: 14px;
+}
+.learn-task.done {
+  background: rgba(124, 255, 178, 0.06);
+  border-color: rgba(124, 255, 178, 0.35);
+}
+#universe-body .learn-task p {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+#universe-body h3.learn-check {
+  margin: 6px 0 10px;
+}
+.learn-q {
+  margin: 0 0 16px;
+}
+#universe-body p.learn-q-text {
+  margin: 0 0 8px;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.learn-options {
+  display: grid;
+  gap: 6px;
+}
+#universe-body button.learn-option {
+  min-height: 42px;
+  padding: 9px 12px;
+  text-align: left;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+}
+#universe-body button.learn-option:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+#universe-body button.learn-option.chosen {
+  border-color: rgba(120, 160, 255, 0.7);
+  background: rgba(120, 160, 255, 0.14);
+}
+#universe-body button.learn-option.right,
+#universe-body button.learn-option.answer {
+  border-color: rgba(124, 255, 178, 0.7);
+  background: rgba(124, 255, 178, 0.14);
+}
+#universe-body button.learn-option.right::before,
+#universe-body button.learn-option.answer::before {
+  content: "\2713  ";
+  color: #7cffb2;
+}
+#universe-body button.learn-option.wrong {
+  border-color: rgba(255, 140, 120, 0.7);
+  background: rgba(255, 140, 120, 0.12);
+}
+#universe-body button.learn-option.wrong::before {
+  content: "\2717  ";
+  color: #ff9c88;
+}
+#universe-body p.learn-feedback {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.learn-feedback.right strong {
+  color: #7cffb2;
+}
+.learn-feedback.wrong strong {
+  color: #ff9c88;
+}
+.learn-done {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin: 8px 0 16px;
+  padding: 14px;
+  background: rgba(124, 255, 178, 0.08);
+  border: 1px solid rgba(124, 255, 178, 0.4);
+  border-radius: 14px;
+}
+.learn-done.failed {
+  background: rgba(255, 200, 120, 0.07);
+  border-color: rgba(255, 200, 120, 0.4);
+}
+#universe-body .learn-done p {
+  margin: 0;
+  font-size: 13.5px;
+}
+#universe-body button.uni-primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

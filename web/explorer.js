@@ -78,6 +78,7 @@ const XP_MISSION = { day: 20, week: 50 };
 const XP_PLANET = 2;
 const XP_CANDIDATE = 5;
 const XP_CONSTELLATION = 2;
+export const XP_LEARN = { step: 10, path: 50 }; // a step of a learning path done, the final test of a path passed (learn.js)
 export const xpForLevel = (level) => 25 * level * (level - 1);
 export function levelOf(xp) {
   let level = 1;
@@ -139,6 +140,11 @@ export const BADGES = [
     en: ["Regular", "Finished 10 missions"], de: ["Stammgast", "10 Missionen abgeschlossen"],
     ja: ["常連", "10個のミッションを完了した"], bg: ["Редовен", "Завърши 10 мисии"],
   },
+  {
+    id: "solar-scholar", count: (t) => (t.learnPaths?.includes("solar") ? 1 : 0), need: 1,
+    en: ["Solar System scholar", "Passed the final test of Our Solar System"], de: ["Kenner des Sonnensystems", "Den Abschlusstest von „Unser Sonnensystem“ bestanden"],
+    ja: ["太陽系マスター", "「私たちの太陽系」の最終テストに合格した"], bg: ["Познавач на Слънчевата система", "Издържа финалния тест на „Нашата Слънчева система“"],
+  },
 ];
 
 // Each badge with how far the visitor is: [{ id, have (at most need), need, earned }]. total: state.total; earned: the ids already earned.
@@ -154,7 +160,7 @@ export const XP_TEXT = {
     level: (n) => `Level ${n}`,
     toNext: (x, n) => `${x} XP to level ${n}`,
     howTitle: "How XP works",
-    how: `A finished mission gives ${XP_MISSION.day} XP (daily) or ${XP_MISSION.week} XP (weekly). The first look at a planet gives ${XP_PLANET} XP, at a habitable candidate ${XP_CANDIDATE} more, and at a constellation ${XP_CONSTELLATION}. Nothing is lost when you skip a day. It is all stored in this browser.`,
+    how: `A finished mission gives ${XP_MISSION.day} XP (daily) or ${XP_MISSION.week} XP (weekly). The first look at a planet gives ${XP_PLANET} XP, at a habitable candidate ${XP_CANDIDATE} more, and at a constellation ${XP_CONSTELLATION}. A step of a learning path gives ${XP_LEARN.step} XP, a passed final test ${XP_LEARN.path}. Nothing is lost when you skip a day. It is all stored in this browser.`,
     badgesTitle: "Badges",
     badge: "Badge", earnedOn: (d) => `Earned ${d}`, badgesLine: (n, all) => `${n} of ${all}`,
     levelUp: (n) => `Level ${n} reached`,
@@ -163,7 +169,7 @@ export const XP_TEXT = {
     level: (n) => `Stufe ${n}`,
     toNext: (x, n) => `${x} XP bis Stufe ${n}`,
     howTitle: "So funktionieren XP",
-    how: `Eine abgeschlossene Mission gibt ${XP_MISSION.day} XP (täglich) oder ${XP_MISSION.week} XP (wöchentlich). Der erste Blick auf einen Planeten gibt ${XP_PLANET} XP, auf einen bewohnbaren Kandidaten ${XP_CANDIDATE} mehr, auf ein Sternbild ${XP_CONSTELLATION}. Wer einen Tag auslässt, verliert nichts. Alles bleibt in diesem Browser gespeichert.`,
+    how: `Eine abgeschlossene Mission gibt ${XP_MISSION.day} XP (täglich) oder ${XP_MISSION.week} XP (wöchentlich). Der erste Blick auf einen Planeten gibt ${XP_PLANET} XP, auf einen bewohnbaren Kandidaten ${XP_CANDIDATE} mehr, auf ein Sternbild ${XP_CONSTELLATION}. Ein Schritt eines Lernpfads gibt ${XP_LEARN.step} XP, ein bestandener Abschlusstest ${XP_LEARN.path}. Wer einen Tag auslässt, verliert nichts. Alles bleibt in diesem Browser gespeichert.`,
     badgesTitle: "Abzeichen",
     badge: "Abzeichen", earnedOn: (d) => `Erhalten am ${d}`, badgesLine: (n, all) => `${n} von ${all}`,
     levelUp: (n) => `Stufe ${n} erreicht`,
@@ -172,7 +178,7 @@ export const XP_TEXT = {
     level: (n) => `レベル${n}`,
     toNext: (x, n) => `レベル${n}まであと${x} XP`,
     howTitle: "XPのしくみ",
-    how: `ミッションを完了すると、毎日のものは${XP_MISSION.day} XP、毎週のものは${XP_MISSION.week} XPがもらえます。惑星を初めて見ると${XP_PLANET} XP、居住可能な候補ならさらに${XP_CANDIDATE} XP、星座を初めて見ると${XP_CONSTELLATION} XPです。1日休んでも何も失いません。すべてこのブラウザに保存されます。`,
+    how: `ミッションを完了すると、毎日のものは${XP_MISSION.day} XP、毎週のものは${XP_MISSION.week} XPがもらえます。惑星を初めて見ると${XP_PLANET} XP、居住可能な候補ならさらに${XP_CANDIDATE} XP、星座を初めて見ると${XP_CONSTELLATION} XPです。学習コースのステップを1つ終えると${XP_LEARN.step} XP、最終テストに合格すると${XP_LEARN.path} XPです。1日休んでも何も失いません。すべてこのブラウザに保存されます。`,
     badgesTitle: "バッジ",
     badge: "バッジ", earnedOn: (d) => `${d}に獲得`, badgesLine: (n, all) => `${all}個中${n}個`,
     levelUp: (n) => `レベル${n}に到達`,
@@ -181,7 +187,7 @@ export const XP_TEXT = {
     level: (n) => `Ниво ${n}`,
     toNext: (x, n) => `${x} XP до ниво ${n}`,
     howTitle: "Как работят XP",
-    how: `Завършена мисия дава ${XP_MISSION.day} XP (дневна) или ${XP_MISSION.week} XP (седмична). Първият поглед към планета дава ${XP_PLANET} XP, към кандидат за обитаем свят още ${XP_CANDIDATE}, към съзвездие ${XP_CONSTELLATION}. Нищо не се губи, ако пропуснеш ден. Всичко се пази в този браузър.`,
+    how: `Завършена мисия дава ${XP_MISSION.day} XP (дневна) или ${XP_MISSION.week} XP (седмична). Първият поглед към планета дава ${XP_PLANET} XP, към кандидат за обитаем свят още ${XP_CANDIDATE}, към съзвездие ${XP_CONSTELLATION}. Стъпка от учебна пътека дава ${XP_LEARN.step} XP, издържан финален тест ${XP_LEARN.path}. Нищо не се губи, ако пропуснеш ден. Всичко се пази в този браузър.`,
     badgesTitle: "Значки",
     badge: "Значка", earnedOn: (d) => `Получена на ${d}`, badgesLine: (n, all) => `${n} от ${all}`,
     levelUp: (n) => `Достигнато ниво ${n}`,
@@ -293,6 +299,10 @@ export function initExplorer({ getLang, text, explore }) {
     if (event === "planet") first("planets", id) && award(XP_PLANET);
     else if (event === "candidate") first("candidates", id) && award(XP_CANDIDATE);
     else if (event === "constellation") first("constellations", id) && award(XP_CONSTELLATION);
+    // learning paths (learn.js): a task done, a step done, a final test passed; each one counts once ("solar/sun", "solar")
+    else if (event === "learnTask") first("learnTasks", id);
+    else if (event === "learnStep") first("learnSteps", id) && award(XP_LEARN.step);
+    else if (event === "learnPath") first("learnPaths", id) && award(XP_LEARN.path);
     else state.total[event] = (state.total[event] ?? 0) + 1;
   }
   function checkBadges() {

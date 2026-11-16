@@ -11,8 +11,9 @@ import { FLIGHT_TEXT } from "../web/dailyflight.js";
 import { XP_TEXT } from "../web/explorer.js";
 import { JOURNAL_TEXT } from "../web/journal.js";
 import { EVENTS_TEXT } from "../web/events.js";
+import { LEARN_TEXT } from "../web/learn.js"; // the texts of the moons are checked in moons.test.mjs (their sentences take a planet)
 
-const TEXTS = { UNIVERSE_TEXT, STAR_TEXT, BIRTHSKY_TEXT, RECO_TEXT, FLIGHT_TEXT, XP_TEXT, JOURNAL_TEXT, EVENTS_TEXT };
+const TEXTS = { UNIVERSE_TEXT, STAR_TEXT, BIRTHSKY_TEXT, RECO_TEXT, FLIGHT_TEXT, XP_TEXT, JOURNAL_TEXT, EVENTS_TEXT, LEARN_TEXT };
 const LANGS = ["en", "de", "ja", "bg"];
 // sample values for the functions: numbers where they count, names where they name
 const SAMPLES = [3, 12, "Proxima Cen b", "1990", true];

@@ -188,7 +188,7 @@ export const UNIVERSE_TEXT = {
 // explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. describe(name): what the map
 // knows of a place ({ kind: "solar" | "exo" | "star" | "sun", id, name, color, au, dist, temp, teff, planets }) or null. openSky(), openAtlas(),
 // openZoneQuiz(), closePanel(): open the events, the zodiac, the zone quiz, close the profile panel.
-export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, explore, describe, openSky, openAtlas, openZoneQuiz, closePanel }) {
+export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, learn, explore, describe, openSky, openAtlas, openZoneQuiz, closePanel }) {
   const t = () => UNIVERSE_TEXT[getLang()] ?? UNIVERSE_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -533,7 +533,10 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
   }
 
   function learnArea(tx) {
-    const paths = section(tx.paths, el("p", "hint", tx.learnSoon));
+    // the learning paths (learn.js): the path with its steps, or one step, or the final test
+    const own = learn?.area(() => renderAll());
+    if (own && !own.overview) return own.nodes;
+    const paths = own ? section(tx.paths, ...own.nodes) : section(tx.paths, el("p", "hint", tx.learnSoon));
     const practice = el("div", "uni-list");
     practice.append(wide(item(dockPicture("dock-games") ?? icon("✦"), tx.qZodiac, tx.qZodiacSub, () => (closePanel?.(), openAtlas?.()))));
     if (openZoneQuiz) practice.append(wide(item(dockPicture("dock-near") ?? icon("◎"), tx.qZone, tx.qZoneSub, () => (closePanel?.(), openZoneQuiz()))));

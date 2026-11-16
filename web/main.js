@@ -11,6 +11,7 @@ import { initMyStar } from "./mystar.js";
 import { initBirthSky, sunConstellation } from "./birthsky.js";
 import { drawDock, drawLevel } from "./dockart.js";
 import { MOONS, moonScale, moonName, facingRotation } from "./moons.js";
+import { initLearn } from "./learn.js";
 import { initAmbient } from "./atmosphere.js";
 import { initDailyFlight, FLIGHT_TEXT } from "./dailyflight.js";
 import { initRecommendations } from "./recommend.js"; // also writes a fact on the loading screen at once
@@ -5517,8 +5518,22 @@ birthSky = initBirthSky({
   showFigure: (id) => atlas?.showFigure(id),
   onChange: () => auth?.render(),
 });
+// The learning paths (learn.js): every step speaks of the visitor (their age and their star, see mystar.js); a task goes to a place of the map
+// or switches on the real scale.
+const learn = initLearn({
+  getLang: () => lang,
+  explorer,
+  personal: () => ({ age: myStar?.age() ?? null, years: Object.fromEntries(PLANETS.map((p) => [p.name, p.years])), star: myStar?.current() ?? null }),
+  act: (task) => {
+    if (task === "realScale") return realScale || setRealScale(true);
+    const place = resolvePlace(task);
+    if (place) showPlace(place);
+  },
+  closePanel: () => auth?.close(),
+});
 universe = initUniverse({
   getLang: () => lang,
+  learn,
   explorer,
   daily,
   journal,
