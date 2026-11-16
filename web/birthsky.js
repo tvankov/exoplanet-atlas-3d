@@ -50,6 +50,28 @@ export function parseDate(text) {
 }
 
 
+// The date of birth for the whole page: the sky at the birth reads the date, "your star" the year (mystar.js), the learning paths the age.
+// Stored once, both keys at once; false for a date that is not a real one (or in the future).
+export function storeBirthDate(text) {
+  const d = parseDate(text);
+  if (!d) return false;
+  try {
+    localStorage.setItem(KEY, text);
+    localStorage.setItem("birth-year", String(d.year));
+  } catch {
+    // storage blocked: shown for this visit only
+  }
+  return true;
+}
+// The stored date of birth, or null.
+export function storedBirthDate() {
+  try {
+    return parseDate(localStorage.getItem(KEY));
+  } catch {
+    return null;
+  }
+}
+
 // ---------------------------------------------------------------- the ascendant: the point of the Sun's path that rose in the east at the birth
 // It needs the hour and the place. The hour is local time at the place of birth; the browser turns it into world time with the time zone of the
 // place (with its summer time and its history), see zonedToUtc. Then the sidereal time, and the point of the ecliptic on the eastern horizon.
@@ -278,7 +300,7 @@ export const BIRTHSKY_TEXT = {
 
 // getLang(); nameOf(id): the name of a constellation in the language of the page; figure(id): its lines of stars ([[ra, dec, mag], ...]) or
 // null while the sky is not loaded; showFigure(id): the constellation in the learning panel and on the map; onChange(): draw the panel again.
-export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange }) {
+export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange, onDate }) {
   const t = () => BIRTHSKY_TEXT[getLang()] ?? BIRTHSKY_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -603,7 +625,8 @@ export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange }) 
           if (!parsed) return input.focus();
           birth = parsed;
           editing = false;
-          write(input.value);
+          storeBirthDate(input.value); // the year too, for "your star"
+          onDate?.();
           track("birthsky-shown");
           onChange?.();
         })
@@ -640,6 +663,7 @@ export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange }) 
   }
   return {
     sections,
+    reload: () => (birth = read()), // after the date was given somewhere else (the welcome card, the overview)
     forget: () => {
       birth = place = time = null;
       write(null);

@@ -4207,3 +4207,40 @@ body:has(#day-flight:not([hidden])) #tour {
   gap: 4px;
   justify-items: end;
 }
+
+/* The date of birth: in the welcome card and, while it is missing, as a card in the overview of My Universe */
+input.uni-date {
+  box-sizing: border-box;
+  padding: 7px 10px;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  color-scheme: dark;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+#onboarding p.onboard-why {
+  font-size: 12px;
+  opacity: 0.75;
+}
+.uni-birth-ask {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  background: rgba(124, 255, 178, 0.06);
+  border: 1px solid rgba(124, 255, 178, 0.35);
+  border-radius: 12px;
+}
+.uni-birth-ask p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.uni-birth-ask .uni-actions {
+  margin-top: 10px;
+}
+.uni-birth-ask p.hint,
+.learn-you p.hint {
+  font-size: 12px;
+  opacity: 0.7;
+}

@@ -9,6 +9,7 @@ import { INTERESTS, LEVELS } from "./profile.js";
 import { disclosure } from "./disclosure.js";
 import { planetCanvas, starCanvas, medalCanvas, roundRect } from "./sharecard.js";
 import { dockPicture } from "./dockart.js";
+import { storeBirthDate, storedBirthDate } from "./birthsky.js";
 
 export const UNIVERSE_TEXT = {
   en: {
@@ -50,6 +51,10 @@ export const UNIVERSE_TEXT = {
     save: "Save", saved: "Saved.", reset: "Reset the profile", resetDone: "The profile is reset.",
     privacy: "All of this stays in this browser. With an account it is also saved there, so that it is the same on every device.",
     privacyLink: "Privacy notice",
+    birthLabel: "Your date of birth (optional)",
+    birthWhy: "So the page can show what the universe has to do with you: your star, your age on Mars, how often the Earth has carried you round the Sun.",
+    birthPrivacy: "It stays in this browser only and is never sent, not even with an account.",
+    birthAskTitle: "Make it about you",
     onboardTitle: "Welcome, Explorer.",
     onboardText: "The universe is waiting for you. Tell us a little, or skip it: you can change everything later in My Universe.",
     start: "Start exploring", skip: "Skip",
@@ -93,6 +98,10 @@ export const UNIVERSE_TEXT = {
     save: "Speichern", saved: "Gespeichert.", reset: "Profil zurücksetzen", resetDone: "Das Profil ist zurückgesetzt.",
     privacy: "Das alles bleibt in diesem Browser. Mit einem Konto wird es zusätzlich dort gespeichert, damit es auf jedem Gerät gleich ist.",
     privacyLink: "Datenschutzerklärung",
+    birthLabel: "Dein Geburtsdatum (freiwillig)",
+    birthWhy: "Damit dir die Seite zeigt, was das Universum mit dir zu tun hat: dein Stern, dein Alter auf dem Mars, wie oft dich die Erde schon um die Sonne getragen hat.",
+    birthPrivacy: "Es bleibt nur in diesem Browser und wird nie gesendet, auch nicht mit einem Konto.",
+    birthAskTitle: "Mach es persönlich",
     onboardTitle: "Willkommen, Explorer.",
     onboardText: "Das Universum wartet auf dich. Erzähl uns ein wenig, oder überspringe es: Du kannst alles später in Mein Universum ändern.",
     start: "Los geht's", skip: "Überspringen",
@@ -136,6 +145,10 @@ export const UNIVERSE_TEXT = {
     save: "保存", saved: "保存しました。", reset: "プロフィールをリセット", resetDone: "プロフィールをリセットしました。",
     privacy: "これらはすべてこのブラウザ内に残ります。アカウントがあれば、そこにも保存され、どの端末でも同じになります。",
     privacyLink: "プライバシーに関する説明",
+    birthLabel: "生年月日（任意）",
+    birthWhy: "宇宙とあなたとの関わりを見せるためです。あなたの星、火星での年齢、地球があなたを太陽のまわりに何周運んだか。",
+    birthPrivacy: "このブラウザ内だけに保存され、アカウントがあっても送信されません。",
+    birthAskTitle: "あなたの数字にする",
     onboardTitle: "ようこそ、エクスプローラー。",
     onboardText: "宇宙があなたを待っています。少しだけ教えてください。スキップもでき、あとで「マイ・ユニバース」から変更できます。",
     start: "探検を始める", skip: "スキップ",
@@ -179,6 +192,10 @@ export const UNIVERSE_TEXT = {
     save: "Запази", saved: "Запазено.", reset: "Нулирай профила", resetDone: "Профилът е нулиран.",
     privacy: "Всичко това остава в този браузър. С профил се запазва и там, за да е еднакво на всяко устройство.",
     privacyLink: "Бележка за поверителност",
+    birthLabel: "Дата на раждане (по желание)",
+    birthWhy: "За да ти покаже страницата какво общо има Вселената с теб: твоята звезда, възрастта ти на Марс, колко пъти Земята те е пренесла около Слънцето.",
+    birthPrivacy: "Остава само в този браузър и никога не се изпраща, дори с акаунт.",
+    birthAskTitle: "Направи го лично",
     onboardTitle: "Добре дошъл, изследователю.",
     onboardText: "Вселената те чака. Кажи ни малко за себе си или пропусни: всичко може да се промени после в „Моята вселена“.",
     start: "Започни", skip: "Пропусни",
@@ -249,7 +266,10 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       }
       return row;
     };
+    // the date of birth: optional, it makes every number of the page the visitor's own
+    const birth = dateInput(tx.birthLabel);
     const finish = (skipped) => {
+      if (!skipped && storeBirthDate(birth.value)) birthChanged();
       explorer.setProfile(skipped ? { skipped: true } : { ...draft, onboarded: true });
       track(skipped ? "onboarding-skip" : "onboarding-done");
       card.hidden = true;
@@ -259,6 +279,9 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       el("strong", "", tx.onboardTitle),
       el("p", "", tx.onboardText),
       name,
+      el("small", "", tx.birthLabel),
+      birth,
+      el("p", "onboard-why", `${tx.birthWhy} ${tx.birthPrivacy}`),
       el("small", "", tx.interest),
       chips(INTERESTS, tx.interests, "interest"),
       el("small", "", tx.level),
@@ -270,6 +293,20 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       })()
     );
     card.hidden = false;
+  }
+  function dateInput(label) {
+    const input = el("input", "uni-date");
+    input.type = "date";
+    input.min = "1900-01-01";
+    input.max = new Date().toISOString().slice(0, 10);
+    input.setAttribute("aria-label", label);
+    return input;
+  }
+  // the date was given: the star and the sky read it again
+  function birthChanged() {
+    myStar?.reload();
+    birthSky?.reload();
+    track("birth-date-given");
   }
   // after the slogan: only for a visitor who has neither been through it nor skipped it
   function maybeOnboard() {
@@ -523,7 +560,25 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       tile("collection", medalCanvas("collector", "uni-tile-medal", 48), tx.tileSub.collection),
       tile("certs", certificatePicture(), tx.tileSub.certs)
     );
-    return [heroPart(tx, p, last), nextPart(tx, last, false), tiles, privacyPart(tx)];
+    const parts = [heroPart(tx, p, last)];
+    // no date of birth yet: a small card to give it, so that the numbers of the page become the visitor's own
+    if (!storedBirthDate()) {
+      const ask = el("div", "uni-birth-ask");
+      const input = dateInput(tx.birthLabel);
+      const row = el("div", "uni-actions");
+      row.append(
+        input,
+        button(tx.save, "uni-primary", () => {
+          if (!storeBirthDate(input.value)) return input.focus();
+          birthChanged();
+          renderAll();
+        })
+      );
+      ask.append(el("strong", "", tx.birthAskTitle), el("p", "", tx.birthWhy), row, el("p", "hint", tx.birthPrivacy));
+      parts.push(ask);
+    }
+    parts.push(nextPart(tx, last, false), tiles, privacyPart(tx));
+    return parts;
   }
 
   function exploreArea(tx, last) {

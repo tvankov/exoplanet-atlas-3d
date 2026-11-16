@@ -5535,6 +5535,7 @@ birthSky = initBirthSky({
   figure: figureLines,
   showFigure: (id) => atlas?.showFigure(id),
   onChange: () => auth?.render(),
+  onDate: () => myStar?.reload(), // the date of birth brings the year of "your star"
 });
 // The learning paths (learn.js): every step speaks of the visitor (their age and their star, see mystar.js); a task goes to a place of the map
 // or switches on the real scale.

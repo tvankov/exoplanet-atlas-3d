@@ -6,6 +6,7 @@
 // tests/mystar.test.mjs.
 
 import { track } from "./stats.js";
+import { storedBirthDate } from "./birthsky.js";
 import { disclosure } from "./disclosure.js";
 import { sharePicture, preload, W, font, wrap, panel, drawPlanet, drawStar, starColor, planetCanvas, starCanvas } from "./sharecard.js";
 
@@ -167,6 +168,12 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
   };
   let year = read();
   let editing = false;
+  // the age: to the day when the date of birth is known (and of the same year), else from the year alone
+  const currentAge = () => {
+    const d = storedBirthDate();
+    if (d && d.year === year) return (Date.now() - d.noon.getTime()) / (365.2425 * 86400000);
+    return ageFrom(year);
+  };
   const fmt = (x, digits = 1) => x.toLocaleString(getLang(), { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
   // The pictures to share (sharecard.js draws the frame and the planets): no name and no year of birth. The star: its light on the way to the
@@ -290,7 +297,7 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
       s.append(row, el("p", "hint", tx.privacy));
       return [s];
     }
-    const age = ageFrom(year);
+    const age = currentAge();
     const host = pickHost(hosts(), age);
     preload(planets().map((p) => p.id)); // the Milky Way and the maps of the planets, ready before a click on "Share"
     if (!host || age < 4) {
@@ -367,11 +374,12 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
     sections,
     forget: () => ((year = null), write(null)),
     // the age from the year of birth, or null (for the learning paths: every step says what it means for you)
-    age: () => (year == null ? null : ageFrom(year)),
+    age: () => (year == null ? null : currentAge()),
+    reload: () => (year = read()), // after the date of birth was given somewhere else
     // the visitor's star, for the flight of the day: { name, year } or null (no year given, or too young for a star)
     current: () => {
       if (year == null) return null;
-      const age = ageFrom(year);
+      const age = currentAge();
       const host = age >= 4 ? pickHost(hosts(), age) : null;
       return host ? { name: host.name, year: leftIn(host.dist), dist: host.dist } : null;
     },
