@@ -190,10 +190,11 @@ export function initJournal({ getLang, explorer, explore, exists, onChange, onDe
     b.disabled = !ok;
     return b;
   }
-  function section(close) {
+  // heading: false when My Universe puts the journal in a fold that already says "Journal"
+  function section(close, { heading = true } = {}) {
     const tx = t();
     const s = el("section", "uni-section");
-    s.append(el("h3", "", tx.journal));
+    if (heading) s.append(el("h3", "", tx.journal));
     // notes
     const all = liveNotes(explorer.getState().notes);
     s.append(el("small", "", tx.notes));
@@ -285,5 +286,5 @@ export function initJournal({ getLang, explorer, explore, exists, onChange, onDe
 
   explorer.onRender(renderArea);
   renderArea();
-  return { section, render: renderArea };
+  return { section, render: renderArea, title: () => t().journal };
 }

@@ -2402,7 +2402,7 @@ body:has(#tour:not([hidden])) #dock {
   left: 50%;
   z-index: 12;
   box-sizing: border-box;
-  width: min(480px, calc(100vw - 32px));
+  width: min(520px, calc(100vw - 32px));
   max-height: calc(100dvh - 64px);
   overflow-y: auto;
   padding: 16px 18px 14px;
@@ -2688,47 +2688,6 @@ body:has(#sky-panel:not([hidden])) #dock {
 #universe-body {
   margin-bottom: 14px;
 }
-.uni-head {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 4px 10px;
-  margin-bottom: 10px;
-}
-.uni-head strong {
-  font-size: 18px;
-}
-.uni-head span {
-  font-size: 13px;
-  color: #7cffb2;
-}
-.uni-continue {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  background: rgba(124, 255, 178, 0.07);
-  border: 1px solid rgba(124, 255, 178, 0.3);
-  border-radius: 10px;
-}
-.uni-continue small {
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #7cffb2;
-}
-.uni-continue .hint {
-  font-size: 12px;
-  opacity: 0.75;
-}
-#profile-panel button.uni-go {
-  justify-self: start;
-  padding: 8px 14px;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
 .uni-section {
   margin-bottom: 12px;
 }
@@ -2746,13 +2705,6 @@ body:has(#sky-panel:not([hidden])) #dock {
 .uni-section .hint {
   font-size: 12px;
   opacity: 0.75;
-}
-.uni-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
 }
 .uni-places {
   display: flex;
@@ -2908,31 +2860,6 @@ body:has(#sky-panel:not([hidden])) #dock {
 }
 
 /* Your star, in My Universe. */
-.star-section p {
-  line-height: 1.5;
-}
-.star-card {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 8px;
-  padding: 10px 12px;
-  background: radial-gradient(circle at 90% 10%, rgba(255, 210, 150, 0.16), rgba(255, 255, 255, 0.04) 60%);
-  border: 1px solid rgba(255, 210, 150, 0.4);
-  border-radius: 10px;
-}
-.star-card strong {
-  font-size: 15px;
-}
-.star-named {
-  margin-bottom: 6px;
-  font-size: 13px;
-}
-.star-ages {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
-  margin: 4px 0 8px;
-}
 #universe-body input.star-year {
   width: 9em;
   padding: 7px 10px;
@@ -2943,42 +2870,8 @@ body:has(#sky-panel:not([hidden])) #dock {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 8px;
 }
-@media (max-width: 480px) {
-  .star-ages {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 
 /* The sky at your birth: astrology next to the real sky. */
-.birthsky-pair {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.birthsky-card {
-  display: grid;
-  gap: 4px;
-  padding: 10px 12px;
-  border-radius: 10px;
-}
-.birthsky-card small {
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.75;
-}
-.birthsky-card strong {
-  font-size: 15px;
-}
-.birthsky-card.astrology {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px dashed rgba(255, 255, 255, 0.3);
-}
-.birthsky-card.sky {
-  background: rgba(124, 255, 178, 0.08);
-  border: 1px solid rgba(124, 255, 178, 0.45);
-}
 .birthsky p {
   line-height: 1.5;
 }
@@ -3104,37 +2997,549 @@ body:has(#day-flight:not([hidden])) #dock,
 body:has(#day-flight:not([hidden])) #tour {
   display: none;
 }
-.uni-flight {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 12px;
-}
-.uni-flight .hint {
-  font-size: 12px;
-  opacity: 0.7;
-}
 #daily-panel .daily-flight {
   margin-top: 6px;
 }
 
 /* Recommendations with a reason, in My Universe. */
-.reco-item {
+
+/* My Universe, the dashboard (universe.js, mystar.js, birthsky.js, recommend.js): fewer frames and more room, the personal numbers large, one
+   main action per part in green, and the explanations and changes in small folds (disclosure.js). */
+#universe-body {
+  --uni-muted: rgba(230, 236, 255, 0.72);
+}
+#universe-body .uni-section {
+  margin: 0 0 24px;
+}
+#universe-body .uni-section > h3 {
+  margin: 0 0 10px;
+}
+#universe-body input.star-year {
+  box-sizing: border-box;
+  min-height: 40px;
+}
+
+/* the greeting, the level and the way to the next one */
+.uni-hero {
+  margin: 0 0 24px;
+}
+.uni-hello {
+  display: block;
+  font-size: 22px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.uni-level {
+  margin-top: 8px;
+}
+.uni-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #7cffb2;
+  background: rgba(124, 255, 178, 0.12);
+  border-radius: 999px;
+}
+.uni-bar {
+  height: 6px;
+  margin: 12px 0 6px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+.uni-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #3fcf86, #7cffb2);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.uni-hero .hint {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* the actions: one main button (green), the others as quiet links */
+#universe-body button.uni-primary {
+  min-height: 40px;
+  padding: 9px 18px;
+  font-weight: 600;
+  color: #04140b;
+  background: #7cffb2;
+  border: 0;
+  border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+#universe-body button.uni-primary:hover {
+  background: #a6ffcb;
+}
+#universe-body button.uni-primary:active {
+  transform: scale(0.98);
+}
+#universe-body button.uni-link {
+  min-height: 32px;
+  padding: 4px 2px;
+  font-size: 12.5px;
+  color: var(--uni-muted);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.3);
+  text-underline-offset: 3px;
+}
+#universe-body button.uni-link:hover {
+  color: #fff;
+}
+#universe-body :is(button, summary, a, input):focus-visible {
+  outline: 2px solid #7cffb2;
+  outline-offset: 2px;
+}
+.uni-actions {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 8px 14px;
+  margin: 12px 0 0;
+}
+.uni-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--uni-muted);
+}
+
+/* what next: a card with a picture, then a short list where each row is one button */
+.uni-discover,
+.star-hero {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 16px;
+}
+.uni-discover {
+  background: radial-gradient(circle at 12% 50%, rgba(120, 160, 255, 0.16), transparent 55%), rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.uni-discover-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.uni-discover-text strong {
+  font-size: 19px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+#universe-body .uni-discover-text .hint {
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+#universe-body .uni-discover-text button.uni-primary {
+  justify-self: start;
+  margin-top: 10px;
+}
+.uni-orb {
+  --orb: #8fa8d8;
+  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.55), var(--orb) 40%, #05070c 115%);
+  box-shadow: 0 0 26px -6px var(--orb), inset -6px -8px 14px rgba(0, 0, 0, 0.45);
+  transition: transform 0.4s ease;
+}
+.uni-discover:hover .uni-orb {
+  transform: scale(1.04);
+}
+.uni-orb.star {
+  background: radial-gradient(circle, #fff 0 9%, #ffe9c4 17%, rgba(255, 196, 120, 0.5) 36%, rgba(255, 170, 90, 0) 68%);
+  box-shadow: none;
+}
+.uni-orb.small {
+  width: 28px;
+  height: 28px;
+  box-shadow: 0 0 10px -3px var(--orb), inset -2px -3px 6px rgba(0, 0, 0, 0.45);
+}
+.uni-orb.small.star {
+  box-shadow: none;
+}
+.uni-orb.icon {
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-style: normal;
+  color: #cfe0ff;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: none;
+}
+.uni-discover .uni-orb.icon {
+  width: 72px;
+  height: 72px;
+  font-size: 30px;
+}
+.uni-list {
+  display: grid;
+  gap: 2px;
+  margin-top: 10px;
+}
+#universe-body button.uni-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
   padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 12px;
+  transition: background 0.2s ease;
 }
-.reco-item strong {
+#universe-body button.uni-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.uni-item-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.uni-item-text strong {
   font-size: 14px;
+  font-weight: 600;
 }
-.reco-item p {
+#universe-body .uni-item-text small {
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.7;
+}
+.uni-arrow {
+  font-size: 20px;
+  opacity: 0.45;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.uni-item:hover .uni-arrow {
+  opacity: 0.9;
+  transform: translateX(2px);
+}
+
+/* the folds: "Learn more", "Why?", "Edit"; the journal and the profile as folds as large as a part */
+#universe-body .uni-more {
+  margin: 8px 0 0;
+}
+#universe-body .uni-more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  margin: 0;
+  font-size: 12.5px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--uni-muted);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+#universe-body .uni-more > summary::-webkit-details-marker {
+  display: none;
+}
+#universe-body .uni-more > summary::before {
+  content: "›";
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+#universe-body .uni-more[open] > summary::before {
+  transform: rotate(90deg);
+}
+#universe-body .uni-more > summary:hover {
+  color: #fff;
+}
+#universe-body .uni-more > :not(summary) {
+  animation: uni-fade 0.25s ease-out;
+}
+#universe-body .uni-more p {
+  margin: 6px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+@keyframes uni-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+#universe-body .uni-fold {
+  margin: 0 0 12px;
+  padding: 2px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+#universe-body .uni-fold > summary {
+  min-height: 40px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7cffb2;
+}
+#universe-body .uni-fold > .uni-section {
+  margin: 4px 0 10px;
+}
+#universe-body .uni-privacy {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.75;
+}
+
+/* the numbers of the progress, without boxes */
+#universe-body .uni-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+#universe-body .uni-stat {
+  padding: 4px 2px;
+  background: none;
+}
+#universe-body .uni-stat b {
+  font-size: 22px;
+  font-weight: 650;
+}
+
+/* your star: one card, the name and the distance large */
+.star-hero {
+  background: radial-gradient(circle at 12% 45%, rgba(255, 200, 140, 0.18), transparent 55%), rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 210, 150, 0.22);
+}
+.star-glow {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 8%, #ffeccc 15%, rgba(255, 200, 130, 0.55) 32%, rgba(255, 170, 90, 0) 68%);
+}
+.star-body {
+  min-width: 0;
+}
+.star-name {
+  display: block;
+  font-size: 21px;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.star-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 4px 0 8px;
+  font-size: 12.5px;
+  color: var(--uni-muted);
+}
+.star-facts b {
+  font-size: 18px;
+  font-weight: 650;
+  color: #ffe0b5;
+}
+#universe-body p.star-key {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.star-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 12px;
+}
+
+/* the age on the planets: tiles with the number large and a small symbol of the planet */
+.star-ages {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.age-tile {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 12px 4px 10px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+}
+.age-tile.earth {
+  background: rgba(77, 163, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(77, 163, 255, 0.35);
+}
+.age-tile b {
+  font-size: 21px;
+  font-weight: 650;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.age-tile span {
+  font-size: 11px;
+  opacity: 0.75;
+}
+.age-dot {
+  --c: #99aaaa;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.7), var(--c) 45%, #000 140%);
+}
+.age-dot.ring::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: -6px;
+  bottom: 4px;
+  left: -6px;
+  border: 1.5px solid var(--c);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+  opacity: 0.85;
+}
+.age-tile.age-km {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 12px;
+}
+.age-km b {
+  font-size: 19px;
+}
+.age-km span {
+  font-size: 12px;
+}
+
+/* the sky at the birth: two cards, the symbol of the sign and the real figure of the constellation */
+.birthsky-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.birthsky-card {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  padding: 14px 10px 16px;
+  text-align: center;
+  border-radius: 16px;
+}
+.birthsky-card strong {
+  font-size: 16px;
+  font-weight: 650;
+}
+.birthsky-card.astrology {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+}
+.birthsky-card.sky {
+  background: radial-gradient(circle at 50% 40%, rgba(124, 255, 178, 0.12), transparent 70%), rgba(124, 255, 178, 0.03);
+  border: 1px solid rgba(124, 255, 178, 0.35);
+}
+.birthsky-glyph {
+  display: grid;
+  place-items: center;
+  height: 80px;
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols", "Apple Symbols", system-ui, sans-serif;
+  font-size: 46px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.85);
+}
+.birthsky-figure {
+  width: 100%;
+  max-width: 130px;
+  height: 80px;
+}
+.birthsky-figure line {
+  stroke: #b8e6c1;
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  opacity: 0.75;
+}
+.birthsky-figure circle {
+  fill: #fff;
+}
+#universe-body p.birthsky-key {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* the ascendant and the data of the birth, as a few facts */
+.uni-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 0;
+}
+.uni-facts dt {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+.uni-facts dd {
   margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 550;
+  overflow-wrap: anywhere;
 }
-.reco-item button {
-  flex: none;
+.uni-facts .wide {
+  grid-column: 1 / -1;
+}
+.uni-facts .big dd {
+  font-size: 16px;
+  font-weight: 650;
+}
+.uni-facts .sky dd {
+  color: #b8e6c1;
+}
+
+@media (max-width: 480px) {
+  .uni-hello {
+    font-size: 20px;
+  }
+  .uni-discover,
+  .star-hero {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+  .uni-discover .uni-orb,
+  .uni-discover .uni-orb.icon,
+  .star-glow {
+    width: 56px;
+    height: 56px;
+  }
+  .star-ages {
+    gap: 6px;
+  }
+  .age-tile b {
+    font-size: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #universe-body *,
+  #universe-body *::before {
+    transition: none !important;
+    animation: none !important;
+  }
 }

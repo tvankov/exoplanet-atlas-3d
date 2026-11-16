@@ -478,5 +478,13 @@ export function initExplorer({ getLang, text, explore }) {
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   favButton.addEventListener("click", () => toggleFavourite());
   render();
-  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf, update, resetAll, showing, getCurrent: () => current, onRender: (fn) => renderListeners.push(fn) };
+  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf,
+    // the level and the way to the next one, for My Universe: { level, xp, share (0 to 1), toNext (the text) }
+    progress: () => {
+      const level = levelOf(state.xp);
+      const low = xpForLevel(level);
+      const high = xpForLevel(level + 1);
+      return { level, xp: state.xp, share: (state.xp - low) / (high - low), toNext: xpText().toNext(high - state.xp, level + 1) };
+    },
+    update, resetAll, showing, getCurrent: () => current, onRender: (fn) => renderListeners.push(fn) };
 }

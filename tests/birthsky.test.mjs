@@ -1,7 +1,7 @@
 // Tests of "The sky at your birth" (web/birthsky.js): the Sun's longitude, the sign of astrology and the real constellation. Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { sunLongitude, tropicalSign, sunConstellation, parseDate } from "../web/birthsky.js";
+import { sunLongitude, tropicalSign, sunConstellation, parseDate, projectFigure } from "../web/birthsky.js";
 
 const at = (iso) => new Date(iso);
 const close = (a, b, tolerance) => Math.abs(((a - b + 540) % 360) - 180) < tolerance;
@@ -85,4 +85,17 @@ test("the search for a place: the beginning of the name, accents do not matter, 
   assert.deepEqual(searchPlaces(places, "dus").map((p) => p[0]), ["Düsseldorf", "Dusseldorf Mini"]);
   assert.deepEqual(searchPlaces(places, "Duesseld").map((p) => p[0]), ["Düsseldorf"]);
   assert.deepEqual(searchPlaces(places, "d"), []);
+});
+
+test("the drawing of a constellation fits its box, east to the left and north up as in the sky", () => {
+  // three stars: one in the middle, one a little east (larger right ascension), one a little north
+  const lines = [[[60, 20, 1], [62, 20, 3]], [[60, 20, 1], [60, 22, 2]]];
+  const { segments, stars } = projectFigure(lines, 120, 80, 8);
+  assert.equal(stars.length, 3); // the middle star once, although it is in two lines
+  assert.equal(segments.length, 2);
+  for (const [x, y] of stars) assert.ok(x >= 7.99 && x <= 112.01 && y >= 7.99 && y <= 72.01);
+  const [middle, east, north] = stars;
+  assert.ok(east[0] < middle[0], "east is drawn to the left");
+  assert.ok(north[1] < middle[1], "north is drawn up");
+  assert.equal(projectFigure([]), null);
 });

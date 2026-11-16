@@ -4,6 +4,7 @@
 // tests/recommend.test.mjs; the facts in the reasons (radius, temperature, host star) are those of the data of the map.
 
 import { track } from "./stats.js";
+import { disclosure } from "./disclosure.js";
 
 const ZODIAC = ["Ari", "Tau", "Gem", "Cnc", "Leo", "Vir", "Lib", "Sco", "Sgr", "Cap", "Aqr", "Psc"];
 
@@ -77,6 +78,7 @@ export const RECO_TEXT = {
     eventLabel: (title, when) => `${title} · ${when}`,
     go: "Show", reset: "Reset the recommendations", resetDone: "Reset: from now on only your interest and what you look at next count.",
     note: "Recommendations follow your interest and what you looked at here. Nothing is hidden: the whole map stays open.",
+    about: "How recommendations are made",
   },
   de: {
     title: "Für dich empfohlen",
@@ -90,6 +92,7 @@ export const RECO_TEXT = {
     eventLabel: (title, when) => `${title} · ${when}`,
     go: "Ansehen", reset: "Empfehlungen zurücksetzen", resetDone: "Zurückgesetzt: Ab jetzt zählen nur dein Interesse und was du als Nächstes ansiehst.",
     note: "Empfehlungen folgen deinem Interesse und dem, was du hier angesehen hast. Nichts wird versteckt: Die ganze Karte bleibt offen.",
+    about: "Wie Empfehlungen entstehen",
   },
   ja: {
     title: "あなたへのおすすめ",
@@ -103,6 +106,7 @@ export const RECO_TEXT = {
     eventLabel: (title, when) => `${title} · ${when}`,
     go: "見る", reset: "おすすめをリセット", resetDone: "リセットしました。これからは興味とこれから見るものだけが使われます。",
     note: "おすすめは、あなたの興味とここで見たものに基づきます。何も隠されず、地図全体はいつでも開いています。",
+    about: "おすすめの選び方",
   },
   bg: {
     title: "Препоръчано за теб",
@@ -116,11 +120,13 @@ export const RECO_TEXT = {
     eventLabel: (title, when) => `${title} · ${when}`,
     go: "Виж", reset: "Нулирай препоръките", resetDone: "Нулирано: отсега броят само интересът ти и това, което разглеждаш нататък.",
     note: "Препоръките следват интереса ти и това, което си разгледал тук. Нищо не се скрива: цялата карта остава отворена.",
+    about: "Как се избират препоръките",
   },
 };
 
-// The section of My Universe. data() gives { exo, solar }, nameOf(item) the name to show, act(item) opens it, nextEvent() the next event
-// ({ title, countdown }) or null.
+// For My Universe (universe.js draws them). data() gives { exo, solar }, nameOf(item) the name to show, act(item) opens it, nextEvent() the next
+// event ({ title, countdown }) or null. items(): [{ name (the item, for describe), label, reason, go() }]; about(onChange): the fold with the note
+// and the reset.
 export function initRecommendations({ getLang, explorer, data, nameOf, act, nextEvent }) {
   const t = () => RECO_TEXT[getLang()] ?? RECO_TEXT.en;
   const el = (tag, cls, content) => {
@@ -128,12 +134,6 @@ export function initRecommendations({ getLang, explorer, data, nameOf, act, next
     if (cls) e.className = cls;
     if (content != null) e.textContent = content;
     return e;
-  };
-  const button = (label, cls, onClick) => {
-    const b = el("button", cls, label);
-    b.type = "button";
-    b.addEventListener("click", onClick);
-    return b;
   };
   let message = "";
   const fmt = (x, d) => x.toLocaleString(getLang(), { maximumFractionDigits: d, minimumFractionDigits: d });
@@ -144,12 +144,12 @@ export function initRecommendations({ getLang, explorer, data, nameOf, act, next
     if (r.key === "sibling") return tx.sibling(r.of, r.host);
     return tx[r.key];
   }
-  function section(closePanel, onChange) {
+  function items() {
     const tx = t();
     const state = explorer.getState();
     const { exo, solar } = data();
     const next = nextEvent();
-    const items = recommend({
+    return recommend({
       interest: explorer.getProfile().interest,
       exo,
       solar,
@@ -159,37 +159,32 @@ export function initRecommendations({ getLang, explorer, data, nameOf, act, next
       seenFigures: state.total.constellations ?? [],
       since: state.recoReset ?? 0,
       hasEvent: !!next,
-    });
-    const s = el("section", "uni-section reco");
-    s.append(el("h3", "", tx.title));
-    for (const item of items) {
-      const row = el("div", "reco-item");
-      const label = item.kind === "event" && next ? tx.eventLabel(next.title, next.countdown) : nameOf(item);
-      const text = el("div", "");
-      text.append(el("strong", "", label), el("p", "hint", reasonText(item.reason)));
-      row.append(
-        text,
-        button(tx.go, "account-main", () => {
-          track(`reco-${item.reason.key}`);
-          closePanel?.();
-          act(item);
-        })
-      );
-      s.append(row);
-    }
-    s.append(el("p", "hint", tx.note));
-    s.append(
-      button(tx.reset, "account-link", () => {
-        explorer.update((st) => {
-          st.recoReset = Date.now();
-        });
-        message = tx.resetDone;
-        track("reco-reset");
-        onChange?.();
-      })
-    );
-    if (message) s.append(el("p", "account-ok", message));
-    return s;
+    }).map((item) => ({
+      kind: item.kind,
+      name: item.name,
+      label: item.kind === "event" && next ? tx.eventLabel(next.title, next.countdown) : nameOf(item),
+      reason: reasonText(item.reason),
+      go: () => {
+        track(`reco-${item.reason.key}`);
+        act(item);
+      },
+    }));
   }
-  return { section };
+  function about(onChange) {
+    const tx = t();
+    const reset = el("button", "uni-link", tx.reset);
+    reset.type = "button";
+    reset.addEventListener("click", () => {
+      explorer.update((st) => {
+        st.recoReset = Date.now();
+      });
+      message = tx.resetDone;
+      track("reco-reset");
+      onChange?.();
+    });
+    const children = [el("p", "hint", tx.note), reset];
+    if (message) children.push(el("p", "account-ok", message));
+    return disclosure("reco-about", tx.about, children);
+  }
+  return { items, about, title: () => t().title };
 }

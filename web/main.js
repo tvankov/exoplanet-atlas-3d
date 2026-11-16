@@ -5371,7 +5371,8 @@ myStar = initMyStar({
     }
     return namedList.map((s) => ({ ...s, constellation: s.figure ? sky.data.nameOf(s.figure, lang) : null }));
   },
-  planets: () => PLANETS.map((p) => ({ name: solarName(p.name, lang), years: p.years })),
+  // the colour of each planet for its small symbol, and the ring of Saturn
+  planets: () => PLANETS.map((p) => ({ name: solarName(p.name, lang), years: p.years, color: `#${p.color.toString(16).padStart(6, "0")}`, rings: p.name === "Saturn" })),
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);
@@ -5452,6 +5453,12 @@ birthSky = initBirthSky({
     const c = sky?.data.constellations.find((x) => x.id === id);
     return c ? sky.data.nameOf(c, lang) : id;
   },
+  // the lines of the figure from the stars of the map: [[ra, dec, mag], ...] (a star without a position is left out)
+  figure: (id) => {
+    const c = sky?.data.constellations.find((x) => x.id === id);
+    if (!c) return null;
+    return c.lines.map((line) => line.map((h) => sky.data.stars[h]).filter(Boolean).map((s) => [s[0], s[1], s[3]]));
+  },
   showFigure: (id) => atlas?.showFigure(id),
   onChange: () => auth?.render(),
 });
@@ -5467,6 +5474,18 @@ universe = initUniverse({
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);
+  },
+  // what the map knows of a place, for the cards of My Universe
+  describe: (name) => {
+    const place = resolvePlace(name);
+    if (!place) return null;
+    if (place.kind === "planet") {
+      const p = PLANETS.find((x) => x.name === place.name);
+      return { kind: "solar", name: solarName(p.name, lang), color: `#${p.color.toString(16).padStart(6, "0")}`, au: p.au };
+    }
+    if (place.kind === "exo") return { kind: "exo", name: place.planet.pl_name, dist: place.star.dist_ly, temp: place.planet.pl_eqt ?? null };
+    if (place.star === SUN_POINT) return { kind: "sun", name: sunLabel() };
+    return { kind: "star", name: place.star.hostname, dist: place.star.dist_ly, planets: place.star.planets.length };
   },
   openSky: () => skyEvents?.open(),
   openAtlas: () => atlas?.open(),

@@ -6,6 +6,7 @@
 // tests/mystar.test.mjs.
 
 import { track } from "./stats.js";
+import { disclosure } from "./disclosure.js";
 
 export const KEY = "birth-year"; // localStorage, never sent, never saved to the account
 const EARTH_ORBIT_KM = 2 * Math.PI * 149597870.7; // the length of one trip round the Sun, about 940 million km
@@ -59,8 +60,10 @@ export const STAR_TEXT = {
     namedText: "You can see this one without a telescope: its light set off at about the same time.",
     young: "The light of even the nearest star, Proxima Centauri, needs 4.2 years to reach us. Your star is still on its way.",
     uncertain: "Distances are measured with some uncertainty, so the year is approximate.",
-    show: "Show in 3D", share: "Share as a picture", change: "Change the year", remove: "Remove the year",
-    ages: "Your age on the planets", travelled: (km) => `Since you were born, the Earth has carried you about ${km} km round the Sun.`,
+    show: "View in the 3D model", share: "Share as a picture", more: "Learn more", edit: "change", cancel: "Cancel", remove: "remove",
+    yearLine: (y) => `Year of birth ${y}`, ly: "light years", planets: (n) => (n === 1 ? "known planet" : "known planets"),
+    key: (year) => `Its light arriving today set off around ${year}: about when you were born.`,
+    ages: "Your age on the planets", km: "travelled round the Sun with the Earth", kmUnit: "km",
     years: (n) => `${n} years`,
     cardTitle: "My star", cardLight: (name, year) => `The light of ${name} that arrives today set off around ${year}, the year I was born.`,
     cardDist: (dist) => `${dist} light years away`,
@@ -76,8 +79,10 @@ export const STAR_TEXT = {
     namedText: "Diesen siehst du ohne Teleskop: Sein Licht brach etwa zur selben Zeit auf.",
     young: "Selbst das Licht des nächsten Sterns, Proxima Centauri, braucht 4,2 Jahre bis zu uns. Dein Stern ist noch unterwegs.",
     uncertain: "Entfernungen sind mit einer Messunsicherheit bekannt, das Jahr ist deshalb ungefähr.",
-    show: "In 3D zeigen", share: "Als Bild teilen", change: "Jahr ändern", remove: "Jahr entfernen",
-    ages: "Dein Alter auf den Planeten", travelled: (km) => `Seit deiner Geburt hat dich die Erde etwa ${km} km um die Sonne getragen.`,
+    show: "Im 3D-Modell ansehen", share: "Als Bild teilen", more: "Mehr erfahren", edit: "ändern", cancel: "Abbrechen", remove: "entfernen",
+    yearLine: (y) => `Geburtsjahr ${y}`, ly: "Lichtjahre", planets: (n) => (n === 1 ? "bekannter Planet" : "bekannte Planeten"),
+    key: (year) => `Sein Licht, das heute ankommt, brach um ${year} auf: etwa als du geboren wurdest.`,
+    ages: "Dein Alter auf den Planeten", km: "mit der Erde um die Sonne gereist", kmUnit: "km",
     years: (n) => `${n} Jahre`,
     cardTitle: "Mein Stern", cardLight: (name, year) => `Das Licht von ${name}, das heute ankommt, brach um ${year} auf, in meinem Geburtsjahr.`,
     cardDist: (dist) => `${dist} Lichtjahre entfernt`,
@@ -93,8 +98,10 @@ export const STAR_TEXT = {
     namedText: "この星は望遠鏡なしで見えます。その光もほぼ同じ頃に出発しました。",
     young: "いちばん近いプロキシマ・ケンタウリの光でさえ、届くまでに4.2年かかります。あなたの星の光はまだ旅の途中です。",
     uncertain: "距離には測定の不確かさがあるため、年はおおよそです。",
-    show: "3Dで見る", share: "画像で共有", change: "年を変更", remove: "年を削除",
-    ages: "惑星でのあなたの年齢", travelled: (km) => `生まれてから、地球はあなたを太陽のまわりに約${km} km運びました。`,
+    show: "3Dモデルで見る", share: "画像で共有", more: "くわしく", edit: "変更", cancel: "キャンセル", remove: "削除",
+    yearLine: (y) => `生まれた年：${y}`, ly: "光年", planets: () => "個の既知の惑星",
+    key: (year) => `今日届く光は${year}年ごろ、あなたが生まれた頃に出発しました。`,
+    ages: "惑星でのあなたの年齢", km: "地球とともに太陽のまわりを旅した距離", kmUnit: "km",
     years: (n) => `${n}歳`,
     cardTitle: "私の星", cardLight: (name, year) => `今日届く${name}の光は、私が生まれた${year}年ごろに出発しました。`,
     cardDist: (dist) => `${dist}光年`,
@@ -110,15 +117,17 @@ export const STAR_TEXT = {
     namedText: "Тази се вижда без телескоп: светлината ѝ е тръгнала приблизително по същото време.",
     young: "Дори светлината на най-близката звезда, Проксима Кентавър, пътува 4,2 години до нас. Твоята звезда все още е на път.",
     uncertain: "Разстоянията са измерени с известна неточност, затова годината е приблизителна.",
-    show: "Покажи в 3D", share: "Сподели като картинка", change: "Промени годината", remove: "Премахни годината",
-    ages: "Твоята възраст на планетите", travelled: (km) => `От раждането ти Земята те е пренесла около ${km} км около Слънцето.`,
+    show: "Виж в 3D модела", share: "Сподели като картинка", more: "Научи повече", edit: "промени", cancel: "Отказ", remove: "премахни",
+    yearLine: (y) => `Година на раждане: ${y}`, ly: "светлинни години", planets: (n) => (n === 1 ? "известна планета" : "известни планети"),
+    key: (year) => `Светлината ѝ, която пристига днес, е тръгнала около ${year} г., приблизително когато си се родил.`,
+    ages: "Твоята възраст на планетите", km: "пропътувани със Земята около Слънцето", kmUnit: "км",
     years: (n) => `${n} години`,
     cardTitle: "Моята звезда", cardLight: (name, year) => `Светлината на ${name}, която пристига днес, е тръгнала около ${year} г., годината, в която съм роден.`,
     cardDist: (dist) => `на ${dist} светлинни години`,
   },
 };
 
-// getLang(); hosts(): [{ name, dist, planets }]; named(): [{ name, dist, mag, constellation }]; planets(): [{ name, years }] of the Solar System
+// getLang(); hosts(): [{ name, dist, planets }]; named(): [{ name, dist, mag, constellation }]; planets(): [{ name, years, color, rings }] of the Solar System
 // (the names in the language of the page); explore(name) flies to a host star.
 export function initMyStar({ getLang, hosts, named, planets, explore, onChange }) {
   const t = () => STAR_TEXT[getLang()] ?? STAR_TEXT.en;
@@ -220,7 +229,9 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  function section(closePanel) {
+  // Two parts for My Universe: the star (a highlight card) and the age on the planets (tiles). The year is asked first, and changed with two small
+  // links at the bottom.
+  function sections(closePanel) {
     const tx = t();
     const s = el("section", "uni-section star-section");
     s.append(el("h3", "", tx.title));
@@ -237,7 +248,7 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
       if (year != null) input.value = String(year);
       row.append(
         input,
-        button(tx.find, "account-main", () => {
+        button(tx.find, "uni-primary", () => {
           const y = Number(input.value);
           if (!validYear(y)) return input.focus();
           year = y;
@@ -247,62 +258,80 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
           onChange?.();
         })
       );
+      if (editing) row.append(button(tx.cancel, "uni-link", () => ((editing = false), onChange?.())));
       s.append(row, el("p", "hint", tx.privacy));
-      return s;
+      return [s];
     }
     const age = ageFrom(year);
     const host = pickHost(hosts(), age);
     if (!host || age < 4) {
       s.append(el("p", "", tx.young));
     } else {
-      const card = el("div", "star-card");
-      card.append(el("strong", "", tx.hostLine(host.name, fmt(host.dist))), el("p", "", tx.hostText(leftIn(host.dist), host.planets)));
-      const actions = el("div", "uni-places");
+      const card = el("div", "star-hero");
+      const glow = el("div", "star-glow");
+      glow.setAttribute("aria-hidden", "true");
+      const body = el("div", "star-body");
+      const facts = el("div", "star-facts");
+      const fact = (value, label) => {
+        const f = el("span", "");
+        f.append(el("b", "", value), ` ${label}`);
+        return f;
+      };
+      facts.append(fact(fmt(host.dist), tx.ly), fact(String(host.planets), tx.planets(host.planets)));
+      const actions = el("div", "star-actions");
       actions.append(
-        button(tx.show, "account-main", () => {
+        button(tx.show, "uni-primary", () => {
           track("star-show");
           closePanel?.();
           explore(host.name);
         }),
-        button(tx.share, "", () => shareCard(host))
+        button(tx.share, "uni-link", () => shareCard(host))
       );
-      card.append(actions);
+      body.append(el("strong", "star-name", host.name), facts, el("p", "star-key", tx.key(leftIn(host.dist))), actions);
+      card.append(glow, body);
       s.append(card);
+      // the explanation, the star to see without a telescope, the uncertainty: one click away
+      const more = [el("p", "", tx.intro)];
       const star = pickNamed(named(), age);
-      if (star) {
-        const n = el("div", "star-named");
-        n.append(el("strong", "", tx.namedLine(star.name, fmt(star.dist), star.constellation)), el("p", "hint", tx.namedText));
-        s.append(n);
-      }
-      s.append(el("p", "hint", tx.uncertain));
+      if (star) more.push(el("p", "", `${tx.namedLine(star.name, fmt(star.dist), star.constellation)}. ${tx.namedText}`));
+      more.push(el("p", "hint", tx.uncertain));
+      s.append(disclosure("star-more", tx.more, more));
     }
-    // the age on the planets, and the way round the Sun
+    // the age on the planets: the Earth first (its year is the age itself), then the others from the Sun outwards, and the way round the Sun
+    const a = el("section", "uni-section ages-section");
+    a.append(el("h3", "", tx.ages));
     const list = el("div", "star-ages");
-    // the Earth first (its year is the age itself), then the others from the Sun outwards
     const ordered = [...planets()].sort((p, q) => (q.years === 1) - (p.years === 1));
     for (const p of ordered) {
-      const cell = el("div", "uni-stat");
-      cell.append(el("b", "", fmt(ageOn(age, p.years), ageOn(age, p.years) < 10 ? 1 : 0)), el("span", "", p.name));
-      list.append(cell);
+      const value = ageOn(age, p.years);
+      const tile = el("div", `age-tile${p.years === 1 ? " earth" : ""}`);
+      const dot = el("i", `age-dot${p.rings ? " ring" : ""}`);
+      dot.style.setProperty("--c", p.color ?? "#9aa");
+      dot.setAttribute("aria-hidden", "true");
+      tile.append(dot, el("b", "", fmt(value, value < 10 ? 1 : 0)), el("span", "", p.name));
+      list.append(tile);
     }
-    s.append(el("small", "", tx.ages), list);
-    // "32 billion", "32 Milliarden", "320億": the number in words of the language of the page
-    const km = new Intl.NumberFormat(getLang(), { notation: "compact", compactDisplay: "long", maximumFractionDigits: 1 }).format(kmRoundSun(age));
-    s.append(el("p", "hint", tx.travelled(km)));
-    const row = el("div", "uni-places");
-    row.append(
-      button(tx.change, "account-link", () => ((editing = true), onChange?.())),
-      button(tx.remove, "account-link", () => {
+    // "32 Mrd.", "32B", "320億": the number short, in the language of the page
+    const km = new Intl.NumberFormat(getLang(), { notation: "compact", maximumFractionDigits: 1 }).format(kmRoundSun(age));
+    const travel = el("div", "age-tile age-km");
+    travel.append(el("b", "", `${km} ${tx.kmUnit}`), el("span", "", tx.km));
+    list.append(travel);
+    a.append(list);
+    const editRow = el("div", "uni-edit");
+    editRow.append(
+      el("span", "", tx.yearLine(year)),
+      button(tx.edit, "uni-link", () => ((editing = true), onChange?.())),
+      button(tx.remove, "uni-link", () => {
         year = null;
         write(null);
         onChange?.();
       })
     );
-    s.append(row);
-    return s;
+    a.append(editRow);
+    return [s, a];
   }
   return {
-    section,
+    sections,
     forget: () => ((year = null), write(null)),
     // the visitor's star, for the flight of the day: { name, year } or null (no year given, or too young for a star)
     current: () => {

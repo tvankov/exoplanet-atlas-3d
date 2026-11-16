@@ -6,10 +6,17 @@
 
 import { track } from "./stats.js";
 import { INTERESTS, LEVELS } from "./profile.js";
+import { disclosure } from "./disclosure.js";
 
 export const UNIVERSE_TEXT = {
   en: {
     title: "My Universe",
+    heroBack: (name) => (name ? `Welcome back, ${name}` : "Welcome back"),
+    next: "What next", continueGo: "Continue exploring", discover: "Discover", lastSeen: (when) => `Seen last · ${when}`, forYou: "For you",
+    kindSolar: (au) => `Planet of the Solar System · ${au} AU from the Sun`,
+    kindExo: (dist, temp) => `Exoplanet · ${dist} light years${temp ? ` · ${temp} K` : ""}`,
+    kindStar: (dist, n) => `Star · ${dist} light years · ${n} ${n === 1 ? "planet" : "planets"}`, kindSun: "Our star, the Sun",
+    progress: "Your progress",
     hello: (name) => (name ? `Welcome, ${name}` : "Welcome, Explorer"),
     back: (name) => (name ? `Welcome back, ${name}.` : "Welcome back."),
     levelLine: (level, xp) => `Level ${level} · ${xp} XP`,
@@ -35,6 +42,12 @@ export const UNIVERSE_TEXT = {
   },
   de: {
     title: "Mein Universum",
+    heroBack: (name) => (name ? `Willkommen zurück, ${name}` : "Willkommen zurück"),
+    next: "Als Nächstes", continueGo: "Weiter erkunden", discover: "Entdecken", lastSeen: (when) => `Zuletzt angesehen · ${when}`, forYou: "Für dich",
+    kindSolar: (au) => `Planet des Sonnensystems · ${au} AE von der Sonne`,
+    kindExo: (dist, temp) => `Exoplanet · ${dist} Lichtjahre${temp ? ` · ${temp} K` : ""}`,
+    kindStar: (dist, n) => `Stern · ${dist} Lichtjahre · ${n} ${n === 1 ? "Planet" : "Planeten"}`, kindSun: "Unser Stern, die Sonne",
+    progress: "Dein Fortschritt",
     hello: (name) => (name ? `Willkommen, ${name}` : "Willkommen, Explorer"),
     back: (name) => (name ? `Willkommen zurück, ${name}.` : "Willkommen zurück."),
     levelLine: (level, xp) => `Stufe ${level} · ${xp} XP`,
@@ -60,6 +73,12 @@ export const UNIVERSE_TEXT = {
   },
   ja: {
     title: "マイ・ユニバース",
+    heroBack: (name) => (name ? `おかえりなさい、${name}さん` : "おかえりなさい"),
+    next: "次はこちら", continueGo: "探検をつづける", discover: "発見する", lastSeen: (when) => `最後に見たもの · ${when}`, forYou: "あなたへ",
+    kindSolar: (au) => `太陽系の惑星 · 太陽から${au} au`,
+    kindExo: (dist, temp) => `系外惑星 · ${dist}光年${temp ? ` · ${temp} K` : ""}`,
+    kindStar: (dist, n) => `恒星 · ${dist}光年 · 惑星${n}個`, kindSun: "わたしたちの恒星、太陽",
+    progress: "あなたの進み具合",
     hello: (name) => (name ? `ようこそ、${name}さん` : "ようこそ、エクスプローラー"),
     back: (name) => (name ? `おかえりなさい、${name}さん。` : "おかえりなさい。"),
     levelLine: (level, xp) => `レベル${level} · ${xp} XP`,
@@ -85,6 +104,12 @@ export const UNIVERSE_TEXT = {
   },
   bg: {
     title: "Моята вселена",
+    heroBack: (name) => (name ? `Добре дошъл отново, ${name}` : "Добре дошъл отново"),
+    next: "Следва", continueGo: "Продължи изследването", discover: "Открий", lastSeen: (when) => `Разгледано последно · ${when}`, forYou: "За теб",
+    kindSolar: (au) => `Планета от Слънчевата система · ${au} а.е. от Слънцето`,
+    kindExo: (dist, temp) => `Екзопланета · ${dist} светлинни години${temp ? ` · ${temp} K` : ""}`,
+    kindStar: (dist, n) => `Звезда · ${dist} светлинни години · ${n} ${n === 1 ? "планета" : "планети"}`, kindSun: "Нашата звезда, Слънцето",
+    progress: "Твоят напредък",
     hello: (name) => (name ? `Добре дошъл, ${name}` : "Добре дошъл, изследователю"),
     back: (name) => (name ? `Добре дошъл отново, ${name}.` : "Добре дошъл отново."),
     levelLine: (level, xp) => `Ниво ${level} · ${xp} XP`,
@@ -110,9 +135,10 @@ export const UNIVERSE_TEXT = {
   },
 };
 
-// explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. openSky(), openAtlas(),
+// explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. describe(name): what the map
+// knows of a place ({ kind: "solar" | "exo" | "star" | "sun", name, color, au, dist, temp, planets }) or null. openSky(), openAtlas(),
 // closePanel(): open the events, the zodiac, close the profile panel.
-export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, explore, openSky, openAtlas, closePanel }) {
+export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, explore, describe, openSky, openAtlas, closePanel }) {
   const t = () => UNIVERSE_TEXT[getLang()] ?? UNIVERSE_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -202,6 +228,8 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
   }
 
   // ---------------------------------------------------------------- the dashboard in the profile panel
+  // First what matters to the visitor (who, which level, what next), then their star, their age on the planets and the sky at their birth, then
+  // the progress, the discoveries and the journal. One main action per part; explanations and changes sit in small folds (disclosure.js).
   function section(title, ...children) {
     const s = el("section", "uni-section");
     s.append(el("h3", "", title), ...children);
@@ -212,6 +240,55 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     for (const { name } of items) row.append(button(name, "uni-place", () => goTo(name)));
     return row;
   }
+  const fmt = (x, d = 1) => x.toLocaleString(getLang(), { maximumFractionDigits: d, minimumFractionDigits: d });
+  // A round picture for a place: the colour of a planet of the Solar System, a colour by the temperature for an exoplanet (cold blue to hot
+  // red, a schematic, the number is written next to it), a glow for a star.
+  const tempColor = (k) => (k == null ? "#8fa8d8" : k < 200 ? "#cfe3ff" : k < 330 ? "#4d8fe0" : k < 600 ? "#d9a066" : k < 1200 ? "#c8643a" : "#ff7a3d");
+  function orb(info, size = "") {
+    const o = el("i", `uni-orb ${size}`.trim());
+    o.setAttribute("aria-hidden", "true");
+    if (!info) return o;
+    if (info.kind === "star" || info.kind === "sun") o.classList.add("star");
+    else o.style.setProperty("--orb", info.kind === "solar" ? info.color : tempColor(info.temp));
+    return o;
+  }
+  function icon(glyph) {
+    const i = el("i", "uni-orb small icon", glyph);
+    i.setAttribute("aria-hidden", "true");
+    return i;
+  }
+  function contextOf(info) {
+    const tx = t();
+    if (!info) return "";
+    if (info.kind === "solar") return tx.kindSolar(fmt(info.au, info.au < 10 ? 2 : 1));
+    if (info.kind === "exo") return tx.kindExo(fmt(info.dist), info.temp ? fmt(Math.round(info.temp), 0) : null);
+    if (info.kind === "star") return tx.kindStar(fmt(info.dist), info.planets);
+    return tx.kindSun;
+  }
+  // the big card: a picture, a label, the name, one line of context and the main action
+  function discoverCard({ picture, label, title, context, action, go }) {
+    const c = el("div", "uni-discover");
+    const text = el("div", "uni-discover-text");
+    text.append(el("small", "", label), el("strong", "", title));
+    if (context) text.append(el("span", "hint", context));
+    text.append(button(action, "uni-primary", go));
+    c.append(picture, text);
+    return c;
+  }
+  // one row of the list "What next": the whole row is the button
+  function item(picture, title, sub, go) {
+    const b = el("button", "uni-item");
+    b.type = "button";
+    const text = el("span", "uni-item-text");
+    text.append(el("strong", "", title));
+    if (sub) text.append(el("small", "", sub));
+    const arrow = el("span", "uni-arrow", "›");
+    arrow.setAttribute("aria-hidden", "true");
+    b.append(picture, text, arrow);
+    b.addEventListener("click", go);
+    return b;
+  }
+
   function renderDashboard(container) {
     const tx = t();
     const p = explorer.getProfile();
@@ -219,71 +296,84 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     const last = explorer.getLast();
     const parts = [];
 
-    const head = el("div", "uni-head");
-    head.append(el("strong", "", tx.hello(p.name)), el("span", "", tx.levelLine(explorer.levelOf(state.xp), state.xp)));
-    parts.push(head);
+    // 1. who and which level, with the way to the next one
+    const pr = explorer.progress();
+    const hero = el("div", "uni-hero");
+    const level = el("div", "uni-level");
+    level.append(el("span", "uni-badge", tx.levelLine(pr.level, pr.xp)));
+    const bar = el("div", "uni-bar");
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-valuemin", "0");
+    bar.setAttribute("aria-valuemax", "100");
+    bar.setAttribute("aria-valuenow", String(Math.round(pr.share * 100)));
+    bar.setAttribute("aria-label", pr.toNext);
+    const fill = el("i", "");
+    fill.style.width = `${Math.max(2, Math.min(100, pr.share * 100))}%`;
+    bar.append(fill);
+    hero.append(el("strong", "uni-hello", last ? tx.heroBack(p.name) : tx.hello(p.name)), level, bar, el("small", "hint", pr.toNext));
+    parts.push(hero);
 
-    // the flight of the day (dailyflight.js)
-    if (flight) {
-      const box = el("div", "uni-flight");
-      box.append(
-        button(`✈ ${flight.label()}`, "account-main", () => {
+    // 2. what next: the last place (or the first recommendation) as a card, then the flight of the day, the discovery of the day and the
+    // recommendations as a short list
+    const next = el("section", "uni-section uni-next");
+    next.append(el("h3", "", tx.next));
+    const recos = reco ? reco.items() : [];
+    let rest = recos;
+    if (last) {
+      const info = describe?.(last.name);
+      next.append(
+        discoverCard({
+          picture: orb(info),
+          label: tx.lastSeen(ago(last.t)),
+          title: info?.name ?? last.name,
+          context: contextOf(info),
+          action: tx.continueGo,
+          go: () => {
+            track("continue-click");
+            goTo(last.name);
+          },
+        })
+      );
+    } else if (recos.length) {
+      const first = recos[0];
+      rest = recos.slice(1);
+      const info = first.kind === "planet" ? describe?.(first.name) : null;
+      next.append(
+        discoverCard({
+          picture: info ? orb(info) : icon(first.kind === "event" ? "☄︎" : "✦"),
+          label: tx.forYou,
+          title: first.label,
+          context: first.reason,
+          action: tx.discover,
+          go: () => (closePanel?.(), first.go()),
+        })
+      );
+    } else next.append(el("p", "hint", tx.continueEmpty));
+    const list = el("div", "uni-list");
+    if (flight)
+      list.append(
+        item(icon("✈︎"), flight.label(), flight.hint(), () => {
           closePanel?.();
           flight.start();
-        }),
-        el("span", "hint", flight.hint())
+        })
       );
-      parts.push(box);
-    }
-
-    // continue exploring
-    const cont = el("div", "uni-continue");
-    if (last) {
-      const go = button(`${last.name}`, "account-main uni-go", () => {
-        track("continue-click");
-        goTo(last.name);
-      });
-      cont.append(el("small", "", tx.continue), go, el("span", "hint", ago(last.t)));
-    } else cont.append(el("small", "", tx.continue), el("span", "hint", tx.continueEmpty));
-    parts.push(cont);
-
-    // recommendations with a reason (recommend.js)
-    if (reco) parts.push(reco.section(closePanel, () => renderAll()));
-
-    // your star (mystar.js)
-    if (myStar) parts.push(myStar.section(closePanel));
-    // the sky at your birth: astrology next to the real sky (birthsky.js)
-    if (birthSky) parts.push(birthSky.section(closePanel));
-
-    // the discovery of the day
     if (daily?.entry) {
-      const row = el("div", "uni-row");
-      row.append(el("span", "", (daily.entry[getLang()] ?? daily.entry.en).title), button(tx.open, "", () => (closePanel?.(), daily.open())));
-      parts.push(section(tx.daily, row));
+      const info = describe?.(daily.entry.target);
+      list.append(item(info ? orb(info, "small") : icon("✦"), tx.daily, (daily.entry[getLang()] ?? daily.entry.en).title, () => (closePanel?.(), daily.open())));
     }
+    for (const r of rest) {
+      const info = r.kind === "planet" ? describe?.(r.name) : null;
+      list.append(item(info ? orb(info, "small") : icon(r.kind === "event" ? "☄︎" : "✦"), r.label, r.reason, () => (closePanel?.(), r.go())));
+    }
+    next.append(list);
+    if (reco) next.append(reco.about(() => renderAll()));
+    parts.push(next);
 
-    // missions
-    const { done, total } = explorer.counts();
-    const next = explorer.nextMission();
-    parts.push(
-      section(
-        tx.missions,
-        el("p", "", tx.missionsLine(done, total)),
-        el("p", "hint", next ? tx.nextMission(next) : tx.allDone),
-        button(tx.qMissions, "", () => (closePanel?.(), explorer.open()))
-      )
-    );
+    // 3. and 4. your star and your age on the planets (mystar.js); 5. and 6. the sky at your birth and the ascendant (birthsky.js)
+    if (myStar) parts.push(...myStar.sections(closePanel));
+    if (birthSky) parts.push(...birthSky.sections(closePanel));
 
-    // favourites and places seen lately
-    const seen = state.history.slice(0, 4);
-    const faves = state.favourites.slice(0, 4);
-    const disc = [];
-    if (faves.length) disc.push(el("small", "", tx.favourites), placeButtons(faves));
-    if (seen.length) disc.push(el("small", "", tx.recent), placeButtons(seen));
-    if (!disc.length) disc.push(el("p", "hint", tx.emptyDiscoveries));
-    parts.push(section(tx.discoveries, ...disc));
-
-    // numbers
+    // the progress: a few numbers and the missions
     const grid = el("div", "uni-stats");
     for (const [value, label] of [
       [state.total.planets?.length ?? 0, tx.statPlanets],
@@ -295,10 +385,25 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       cell.append(el("b", "", String(value)), el("span", "", label));
       grid.append(cell);
     }
-    parts.push(section(tx.stats, grid));
+    const { done, total } = explorer.counts();
+    const nextMission = explorer.nextMission();
+    const missions = el("div", "uni-list");
+    missions.append(
+      item(icon("◎"), tx.qMissions, `${tx.missionsLine(done, total)} · ${nextMission ? tx.nextMission(nextMission) : tx.allDone}`, () => (closePanel?.(), explorer.open()))
+    );
+    parts.push(section(tx.progress, grid, missions));
 
-    // the journal: notes, collections, export and delete (journal.js)
-    if (journal) parts.push(journal.section(closePanel));
+    // favourites and places seen lately
+    const seen = state.history.slice(0, 4);
+    const faves = state.favourites.slice(0, 4);
+    const disc = [];
+    if (faves.length) disc.push(el("small", "", tx.favourites), placeButtons(faves));
+    if (seen.length) disc.push(el("small", "", tx.recent), placeButtons(seen));
+    if (!disc.length) disc.push(el("p", "hint", tx.emptyDiscoveries));
+    parts.push(section(tx.discoveries, ...disc));
+
+    // the journal: notes, collections, export and delete (journal.js), folded
+    if (journal) parts.push(disclosure("journal", journal.title(), [journal.section(closePanel, { heading: false })], "uni-fold"));
 
     // quick actions
     const quick = el("div", "uni-places");
@@ -309,8 +414,6 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     parts.push(section(tx.quick, quick));
 
     // the profile
-    const details = el("details", "uni-profile");
-    details.append(el("summary", "", tx.profile));
     const name = el("input");
     name.type = "text";
     name.maxLength = 24;
@@ -319,7 +422,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     const nameField = el("label", "account-field");
     nameField.append(el("span", "", tx.name), name, el("small", "", tx.nameHint));
     let interest = p.interest;
-    let level = p.level;
+    let knows = p.level;
     const chip = (items, labels, current, set) => {
       const row = el("div", "onboard-chips");
       for (const value of items) {
@@ -332,24 +435,31 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       }
       return row;
     };
-    const message = el("p", "account-ok");
-    const actions = el("div", "account-row");
+    const message = el("p", "account-ok", savedMessage);
+    savedMessage = "";
+    const actions = el("div", "uni-actions");
     actions.append(
-      button(tx.save, "account-main", () => {
-        explorer.setProfile({ name: name.value, interest, level, onboarded: true });
-        message.textContent = tx.saved;
+      button(tx.save, "uni-primary", () => {
+        explorer.setProfile({ name: name.value, interest, level: knows, onboarded: true });
+        savedMessage = tx.saved;
         renderAll();
       }),
-      button(tx.reset, "account-link", () => {
+      button(tx.reset, "uni-link", () => {
         explorer.resetProfile();
         renderAll();
       })
     );
-    details.append(nameField, el("small", "", tx.interest), chip(INTERESTS, tx.interests, () => interest, (v) => (interest = v)), el("p", "hint", tx.interestNote), el("small", "", tx.level), chip(LEVELS, tx.levels, () => level, (v) => (level = v)), actions, message);
-    parts.push(details);
+    parts.push(
+      disclosure(
+        "profile",
+        tx.profile,
+        [nameField, el("small", "", tx.interest), chip(INTERESTS, tx.interests, () => interest, (v) => (interest = v)), el("p", "hint", tx.interestNote), el("small", "", tx.level), chip(LEVELS, tx.levels, () => knows, (v) => (knows = v)), actions, message],
+        "uni-fold uni-profile"
+      )
+    );
 
     // what is stored
-    const privacy = el("p", "hint", `${tx.privacy} `);
+    const privacy = el("p", "hint uni-privacy", `${tx.privacy} `);
     const link = el("a", "", tx.privacyLink);
     link.href = "legal.html#datenschutz";
     link.target = "_blank";
@@ -359,6 +469,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
 
     container.replaceChildren(...parts);
   }
+  let savedMessage = "";
 
   // what the button at the top says: the name, or "My Universe"
   const buttonLabel = () => explorer.getProfile().name ?? t().title;
