@@ -102,7 +102,7 @@ export const LEARN_TEXT = {
     },
     status: { done: "Done", next: "Next", open: "To do", locked: "All steps first" },
     back: "All steps", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", forYou: "For you", example: "An example",
-    taskLabel: "In the 3D view", taskGo: "Show in 3D", taskDone: "Done", check: "Check your understanding", right: "Right.", wrong: "Not quite.",
+    taskLabel: "In the 3D view", taskGo: "Show in 3D", scaleBack: "Back to the explanation scale", taskDone: "Done", check: "Check your understanding", right: "Right.", wrong: "Not quite.",
     stepDone: (xp) => `Step done · +${xp} XP`, nextStep: "Next step", toTest: "To the final test",
     needTask: "Do the task in the 3D view too, then the step is done.", progress: (d, all) => `${d} of ${all} steps`,
     test: {
@@ -192,7 +192,7 @@ export const LEARN_TEXT = {
     },
     status: { done: "Erledigt", next: "Als Nächstes", open: "Offen", locked: "Erst alle Schritte" },
     back: "Alle Schritte", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", forYou: "Für dich", example: "Ein Beispiel",
-    taskLabel: "In der 3D-Ansicht", taskGo: "In 3D zeigen", taskDone: "Erledigt", check: "Hast du es verstanden?", right: "Richtig.", wrong: "Nicht ganz.",
+    taskLabel: "In der 3D-Ansicht", taskGo: "In 3D zeigen", scaleBack: "Zurück zum Erklär-Maßstab", taskDone: "Erledigt", check: "Hast du es verstanden?", right: "Richtig.", wrong: "Nicht ganz.",
     stepDone: (xp) => `Schritt geschafft · +${xp} XP`, nextStep: "Nächster Schritt", toTest: "Zum Abschlusstest",
     needTask: "Mach noch die Aufgabe in der 3D-Ansicht, dann ist der Schritt geschafft.", progress: (d, all) => `${d} von ${all} Schritten`,
     test: {
@@ -282,7 +282,7 @@ export const LEARN_TEXT = {
     },
     status: { done: "完了", next: "次はこれ", open: "未完了", locked: "先に全ステップを" },
     back: "すべてのステップ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", forYou: "あなたへ", example: "例",
-    taskLabel: "3D表示で", taskGo: "3Dで見る", taskDone: "完了", check: "理解できたか確かめよう", right: "正解です。", wrong: "ちょっと違います。",
+    taskLabel: "3D表示で", taskGo: "3Dで見る", scaleBack: "説明用の縮尺に戻す", taskDone: "完了", check: "理解できたか確かめよう", right: "正解です。", wrong: "ちょっと違います。",
     stepDone: (xp) => `ステップ完了 · +${xp} XP`, nextStep: "次のステップ", toTest: "最終テストへ",
     needTask: "3D表示での課題もやってみましょう。それでステップ完了です。", progress: (d, all) => `${all}ステップ中${d}完了`,
     test: {
@@ -372,7 +372,7 @@ export const LEARN_TEXT = {
     },
     status: { done: "Готово", next: "Следва", open: "Предстои", locked: "Първо всички стъпки" },
     back: "Всички стъпки", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", forYou: "За теб", example: "Пример",
-    taskLabel: "В 3D изгледа", taskGo: "Покажи в 3D", taskDone: "Готово", check: "Провери какво разбра", right: "Вярно.", wrong: "Не съвсем.",
+    taskLabel: "В 3D изгледа", taskGo: "Покажи в 3D", scaleBack: "Обратно към обяснителния мащаб", taskDone: "Готово", check: "Провери какво разбра", right: "Вярно.", wrong: "Не съвсем.",
     stepDone: (xp) => `Стъпката е готова · +${xp} XP`, nextStep: "Следваща стъпка", toTest: "Към финалния тест",
     needTask: "Направи и задачата в 3D изгледа и стъпката е готова.", progress: (d, all) => `${d} от ${all} стъпки`,
     test: {
@@ -467,8 +467,9 @@ export function personalLine(step, nums, lang) {
 }
 
 // The area Learn: the path with its steps, a step, or the final test. personal(): the context of personalNumbers; act(task): do a task
-// (TASKS) in the 3D view; closePanel(): close My Universe.
-export function initLearn({ getLang, explorer, personal, act, closePanel }) {
+// (TASKS) in the 3D view, or "explanationScale" (back from the real scale); isRealScale(): whether the real scale is on; closePanel():
+// close My Universe.
+export function initLearn({ getLang, explorer, personal, act, isRealScale, closePanel }) {
   const t = () => LEARN_TEXT[getLang()] ?? LEARN_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -608,8 +609,8 @@ export function initLearn({ getLang, explorer, personal, act, closePanel }) {
     const task = el("div", `learn-task${taskDone(step) ? " done" : ""}`);
     const tt = el("div", "");
     tt.append(el("small", "", tx.taskLabel), el("p", "", s.task));
-    task.append(
-      tt,
+    const buttons = el("div", "learn-task-buttons");
+    buttons.append(
       button(taskDone(step) ? `✓ ${tx.taskDone}` : tx.taskGo, taskDone(step) ? "uni-link" : "uni-primary", () => {
         explorer.emit("learnTask", `${PATH}/${step}`);
         maybeFinish(step, questions);
@@ -618,6 +619,15 @@ export function initLearn({ getLang, explorer, personal, act, closePanel }) {
         act(TASKS[step]);
       })
     );
+    // the real scale is switched back here too, not only in the menu
+    if (TASKS[step] === "realScale" && isRealScale?.())
+      buttons.append(
+        button(tx.scaleBack, "uni-link", () => {
+          closePanel?.();
+          act("explanationScale");
+        })
+      );
+    task.append(tt, buttons);
     parts.push(task);
     // the questions: an answer can be changed until it is right; the explanation comes with every answer
     parts.push(el("h3", "learn-check", tx.check));

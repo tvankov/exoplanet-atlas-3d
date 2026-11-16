@@ -4202,3 +4202,8 @@ body:has(#day-flight:not([hidden])) #tour {
     display: none;
   }
 }
+.learn-task-buttons {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}

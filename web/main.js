@@ -5528,9 +5528,11 @@ const learn = initLearn({
   personal: () => ({ age: myStar?.age() ?? null, years: Object.fromEntries(PLANETS.map((p) => [p.name, p.years])), star: myStar?.current() ?? null }),
   act: (task) => {
     if (task === "realScale") return realScale || setRealScale(true);
+    if (task === "explanationScale") return realScale && setRealScale(false);
     const place = resolvePlace(task);
     if (place) showPlace(place);
   },
+  isRealScale: () => realScale,
   closePanel: () => auth?.close(),
 });
 universe = initUniverse({
