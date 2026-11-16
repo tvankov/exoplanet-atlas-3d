@@ -3010,3 +3010,109 @@ body:has(#sky-panel:not([hidden])) #dock {
 #loading-fact:empty {
   display: none;
 }
+
+/* The flight of the day: the card of a stop, at the bottom in the middle. */
+#day-flight {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 9;
+  box-sizing: border-box;
+  display: grid;
+  gap: 6px;
+  width: min(560px, calc(100vw - 24px));
+  padding: 12px 16px 12px;
+  transform: translateX(-50%);
+  background: rgba(10, 14, 24, 0.9);
+  border: 1px solid rgba(124, 255, 178, 0.45);
+  border-radius: 16px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: panel-in 0.4s ease-out;
+}
+#day-flight[hidden] {
+  display: none;
+}
+#day-flight small {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7cffb2;
+}
+#day-flight strong {
+  font-size: 17px;
+}
+#day-flight p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.day-flight-progress {
+  height: 3px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+.day-flight-progress div {
+  width: 0;
+  height: 100%;
+  background: #7cffb2;
+  transition-property: width;
+  transition-timing-function: linear;
+}
+.day-flight-progress div.run {
+  width: 100%;
+}
+.day-flight-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+#day-flight button {
+  padding: 7px 12px;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+#day-flight button.account-main {
+  background: rgba(124, 255, 178, 0.16);
+  border-color: rgba(124, 255, 178, 0.5);
+}
+#day-flight button.account-link {
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  opacity: 0.8;
+}
+.day-flight-voice {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-right: auto;
+  font-size: 12px;
+  opacity: 0.85;
+  cursor: pointer;
+}
+body:has(#day-flight:not([hidden])) #dock,
+body:has(#day-flight:not([hidden])) #tour {
+  display: none;
+}
+.uni-flight {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.uni-flight .hint {
+  font-size: 12px;
+  opacity: 0.7;
+}
+#daily-panel .daily-flight {
+  margin-top: 6px;
+}

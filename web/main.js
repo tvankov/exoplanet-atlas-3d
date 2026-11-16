@@ -9,7 +9,8 @@ import { initUniverse } from "./universe.js";
 import { initJournal } from "./journal.js";
 import { initMyStar } from "./mystar.js";
 import { initBirthSky } from "./birthsky.js";
-import { initAmbient } from "./atmosphere.js"; // also writes a fact on the loading screen at once
+import { initAmbient } from "./atmosphere.js";
+import { initDailyFlight, FLIGHT_TEXT } from "./dailyflight.js"; // also writes a fact on the loading screen at once
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -3233,6 +3234,7 @@ function applyLanguage() {
   auth?.render();
   journal?.render();
   ambient.render();
+  dayFlight?.render();
   skyEvents?.render();
   showSkyState();
   sky?.refresh();
@@ -5274,6 +5276,7 @@ let universe = null; // the personal layer, see universe.js
 let journal = null; // notes and collections, see journal.js
 let myStar = null; // the star of the year of birth, see mystar.js
 let birthSky = null; // astrology next to the real sky, see birthsky.js
+let dayFlight = null; // the flight of the day, see dailyflight.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
@@ -5325,6 +5328,8 @@ daily = await initDaily({
     if (place) showPlace(place);
   },
   onAnswer: () => explorer?.emit("answer"),
+  flightLabel: () => (FLIGHT_TEXT[lang] ?? FLIGHT_TEXT.en).start,
+  startFlight: () => dayFlight?.start(),
 });
 explorer = initExplorer({
   getLang: () => lang,
@@ -5371,6 +5376,48 @@ myStar = initMyStar({
   },
   onChange: () => auth?.render(),
 });
+// The flight of the day: three stops built from the data of today (the discovery, the next event in the sky, and a place for the visitor).
+dayFlight = initDailyFlight({
+  getLang: () => lang,
+  speechLang: () => UI[lang].speech,
+  explore: (name) => {
+    const place = resolvePlace(name);
+    if (place) showPlace(place);
+  },
+  onDone: () => explorer?.emit("dailyFlight"),
+  stops: () => {
+    const tx = FLIGHT_TEXT[lang] ?? FLIGHT_TEXT.en;
+    const fmt = (x, d = 1) => x.toLocaleString(lang, { maximumFractionDigits: d, minimumFractionDigits: d });
+    const isSolar = (name) => PLANETS.some((p) => p.name === name);
+    const out = [];
+    if (daily?.entry) {
+      const e = daily.entry[lang] ?? daily.entry.en;
+      out.push({ place: daily.entry.target, heading: tx.stopDaily, label: e.title, short: isSolar(daily.entry.target) ? solarName(daily.entry.target, lang) : daily.entry.target, text: e.text });
+    }
+    const next = skyEvents?.nextInfo();
+    if (next) {
+      const firstSentences = (next.text.match(/[^.!?。]+[.!?。]?/g) ?? [next.text]).slice(0, 2).join(" ");
+      out.push({ place: "Earth", heading: tx.stopEvent, label: `${next.title} · ${next.countdown}`, short: next.title, text: `${tx.event(next.title, next.when)} ${firstSentences}` });
+    }
+    const day = daily?.day ?? 0;
+    const mine = myStar?.current();
+    const interest = explorer?.getProfile().interest;
+    if (mine) out.push({ place: mine.name, heading: tx.stopYours, label: mine.name, text: tx.star(mine.name, mine.year) });
+    else if (interest === "planets") {
+      const p = PLANETS.filter((x) => x.name !== "Earth")[day % 7];
+      out.push({ place: p.name, heading: tx.stopYours, label: solarName(p.name, lang), text: tx.solar(solarName(p.name, lang), fmt(p.au, p.au < 10 ? 2 : 1)) });
+    } else {
+      const candidates = [];
+      for (const s of stars) for (const p of s.planets) if (p.habitable) candidates.push({ s, p });
+      candidates.sort((a, b) => a.s.dist_ly - b.s.dist_ly);
+      if (candidates.length) {
+        const { s, p } = candidates[day % candidates.length];
+        out.push({ place: p.pl_name, heading: tx.stopYours, label: p.pl_name, text: tx.candidate(p.pl_name, fmt(s.dist_ly), candidates.length) });
+      }
+    }
+    return out.map((s) => ({ ...s, label: isSolar(s.label) ? solarName(s.label, lang) : s.label }));
+  },
+});
 birthSky = initBirthSky({
   getLang: () => lang,
   nameOf: (id) => {
@@ -5387,6 +5434,7 @@ universe = initUniverse({
   journal,
   myStar,
   birthSky,
+  flight: dayFlight,
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);

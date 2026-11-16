@@ -301,5 +301,15 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
     s.append(row);
     return s;
   }
-  return { section, forget: () => ((year = null), write(null)) };
+  return {
+    section,
+    forget: () => ((year = null), write(null)),
+    // the visitor's star, for the flight of the day: { name, year } or null (no year given, or too young for a star)
+    current: () => {
+      if (year == null) return null;
+      const age = ageFrom(year);
+      const host = age >= 4 ? pickHost(hosts(), age) : null;
+      return host ? { name: host.name, year: leftIn(host.dist) } : null;
+    },
+  };
 }

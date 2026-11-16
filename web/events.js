@@ -194,5 +194,13 @@ export async function initEvents({ getLang, explore }) {
   document.getElementById("sky-close").addEventListener("click", () => toggle(false));
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   render();
-  return { render, open: () => toggle(true) };
+  return {
+    render,
+    open: () => toggle(true),
+    // the next event, for the flight of the day: its title, when (local time), the countdown and its text, in the language of the page
+    nextInfo: () => {
+      const e = upcomingEvents(data.events)[0];
+      return e ? { title: pick(e.title), when: whenText(e), countdown: countdown(e), text: pick(e.text) } : null;
+    },
+  };
 }

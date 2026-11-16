@@ -37,6 +37,10 @@ export const MISSIONS = [
     en: "Get 4 of 5 right in the zone quiz", de: "Löse 4 von 5 im Zonen-Quiz richtig", ja: "ゾーンクイズで5問中4問正解する", bg: "Отговори вярно на 4 от 5 във викторината за зоната",
   },
   {
+    id: "d-flight", period: "day", event: "dailyFlight", target: 1,
+    en: "Fly the flight of the day", de: "Fliege den Flug des Tages", ja: "今日のフライトを飛ぶ", bg: "Направи полета на деня",
+  },
+  {
     id: "d-atlas-quiz", period: "day", event: "atlasQuiz", target: 1,
     en: "Play a quiz about the zodiac signs", de: "Spiele ein Quiz zu den Sternzeichen", ja: "黄道十二星座のクイズを遊ぶ", bg: "Изиграй викторина за зодиакалните знаци",
   },

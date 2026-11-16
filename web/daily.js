@@ -40,7 +40,7 @@ const write = (key, value) => {
 };
 
 // getLang() gives the language of the page, text(key) the interface texts, explore(name) flies to the object in the 3D map.
-export async function initDaily({ getLang, text, explore, onAnswer }) {
+export async function initDaily({ getLang, text, explore, onAnswer, flightLabel, startFlight }) {
   let entries = [FALLBACK];
   try {
     const res = await fetch("data/daily.json");
@@ -116,6 +116,18 @@ export async function initDaily({ getLang, text, explore, onAnswer }) {
       explore(entry.target);
     });
     parts.push(explore3d);
+    // the flight of the day starts with this discovery (dailyflight.js)
+    if (startFlight) {
+      const flight = document.createElement("button");
+      flight.type = "button";
+      flight.className = "daily-explore daily-flight";
+      flight.textContent = `✈ ${flightLabel()}`;
+      flight.addEventListener("click", () => {
+        togglePanel(false);
+        startFlight();
+      });
+      parts.push(flight);
+    }
     parts.push(p("hint daily-credit", `${t("dailySource")}: ${entry.credit}`));
     body.replaceChildren(...parts);
   }
