@@ -3116,3 +3116,25 @@ body:has(#day-flight:not([hidden])) #tour {
 #daily-panel .daily-flight {
   margin-top: 6px;
 }
+
+/* Recommendations with a reason, in My Universe. */
+.reco-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+}
+.reco-item strong {
+  font-size: 14px;
+}
+.reco-item p {
+  margin: 2px 0 0;
+}
+.reco-item button {
+  flex: none;
+}

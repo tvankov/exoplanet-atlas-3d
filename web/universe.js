@@ -112,7 +112,7 @@ export const UNIVERSE_TEXT = {
 
 // explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. openSky(), openAtlas(),
 // closePanel(): open the events, the zodiac, close the profile panel.
-export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, explore, openSky, openAtlas, closePanel }) {
+export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, explore, openSky, openAtlas, closePanel }) {
   const t = () => UNIVERSE_TEXT[getLang()] ?? UNIVERSE_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -246,6 +246,9 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       cont.append(el("small", "", tx.continue), go, el("span", "hint", ago(last.t)));
     } else cont.append(el("small", "", tx.continue), el("span", "hint", tx.continueEmpty));
     parts.push(cont);
+
+    // recommendations with a reason (recommend.js)
+    if (reco) parts.push(reco.section(closePanel, () => renderAll()));
 
     // your star (mystar.js)
     if (myStar) parts.push(myStar.section(closePanel));
