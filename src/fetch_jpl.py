@@ -7,12 +7,16 @@ Writes small JSON files to data/raw/ (dated with the day of the download):
   jpl_sbdb_<date>.json        orbital elements of the comets and interstellar objects (Small-Body Database API)
   jpl_horizons_<date>.json    the flight path of the spacecraft, sun centred, ecliptic J2000, in AU (Horizons API)
   jpl_planets_<date>.html     the page "Keplerian Elements for Approximate Positions of the Major Planets"
+  jpl_dwarfs_<date>.json      orbital elements and sizes of the dwarf planets Ceres and Pluto (Small-Body Database API)
+
+Only the dwarf planets: python src/fetch_jpl.py --dwarfs
 
 Source: JPL Solar System Dynamics, https://ssd.jpl.nasa.gov (credit JPL/Caltech/NASA). The terms of use of
 these services were not found when this was written, see the README.
 """
 import datetime as dt
 import json
+import sys
 import time
 import urllib.parse
 import urllib.request
@@ -34,6 +38,9 @@ SMALL_BODIES = [
     ("2I", "interstellar"),  # Borisov
     ("3I", "interstellar"),  # ATLAS
 ]
+
+# The dwarf planets drawn in the Solar System, with their physical parameters (diameter, rotation).
+DWARF_PLANETS = ["Ceres", "Pluto"]
 
 # Horizons id, name, first day of the flight path, step. The ids of spacecraft are negative.
 SPACECRAFT = [
@@ -113,9 +120,31 @@ def fetch_spacecraft() -> list[dict]:
         time.sleep(0.5)
     return out
 
+def fetch_dwarfs() -> list[dict]:
+    out = []
+    for name in DWARF_PLANETS:
+        reply = json.loads(get("https://ssd-api.jpl.nasa.gov/sbdb.api", {"sstr": name, "full-prec": "1", "phys-par": "1"}))
+        orbit = reply["orbit"]
+        out.append(
+            {
+                "query": name,
+                "fullname": reply["object"]["fullname"],
+                "epoch_jd": orbit["epoch"],
+                "elements": {e["name"]: e["value"] for e in orbit["elements"]},
+                "phys": {p["name"]: {"value": p["value"], "units": p.get("units"), "ref": p.get("ref")} for p in reply.get("phys_par", [])},
+                "source_version": reply.get("signature", {}).get("version"),
+            }
+        )
+        print(f"  {reply['object']['fullname']}: a={out[-1]['elements'].get('a')} e={out[-1]['elements'].get('e')}")
+        time.sleep(0.5)
+    return out
+
 
 def main() -> None:
     RAW.mkdir(parents=True, exist_ok=True)
+    if "--dwarfs" in sys.argv:
+        (RAW / f"jpl_dwarfs_{TODAY}.json").write_text(json.dumps(fetch_dwarfs(), indent=1), encoding="utf-8")
+        return
     print("Small bodies")
     (RAW / f"jpl_sbdb_{TODAY}.json").write_text(json.dumps(fetch_small_bodies(), indent=1), encoding="utf-8")
     print("Spacecraft")

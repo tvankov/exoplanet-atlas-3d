@@ -1,0 +1,119 @@
+[
+ {
+  "query": "Ceres",
+  "fullname": "1 Ceres (A801 AA)",
+  "epoch_jd": "2461200.5",
+  "elements": {
+   "e": ".07969229514816586",
+   "a": "2.765552595034094",
+   "q": "2.545159361382861",
+   "i": "10.58802780183462",
+   "om": "80.24862682043221",
+   "w": "73.29421453021587",
+   "ma": "274.4193463761342",
+   "tp": "2461599.841466614066",
+   "per": "1679.853119758983",
+   "n": ".21430445064843",
+   "ad": "2.985945828685327"
+  },
+  "phys": {
+   "H": {
+    "value": "3.34",
+    "units": null,
+    "ref": "MPO980521"
+   },
+   "G": {
+    "value": "0.12",
+    "units": null,
+    "ref": "PDS3 (MPC 17257)"
+   },
+   "diameter": {
+    "value": "939.4",
+    "units": "km",
+    "ref": "Nature vol. 537, pp515-517 (22 September 2016)"
+   },
+   "extent": {
+    "value": "964.4 x 964.2 x 891.8",
+    "units": "km",
+    "ref": "Nature vol. 537, pp515-517 (22 September 2016)"
+   },
+   "GM": {
+    "value": "62.6284",
+    "units": "km^3/s^2",
+    "ref": "Nature vol. 537, pp515-517 (22 September 2016)"
+   },
+   "density": {
+    "value": "2.162",
+    "units": "g/cm^3",
+    "ref": "Nature vol. 537, pp515-517 (22 September 2016)"
+   },
+   "rot_per": {
+    "value": "9.074170",
+    "units": "h",
+    "ref": "Nature vol. 537, pp515-517 (22 September 2016)"
+   },
+   "pole": {
+    "value": "291.421/66.758",
+    "units": null,
+    "ref": "Nature vol. 537, pp515-517 (22 September 2016)"
+   },
+   "albedo": {
+    "value": "0.090",
+    "units": null,
+    "ref": "Li et al. (2006) Icarus v182:pp143-160"
+   },
+   "BV": {
+    "value": "0.713",
+    "units": null,
+    "ref": "EAR-A-5-DDR-UBV-MEAN-VALUES-V1.2"
+   },
+   "UB": {
+    "value": "0.426",
+    "units": null,
+    "ref": "EAR-A-5-DDR-UBV-MEAN-VALUES-V1.2"
+   },
+   "spec_T": {
+    "value": "G",
+    "units": null,
+    "ref": "EAR-A-5-DDR-TAXONOMY-V4.0"
+   },
+   "spec_B": {
+    "value": "C",
+    "units": null,
+    "ref": "EAR-A-5-DDR-TAXONOMY-V4.0"
+   }
+  },
+  "source_version": "1.3"
+ },
+ {
+  "query": "Pluto",
+  "fullname": "134340 Pluto (1930 BM)",
+  "epoch_jd": "2457588.5",
+  "elements": {
+   "e": ".2518378778576892",
+   "a": "39.58862938517124",
+   "q": "29.61871297351516",
+   "i": "17.14771140999114",
+   "om": "110.2923840543057",
+   "w": "113.7090015158565",
+   "ma": "38.68366347318184",
+   "tp": "2447812.094159956090",
+   "per": "90981.71647718345",
+   "n": ".003956838955553025",
+   "ad": "49.55854579682732"
+  },
+  "phys": {
+   "H": {
+    "value": "-0.55",
+    "units": null,
+    "ref": "MPO966248"
+   },
+   "rot_per": {
+    "value": "153.2935",
+    "units": "h",
+    "ref": "LCDB (Rev. 2023-October); Warner et al., 2009"
+   }
+  },
+  "source_version": "1.3"
+ }
+]

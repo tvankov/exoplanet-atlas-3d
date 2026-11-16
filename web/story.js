@@ -74,6 +74,11 @@ export const UI = {
     lookLabel: "Exoplanet look",
     mercuryNote:
       "Enhanced colours: the map puts the 1000, 750 and 430 nanometre filters of MESSENGER on red, green and blue. The colours show differences in the rock, not what the eye would see.",
+    dwarfTag: "Dwarf planet",
+    ceresNote:
+      "A grey map from the Dawn spacecraft (NASA/JPL-Caltech/UCLA/MPS/DLR/IDA, USGS). A thin strip at the south pole was not photographed; it is filled with an average grey, which is not a measurement.",
+    plutoNote:
+      "A grey map from the New Horizons flyby of 2015 (New Horizons Team, NASA/JHU APL/SwRI, USGS). The spacecraft saw only part of Pluto: below about 35 degrees south the map is filled with an average grey, which is not a measurement.",
     paintedNote:
       "Painted by the program, not a map. The colours and the bands follow what telescopes and probes show, the fine pattern is invented. The clouds of a planet like this keep changing.",
     speedTitle: "Time speed",
@@ -211,6 +216,11 @@ export const UI = {
     lookLabel: "Aussehen der Exoplaneten",
     mercuryNote:
       "Verstärkte Farben: Die Karte legt die Filter von MESSENGER bei 1000, 750 und 430 Nanometern auf Rot, Grün und Blau. Die Farben zeigen Unterschiede im Gestein, nicht was das Auge sähe.",
+    dwarfTag: "Zwergplanet",
+    ceresNote:
+      "Eine graue Karte der Raumsonde Dawn (NASA/JPL-Caltech/UCLA/MPS/DLR/IDA, USGS). Ein schmaler Streifen am Südpol wurde nicht fotografiert; er ist mit einem mittleren Grau gefüllt, das keine Messung ist.",
+    plutoNote:
+      "Eine graue Karte vom Vorbeiflug von New Horizons 2015 (New Horizons Team, NASA/JHU APL/SwRI, USGS). Die Sonde sah nur einen Teil von Pluto: Südlich von etwa 35 Grad ist die Karte mit einem mittleren Grau gefüllt, das keine Messung ist.",
     paintedNote:
       "Vom Programm gemalt, keine Karte. Die Farben und die Bänder folgen dem, was Teleskope und Sonden zeigen, das feine Muster ist erfunden. Die Wolken eines solchen Planeten ändern sich ständig.",
     speedTitle: "Zeitgeschwindigkeit",
@@ -572,6 +582,41 @@ const SOLAR_STORIES = {
       "Sein größter Mond Triton umkreist den Planeten rückwärts, das spricht dafür, dass er aus dem äußeren Sonnensystem eingefangen wurde.",
       "Voyager 2 ist die einzige Sonde, die ihn besucht hat. Sie flog im August 1989 vorbei und sah einen riesigen dunklen Sturm, den Großen Dunklen Fleck. Er war verschwunden, als das Weltraumteleskop Hubble 1994 wieder hinschaute.",
       SOURCE_DE,
+    ],
+  },
+  // The dwarf planets: the figures come from NASA's facts pages of Ceres and Pluto and the Pluto Fact Sheet.
+  Ceres: {
+    title: { en: "Ceres", de: "Ceres" },
+    en: [
+      "Ceres is a dwarf planet and the largest object in the asteroid belt between Mars and Jupiter. It is the only dwarf planet in the inner Solar System. Giuseppe Piazzi spotted it in 1801, the first member of the belt ever found.",
+      "It is about 940 kilometres across, less than a tenth of the width of the Earth. Sunlight needs about 22 minutes to reach it, and one trip round the Sun takes 1,682 Earth days, about 4.6 years. A day on Ceres lasts only about 9 hours.",
+      "Ceres probably has a mantle of water ice, and it may be as much as a quarter water. Its surface is covered with small, young craters, none larger than about 280 kilometres.",
+      "In 2015 NASA's Dawn arrived, and Ceres became the first dwarf planet to be visited by a spacecraft.",
+      "The figures come from NASA (Ceres facts) and JPL's Small-Body Database.",
+    ],
+    de: [
+      "Ceres ist ein Zwergplanet und das größte Objekt im Asteroidengürtel zwischen Mars und Jupiter. Sie ist der einzige Zwergplanet im inneren Sonnensystem. Giuseppe Piazzi entdeckte sie 1801, als erstes Mitglied des Gürtels überhaupt.",
+      "Sie ist etwa 940 Kilometer breit, weniger als ein Zehntel der Breite der Erde. Das Sonnenlicht braucht rund 22 Minuten bis zu ihr, und ein Umlauf um die Sonne dauert 1.682 Erdtage, etwa 4,6 Jahre. Ein Tag auf Ceres dauert nur etwa 9 Stunden.",
+      "Ceres hat wahrscheinlich einen Mantel aus Wassereis und besteht vielleicht bis zu einem Viertel aus Wasser. Ihre Oberfläche ist mit kleinen, jungen Kratern übersät, keiner größer als etwa 280 Kilometer.",
+      "2015 kam die NASA-Sonde Dawn an, und Ceres wurde der erste Zwergplanet, den eine Raumsonde besuchte.",
+      "Die Zahlen stammen von der NASA (Ceres-Fakten) und aus der Small-Body Database des JPL.",
+    ],
+  },
+  Pluto: {
+    title: { en: "Pluto", de: "Pluto" },
+    en: [
+      "Pluto is a dwarf planet in the Kuiper Belt, beyond Neptune. Clyde Tombaugh discovered it in 1930, and for 76 years it counted as the ninth planet. In 2006 the International Astronomical Union made it a dwarf planet, because other objects might cross its orbit.",
+      "It has a radius of 1,188 kilometres, less than a fifth of the Earth's. Its orbit is oval and tilted: one trip round the Sun takes about 248 years, and it comes as close as 30 AU and goes as far as 49.3 AU. Sunlight needs about 5.5 hours to get there.",
+      "A day on Pluto lasts about 153 hours, and it turns the other way round, from east to west. Its thin air is mostly nitrogen, methane and carbon monoxide, and on average it is about minus 232 degrees Celsius.",
+      "Pluto has five known moons; the largest, Charon, is about half its size. NASA's New Horizons flew past in July 2015 and found mountains, valleys, plains, craters and glaciers, and the bright \"heart\" seen in its pictures.",
+      "The figures come from NASA (Pluto facts and the Pluto Fact Sheet).",
+    ],
+    de: [
+      "Pluto ist ein Zwergplanet im Kuipergürtel, jenseits des Neptun. Clyde Tombaugh entdeckte ihn 1930, und 76 Jahre lang galt er als neunter Planet. 2006 machte ihn die Internationale Astronomische Union zum Zwergplaneten, weil andere Objekte seine Bahn kreuzen können.",
+      "Sein Radius beträgt 1.188 Kilometer, weniger als ein Fünftel des Erdradius. Seine Bahn ist oval und geneigt: Ein Umlauf um die Sonne dauert etwa 248 Jahre, dabei kommt er bis auf 30 AE heran und entfernt sich bis auf 49,3 AE. Das Sonnenlicht braucht etwa 5,5 Stunden bis dorthin.",
+      "Ein Tag auf Pluto dauert etwa 153 Stunden, und er dreht sich andersherum, von Osten nach Westen. Seine dünne Luft besteht vor allem aus Stickstoff, Methan und Kohlenmonoxid, im Mittel ist es dort etwa minus 232 Grad Celsius kalt.",
+      "Pluto hat fünf bekannte Monde; der größte, Charon, ist etwa halb so groß wie er. Die NASA-Sonde New Horizons flog im Juli 2015 vorbei und fand Berge, Täler, Ebenen, Krater und Gletscher, und das helle „Herz“, das auf ihren Bildern zu sehen ist.",
+      "Die Zahlen stammen von der NASA (Pluto-Fakten und Pluto Fact Sheet).",
     ],
   },
 };

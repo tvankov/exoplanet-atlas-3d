@@ -129,3 +129,9 @@ test("the step on scale asks about asteroids and comets too", () => {
   const belt = buildQuestions("scale", nobody, "de").find((q) => q.id === "asteroidBelt");
   assert.equal(belt.answer, "Zwischen Mars und Jupiter");
 });
+
+test("the step on moons asks about the dwarf planets too", () => {
+  const q = buildQuestions("moons", nobody, "de").find((x) => x.id === "dwarf");
+  assert.equal(q.answer, "Pluto");
+  assert.ok(LEARN_TEXT.de.steps.moons.text.some((p) => p.includes("Zwergplaneten")));
+});

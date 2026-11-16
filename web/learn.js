@@ -37,6 +37,8 @@ export const SOURCES = {
   moons: [
     { label: "NASA Science: Moon, Facts", url: "https://science.nasa.gov/moon/facts/" },
     { label: "NASA Science: Ganymede", url: "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/" },
+    { label: "NASA Science: Pluto, Facts", url: "https://science.nasa.gov/dwarf-planets/pluto/facts/" },
+    { label: "NASA Science: Ceres, Facts", url: "https://science.nasa.gov/dwarf-planets/ceres/facts/" },
   ],
   scale: [
     { label: "NASA Science: Neptune, Facts", url: "https://science.nasa.gov/neptune/facts/" },
@@ -88,7 +90,7 @@ export const QUESTIONS = {
   sun: [{ id: "sunLight" }, { id: "sunEnergy" }, { id: "sunOrbits", number: "orbits" }],
   inner: [{ id: "venusDay" }, { id: "marsAge", number: "mars" }, { id: "closest" }],
   outer: [{ id: "largest" }, { id: "saturnDensity" }, { id: "jupiterLaps", number: "jupiterLaps" }],
-  moons: [{ id: "largestMoon" }, { id: "galileo" }, { id: "sameSide" }, { id: "moonLaps", number: "moonLaps" }],
+  moons: [{ id: "largestMoon" }, { id: "galileo" }, { id: "sameSide" }, { id: "dwarf" }, { id: "moonLaps", number: "moonLaps" }],
   scale: [{ id: "neptune" }, { id: "starLight", number: "starLight" }, { id: "sunSize" }, { id: "asteroidBelt" }, { id: "cometTail" }],
 };
 
@@ -190,10 +192,11 @@ export const LEARN_TEXT = {
         ref: (n) => `In 30 years Jupiter goes round the Sun only ${n} times: one of its years lasts almost 12 of ours.`,
       },
       moons: {
-        title: "Moons", goal: "You know what a moon is and why our Moon always shows us the same side.",
+        title: "Moons and dwarf planets", goal: "You know what a moon is, why our Moon always shows us the same side, and what a dwarf planet is.",
         text: [
           "A moon goes round a planet. The Earth has one, Jupiter dozens, and Galileo Galilei found the four largest of them in 1610 with one of the first telescopes.",
           "Most large moons turn exactly once per orbit, so they always show their planet the same side. That is why we never see the far side of our Moon from the Earth.",
+          "Not every body that goes round the Sun on its own is a planet. Ceres in the asteroid belt and Pluto beyond Neptune are dwarf planets. Pluto counted as the ninth planet until 2006, when the International Astronomical Union made it a dwarf planet, because other objects might cross its orbit. It has five known moons; the largest, Charon, is about half its size.",
         ],
         task: "Fly to Jupiter and click one of its four large moons.",
         remember: [
@@ -201,6 +204,7 @@ export const LEARN_TEXT = {
           "Ganymede, a moon of Jupiter, is the largest moon of the Solar System, bigger than the planet Mercury.",
           "Our Moon always shows the Earth the same side: it turns exactly once per orbit.",
           "Galileo Galilei found the four largest moons of Jupiter in 1610.",
+          "Ceres and Pluto are dwarf planets. Pluto counted as the ninth planet until 2006.",
         ],
         you: (n) => `Since you were born, the Moon has gone round the Earth about ${n} times.`,
         ref: (n) => `In 30 years the Moon goes round the Earth about ${n} times.`,
@@ -236,6 +240,7 @@ export const LEARN_TEXT = {
       largestMoon: { q: "Which is the largest moon of the Solar System?", o: ["Ganymede", "Our Moon", "Europa"], e: "Ganymede, a moon of Jupiter: it is even larger than the planet Mercury." },
       galileo: { q: "Who found the four large moons of Jupiter in 1610?", o: ["Galileo Galilei", "Isaac Newton", "Johannes Kepler"], e: "Galileo Galilei, with one of the first telescopes. They are called the Galilean moons." },
       sameSide: { q: "Why do we always see the same side of the Moon?", o: ["It turns exactly once per orbit", "It does not turn at all", "The other side is always dark"], e: "The Moon turns once each time it goes round the Earth, so the same side always faces us. The far side gets sunlight too." },
+      dwarf: { q: "Which of these is a dwarf planet?", o: ["Pluto", "Mars", "Neptune"], e: "Pluto. Since 2006 it counts as a dwarf planet, like Ceres in the asteroid belt." },
       moonLaps: { you: "About how many times has the Moon gone round the Earth since you were born?", ref: "About how many times does the Moon go round the Earth in 30 years?", e: (n) => `About ${n} times: one orbit takes 27.3 days.` },
       neptune: { q: "About how far is Neptune from the Sun?", o: ["30 AU", "3 AU", "300 AU"], e: "About 30 AU, 30 times as far as the Earth. The light of the Sun needs about 4 hours to get there." },
       starLight: { you: (name) => `For how many years did the light of your star, ${name}, travel to reach you?`, e: (n, name) => `About ${n} years: ${name} is about ${n} light years away, and a light year is the distance light travels in a year.` },
@@ -313,10 +318,11 @@ export const LEARN_TEXT = {
         ref: (n) => `In 30 Jahren läuft Jupiter nur ${n}-mal um die Sonne: Eines seiner Jahre dauert fast 12 von unseren.`,
       },
       moons: {
-        title: "Monde", goal: "Du weißt, was ein Mond ist und warum unser Mond uns immer dieselbe Seite zeigt.",
+        title: "Monde und Zwergplaneten", goal: "Du weißt, was ein Mond ist, warum unser Mond uns immer dieselbe Seite zeigt und was ein Zwergplanet ist.",
         text: [
           "Ein Mond kreist um einen Planeten. Die Erde hat einen, Jupiter Dutzende, und die vier größten davon entdeckte Galileo Galilei 1610 mit einem der ersten Fernrohre.",
           "Die meisten großen Monde drehen sich bei jedem Umlauf genau einmal um sich selbst und zeigen ihrem Planeten deshalb immer dieselbe Seite. Darum sehen wir von der Erde nie die Rückseite unseres Mondes.",
+          "Nicht jeder Himmelskörper, der selbst um die Sonne läuft, ist ein Planet. Ceres im Asteroidengürtel und Pluto jenseits des Neptun sind Zwergplaneten. Pluto galt bis 2006 als neunter Planet; dann machte ihn die Internationale Astronomische Union zum Zwergplaneten, weil andere Objekte seine Bahn kreuzen können. Er hat fünf bekannte Monde, der größte, Charon, ist etwa halb so groß wie er.",
         ],
         task: "Flieg zum Jupiter und klicke auf einen seiner vier großen Monde.",
         remember: [
@@ -324,6 +330,7 @@ export const LEARN_TEXT = {
           "Ganymed, ein Mond des Jupiter, ist der größte Mond des Sonnensystems, größer als der Planet Merkur.",
           "Unser Mond zeigt der Erde immer dieselbe Seite: Er dreht sich bei jedem Umlauf genau einmal.",
           "Galileo Galilei entdeckte 1610 die vier größten Monde des Jupiter.",
+          "Ceres und Pluto sind Zwergplaneten. Pluto galt bis 2006 als neunter Planet.",
         ],
         you: (n) => `Seit deiner Geburt hat der Mond die Erde etwa ${n}-mal umrundet.`,
         ref: (n) => `In 30 Jahren umrundet der Mond die Erde etwa ${n}-mal.`,
@@ -359,6 +366,7 @@ export const LEARN_TEXT = {
       largestMoon: { q: "Welcher ist der größte Mond des Sonnensystems?", o: ["Ganymed", "Unser Mond", "Europa"], e: "Ganymed, ein Mond des Jupiter: Er ist sogar größer als der Planet Merkur." },
       galileo: { q: "Wer entdeckte 1610 die vier großen Jupitermonde?", o: ["Galileo Galilei", "Isaac Newton", "Johannes Kepler"], e: "Galileo Galilei, mit einem der ersten Fernrohre. Man nennt sie die Galileischen Monde." },
       sameSide: { q: "Warum sehen wir vom Mond immer dieselbe Seite?", o: ["Er dreht sich bei jedem Umlauf genau einmal", "Er dreht sich gar nicht", "Die andere Seite ist immer dunkel"], e: "Der Mond dreht sich bei jedem Umlauf um die Erde einmal um sich selbst, darum ist uns immer dieselbe Seite zugewandt. Auch die Rückseite bekommt Sonnenlicht." },
+      dwarf: { q: "Welcher dieser Himmelskörper ist ein Zwergplanet?", o: ["Pluto", "Mars", "Neptun"], e: "Pluto. Seit 2006 gilt er als Zwergplanet, wie Ceres im Asteroidengürtel." },
       moonLaps: { you: "Wie oft hat der Mond die Erde seit deiner Geburt etwa umrundet?", ref: "Wie oft umrundet der Mond die Erde in 30 Jahren etwa?", e: (n) => `Etwa ${n}-mal: Ein Umlauf dauert 27,3 Tage.` },
       neptune: { q: "Wie weit ist Neptun etwa von der Sonne entfernt?", o: ["30 AE", "3 AE", "300 AE"], e: "Etwa 30 AE, 30-mal so weit wie die Erde. Das Licht der Sonne braucht etwa 4 Stunden bis dorthin." },
       starLight: { you: (name) => `Wie viele Jahre war das Licht deines Sterns, ${name}, bis zu dir unterwegs?`, e: (n, name) => `Etwa ${n} Jahre: ${name} ist etwa ${n} Lichtjahre entfernt, und ein Lichtjahr ist die Strecke, die das Licht in einem Jahr zurücklegt.` },
@@ -436,10 +444,11 @@ export const LEARN_TEXT = {
         ref: (n) => `30年のあいだに、木星は太陽のまわりを${n}周しかしません。木星の1年は地球の約12年だからです。`,
       },
       moons: {
-        title: "衛星", goal: "衛星とは何か、そして月がいつも同じ面を向けている理由がわかります。",
+        title: "衛星と準惑星", goal: "衛星とは何か、月がいつも同じ面を向けている理由、そして準惑星とは何かがわかります。",
         text: [
           "衛星は惑星のまわりを回る天体です。地球には1つ、木星には数十の衛星があり、そのうち大きな4つは1610年にガリレオ・ガリレイが初期の望遠鏡で発見しました。",
           "大きな衛星の多くは、1周するあいだにちょうど1回自転するため、いつも惑星に同じ面を向けています。だから地球から月の裏側は見えません。",
+          "太陽のまわりを自分で回る天体が、すべて惑星というわけではありません。小惑星帯のケレスと海王星の外側の冥王星は準惑星です。冥王星は2006年まで9番目の惑星とされていましたが、ほかの天体がその軌道を横切る可能性があるため、国際天文学連合が準惑星に分類しました。冥王星には5つの衛星が知られていて、最大のカロンは冥王星の約半分の大きさです。",
         ],
         task: "木星まで飛んで、4つの大きな衛星のどれかをクリックしてみましょう。",
         remember: [
@@ -447,6 +456,7 @@ export const LEARN_TEXT = {
           "木星の衛星ガニメデは太陽系最大の衛星で、惑星の水星より大きいのです。",
           "月はいつも地球に同じ面を向けています。1周するあいだにちょうど1回自転するからです。",
           "1610年、ガリレオ・ガリレイが木星の4つの大きな衛星を発見しました。",
+          "ケレスと冥王星は準惑星です。冥王星は2006年まで9番目の惑星とされていました。",
         ],
         you: (n) => `あなたが生まれてから、月は地球のまわりを約${n}周しました。`,
         ref: (n) => `30年のあいだに、月は地球のまわりを約${n}周します。`,
@@ -482,6 +492,7 @@ export const LEARN_TEXT = {
       largestMoon: { q: "太陽系でいちばん大きな衛星はどれですか？", o: ["ガニメデ", "月", "エウロパ"], e: "木星の衛星ガニメデです。惑星の水星より大きいのです。" },
       galileo: { q: "1610年に木星の4つの大きな衛星を発見したのはだれですか？", o: ["ガリレオ・ガリレイ", "アイザック・ニュートン", "ヨハネス・ケプラー"], e: "初期の望遠鏡を使ったガリレオ・ガリレイです。これらはガリレオ衛星と呼ばれます。" },
       sameSide: { q: "なぜ月はいつも同じ面を地球に向けているのですか？", o: ["1周するあいだにちょうど1回自転するから", "まったく自転していないから", "裏側はいつも暗いから"], e: "月は地球を1周するあいだに1回自転するので、いつも同じ面がこちらを向いています。裏側にも太陽の光は当たります。" },
+      dwarf: { q: "次のうち準惑星はどれですか？", o: ["冥王星", "火星", "海王星"], e: "冥王星です。2006年から、小惑星帯のケレスと同じく準惑星とされています。" },
       moonLaps: { you: "あなたが生まれてから、月は地球のまわりを約何周しましたか？", ref: "30年のあいだに、月は地球のまわりを約何周しますか？", e: (n) => `約${n}周です。1周は27.3日です。` },
       neptune: { q: "海王星は太陽からおよそどれくらい離れていますか？", o: ["30 au", "3 au", "300 au"], e: "約30 auで、地球の30倍の距離です。太陽の光が届くまで約4時間かかります。" },
       starLight: { you: (name) => `あなたの星${name}の光は、あなたに届くまで何年旅しましたか？`, e: (n, name) => `約${n}年です。${name}までは約${n}光年で、1光年は光が1年に進む距離です。` },
@@ -559,10 +570,11 @@ export const LEARN_TEXT = {
         ref: (n) => `За 30 години Юпитер обикаля Слънцето само ${n} пъти: една негова година трае почти 12 наши.`,
       },
       moons: {
-        title: "Луни", goal: "Знаеш какво е луна и защо Луната винаги ни показва една и съща страна.",
+        title: "Луни и джудже планети", goal: "Знаеш какво е луна, защо Луната винаги ни показва една и съща страна и какво е джудже планета.",
         text: [
           "Една луна обикаля около планета. Земята има една, Юпитер десетки, а четирите най-големи от тях открива Галилео Галилей през 1610 г. с един от първите телескопи.",
           "Повечето големи луни се завъртат точно веднъж около себе си при всяка обиколка и затова винаги са обърнати към планетата си с една и съща страна. Затова от Земята никога не виждаме обратната страна на Луната.",
+          "Не всяко тяло, което само обикаля Слънцето, е планета. Церера в астероидния пояс и Плутон отвъд Нептун са джудже планети. Плутон се смяташе за девета планета до 2006 г., когато Международният астрономически съюз го определи като джудже планета, защото други обекти могат да пресичат орбитата му. Той има пет известни луни; най-голямата, Харон, е около половината от неговия размер.",
         ],
         task: "Полети до Юпитер и щракни върху една от четирите му големи луни.",
         remember: [
@@ -570,6 +582,7 @@ export const LEARN_TEXT = {
           "Ганимед, луна на Юпитер, е най-голямата луна в Слънчевата система, по-голяма от планетата Меркурий.",
           "Нашата Луна винаги е обърната към Земята с една и съща страна: завърта се точно веднъж при всяка обиколка.",
           "Галилео Галилей открива четирите най-големи луни на Юпитер през 1610 г.",
+          "Церера и Плутон са джудже планети. Плутон се смяташе за девета планета до 2006 г.",
         ],
         you: (n) => `От раждането ти Луната е обиколила Земята около ${n} пъти.`,
         ref: (n) => `За 30 години Луната обикаля Земята около ${n} пъти.`,
@@ -605,6 +618,7 @@ export const LEARN_TEXT = {
       largestMoon: { q: "Коя е най-голямата луна в Слънчевата система?", o: ["Ганимед", "Нашата Луна", "Европа"], e: "Ганимед, луна на Юпитер: тя е дори по-голяма от планетата Меркурий." },
       galileo: { q: "Кой откри четирите големи луни на Юпитер през 1610 г.?", o: ["Галилео Галилей", "Исак Нютон", "Йоханес Кеплер"], e: "Галилео Галилей, с един от първите телескопи. Наричат ги Галилееви луни." },
       sameSide: { q: "Защо винаги виждаме една и съща страна на Луната?", o: ["Завърта се точно веднъж при всяка обиколка", "Изобщо не се върти", "Другата страна е винаги тъмна"], e: "Луната се завърта веднъж около себе си при всяка обиколка около Земята, затова към нас винаги е обърната една и съща страна. Обратната страна също получава слънчева светлина." },
+      dwarf: { q: "Кое от тези тела е джудже планета?", o: ["Плутон", "Марс", "Нептун"], e: "Плутон. От 2006 г. се смята за джудже планета, като Церера в астероидния пояс." },
       moonLaps: { you: "Около колко пъти Луната е обиколила Земята от раждането ти?", ref: "Около колко пъти Луната обикаля Земята за 30 години?", e: (n) => `Около ${n} пъти: една обиколка трае 27,3 дни.` },
       neptune: { q: "Приблизително колко далеч е Нептун от Слънцето?", o: ["30 а.е.", "3 а.е.", "300 а.е."], e: "Около 30 а.е., 30 пъти по-далеч от Земята. Слънчевата светлина пътува около 4 часа дотам." },
       starLight: { you: (name) => `Колко години е пътувала светлината на твоята звезда, ${name}, до теб?`, e: (n, name) => `Около ${n} години: ${name} е на около ${n} светлинни години, а светлинна година е разстоянието, което светлината изминава за една година.` },

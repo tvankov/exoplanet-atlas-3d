@@ -8,6 +8,7 @@ The file holds three things for the app:
                Approximate Positions of the Major Planets", valid 1800 to 2050), the Earth row is the Earth-Moon
                barycentre
   bodies       the comets and interstellar objects with the elements of the Small-Body Database
+  dwarfs       the dwarf planets Ceres and Pluto, the same kind of elements (src/fetch_jpl.py --dwarfs)
   spacecraft   the flight paths from Horizons, [julian day, x, y, z] in AU, sun centred, ecliptic J2000
   retrieved    the day of the download, the positions of the spacecraft are valid for this day
 """
@@ -52,6 +53,12 @@ def bodies() -> list[dict]:
     return out
 
 
+def dwarfs() -> dict:
+    data = json.loads(latest("jpl_dwarfs_*.json").read_text(encoding="utf-8"))
+    wanted = ["e", "a", "q", "i", "om", "w", "tp", "per", "n"]
+    return {b["query"]: {k: float(b["elements"][k]) for k in wanted if b["elements"].get(k) is not None} for b in data}
+
+
 def spacecraft() -> list[dict]:
     data = json.loads(latest("jpl_horizons_*.json").read_text(encoding="utf-8"))
     return [
@@ -66,6 +73,7 @@ def main() -> None:
         "retrieved": horizons.stem.split("_")[-1],
         "planets": planets(),
         "bodies": bodies(),
+        "dwarfs": dwarfs(),
         "spacecraft": spacecraft(),
     }
     OUT.write_text(json.dumps(result, separators=(",", ":")), encoding="utf-8")

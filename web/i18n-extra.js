@@ -76,6 +76,11 @@ export const UI_EXTRA = {
     lookLabel: "系外惑星の見た目",
     mercuryNote:
       "強調色：MESSENGERの1000、750、430ナノメートルのフィルターを赤、緑、青に割り当てています。色は岩石の違いを示すもので、目で見た色ではありません。",
+    dwarfTag: "準惑星",
+    ceresNote:
+      "探査機ドーンによる灰色の地図です（NASA/JPL-Caltech/UCLA/MPS/DLR/IDA、USGS）。南極の細い帯は撮影されておらず、平均的な灰色で埋めています。これは測定値ではありません。",
+    plutoNote:
+      "2015年のニュー・ホライズンズの接近通過による灰色の地図です（New Horizons Team、NASA/JHU APL/SwRI、USGS）。探査機が見たのは冥王星の一部だけで、南緯約35度より南は平均的な灰色で埋めています。これは測定値ではありません。",
     paintedNote:
       "地図ではなく、プログラムが描いたものです。色と縞模様は望遠鏡や探査機が示すものに沿っていますが、細かい模様は創作です。このような惑星の雲は常に変化します。",
     speedTitle: "時間の速さ",
@@ -212,6 +217,11 @@ export const UI_EXTRA = {
     lookLabel: "Вид на екзопланетите",
     mercuryNote:
       "Усилени цветове: картата слага филтрите на MESSENGER при 1000, 750 и 430 нанометра върху червено, зелено и синьо. Цветовете показват разлики в скалите, а не какво би видяло окото.",
+    dwarfTag: "Джудже планета",
+    ceresNote:
+      "Сива карта от сондата Dawn (NASA/JPL-Caltech/UCLA/MPS/DLR/IDA, USGS). Тясна ивица при южния полюс не е заснета; тя е запълнена със средно сиво, което не е измерване.",
+    plutoNote:
+      "Сива карта от прелитането на New Horizons през 2015 г. (New Horizons Team, NASA/JHU APL/SwRI, USGS). Сондата видя само част от Плутон: на юг от около 35 градуса картата е запълнена със средно сиво, което не е измерване.",
     paintedNote:
       "Нарисувана от програмата, не е карта. Цветовете и ивиците следват онова, което показват телескопите и сондите, а фината шарка е измислена. Облаците на такава планета непрекъснато се менят.",
     speedTitle: "Скорост на времето",
@@ -553,6 +563,6 @@ export const DURATION_EXTRA = {
 
 // The names of the eight planets (the long stories of the seven others are English for now).
 export const SOLAR_TITLES = {
-  ja: { Mercury: "水星", Venus: "金星", Earth: "地球", Mars: "火星", Jupiter: "木星", Saturn: "土星", Uranus: "天王星", Neptune: "海王星" },
-  bg: { Mercury: "Меркурий", Venus: "Венера", Earth: "Земя", Mars: "Марс", Jupiter: "Юпитер", Saturn: "Сатурн", Uranus: "Уран", Neptune: "Нептун" },
+  ja: { Mercury: "水星", Venus: "金星", Earth: "地球", Mars: "火星", Jupiter: "木星", Saturn: "土星", Uranus: "天王星", Neptune: "海王星", Ceres: "ケレス", Pluto: "冥王星" },
+  bg: { Mercury: "Меркурий", Venus: "Венера", Earth: "Земя", Mars: "Марс", Jupiter: "Юпитер", Saturn: "Сатурн", Uranus: "Уран", Neptune: "Нептун", Ceres: "Церера", Pluto: "Плутон" },
 };

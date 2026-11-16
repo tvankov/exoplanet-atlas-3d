@@ -1005,6 +1005,15 @@ const PLANETS = [
   { name: "Uranus", au: 19.19, years: 84.01, radius: 3.98, color: 0x9fe3e8, flatten: 0.977, rings: "uranus", look: 2, noteKey: "paintedNote" },
   { name: "Neptune", au: 30.07, years: 164.8, radius: 3.86, color: 0x4b70dd, flatten: 0.983, rings: "neptune", look: 3, noteKey: "paintedNote" },
 ];
+// The dwarf planets Ceres and Pluto. Their orbits are the elements of JPL's Small-Body Database (src/fetch_jpl.py --dwarfs, ORBITS.dwarfs),
+// as for the comets. Sizes and years: Ceres 939.4 km across (Small-Body Database) and 4.6 years (NASA, Ceres facts), Pluto 1,188 km in
+// radius and 247.94 years (NASA Pluto Fact Sheet); au is the mean distance shown in the menu. Their maps are grey global mosaics of the
+// USGS (src/build_dwarf_textures.py); where no spacecraft took pictures the map is filled with grey, the note says so. They are not
+// planets: the ages on the planets, the daily flights and the missions keep to PLANETS.
+const DWARFS = [
+  { name: "Ceres", dwarf: true, au: 2.77, years: 4.6, radius: 469.7 / 6371, color: 0x8c8c8c, texture: "textures/ceres.jpg", bump: 4, noteKey: "ceresNote" },
+  { name: "Pluto", dwarf: true, au: 39.48, years: 247.94, radius: 1188 / 6371, color: 0xb9a48c, texture: "textures/pluto.jpg", bump: 3, noteKey: "plutoNote" },
+];
 // Sidereal rotation periods in hours, from the NASA Planetary Fact Sheet (nssdc.gsfc.nasa.gov, metric,
 // rounded as printed there; Earth and Mars from their own sheets). A minus sign means the planet turns
 // the other way, as Venus and Uranus do. The axis tilts are not applied yet, every planet spins about
@@ -1018,6 +1027,8 @@ const ROTATION_HOURS = {
   Saturn: 10.7,
   Uranus: -17.2,
   Neptune: 16.1,
+  Ceres: 9.07417, // Small-Body Database
+  Pluto: -153.2928, // NASA Pluto Fact Sheet, it turns the other way
 };
 // Real orbits, from JPL (NASA), made by src/fetch_jpl.py and src/build_orbits.py. The eight planets sit where
 // their Keplerian elements put them on the day of the visit (JPL "Approximate Positions of the Major Planets",
@@ -1027,6 +1038,9 @@ const ROTATION_HOURS = {
 // squeezed one: a distance r in AU is drawn as 0.3 * sqrt(r) in the direction it really has.
 // The ecliptic is the flat plane of the Solar System view, it is not tilted against the star coordinates.
 const ORBITS = await (await fetch("data/orbits.json")).json();
+// a dwarf planet without its orbit (an orbits.json from before them, still in a cache) is left out rather than breaking the page
+const DWARF_ORBITS = ORBITS.dwarfs ?? {};
+const SOLAR_BODIES = [...PLANETS, ...DWARFS.filter((d) => DWARF_ORBITS[d.name])];
 const DEG = Math.PI / 180;
 const JD_AT_LOAD = Date.now() / 86400000 + 2440587.5; // the Julian day of this moment
 const GAUSS_K = 0.01720209895; // rad per day, for a body of one AU
@@ -2233,7 +2247,9 @@ function stepSystem(system, dt) {
       mapEcliptic(b.visitor.at(jd), b.mesh.position); // a comet, an interstellar object or a spacecraft
       continue;
     }
-    if (b.elements) {
+    if (b.at) {
+      mapEcliptic(b.at(jd), b.mesh.position); // a dwarf planet, where it really is
+    } else if (b.elements) {
       mapEcliptic(planetPosition(b.elements, jd), b.mesh.position); // a planet of ours, where it really is
     } else {
       const a = b.start + (system.time * Math.PI * 2) / b.years;
@@ -2284,10 +2300,12 @@ function stepSystem(system, dt) {
 }
 
 function planetOrbitPoints(name) {
-  const el = planetElements(ORBITS.planets[ELEMENT_ROW[name]], JD_AT_LOAD);
   // In the real scale an orbit is hundreds of units long and the camera can be a few thousandths of a unit from the planet: with 128 corners
   // the line is a polygon whose sides lie several planet radii beside the planet. 8,192 corners keep the line within a fraction of a radius.
-  const curve = orbitCurve({ a: el.a, e: el.e, i: el.I, om: el.node, w: el.peri - el.node }, realScale ? 8192 : 128);
+  const corners = realScale ? 8192 : 128;
+  const dwarf = DWARF_ORBITS[name];
+  const el = dwarf ? null : planetElements(ORBITS.planets[ELEMENT_ROW[name]], JD_AT_LOAD);
+  const curve = dwarf ? orbitCurve(dwarf, corners) : orbitCurve({ a: el.a, e: el.e, i: el.I, om: el.node, w: el.peri - el.node }, corners);
   return curve.map((p) => mapEcliptic(p, new THREE.Vector3()));
 }
 
@@ -2295,7 +2313,7 @@ const solar = makeSystem({
   starName: "Sun",
   starRadius: null, // the Sun already has its marker above, visible from far away too
   viewDistance: 1.5,
-  planets: PLANETS.map((p) => ({
+  planets: SOLAR_BODIES.map((p) => ({
     name: p.name,
     years: p.years,
     orbit: 0.3 * Math.sqrt(p.au),
@@ -2306,6 +2324,7 @@ const solar = makeSystem({
     bump: p.bump,
     flatten: p.flatten,
     elements: ORBITS.planets[ELEMENT_ROW[p.name]],
+    at: p.dwarf ? (jd) => bodyPosition(DWARF_ORBITS[p.name], jd) : undefined, // a dwarf planet, from the elements of the Small-Body Database
     orbitPoints: planetOrbitPoints(p.name),
     rotHours: ROTATION_HOURS[p.name],
     noteKey: p.noteKey,
@@ -3422,14 +3441,14 @@ function buildSolarMenu() {
   const list = document.getElementById("solar-list");
   list.replaceChildren();
   for (const body of solar.bodies) {
-    if (!PLANETS.some((p) => p.name === body.name)) continue; // the Moon is a body too
+    const solarBody = SOLAR_BODIES.find((p) => p.name === body.name);
+    if (!solarBody) continue; // the Moon is a body too
     const isEarth = body.name === "Earth";
     const planet = isEarth ? EARTH.planet : { pl_name: body.name, solarOther: true, noteKey: body.noteKey };
     const name = document.createElement("span");
     name.textContent = isEarth ? UI[lang].earthShort : solarName(body.name, lang);
-    const au = PLANETS.find((p) => p.name === body.name).au;
     const info = document.createElement("small");
-    info.textContent = `${au} AU`;
+    info.textContent = solarBody.dwarf ? `${UI[lang].dwarfTag} · ${solarBody.au} AU` : `${solarBody.au} AU`;
     const label = document.createElement("div");
     label.append(name, info);
     const row = document.createElement("div");
@@ -3843,7 +3862,7 @@ function setRealScale(on) {
   controls.minDistance = on ? 4e-5 : 0.02;
   solar.viewDistance = on ? SOLAR_REAL_VIEW : 1.5;
   for (const b of solar.bodies) {
-    if (!PLANETS.some((p) => p.name === b.name)) continue;
+    if (!SOLAR_BODIES.some((p) => p.name === b.name)) continue;
     const drawn = b.mesh.geometry.parameters.radius;
     applyBodyScale(b, on);
     for (const moon of b.moons ?? []) moon.distance = (on ? moon.real : moon.orbit) * drawn; // the real distance, or the squeezed one
@@ -4338,7 +4357,7 @@ const sunLabel = () => TRAVEL_UI[lang].sun;
 function resolvePlace(text) {
   const q = text.trim().toLowerCase();
   if (!q) return null;
-  const planet = PLANETS.find((p) =>
+  const planet = SOLAR_BODIES.find((p) =>
     [p.name, ...Object.keys(UI).map((l) => solarName(p.name, l)), ...(p.name === "Earth" ? Object.values(UI).map((u) => u.earthShort) : [])].some(
       (n) => n.toLowerCase() === q
     )
@@ -4361,7 +4380,7 @@ function placeLabel(place) {
 // the Sun again in the new language.
 function fillPlaces() {
   const names = [
-    ...PLANETS.map((p) => planetLabel(p.name)),
+    ...SOLAR_BODIES.map((p) => planetLabel(p.name)),
     sunLabel(),
     ...stars.map((s) => s.hostname),
     ...stars.flatMap((s) => s.planets.map((p) => p.pl_name)),
@@ -4443,9 +4462,10 @@ function planCourse() {
   if (from.kind === "planet" && to.kind === "planet") {
     // Planet to planet: both move, so the ship aims at the place where the target will be (AU, ecliptic).
     mode = "solar";
-    const rowOf = (name) => ORBITS.planets[ELEMENT_ROW[name]];
-    o = planetPosition(rowOf(from.name), jd0);
-    const hit = solveIntercept(o, (jd) => planetPosition(rowOf(to.name), jd), jd0, beta * C_AU_PER_DAY);
+    // a planet from its row of the table, a dwarf planet from its elements
+    const where = (name, jd) => (DWARF_ORBITS[name] ? bodyPosition(DWARF_ORBITS[name], jd) : planetPosition(ORBITS.planets[ELEMENT_ROW[name]], jd));
+    o = where(from.name, jd0);
+    const hit = solveIntercept(o, (jd) => where(to.name, jd), jd0, beta * C_AU_PER_DAY);
     if (!hit) {
       showTripMessage(t.none);
       return;
@@ -5571,7 +5591,7 @@ universe = initUniverse({
     const place = resolvePlace(name);
     if (!place) return null;
     if (place.kind === "planet") {
-      const p = PLANETS.find((x) => x.name === place.name);
+      const p = SOLAR_BODIES.find((x) => x.name === place.name);
       return { kind: "solar", id: p.name, name: planetLabel(p.name), color: `#${p.color.toString(16).padStart(6, "0")}`, au: p.au };
     }
     if (place.kind === "exo") return { kind: "exo", name: place.planet.pl_name, dist: place.star.dist_ly, temp: place.planet.pl_eqt ?? null };
