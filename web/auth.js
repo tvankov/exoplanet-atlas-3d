@@ -416,7 +416,8 @@ export function initAuth({ getLang, explorer, universe }) {
       parts.push(form([password], tx.savePassword, () => (password.input.value.length < 8 ? fail(tx.badPassword) : savePassword(password.input.value))));
     }
     box.replaceChildren(...parts);
-    universe.render(document.getElementById("universe-body")); // the dashboard, the greeting
+    // the dashboard only while the panel is open (it draws about 40 pictures and loads the maps of the planets); the greeting always
+    universe.render(panel.hidden ? null : document.getElementById("universe-body"));
   }
   function fail(text) {
     notice = { text, error: true };

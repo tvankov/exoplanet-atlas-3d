@@ -478,6 +478,7 @@ export function initExplorer({ getLang, text, explore }) {
     favButton.title = favButton.getAttribute("aria-label");
     favButton.hidden = !current;
     for (const fn of renderListeners) fn();
+    if (panel.hidden) return; // the panel itself (with the medals) is built when it is opened, not at the start of the page
     const section = (title, ...children) => {
       const s = el("section", "log-section");
       s.append(el("h3", "", title), ...children);

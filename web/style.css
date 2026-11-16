@@ -3802,3 +3802,10 @@ body:has(#day-flight:not([hidden])) #tour {
   letter-spacing: 0;
   text-transform: none;
 }
+
+/* A visible ring for the keyboard on every control of the page (the dock cards, the panels, the dialogs), not only in some parts. A mouse
+   click shows none (focus-visible). */
+:is(button, summary, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #7cffb2;
+  outline-offset: 2px;
+}

@@ -26,24 +26,51 @@ export function loadImage(src) {
         i.onload = () => resolve(i);
         i.onerror = reject;
         i.src = src;
+      }).catch((e) => {
+        images.delete(src); // tried again the next time
+        throw e;
       })
     );
   return images.get(src);
 }
-// the pixels of a map, made smaller (1024 x 512 is enough for a sphere on the picture)
+// The pixels of a map, made smaller (1024 x 512 is enough for a sphere on the picture). Only these small pixels are kept, not the big picture
+// (a map of 4096 x 2048 takes 32 MB once decoded); where the browser can, it decodes and shrinks the picture outside the main thread
+// (createImageBitmap), so that the page does not stop for it. A map that fails is tried again the next time.
 const maps = new Map();
+async function decodeSmall(src, width, height) {
+  if (typeof createImageBitmap === "function") {
+    try {
+      const blob = await (await fetch(src)).blob(); // from the cache: the 3D view has loaded the same file
+      return await createImageBitmap(blob, { resizeWidth: width, resizeHeight: height, resizeQuality: "medium" });
+    } catch {
+      // not possible here: an image element below
+    }
+  }
+  return new Promise((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = reject;
+    i.src = src;
+  });
+}
 function mapPixels(src) {
   if (!maps.has(src))
     maps.set(
       src,
-      loadImage(src).then((img) => {
-        const c = document.createElement("canvas");
-        c.width = 1024;
-        c.height = 512;
-        const g = c.getContext("2d");
-        g.drawImage(img, 0, 0, c.width, c.height);
-        return g.getImageData(0, 0, c.width, c.height);
-      })
+      decodeSmall(src, 1024, 512)
+        .then((img) => {
+          const c = document.createElement("canvas");
+          c.width = 1024;
+          c.height = 512;
+          const g = c.getContext("2d");
+          g.drawImage(img, 0, 0, c.width, c.height);
+          img.close?.(); // an ImageBitmap gives its memory back at once
+          return g.getImageData(0, 0, c.width, c.height);
+        })
+        .catch((e) => {
+          maps.delete(src);
+          throw e;
+        })
     );
   return maps.get(src);
 }
@@ -179,6 +206,11 @@ function drawBackdrop(g, img, at) {
   g.fillRect(0, 0, W, H);
 }
 
+// One sphere per task: the first opening of My Universe draws about 40 small pictures, and drawn in one go they stopped the page for seconds
+// (2.7 s on a desktop computer). Each sphere waits for its turn, and between two of them the page can react (a click, a frame of the map).
+let queue = Promise.resolve();
+const turn = () => (queue = queue.then(() => new Promise((resolve) => setTimeout(resolve, 0))));
+
 // A planet as a lit sphere, from its map or painted; the light comes from the upper left. Saturn gets its rings, the Earth its clouds and a
 // thin blue air. name: a planet of the Solar System (or "Moon"), or a look of its own ({ map } or { paint }, see exoLook).
 export async function drawPlanet(g, name, cx, cy, r) {
@@ -186,6 +218,7 @@ export async function drawPlanet(g, name, cx, cy, r) {
   if (!look) return;
   const map = look.map ? await mapPixels(look.map) : null;
   const clouds = look.clouds ? await mapPixels(look.clouds) : null;
+  await turn();
   const ringBack = () => ring(g, cx, cy, r, look.ring, Math.PI, Math.PI * 2);
   if (look.ring) ringBack();
   const size = Math.ceil(r * 2);
