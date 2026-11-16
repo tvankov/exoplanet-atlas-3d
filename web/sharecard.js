@@ -497,6 +497,87 @@ export function medalCanvas(id, cls, size) {
   });
 }
 
+// ---------------------------------------------------------------- the certificate of a learning path
+// A sheet of paper, 920 x 960 in its own units, drawn at x, y with the width w (the height follows). d: { name, title, goal, score, date,
+// passed, labels: { heading, confirms, completed, scoreLine (score, date), privateLine } }. A path not passed yet is drawn pale, without
+// name and result: the preview of what there is to earn.
+export function drawCertificate(g, x, y, w, d) {
+  const k = w / 920;
+  const ink = "#1d2440", soft = "#4a5170", gold = "#c09a3e";
+  g.save();
+  g.translate(x, y);
+  g.scale(k, k);
+  if (!d.passed) g.globalAlpha = 0.45;
+  roundRect(g, 0, 0, 920, 960, 24);
+  g.fillStyle = "#f5f1e6";
+  g.fill();
+  g.strokeStyle = gold;
+  g.lineWidth = 6;
+  roundRect(g, 20, 20, 880, 920, 16);
+  g.stroke();
+  g.lineWidth = 1.5;
+  roundRect(g, 34, 34, 852, 892, 12);
+  g.stroke();
+  g.textAlign = "center";
+  g.textBaseline = "alphabetic";
+  g.fillStyle = gold;
+  g.font = font(700, 26);
+  g.fillText("S P A C E   E X P L O R E R", 460, 108);
+  g.fillStyle = ink;
+  fitText(g, d.labels.heading, 460, 182, 780, 700, 60);
+  g.fillStyle = soft;
+  g.font = font(400, 30);
+  g.fillText(d.labels.confirms, 460, 262);
+  g.fillStyle = ink;
+  fitText(g, d.passed ? d.name : "· · ·", 460, 342, 780, 700, 58);
+  g.strokeStyle = "rgba(29,36,64,0.25)";
+  g.lineWidth = 2;
+  g.beginPath();
+  g.moveTo(170, 368);
+  g.lineTo(750, 368);
+  g.stroke();
+  g.fillStyle = soft;
+  g.font = font(400, 30);
+  g.fillText(d.labels.completed, 460, 428);
+  g.fillStyle = ink;
+  g.font = font(700, 44);
+  let yy = 500;
+  for (const line of wrap(g, d.title, 760).slice(0, 2)) {
+    g.fillText(line, 460, yy);
+    yy += 54;
+  }
+  g.fillStyle = soft;
+  g.font = font(400, 26);
+  yy += 6;
+  for (const line of wrap(g, d.goal, 720).slice(0, 3)) {
+    g.fillText(line, 460, yy);
+    yy += 36;
+  }
+  if (d.passed) {
+    g.fillStyle = ink;
+    fitText(g, d.labels.scoreLine(d.score, d.date), 460, Math.max(yy + 40, 750), 780, 600, 30);
+  }
+  // the seal, with a star in it
+  const seal = g.createRadialGradient(770, 838, 8, 776, 846, 70);
+  seal.addColorStop(0, "#fff0c2");
+  seal.addColorStop(1, gold);
+  g.fillStyle = seal;
+  g.beginPath();
+  g.arc(776, 846, 64, 0, Math.PI * 2);
+  g.fill();
+  drawStar(g, 776, 846, 46, "255,250,235");
+  g.textAlign = "left";
+  g.fillStyle = "#6b6f80";
+  g.font = font(400, 20);
+  let py = 828;
+  for (const line of wrap(g, d.labels.privateLine, 560).slice(0, 3)) {
+    g.fillText(line, 80, py);
+    py += 28;
+  }
+  g.fillText(SITE, 80, py + 8);
+  g.restore();
+}
+
 // ---------------------------------------------------------------- the picture and the share
 // kind: a short name for the counting ("star", "ages", "sky"); title: the line at the top; text: the message that goes with the picture;
 // backdrop: where in the Milky Way (0 to 1); sources: the credit of what the picture shows besides the Milky Way; draw(g): draws the middle

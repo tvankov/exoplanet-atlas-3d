@@ -1882,5 +1882,21 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     if (view === "path") return { nodes: pathView(onChange), overview: false };
     return { nodes: listView(onChange), overview: true };
   }
-  return { area, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
+  // every path with its progress, for the certificates (universe.js)
+  const paths = () =>
+    Object.keys(PATHS).map((path) => ({
+      id: path,
+      title: t().paths[path].title,
+      goal: t().paths[path].goal,
+      done: doneOf(path),
+      all: PATHS[path].steps.length,
+      passed: has("learnPaths", path),
+      best: total()[`learnBest:${path}`] ?? 0,
+    }));
+  // open a path in the area Learn (from the certificates)
+  const open = (path) => {
+    choose(path);
+    view = "path";
+  };
+  return { area, paths, open, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
 }

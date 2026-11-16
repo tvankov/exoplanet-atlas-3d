@@ -4297,3 +4297,40 @@ input.uni-date {
   background: rgba(124, 255, 178, 0.2);
   border-color: rgba(124, 255, 178, 0.8);
 }
+
+/* The certificates: a card per learning path, the certificate itself (pale while not passed yet) */
+.uni-certs {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+.uni-cert {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+}
+.uni-cert-paper {
+  flex: none;
+  width: 92px;
+  height: 96px;
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+.uni-cert-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.uni-cert-text small {
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.8;
+}
+.uni-cert-text .uni-actions {
+  margin-top: 6px;
+}

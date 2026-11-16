@@ -7,7 +7,7 @@
 import { track } from "./stats.js";
 import { INTERESTS, LEVELS } from "./profile.js";
 import { disclosure } from "./disclosure.js";
-import { planetCanvas, starCanvas, medalCanvas, roundRect } from "./sharecard.js";
+import { planetCanvas, starCanvas, medalCanvas, roundRect, drawCertificate, sharePicture } from "./sharecard.js";
 import { dockPicture } from "./dockart.js";
 import { storeBirthDate, storedBirthDate } from "./birthsky.js";
 
@@ -24,6 +24,13 @@ export const UNIVERSE_TEXT = {
     certIntro: "When you finish a learning path and pass its final test, you get a Space Explorer learning certificate here.",
     certRule: "The rule: every required step done and at least 70 % in the final test. A certificate is a private confirmation of what you learned, not an accredited qualification.",
     certNone: "No certificate yet.",
+    certSome: "Your certificates, and what there is still to earn. Share one as a picture, with your name from the profile.",
+    certHeading: "Learning certificate", certConfirms: "This confirms that", certCompleted: "has completed the learning path",
+    certScoreLine: (p, d) => (d ? `with ${p} % in the final test, on ${d}` : `with ${p} % in the final test`),
+    certPrivate: "A private confirmation of what was learned in Space Explorer, not an accredited qualification.",
+    certNoName: "an explorer", certShare: "Share as a picture", certOpen: "To the learning path",
+    certPassed: (p, d) => (d ? `Passed with ${p} % · ${d}` : `Passed with ${p} %`), certMissing: (d, all) => `${d} of ${all} steps · final test still open`,
+    certMessage: (title) => `I passed the learning path "${title}" in Space Explorer.`,
     heroBack: (name) => (name ? `Welcome back, ${name}` : "Welcome back"),
     next: "What next", continueGo: "Continue exploring", discover: "Discover", lastSeen: (when) => `Seen last · ${when}`, forYou: "For you",
     kindSolar: (au) => `Planet of the Solar System · ${au} AU from the Sun`,
@@ -71,6 +78,13 @@ export const UNIVERSE_TEXT = {
     certIntro: "Wenn du einen Lernpfad abschließt und seinen Abschlusstest bestehst, bekommst du hier ein Lernzertifikat von Space Explorer.",
     certRule: "Die Regel: alle Pflichtschritte erledigt und mindestens 70 % im Abschlusstest. Ein Zertifikat bestätigt privat, was du gelernt hast, es ist kein anerkannter Abschluss.",
     certNone: "Noch kein Zertifikat.",
+    certSome: "Deine Zertifikate und was es noch zu verdienen gibt. Teile eins als Bild, mit deinem Namen aus dem Profil.",
+    certHeading: "Lernzertifikat", certConfirms: "Hiermit wird bestätigt, dass", certCompleted: "den Lernpfad abgeschlossen hat",
+    certScoreLine: (p, d) => (d ? `mit ${p} % im Abschlusstest, am ${d}` : `mit ${p} % im Abschlusstest`),
+    certPrivate: "Eine private Bestätigung dessen, was in Space Explorer gelernt wurde, kein anerkannter Abschluss.",
+    certNoName: "ein Explorer", certShare: "Als Bild teilen", certOpen: "Zum Lernpfad",
+    certPassed: (p, d) => (d ? `Bestanden mit ${p} % · ${d}` : `Bestanden mit ${p} %`), certMissing: (d, all) => `${d} von ${all} Schritten · Abschlusstest noch offen`,
+    certMessage: (title) => `Ich habe in Space Explorer den Lernpfad „${title}“ bestanden.`,
     heroBack: (name) => (name ? `Willkommen zurück, ${name}` : "Willkommen zurück"),
     next: "Als Nächstes", continueGo: "Weiter erkunden", discover: "Entdecken", lastSeen: (when) => `Zuletzt angesehen · ${when}`, forYou: "Für dich",
     kindSolar: (au) => `Planet des Sonnensystems · ${au} AE von der Sonne`,
@@ -118,6 +132,13 @@ export const UNIVERSE_TEXT = {
     certIntro: "学習コースを修了し、最終テストに合格すると、ここにSpace Explorerの修了証が表示されます。",
     certRule: "条件：必須ステップをすべて終え、最終テストで70 %以上。修了証は学んだことを私的に証明するもので、公的に認められた資格ではありません。",
     certNone: "まだ修了証はありません。",
+    certSome: "あなたの修了証と、これから手に入れられるもの。プロフィールの名前入りで、画像として共有できます。",
+    certHeading: "学習修了証", certConfirms: "以下の者が", certCompleted: "次の学習コースを修了したことを証明します",
+    certScoreLine: (p, d) => (d ? `最終テスト${p} %、${d}` : `最終テスト${p} %`),
+    certPrivate: "Space Explorerで学んだことを私的に証明するもので、公的に認められた資格ではありません。",
+    certNoName: "エクスプローラー", certShare: "画像として共有", certOpen: "学習コースへ",
+    certPassed: (p, d) => (d ? `${p} %で合格 · ${d}` : `${p} %で合格`), certMissing: (d, all) => `${all}ステップ中${d}完了 · 最終テストはまだ`,
+    certMessage: (title) => `Space Explorerで学習コース「${title}」に合格しました。`,
     heroBack: (name) => (name ? `おかえりなさい、${name}さん` : "おかえりなさい"),
     next: "次はこちら", continueGo: "探検をつづける", discover: "発見する", lastSeen: (when) => `最後に見たもの · ${when}`, forYou: "あなたへ",
     kindSolar: (au) => `太陽系の惑星 · 太陽から${au} au`,
@@ -165,6 +186,13 @@ export const UNIVERSE_TEXT = {
     certIntro: "Когато завършиш учебна пътека и издържиш финалния ѝ тест, тук получаваш учебен сертификат от Space Explorer.",
     certRule: "Правилото: всички задължителни стъпки са изпълнени и поне 70 % на финалния тест. Сертификатът е лично потвърждение на наученото, а не признат документ за образование.",
     certNone: "Все още няма сертификат.",
+    certSome: "Твоите сертификати и какво още можеш да спечелиш. Сподели някой като снимка, с името от профила.",
+    certHeading: "Учебен сертификат", certConfirms: "С това се потвърждава, че", certCompleted: "завърши учебната пътека",
+    certScoreLine: (p, d) => (d ? `с ${p} % на финалния тест, на ${d}` : `с ${p} % на финалния тест`),
+    certPrivate: "Лично потвърждение за наученото в Space Explorer, а не признат документ за образование.",
+    certNoName: "изследовател", certShare: "Сподели като снимка", certOpen: "Към учебната пътека",
+    certPassed: (p, d) => (d ? `Издържан с ${p} % · ${d}` : `Издържан с ${p} %`), certMissing: (d, all) => `${d} от ${all} стъпки · финалният тест предстои`,
+    certMessage: (title) => `Издържах учебната пътека „${title}“ в Space Explorer.`,
     heroBack: (name) => (name ? `Добре дошъл отново, ${name}` : "Добре дошъл отново"),
     next: "Следва", continueGo: "Продължи изследването", discover: "Открий", lastSeen: (when) => `Разгледано последно · ${when}`, forYou: "За теб",
     kindSolar: (au) => `Планета от Слънчевата система · ${au} а.е. от Слънцето`,
@@ -699,12 +727,60 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     return parts;
   }
 
+  // The certificates: one per learning path (learn.js), earned by passing its final test. A passed one shows the certificate itself and can
+  // be shared as a picture; one not passed yet is a pale preview with what is still missing. The date is the day of its badge.
+  function certificateData(tx, p) {
+    const badge = explorer.getState().badges?.find((b) => b.id === `${p.id}-scholar`);
+    const date = badge?.t ? new Date(badge.t).toLocaleDateString(getLang(), { day: "numeric", month: "long", year: "numeric" }) : null;
+    return {
+      name: explorer.getProfile().name || tx.certNoName,
+      title: p.title,
+      goal: p.goal,
+      score: p.best,
+      date,
+      passed: p.passed,
+      labels: { heading: tx.certHeading, confirms: tx.certConfirms, completed: tx.certCompleted, scoreLine: tx.certScoreLine, privateLine: tx.certPrivate },
+    };
+  }
   function certsArea(tx) {
-    const card = el("div", "uni-cert-empty");
+    const paths = learn?.paths() ?? [];
+    const intro = el("div", "uni-cert-empty");
     const text = el("div", "");
-    text.append(el("strong", "", tx.certNone), el("p", "", tx.certIntro), el("p", "hint", tx.certRule));
-    card.append(certificatePicture(), text);
-    return [section(tx.areas.certs, card)];
+    const any = paths.some((p) => p.passed);
+    text.append(el("strong", "", any ? tx.areas.certs : tx.certNone), el("p", "", any ? tx.certSome : tx.certIntro), el("p", "hint", tx.certRule));
+    intro.append(certificatePicture(), text);
+    const list = el("div", "uni-certs");
+    for (const p of paths) {
+      const d = certificateData(tx, p);
+      const card = el("div", `uni-cert${p.passed ? "" : " locked"}`);
+      const c = document.createElement("canvas");
+      c.width = 230;
+      c.height = 240;
+      c.className = "uni-cert-paper";
+      c.setAttribute("role", "img");
+      c.setAttribute("aria-label", `${tx.certHeading}: ${p.title}`);
+      drawCertificate(c.getContext("2d"), 0, 0, 230, d);
+      const info = el("div", "uni-cert-text");
+      info.append(el("strong", "", p.title), el("small", "", p.passed ? tx.certPassed(p.best, d.date) : tx.certMissing(p.done, p.all)));
+      const row = el("div", "uni-actions");
+      row.append(
+        p.passed
+          ? button(tx.certShare, "uni-primary", () =>
+              sharePicture({
+                kind: "certificate",
+                title: tx.certHeading,
+                text: tx.certMessage(p.title),
+                backdrop: 0.3,
+                draw: (g) => drawCertificate(g, 80, 220, 920, d),
+              })
+            )
+          : button(tx.certOpen, "uni-link", () => (learn.open(p.id), show("learn")))
+      );
+      info.append(row);
+      card.append(c, info);
+      list.append(card);
+    }
+    return [section(tx.areas.certs, intro, list)];
   }
 
   function renderDashboard(container) {
