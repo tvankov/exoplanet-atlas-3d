@@ -3574,6 +3574,9 @@ body:has(#day-flight:not([hidden])) #tour {
   border-radius: 9px;
 }
 @media (max-width: 640px) {
+  #dock {
+    width: auto; /* left and right decide (the round Info button is at the right); the rule of the wider dock above must not win here */
+  }
   .dock-card {
     flex: 0 0 236px;
     min-height: 136px;
