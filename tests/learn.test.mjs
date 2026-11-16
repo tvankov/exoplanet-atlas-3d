@@ -165,3 +165,17 @@ test("every path and every step has a place for the 3D view behind it", () => {
     for (const step of p.steps) assert.ok(VIEWS[step], step);
   }
 });
+
+test("Exoplanets: what the catalogue knew in the year of the birth, and the ages on three of its planets", () => {
+  const found = [[1992, "Pulsar Timing"], [1995, "Radial Velocity"], [1999, "Transit"], [2009, "Transit"], [2017, "Transit"], [2020, "Radial Velocity"]];
+  const mine = personalNumbers({ age: 31.4, years: YEARS, star: null, birthYear: 1995, discoveries: found, thisYear: 2026 });
+  assert.deepEqual([mine.knownAtBirth, mine.knownNow, mine.transitSince], [2, 6, 3]);
+  const plain = personalNumbers({ age: null, years: YEARS, star: null, birthYear: null, discoveries: found, thisYear: 2026 });
+  assert.equal(plain.birthYear, 1996); // 30 years ago
+  assert.equal(plain.pegAge, Math.round((30 * 365.25) / 4.2307966));
+  // the year is written without a thousands separator
+  assert.ok(personalLine("exoWhat", mine, "en").includes("In 1995,"));
+  assert.ok(personalLine("exoWhat", plain, "de").includes("1996, als"));
+  const t = testQuestions("exo", mine, "en", 0);
+  assert.equal(new Set(t.map((q) => q.id)).size, 10);
+});

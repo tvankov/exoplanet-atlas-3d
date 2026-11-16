@@ -5559,10 +5559,17 @@ birthSky = initBirthSky({
 });
 // The learning paths (learn.js): every step speaks of the visitor (their age and their star, see mystar.js); a task goes to a place of the map
 // or switches on the real scale.
+let discoveries = null; // made once the catalogue is loaded, for the path Exoplanets
 const learn = initLearn({
   getLang: () => lang,
   explorer,
-  personal: () => ({ age: myStar?.age() ?? null, years: Object.fromEntries(PLANETS.map((p) => [p.name, p.years])), star: myStar?.current() ?? null }),
+  personal: () => ({
+    age: myStar?.age() ?? null,
+    years: Object.fromEntries(PLANETS.map((p) => [p.name, p.years])),
+    star: myStar?.current() ?? null,
+    birthYear: myStar?.current()?.year ?? null,
+    discoveries: (discoveries ??= stars.flatMap((s) => s.planets.map((p) => [p.disc_year, p.discoverymethod]))), // the year and method of every planet
+  }),
   act: (task) => {
     if (task === "realScale") return realScale || setRealScale(true);
     if (task === "explanationScale") return realScale && setRealScale(false);

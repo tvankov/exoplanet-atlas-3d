@@ -437,6 +437,11 @@ const EMBLEM = {
     drawStar(g, r * 1.24, r * 1.08, r * 0.32, starColor(5300));
     drawStar(g, r * 1.42, r * 0.56, r * 0.14, starColor(3000));
   },
+  // Exoplanets: a star with a planet passing in front of it (a transit)
+  "exo-scholar": async (g, r) => {
+    drawStar(g, r, r, r * 0.62, starColor(5500));
+    await drawPlanet(g, exoLook(1300), r * 1.18, r * 1.06, r * 0.2);
+  },
   // ten missions: ten lights round the number
   regular: (g, r) => {
     for (let i = 0; i < 10; i++) {

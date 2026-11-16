@@ -150,6 +150,11 @@ export const BADGES = [
     en: ["Neighbour of the stars", "Passed the final test of Our nearest stars: Alpha Centauri"], de: ["Sternennachbar", "Den Abschlusstest von „Unsere nächsten Sterne: Alpha Centauri“ bestanden"],
     ja: ["星のおとなりさん", "「いちばん近い星たち：ケンタウルス座アルファ星」の最終テストに合格した"], bg: ["Звезден съсед", "Издържа финалния тест на „Най-близките ни звезди: Алфа Кентавър“"],
   },
+  {
+    id: "exo-scholar", count: (t) => (t.learnPaths?.includes("exo") ? 1 : 0), need: 1,
+    en: ["Exoplanet expert", "Passed the final test of Exoplanets"], de: ["Exoplaneten-Kenner", "Den Abschlusstest von „Exoplaneten“ bestanden"],
+    ja: ["系外惑星エキスパート", "「系外惑星」の最終テストに合格した"], bg: ["Познавач на екзопланетите", "Издържа финалния тест на „Екзопланети“"],
+  },
 ];
 
 // Each badge with how far the visitor is: [{ id, have (at most need), need, earned }]. total: state.total; earned: the ids already earned.

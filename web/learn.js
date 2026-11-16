@@ -5,7 +5,7 @@
 // progress lives in the explorer's log (explorer.js: total.learnTasks, learnSteps, learnPaths and "learnBest:<path>"), so it is merged with
 // the account like the rest. Every step has a box of the facts to remember and its sources (SOURCES): the facts were checked against those
 // NASA pages in November 2026, so that a step can be checked again when the science changes. The rules are pure functions, tested in
-// tests/learn.test.mjs. The paths: Our Solar System, and Alpha Centauri (our nearest stars); more will follow. A step may have no task in the
+// tests/learn.test.mjs. The paths: Our Solar System, Alpha Centauri (our nearest stars) and Exoplanets; more will follow. A step may have no task in the
 // 3D view when what it is about is not in the map (Alpha Centauri A and B): then the questions alone finish it.
 
 import { track } from "./stats.js";
@@ -16,20 +16,23 @@ import { planetCanvas, starCanvas } from "./sharecard.js";
 export const PATHS = {
   solar: { steps: ["sun", "inner", "outer", "moons", "scale"], minutes: 30, testSize: 10, pass: 0.7 },
   alpha: { steps: ["neighbors", "pair", "proxima", "proximaB", "travel"], minutes: 25, testSize: 10, pass: 0.7 },
+  exo: { steps: ["exoWhat", "exoHow", "exoRocky", "exoGiants", "exoStrange"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
 export const TASKS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale",
   neighbors: "figure:Cen", pair: null, proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
+  exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text.
 export const VIEWS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "Neptune",
   neighbors: "Proxima Cen", pair: "Proxima Cen", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
+  exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "Proxima Cen" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "Proxima Cen", exo: "51 Peg b" };
 // The sources of each step, against which its texts, facts to remember and questions were checked (titles as on the pages).
 export const SOURCES = {
   sun: [
@@ -79,7 +82,32 @@ export const SOURCES = {
     { label: "NASA Science: Voyager 1", url: "https://science.nasa.gov/mission/voyager/voyager-1/" },
     { label: "ESO: Planet Found in Habitable Zone Around Nearest Star (eso1629)", url: "https://www.eso.org/public/news/eso1629/" },
   ],
+  exoWhat: [
+    { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
+    { label: "NASA Science: Nobel Winners Changed Our Understanding with Exoplanet Discovery", url: "https://science.nasa.gov/universe/exoplanets/nobel-winners-changed-our-understanding-with-exoplanet-discovery/" },
+    { label: "NASA Science: Exoplanet Catalog", url: "https://science.nasa.gov/exoplanets/exoplanet-catalog/" },
+  ],
+  exoHow: [
+    { label: "NASA Science: What's a Transit?", url: "https://science.nasa.gov/exoplanets/whats-a-transit/" },
+    { label: "NASA Science: How We Find and Characterize", url: "https://science.nasa.gov/exoplanets/how-we-find-and-characterize/" },
+  ],
+  exoRocky: [
+    { label: "NASA Science: Planet Types", url: "https://science.nasa.gov/exoplanets/planet-types/" },
+    { label: "NASA Science: TRAPPIST-1", url: "https://science.nasa.gov/exoplanets/trappist1/" },
+    { label: "NASA Science: TRAPPIST-1 e", url: "https://science.nasa.gov/exoplanet-catalog/trappist-1-e/" },
+  ],
+  exoGiants: [
+    { label: "NASA Science: Planet Types", url: "https://science.nasa.gov/exoplanets/planet-types/" },
+    { label: "NASA Science: 51 Pegasi b", url: "https://science.nasa.gov/exoplanet-catalog/51-pegasi-b/" },
+    { label: "NASA Science: HD 209458 b", url: "https://science.nasa.gov/exoplanet-catalog/hd-209458-b/" },
+  ],
+  exoStrange: [
+    { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
+    { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
+  ],
 };
+// The years of the planets of the path Exoplanets, in days, from the catalogue of the map (NASA Exoplanet Archive, web/data/stars.json).
+const EXO_DAYS = { trappist: 6.101013, peg: 4.2307966, cancri: 0.7365474 };
 // The numbers of Alpha Centauri: the distance of Proxima and the year of Proxima b as in the map (NASA Exoplanet Archive, web/data/stars.json;
 // NASA and ESO round them to 4.2 light years and 11.2 days), the speed of Voyager 1 from NASA (17.0 km/s, August 2024). The time of the trip
 // is worked out from them: about 74,800 years, "about 75,000" in the texts.
@@ -90,7 +118,8 @@ export const TRAVEL_YEARS = (PROXIMA_LY * 9.4607e12) / VOYAGER_KMS / (365.25 * 8
 const REFERENCE_AGE = 30; // without a year of birth, the sentences speak of a person of 30
 const MOON_DAYS = MOONS.Earth[0].days;
 
-// The visitor's numbers. ctx: { age (years, or null), years: { Mercury, Mars, Jupiter } (their year in Earth years), star: { name, dist, year } or null }.
+// The visitor's numbers. ctx: { age (years, or null), years: { Mercury, Mars, Jupiter } (their year in Earth years), star: { name, dist, year } or null,
+// birthYear (or null), discoveries: [[year, method], ...] of the planets of the catalogue, thisYear }.
 export function personalNumbers(ctx) {
   const age = ctx.age ?? REFERENCE_AGE;
   return {
@@ -107,6 +136,22 @@ export function personalNumbers(ctx) {
     lightTrips: Math.floor(age / PROXIMA_LY), // how often light could have come from Proxima to us
     proximaBAge: Math.round((age * 365.25) / PROXIMA_B_DAYS), // the age on Proxima b
     lifetimes: Math.round(TRAVEL_YEARS / Math.max(age, 1)), // the trip at the speed of Voyager 1, in lives so far
+    // Exoplanets: what the catalogue knew in the year of the birth (or 30 years ago), and the age on three of its planets
+    ...exoNumbers(ctx, age),
+  };
+}
+function exoNumbers(ctx, age) {
+  const thisYear = ctx.thisYear ?? new Date().getFullYear();
+  const born = ctx.age != null ? ctx.birthYear ?? thisYear - Math.floor(age) : thisYear - REFERENCE_AGE;
+  const found = ctx.discoveries ?? [];
+  return {
+    birthYear: born,
+    knownAtBirth: found.filter(([year]) => year <= born).length,
+    knownNow: found.length,
+    transitSince: found.filter(([year, method]) => year >= born && method === "Transit").length,
+    trappistAge: Math.round((age * 365.25) / EXO_DAYS.trappist),
+    pegAge: Math.round((age * 365.25) / EXO_DAYS.peg),
+    cancriAge: Math.round((age * 365.25) / EXO_DAYS.cancri),
   };
 }
 
@@ -144,6 +189,12 @@ export const QUESTIONS = {
   proxima: [{ id: "redDwarf" }, { id: "proximaEye" }, { id: "thirdStar" }, { id: "lightTrips", number: "lightTrips" }],
   proximaB: [{ id: "proximaBYear" }, { id: "habitable" }, { id: "howFound" }, { id: "proximaBAge", number: "proximaBAge" }],
   travel: [{ id: "voyagerSpeed" }, { id: "travelTime" }, { id: "lifetimes", number: "lifetimes" }],
+  // Exoplanets
+  exoWhat: [{ id: "exoDefinition" }, { id: "firstSunLike" }, { id: "firstPulsar" }, { id: "knownAtBirth", number: "knownAtBirth" }],
+  exoHow: [{ id: "transitDim" }, { id: "wobble" }, { id: "mostMethod" }, { id: "transitSince", number: "transitSince" }],
+  exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
+  exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
+  exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
 };
 
 // The questions of a step, ready to show: [{ id, text, options (labels), answer (the right label), explain }].
@@ -181,6 +232,7 @@ export const LEARN_TEXT = {
     paths: {
       solar: { title: "Our Solar System", goal: "You can explain how our Solar System is built and tell its main bodies apart." },
       alpha: { title: "Our nearest stars: Alpha Centauri", goal: "You can describe the star system closest to us, its planet Proxima b, and how far away it really is." },
+      exo: { title: "Exoplanets: worlds beyond the Solar System", goal: "You know what exoplanets are, how they are found and how different they can be." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -358,6 +410,81 @@ export const LEARN_TEXT = {
         you: (n) => `At the speed of Voyager 1 the trip would take about 75,000 years: ${n} times your life so far.`,
         ref: (n) => `At the speed of Voyager 1 the trip would take about 75,000 years: ${n} times the life of a person of 30.`,
       },
+      exoWhat: {
+        title: "What are exoplanets?", goal: "You know what an exoplanet is and when the first ones were found.",
+        text: [
+          "An exoplanet is a planet outside our Solar System. Usually it goes round another star, but some are sunless rogues that wander through the galaxy in permanent darkness.",
+          "The first exoplanets were found in 1992, round a pulsar. In 1995 followed 51 Pegasi b, the first round a star like the Sun; its discoverers, Michel Mayor and Didier Queloz, shared the Nobel Prize in Physics in 2019. The catalogue of this map, NASA's Exoplanet Archive, lists 6,423 confirmed planets (October 2026).",
+        ],
+        task: "Fly to 51 Pegasi b, the first planet found round a star like the Sun.",
+        remember: [
+          "An exoplanet is a planet outside our Solar System; usually it goes round another star.",
+          "The first exoplanets were found in 1992, round a pulsar.",
+          "51 Pegasi b (1995) was the first found round a star like the Sun: Nobel Prize in Physics 2019.",
+        ],
+        you: (at, now, year) => `In ${year}, the year you were born, ${at} of the planets in this catalogue had been found; today there are ${now}.`,
+        ref: (at, now, year) => `In ${year}, when a person of 30 today was born, ${at} of the planets in this catalogue had been found; today there are ${now}.`,
+      },
+      exoHow: {
+        title: "How are they found?", goal: "You can explain the transit method and the radial velocity method.",
+        text: [
+          "Exoplanets are hard to see directly: their stars are far brighter. The transit method watches the light of a star: when a planet passes in front of it, the star dims ever so slightly. Most known exoplanets were found this way, thousands of them with NASA's Kepler telescope.",
+          "The radial velocity method looks at the star itself: a planet pulls on it, and the star wobbles a little. Its light is then squeezed and stretched in turn, shifted a little towards blue and towards red. That is how 51 Pegasi b and Proxima b were found.",
+        ],
+        task: "Fly to Kepler-22 b, a planet the Kepler telescope found with the transit method.",
+        remember: [
+          "Transit: a planet passing in front of its star dims its light a little.",
+          "Radial velocity: the planet makes its star wobble, and the star's light shifts.",
+          "Most known exoplanets were found with the transit method.",
+        ],
+        you: (n) => `Since the year you were born, ${n} planets of this catalogue have been found with the transit method.`,
+        ref: (n) => `Since the year a person of 30 today was born, ${n} planets of this catalogue have been found with the transit method.`,
+      },
+      exoRocky: {
+        title: "Rocky worlds and super-Earths", goal: "You can tell terrestrial planets and super-Earths apart.",
+        text: [
+          "Terrestrial planets are Earth-sized or smaller, made of rock, silicate, water or carbon. Super-Earths are more massive than the Earth but lighter than Neptune; they can be made of gas, rock or both.",
+          "Seven Earth-sized planets go round TRAPPIST-1, a small red dwarf about 40 light years away. Several of them lie in its habitable zone; how many exactly differs from study to study. TRAPPIST-1 e goes round its star in 6.1 days.",
+        ],
+        task: "Fly to TRAPPIST-1 e, an Earth-sized planet of a small red dwarf.",
+        remember: [
+          "Terrestrial planets: Earth-sized or smaller, of rock, silicate, water or carbon.",
+          "Super-Earths: more massive than the Earth, lighter than Neptune.",
+          "TRAPPIST-1 has seven Earth-sized planets, about 40 light years from us.",
+        ],
+        you: (n) => `On TRAPPIST-1 e you would be ${n} years old: a year there lasts 6.1 days.`,
+        ref: (n) => `A person of 30 would be ${n} years old on TRAPPIST-1 e: a year there lasts 6.1 days.`,
+      },
+      exoGiants: {
+        title: "Gas giants and hot Jupiters", goal: "You know what gas giants and hot Jupiters are.",
+        text: [
+          "Gas giants are the size of Saturn or Jupiter, or much larger. Neptune-like planets are about as big as Neptune or Uranus.",
+          "51 Pegasi b is a hot Jupiter: a gas giant that goes round its star in only 4.2 days, at 0.05 AU, far closer than Mercury is to the Sun (0.39 AU). HD 209458 b is another gas giant close to its star: its year lasts 3.5 days.",
+        ],
+        task: "Fly to HD 209458 b, a gas giant whose year lasts 3.5 days.",
+        remember: [
+          "Gas giants are the size of Saturn or Jupiter, or much larger.",
+          "A hot Jupiter is a gas giant very close to its star.",
+          "51 Pegasi b goes round its star in 4.2 days.",
+        ],
+        you: (n) => `On 51 Pegasi b you would be ${n} years old: a year there lasts 4.2 days.`,
+        ref: (n) => `A person of 30 would be ${n} years old on 51 Pegasi b: a year there lasts 4.2 days.`,
+      },
+      exoStrange: {
+        title: "Strange worlds", goal: "You know a few worlds unlike anything in our Solar System.",
+        text: [
+          "55 Cancri e is a super-Earth that goes round its star in 0.74 days, less than 18 hours. NASA describes it as a super hot world covered in a global ocean of lava.",
+          "Not every exoplanet has a sun: some wander alone through the galaxy, in permanent darkness. New worlds are added to the catalogue every year; all 6,423 of this map can be explored in the 3D view.",
+        ],
+        task: "Fly to 55 Cancri e, the world with an ocean of lava.",
+        remember: [
+          "55 Cancri e: a super-Earth with a year of less than 18 hours and an ocean of lava.",
+          "Some exoplanets have no sun and wander through the galaxy in darkness.",
+          "New exoplanets are found every year.",
+        ],
+        you: (n) => `On 55 Cancri e you would have had ${n} birthdays: a year there lasts less than 18 hours.`,
+        ref: (n) => `A person of 30 would have had ${n} birthdays on 55 Cancri e: a year there lasts less than 18 hours.`,
+      },
     },
     q: {
       sunLight: { q: "How long does sunlight need to reach the Earth?", o: ["About 8 minutes", "About 8 seconds", "About 8 hours"], e: "About 8 minutes and 20 seconds: the Sun is 150 million kilometres away, and light travels about 300,000 kilometres per second." },
@@ -397,12 +524,33 @@ export const LEARN_TEXT = {
       lightTrips: { you: "How many times could light have made the way from Proxima to us in your life so far?", ref: "How many times can light make the way from Proxima to us in 30 years?", e: (n) => `${n} times: it needs about 4.2 years for the way.` },
       proximaBAge: { you: "How old would you be on Proxima b?", ref: "How old would a person of 30 be on Proxima b?", e: (n) => `${n}: a year on Proxima b lasts only 11.2 days.` },
       lifetimes: { you: "How many times your life so far would the trip at the speed of Voyager 1 take?", ref: "How many times the life of a person of 30 would the trip at the speed of Voyager 1 take?", e: (n) => `About ${n} times: the trip would take about 75,000 years.` },
+      exoDefinition: { q: "What is an exoplanet?", o: ["A planet outside our Solar System", "A moon of a big planet", "A star without light"], e: "A planet outside our Solar System; usually it goes round another star." },
+      firstSunLike: { q: "In which year was the first planet found round a star like the Sun?", o: ["1995", "1965", "2015"], e: "1995: 51 Pegasi b. Its discoverers shared the Nobel Prize in Physics in 2019." },
+      firstPulsar: { q: "Round what kind of object were the first exoplanets found in 1992?", o: ["A pulsar", "A star like the Sun", "A black hole"], e: "A pulsar. Three years later came 51 Pegasi b, the first round a star like the Sun." },
+      transitDim: { q: "What does the transit method measure?", o: ["The slight dimming of a star when a planet passes in front of it", "The light of the planet itself", "Radio signals from the planet"], e: "The slight dimming of the star while the planet passes in front of it." },
+      wobble: { q: "What does the radial velocity method look for?", o: ["The wobble of the star, pulled by its planet", "A shadow on the Earth", "The moons of the planet"], e: "The wobble of the star: its light shifts a little towards blue and towards red." },
+      mostMethod: { q: "With which method were most known exoplanets found?", o: ["Transit", "Radial velocity", "Photos"], e: "Transit: in this map 4,770 of the 6,423 planets." },
+      superEarth: { q: "What is a super-Earth?", o: ["A planet more massive than the Earth but lighter than Neptune", "A planet with a super hot core", "Any planet bigger than Jupiter"], e: "More massive than the Earth, lighter than Neptune; it can be made of gas, rock or both." },
+      terrestrialMade: { q: "What are terrestrial planets made of?", o: ["Rock, silicate, water or carbon", "Mostly hydrogen and helium", "Only ice"], e: "Rock, silicate, water or carbon; they are Earth-sized or smaller." },
+      trappistSeven: { q: "How many Earth-sized planets go round TRAPPIST-1?", o: ["Seven", "Two", "Twelve"], e: "Seven, round a small red dwarf about 40 light years away." },
+      hotJupiter: { q: "What is a hot Jupiter?", o: ["A gas giant very close to its star", "A Jupiter with volcanoes", "A star that looks like Jupiter"], e: "A gas giant very close to its star, like 51 Pegasi b." },
+      pegYear: { q: "How long is a year on 51 Pegasi b?", o: ["About 4 days", "About 4 years", "About 40 years"], e: "About 4.2 days." },
+      gasGiantSize: { q: "How big are gas giants?", o: ["The size of Saturn or Jupiter, or much larger", "The size of the Earth", "The size of the Moon"], e: "The size of Saturn or Jupiter, or much larger." },
+      lavaWorld: { q: "What covers 55 Cancri e, according to NASA?", o: ["A global ocean of lava", "A thick sheet of ice", "Forests"], e: "A global ocean of lava: it is a super hot world." },
+      rogue: { q: "Do all exoplanets go round a star?", o: ["No, some wander through the galaxy without a sun", "Yes, all of them", "None of them do"], e: "No: usually they go round a star, but some are sunless rogues in permanent darkness." },
+      keplerScope: { q: "Which space telescope found thousands of exoplanets with the transit method?", o: ["Kepler", "Hubble", "Voyager"], e: "NASA's Kepler telescope." },
+      knownAtBirth: { you: "How many planets of this catalogue had been found by the year you were born?", ref: "How many planets of this catalogue had been found by the year a person of 30 today was born?", e: (n) => `${n}: the catalogue grows every year.` },
+      transitSince: { you: "How many planets of this catalogue have been found with the transit method since the year you were born?", ref: "How many planets of this catalogue have been found with the transit method in the last 30 years?", e: (n) => `${n}: many of them with the Kepler telescope.` },
+      trappistAge: { you: "How old would you be on TRAPPIST-1 e?", ref: "How old would a person of 30 be on TRAPPIST-1 e?", e: (n) => `${n}: a year on TRAPPIST-1 e lasts 6.1 days.` },
+      pegAge: { you: "How old would you be on 51 Pegasi b?", ref: "How old would a person of 30 be on 51 Pegasi b?", e: (n) => `${n}: a year on 51 Pegasi b lasts 4.2 days.` },
+      cancriAge: { you: "How many birthdays would you have had on 55 Cancri e?", ref: "How many birthdays would a person of 30 have had on 55 Cancri e?", e: (n) => `${n}: a year on 55 Cancri e lasts less than 18 hours.` },
     },
   },
   de: {
     paths: {
       solar: { title: "Unser Sonnensystem", goal: "Du kannst erklären, wie unser Sonnensystem aufgebaut ist, und seine wichtigsten Himmelskörper unterscheiden." },
       alpha: { title: "Unsere nächsten Sterne: Alpha Centauri", goal: "Du kannst das Sternsystem beschreiben, das uns am nächsten ist, seinen Planeten Proxima b und wie weit weg es wirklich ist." },
+      exo: { title: "Exoplaneten: Welten jenseits des Sonnensystems", goal: "Du weißt, was Exoplaneten sind, wie man sie findet und wie verschieden sie sein können." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -580,6 +728,81 @@ export const LEARN_TEXT = {
         you: (n) => `Mit dem Tempo von Voyager 1 würde die Reise etwa 75.000 Jahre dauern: ${n}-mal so lang wie dein bisheriges Leben.`,
         ref: (n) => `Mit dem Tempo von Voyager 1 würde die Reise etwa 75.000 Jahre dauern: ${n}-mal so lang wie das Leben eines 30-jährigen Menschen.`,
       },
+      exoWhat: {
+        title: "Was sind Exoplaneten?", goal: "Du weißt, was ein Exoplanet ist und wann die ersten gefunden wurden.",
+        text: [
+          "Ein Exoplanet ist ein Planet außerhalb unseres Sonnensystems. Meist kreist er um einen anderen Stern, aber manche wandern ohne Sonne durch die Galaxie, in ewiger Dunkelheit.",
+          "Die ersten Exoplaneten wurden 1992 gefunden, um einen Pulsar. 1995 folgte 51 Pegasi b, der erste um einen Stern wie die Sonne; seine Entdecker Michel Mayor und Didier Queloz erhielten dafür 2019 den Nobelpreis für Physik. Der Katalog dieser Karte, das Exoplanet Archive der NASA, zählt 6.423 bestätigte Planeten (Oktober 2026).",
+        ],
+        task: "Flieg zu 51 Pegasi b, dem ersten Planeten, der um einen Stern wie die Sonne gefunden wurde.",
+        remember: [
+          "Ein Exoplanet ist ein Planet außerhalb unseres Sonnensystems; meist kreist er um einen anderen Stern.",
+          "Die ersten Exoplaneten wurden 1992 gefunden, um einen Pulsar.",
+          "51 Pegasi b (1995) war der erste um einen Stern wie die Sonne: Nobelpreis für Physik 2019.",
+        ],
+        you: (at, now, year) => `${year}, im Jahr deiner Geburt, waren ${at} der Planeten dieses Katalogs entdeckt; heute sind es ${now}.`,
+        ref: (at, now, year) => `${year}, als ein heute 30-jähriger Mensch geboren wurde, waren ${at} der Planeten dieses Katalogs entdeckt; heute sind es ${now}.`,
+      },
+      exoHow: {
+        title: "Wie findet man sie?", goal: "Du kannst die Transitmethode und die Radialgeschwindigkeitsmethode erklären.",
+        text: [
+          "Exoplaneten sind schwer direkt zu sehen: Ihre Sterne sind viel heller. Die Transitmethode beobachtet das Licht eines Sterns: Zieht ein Planet vor ihm vorbei, wird der Stern ganz leicht dunkler. Die meisten bekannten Exoplaneten wurden so gefunden, Tausende davon mit dem Kepler-Teleskop der NASA.",
+          "Die Radialgeschwindigkeitsmethode schaut auf den Stern selbst: Ein Planet zieht an ihm, und der Stern wackelt ein wenig. Sein Licht wird dabei abwechselnd gestaucht und gedehnt, ein wenig ins Blaue und ins Rote verschoben. So wurden 51 Pegasi b und Proxima b gefunden.",
+        ],
+        task: "Flieg zu Kepler-22 b, einem Planeten, den das Kepler-Teleskop mit der Transitmethode fand.",
+        remember: [
+          "Transit: Ein Planet, der vor seinem Stern vorbeizieht, macht dessen Licht ein wenig schwächer.",
+          "Radialgeschwindigkeit: Der Planet bringt seinen Stern zum Wackeln, und das Licht des Sterns verschiebt sich.",
+          "Die meisten bekannten Exoplaneten wurden mit der Transitmethode gefunden.",
+        ],
+        you: (n) => `Seit deinem Geburtsjahr wurden ${n} Planeten dieses Katalogs mit der Transitmethode gefunden.`,
+        ref: (n) => `Seit dem Geburtsjahr eines heute 30-jährigen Menschen wurden ${n} Planeten dieses Katalogs mit der Transitmethode gefunden.`,
+      },
+      exoRocky: {
+        title: "Gesteinswelten und Supererden", goal: "Du kannst Gesteinsplaneten und Supererden unterscheiden.",
+        text: [
+          "Gesteinsplaneten sind so groß wie die Erde oder kleiner und bestehen aus Gestein, Silikaten, Wasser oder Kohlenstoff. Supererden haben mehr Masse als die Erde, aber weniger als Neptun; sie können aus Gas, Gestein oder beidem bestehen.",
+          "Sieben erdgroße Planeten kreisen um TRAPPIST-1, einen kleinen Roten Zwerg etwa 40 Lichtjahre entfernt. Mehrere davon liegen in seiner bewohnbaren Zone; wie viele genau, ist von Studie zu Studie verschieden. TRAPPIST-1 e läuft in 6,1 Tagen um seinen Stern.",
+        ],
+        task: "Flieg zu TRAPPIST-1 e, einem erdgroßen Planeten eines kleinen Roten Zwergs.",
+        remember: [
+          "Gesteinsplaneten: so groß wie die Erde oder kleiner, aus Gestein, Silikaten, Wasser oder Kohlenstoff.",
+          "Supererden: mehr Masse als die Erde, weniger als Neptun.",
+          "TRAPPIST-1 hat sieben erdgroße Planeten, etwa 40 Lichtjahre von uns.",
+        ],
+        you: (n) => `Auf TRAPPIST-1 e wärst du ${n} Jahre alt: Ein Jahr dauert dort 6,1 Tage.`,
+        ref: (n) => `Ein 30-jähriger Mensch wäre auf TRAPPIST-1 e ${n} Jahre alt: Ein Jahr dauert dort 6,1 Tage.`,
+      },
+      exoGiants: {
+        title: "Gasriesen und heiße Jupiter", goal: "Du weißt, was Gasriesen und heiße Jupiter sind.",
+        text: [
+          "Gasriesen sind so groß wie Saturn oder Jupiter oder noch viel größer. Neptunähnliche Planeten sind etwa so groß wie Neptun oder Uranus.",
+          "51 Pegasi b ist ein heißer Jupiter: ein Gasriese, der in nur 4,2 Tagen um seinen Stern läuft, in 0,05 AE Abstand, viel näher als Merkur an der Sonne (0,39 AE). HD 209458 b ist ein weiterer Gasriese nah an seinem Stern: Sein Jahr dauert 3,5 Tage.",
+        ],
+        task: "Flieg zu HD 209458 b, einem Gasriesen, dessen Jahr 3,5 Tage dauert.",
+        remember: [
+          "Gasriesen sind so groß wie Saturn oder Jupiter oder noch viel größer.",
+          "Ein heißer Jupiter ist ein Gasriese sehr nah an seinem Stern.",
+          "51 Pegasi b läuft in 4,2 Tagen um seinen Stern.",
+        ],
+        you: (n) => `Auf 51 Pegasi b wärst du ${n} Jahre alt: Ein Jahr dauert dort 4,2 Tage.`,
+        ref: (n) => `Ein 30-jähriger Mensch wäre auf 51 Pegasi b ${n} Jahre alt: Ein Jahr dauert dort 4,2 Tage.`,
+      },
+      exoStrange: {
+        title: "Seltsame Welten", goal: "Du kennst ein paar Welten, die anders sind als alles in unserem Sonnensystem.",
+        text: [
+          "55 Cancri e ist eine Supererde, die in 0,74 Tagen um ihren Stern läuft, in weniger als 18 Stunden. Die NASA beschreibt sie als superheiße Welt, bedeckt von einem weltweiten Ozean aus Lava.",
+          "Nicht jeder Exoplanet hat eine Sonne: Manche wandern allein durch die Galaxie, in ewiger Dunkelheit. Jedes Jahr kommen neue Welten in den Katalog; alle 6.423 dieser Karte kannst du in der 3D-Ansicht erkunden.",
+        ],
+        task: "Flieg zu 55 Cancri e, der Welt mit dem Lavaozean.",
+        remember: [
+          "55 Cancri e: eine Supererde mit einem Jahr von weniger als 18 Stunden und einem Ozean aus Lava.",
+          "Manche Exoplaneten haben keine Sonne und wandern im Dunkeln durch die Galaxie.",
+          "Jedes Jahr werden neue Exoplaneten gefunden.",
+        ],
+        you: (n) => `Auf 55 Cancri e hättest du schon ${n} Geburtstage gefeiert: Ein Jahr dauert dort weniger als 18 Stunden.`,
+        ref: (n) => `Ein 30-jähriger Mensch hätte auf 55 Cancri e schon ${n} Geburtstage gefeiert: Ein Jahr dauert dort weniger als 18 Stunden.`,
+      },
     },
     q: {
       sunLight: { q: "Wie lange braucht Sonnenlicht bis zur Erde?", o: ["Etwa 8 Minuten", "Etwa 8 Sekunden", "Etwa 8 Stunden"], e: "Etwa 8 Minuten und 20 Sekunden: Die Sonne ist 150 Millionen Kilometer entfernt, und Licht legt etwa 300.000 Kilometer pro Sekunde zurück." },
@@ -619,12 +842,33 @@ export const LEARN_TEXT = {
       lightTrips: { you: "Wie oft hätte das Licht in deinem bisherigen Leben den Weg von Proxima zu uns zurücklegen können?", ref: "Wie oft kann das Licht in 30 Jahren den Weg von Proxima zu uns zurücklegen?", e: (n) => `${n}-mal: Es braucht für den Weg etwa 4,2 Jahre.` },
       proximaBAge: { you: "Wie alt wärst du auf Proxima b?", ref: "Wie alt wäre ein 30-jähriger Mensch auf Proxima b?", e: (n) => `${n}: Ein Jahr auf Proxima b dauert nur 11,2 Tage.` },
       lifetimes: { you: "Wie oft so lang wie dein bisheriges Leben würde die Reise mit dem Tempo von Voyager 1 dauern?", ref: "Wie oft so lang wie das Leben eines 30-jährigen Menschen würde die Reise mit dem Tempo von Voyager 1 dauern?", e: (n) => `Etwa ${n}-mal: Die Reise würde etwa 75.000 Jahre dauern.` },
+      exoDefinition: { q: "Was ist ein Exoplanet?", o: ["Ein Planet außerhalb unseres Sonnensystems", "Ein Mond eines großen Planeten", "Ein Stern ohne Licht"], e: "Ein Planet außerhalb unseres Sonnensystems; meist kreist er um einen anderen Stern." },
+      firstSunLike: { q: "In welchem Jahr wurde der erste Planet um einen Stern wie die Sonne gefunden?", o: ["1995", "1965", "2015"], e: "1995: 51 Pegasi b. Seine Entdecker erhielten 2019 den Nobelpreis für Physik." },
+      firstPulsar: { q: "Um was für ein Objekt wurden 1992 die ersten Exoplaneten gefunden?", o: ["Einen Pulsar", "Einen Stern wie die Sonne", "Ein Schwarzes Loch"], e: "Einen Pulsar. Drei Jahre später kam 51 Pegasi b, der erste um einen Stern wie die Sonne." },
+      transitDim: { q: "Was misst die Transitmethode?", o: ["Wie ein Stern leicht dunkler wird, wenn ein Planet vor ihm vorbeizieht", "Das Licht des Planeten selbst", "Funksignale des Planeten"], e: "Wie der Stern leicht dunkler wird, während der Planet vor ihm vorbeizieht." },
+      wobble: { q: "Wonach sucht die Radialgeschwindigkeitsmethode?", o: ["Nach dem Wackeln des Sterns, an dem sein Planet zieht", "Nach einem Schatten auf der Erde", "Nach den Monden des Planeten"], e: "Nach dem Wackeln des Sterns: Sein Licht verschiebt sich ein wenig ins Blaue und ins Rote." },
+      mostMethod: { q: "Mit welcher Methode wurden die meisten bekannten Exoplaneten gefunden?", o: ["Transit", "Radialgeschwindigkeit", "Fotos"], e: "Transit: in dieser Karte 4.770 der 6.423 Planeten." },
+      superEarth: { q: "Was ist eine Supererde?", o: ["Ein Planet mit mehr Masse als die Erde, aber weniger als Neptun", "Ein Planet mit superheißem Kern", "Jeder Planet, der größer ist als Jupiter"], e: "Mehr Masse als die Erde, weniger als Neptun; sie kann aus Gas, Gestein oder beidem bestehen." },
+      terrestrialMade: { q: "Woraus bestehen Gesteinsplaneten?", o: ["Aus Gestein, Silikaten, Wasser oder Kohlenstoff", "Vor allem aus Wasserstoff und Helium", "Nur aus Eis"], e: "Aus Gestein, Silikaten, Wasser oder Kohlenstoff; sie sind so groß wie die Erde oder kleiner." },
+      trappistSeven: { q: "Wie viele erdgroße Planeten kreisen um TRAPPIST-1?", o: ["Sieben", "Zwei", "Zwölf"], e: "Sieben, um einen kleinen Roten Zwerg etwa 40 Lichtjahre entfernt." },
+      hotJupiter: { q: "Was ist ein heißer Jupiter?", o: ["Ein Gasriese sehr nah an seinem Stern", "Ein Jupiter mit Vulkanen", "Ein Stern, der wie Jupiter aussieht"], e: "Ein Gasriese sehr nah an seinem Stern, wie 51 Pegasi b." },
+      pegYear: { q: "Wie lange dauert ein Jahr auf 51 Pegasi b?", o: ["Etwa 4 Tage", "Etwa 4 Jahre", "Etwa 40 Jahre"], e: "Etwa 4,2 Tage." },
+      gasGiantSize: { q: "Wie groß sind Gasriesen?", o: ["So groß wie Saturn oder Jupiter oder noch viel größer", "So groß wie die Erde", "So groß wie der Mond"], e: "So groß wie Saturn oder Jupiter oder noch viel größer." },
+      lavaWorld: { q: "Was bedeckt 55 Cancri e laut NASA?", o: ["Ein weltweiter Ozean aus Lava", "Eine dicke Eisschicht", "Wälder"], e: "Ein weltweiter Ozean aus Lava: Es ist eine superheiße Welt." },
+      rogue: { q: "Kreisen alle Exoplaneten um einen Stern?", o: ["Nein, manche wandern ohne Sonne durch die Galaxie", "Ja, alle", "Keiner von ihnen"], e: "Nein: Meist kreisen sie um einen Stern, aber manche wandern ohne Sonne in ewiger Dunkelheit." },
+      keplerScope: { q: "Welches Weltraumteleskop fand Tausende Exoplaneten mit der Transitmethode?", o: ["Kepler", "Hubble", "Voyager"], e: "Das Kepler-Teleskop der NASA." },
+      knownAtBirth: { you: "Wie viele Planeten dieses Katalogs waren bis zu deinem Geburtsjahr entdeckt?", ref: "Wie viele Planeten dieses Katalogs waren bis zum Geburtsjahr eines heute 30-jährigen Menschen entdeckt?", e: (n) => `${n}: Der Katalog wächst jedes Jahr.` },
+      transitSince: { you: "Wie viele Planeten dieses Katalogs wurden seit deinem Geburtsjahr mit der Transitmethode gefunden?", ref: "Wie viele Planeten dieses Katalogs wurden in den letzten 30 Jahren mit der Transitmethode gefunden?", e: (n) => `${n}: viele davon mit dem Kepler-Teleskop.` },
+      trappistAge: { you: "Wie alt wärst du auf TRAPPIST-1 e?", ref: "Wie alt wäre ein 30-jähriger Mensch auf TRAPPIST-1 e?", e: (n) => `${n}: Ein Jahr auf TRAPPIST-1 e dauert 6,1 Tage.` },
+      pegAge: { you: "Wie alt wärst du auf 51 Pegasi b?", ref: "Wie alt wäre ein 30-jähriger Mensch auf 51 Pegasi b?", e: (n) => `${n}: Ein Jahr auf 51 Pegasi b dauert 4,2 Tage.` },
+      cancriAge: { you: "Wie viele Geburtstage hättest du auf 55 Cancri e schon gefeiert?", ref: "Wie viele Geburtstage hätte ein 30-jähriger Mensch auf 55 Cancri e schon gefeiert?", e: (n) => `${n}: Ein Jahr auf 55 Cancri e dauert weniger als 18 Stunden.` },
     },
   },
   ja: {
     paths: {
       solar: { title: "私たちの太陽系", goal: "太陽系のしくみを説明し、おもな天体を見分けられるようになります。" },
       alpha: { title: "いちばん近い星たち：ケンタウルス座アルファ星", goal: "私たちにいちばん近い恒星系、その惑星プロキシマb、そしてそれが実際にどれほど遠いかを説明できます。" },
+      exo: { title: "系外惑星：太陽系の外の世界", goal: "系外惑星とは何か、どのように見つけるのか、そしてどれほど多様なのかがわかります。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -802,6 +1046,81 @@ export const LEARN_TEXT = {
         you: (n) => `ボイジャー1号の速さだと、旅は約7万5000年かかります。あなたのこれまでの人生の${n}倍です。`,
         ref: (n) => `ボイジャー1号の速さだと、旅は約7万5000年かかります。30歳の人の人生の${n}倍です。`,
       },
+      exoWhat: {
+        title: "系外惑星とは？", goal: "系外惑星とは何か、そして最初の系外惑星がいつ見つかったかがわかります。",
+        text: [
+          "系外惑星とは、私たちの太陽系の外にある惑星です。ふつうはほかの恒星のまわりをまわっていますが、太陽をもたず、永遠の暗闇の中で銀河をさまよう惑星もあります。",
+          "最初の系外惑星は1992年、パルサーのまわりで見つかりました。1995年には、太陽のような恒星をまわる初めての惑星、ペガスス座51番星bが続きました。発見者のミシェル・マイヨールとディディエ・ケローは、2019年にノーベル物理学賞を受賞しました。この地図のカタログ（NASAの系外惑星アーカイブ）には、確認された惑星が6,423個あります（2026年10月）。",
+        ],
+        task: "太陽のような恒星のまわりで初めて見つかった惑星、ペガスス座51番星bまで飛んでみましょう。",
+        remember: [
+          "系外惑星は太陽系の外の惑星で、ふつうはほかの恒星をまわっています。",
+          "最初の系外惑星は1992年、パルサーのまわりで見つかりました。",
+          "ペガスス座51番星b（1995年）は太陽のような恒星をまわる初めての惑星で、2019年のノーベル物理学賞につながりました。",
+        ],
+        you: (at, now, year) => `あなたが生まれた${year}年には、このカタログの惑星のうち${at}個が見つかっていました。今日では${now}個です。`,
+        ref: (at, now, year) => `いま30歳の人が生まれた${year}年には、このカタログの惑星のうち${at}個が見つかっていました。今日では${now}個です。`,
+      },
+      exoHow: {
+        title: "どうやって見つけるの？", goal: "トランジット法と視線速度法を説明できます。",
+        text: [
+          "系外惑星を直接見るのはむずかしいことです。恒星のほうがずっと明るいからです。トランジット法は恒星の光を見張ります。惑星が前を横切ると、恒星はほんのわずかに暗くなります。知られている系外惑星の多くはこの方法で見つかり、そのうち何千個もがNASAのケプラー宇宙望遠鏡によるものです。",
+          "視線速度法は恒星そのものを見ます。惑星に引っぱられて恒星はわずかにゆれ、その光は交互に縮んだりのびたりして、少し青や赤の方へずれます。ペガスス座51番星bやプロキシマbは、この方法で見つかりました。",
+        ],
+        task: "ケプラー望遠鏡がトランジット法で見つけた惑星、ケプラー22bまで飛んでみましょう。",
+        remember: [
+          "トランジット：惑星が恒星の前を横切ると、恒星の光がわずかに暗くなります。",
+          "視線速度：惑星が恒星をゆらし、恒星の光がずれます。",
+          "知られている系外惑星の多くはトランジット法で見つかりました。",
+        ],
+        you: (n) => `あなたが生まれた年から、このカタログの惑星のうち${n}個がトランジット法で見つかりました。`,
+        ref: (n) => `いま30歳の人が生まれた年から、このカタログの惑星のうち${n}個がトランジット法で見つかりました。`,
+      },
+      exoRocky: {
+        title: "岩石の世界とスーパーアース", goal: "地球型惑星とスーパーアースを見分けられます。",
+        text: [
+          "地球型惑星は地球と同じくらいかそれより小さく、岩石、ケイ酸塩、水、炭素などでできています。スーパーアースは地球より重く、海王星より軽い惑星で、ガスや岩石、またはその両方でできていることがあります。",
+          "地球ほどの大きさの惑星が7つ、約40光年離れた小さな赤色矮星TRAPPIST-1のまわりをまわっています。そのうちいくつかはハビタブルゾーンにありますが、正確にいくつかは研究によってちがいます。TRAPPIST-1eは6.1日で恒星を1周します。",
+        ],
+        task: "小さな赤色矮星をまわる地球ほどの大きさの惑星、TRAPPIST-1eまで飛んでみましょう。",
+        remember: [
+          "地球型惑星：地球と同じくらいかそれより小さく、岩石、ケイ酸塩、水、炭素などでできています。",
+          "スーパーアース：地球より重く、海王星より軽い惑星です。",
+          "TRAPPIST-1には地球ほどの大きさの惑星が7つあり、約40光年の距離にあります。",
+        ],
+        you: (n) => `TRAPPIST-1eでは、あなたは${n}歳です。そこでの1年は6.1日だからです。`,
+        ref: (n) => `30歳の人は、TRAPPIST-1eでは${n}歳です。そこでの1年は6.1日だからです。`,
+      },
+      exoGiants: {
+        title: "巨大ガス惑星とホット・ジュピター", goal: "巨大ガス惑星とホット・ジュピターが何かわかります。",
+        text: [
+          "巨大ガス惑星は土星や木星くらいの大きさか、それよりずっと大きい惑星です。海王星型の惑星は、海王星や天王星と同じくらいの大きさです。",
+          "ペガスス座51番星bはホット・ジュピターです。たった4.2日で恒星を1周する巨大ガス惑星で、距離は0.05 au。水星と太陽の距離（0.39 au）よりずっと近いのです。HD 209458 bも恒星に近い巨大ガス惑星で、1年は3.5日です。",
+        ],
+        task: "1年が3.5日の巨大ガス惑星、HD 209458 bまで飛んでみましょう。",
+        remember: [
+          "巨大ガス惑星は土星や木星くらいの大きさか、それよりずっと大きい惑星です。",
+          "ホット・ジュピターは恒星のすぐ近くをまわる巨大ガス惑星です。",
+          "ペガスス座51番星bは4.2日で恒星を1周します。",
+        ],
+        you: (n) => `ペガスス座51番星bでは、あなたは${n}歳です。そこでの1年は4.2日だからです。`,
+        ref: (n) => `30歳の人は、ペガスス座51番星bでは${n}歳です。そこでの1年は4.2日だからです。`,
+      },
+      exoStrange: {
+        title: "ふしぎな世界", goal: "私たちの太陽系にはない、いくつかの世界を知っています。",
+        text: [
+          "かに座55番星eは、0.74日、つまり18時間足らずで恒星を1周するスーパーアースです。NASAは、全体が溶岩の海におおわれた超高温の世界だと説明しています。",
+          "すべての系外惑星に太陽があるわけではありません。永遠の暗闇の中、ひとりで銀河をさまよう惑星もあります。カタログには毎年新しい世界が加わります。この地図の6,423個すべてを3D表示で探検できます。",
+        ],
+        task: "溶岩の海をもつ世界、かに座55番星eまで飛んでみましょう。",
+        remember: [
+          "かに座55番星e：1年が18時間足らずで、溶岩の海をもつスーパーアースです。",
+          "太陽をもたず、暗闇の中で銀河をさまよう系外惑星もあります。",
+          "新しい系外惑星は毎年見つかっています。",
+        ],
+        you: (n) => `かに座55番星eでは、あなたはもう${n}回誕生日を迎えています。そこでの1年は18時間足らずだからです。`,
+        ref: (n) => `30歳の人は、かに座55番星eではもう${n}回誕生日を迎えています。そこでの1年は18時間足らずだからです。`,
+      },
     },
     q: {
       sunLight: { q: "太陽の光が地球に届くまでどれくらいかかりますか？", o: ["約8分", "約8秒", "約8時間"], e: "約8分20秒です。太陽は1億5000万キロメートル離れていて、光は1秒に約30万キロメートル進みます。" },
@@ -841,12 +1160,33 @@ export const LEARN_TEXT = {
       lightTrips: { you: "あなたのこれまでの人生で、光はプロキシマから私たちまでの道のりを何回進めたでしょうか？", ref: "30年のあいだに、光はプロキシマから私たちまでの道のりを何回進めますか？", e: (n) => `${n}回です。その道のりには約4.2年かかります。` },
       proximaBAge: { you: "プロキシマbでは、あなたは何歳ですか？", ref: "30歳の人は、プロキシマbでは何歳ですか？", e: (n) => `${n}歳です。プロキシマbの1年はたった11.2日です。` },
       lifetimes: { you: "ボイジャー1号の速さでの旅は、あなたのこれまでの人生の何倍かかりますか？", ref: "ボイジャー1号の速さでの旅は、30歳の人の人生の何倍かかりますか？", e: (n) => `約${n}倍です。旅は約7万5000年かかります。` },
+      exoDefinition: { q: "系外惑星とは何ですか？", o: ["太陽系の外にある惑星", "大きな惑星の衛星", "光をもたない恒星"], e: "太陽系の外にある惑星です。ふつうはほかの恒星をまわっています。" },
+      firstSunLike: { q: "太陽のような恒星をまわる惑星が初めて見つかったのは何年ですか？", o: ["1995年", "1965年", "2015年"], e: "1995年、ペガスス座51番星bです。発見者は2019年にノーベル物理学賞を受賞しました。" },
+      firstPulsar: { q: "1992年に最初の系外惑星が見つかったのは、どんな天体のまわりですか？", o: ["パルサー", "太陽のような恒星", "ブラックホール"], e: "パルサーです。その3年後、太陽のような恒星をまわる初めての惑星、ペガスス座51番星bが見つかりました。" },
+      transitDim: { q: "トランジット法は何を測りますか？", o: ["惑星が前を横切るときの、恒星のわずかな減光", "惑星そのものの光", "惑星からの電波"], e: "惑星が前を横切るあいだ、恒星がわずかに暗くなることです。" },
+      wobble: { q: "視線速度法は何をさがしますか？", o: ["惑星に引っぱられた恒星のゆれ", "地球にうつる影", "惑星の衛星"], e: "恒星のゆれです。その光が少し青や赤の方へずれます。" },
+      mostMethod: { q: "知られている系外惑星の多くは、どの方法で見つかりましたか？", o: ["トランジット法", "視線速度法", "写真"], e: "トランジット法です。この地図では6,423個のうち4,770個です。" },
+      superEarth: { q: "スーパーアースとは何ですか？", o: ["地球より重く、海王星より軽い惑星", "超高温の核をもつ惑星", "木星より大きい惑星すべて"], e: "地球より重く、海王星より軽い惑星で、ガスや岩石、またはその両方でできていることがあります。" },
+      terrestrialMade: { q: "地球型惑星は何でできていますか？", o: ["岩石、ケイ酸塩、水、炭素など", "おもに水素とヘリウム", "氷だけ"], e: "岩石、ケイ酸塩、水、炭素などです。地球と同じくらいかそれより小さい惑星です。" },
+      trappistSeven: { q: "TRAPPIST-1のまわりには、地球ほどの大きさの惑星がいくつありますか？", o: ["7つ", "2つ", "12個"], e: "7つです。約40光年離れた小さな赤色矮星のまわりをまわっています。" },
+      hotJupiter: { q: "ホット・ジュピターとは何ですか？", o: ["恒星のすぐ近くをまわる巨大ガス惑星", "火山のある木星", "木星のように見える恒星"], e: "ペガスス座51番星bのように、恒星のすぐ近くをまわる巨大ガス惑星です。" },
+      pegYear: { q: "ペガスス座51番星bの1年はどれくらいですか？", o: ["約4日", "約4年", "約40年"], e: "約4.2日です。" },
+      gasGiantSize: { q: "巨大ガス惑星はどれくらいの大きさですか？", o: ["土星や木星くらいか、それよりずっと大きい", "地球くらい", "月くらい"], e: "土星や木星くらいか、それよりずっと大きい惑星です。" },
+      lavaWorld: { q: "NASAによると、かに座55番星eをおおっているものは何ですか？", o: ["全体をおおう溶岩の海", "厚い氷の層", "森"], e: "全体をおおう溶岩の海です。超高温の世界です。" },
+      rogue: { q: "すべての系外惑星が恒星をまわっていますか？", o: ["いいえ、太陽をもたずに銀河をさまよう惑星もあります", "はい、すべてです", "どれもまわっていません"], e: "いいえ。ふつうは恒星をまわっていますが、太陽をもたずに永遠の暗闇の中をさまよう惑星もあります。" },
+      keplerScope: { q: "トランジット法で何千個もの系外惑星を見つけた宇宙望遠鏡はどれですか？", o: ["ケプラー", "ハッブル", "ボイジャー"], e: "NASAのケプラー宇宙望遠鏡です。" },
+      knownAtBirth: { you: "あなたが生まれた年までに、このカタログの惑星はいくつ見つかっていましたか？", ref: "いま30歳の人が生まれた年までに、このカタログの惑星はいくつ見つかっていましたか？", e: (n) => `${n}個です。カタログは毎年増えています。` },
+      transitSince: { you: "あなたが生まれた年から、このカタログの惑星はいくつトランジット法で見つかりましたか？", ref: "この30年で、このカタログの惑星はいくつトランジット法で見つかりましたか？", e: (n) => `${n}個です。その多くはケプラー望遠鏡によるものです。` },
+      trappistAge: { you: "TRAPPIST-1eでは、あなたは何歳ですか？", ref: "30歳の人は、TRAPPIST-1eでは何歳ですか？", e: (n) => `${n}歳です。TRAPPIST-1eの1年は6.1日です。` },
+      pegAge: { you: "ペガスス座51番星bでは、あなたは何歳ですか？", ref: "30歳の人は、ペガスス座51番星bでは何歳ですか？", e: (n) => `${n}歳です。ペガスス座51番星bの1年は4.2日です。` },
+      cancriAge: { you: "かに座55番星eでは、あなたはもう何回誕生日を迎えていますか？", ref: "30歳の人は、かに座55番星eではもう何回誕生日を迎えていますか？", e: (n) => `${n}回です。かに座55番星eの1年は18時間足らずです。` },
     },
   },
   bg: {
     paths: {
       solar: { title: "Нашата Слънчева система", goal: "Можеш да обясниш как е устроена Слънчевата система и да различаваш основните ѝ тела." },
       alpha: { title: "Най-близките ни звезди: Алфа Кентавър", goal: "Можеш да опишеш най-близката до нас звездна система, нейната планета Проксима b и колко далеч е тя всъщност." },
+      exo: { title: "Екзопланети: светове отвъд Слънчевата система", goal: "Знаеш какво са екзопланетите, как се откриват и колко различни могат да бъдат." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -1024,6 +1364,81 @@ export const LEARN_TEXT = {
         you: (n) => `Със скоростта на „Вояджър 1“ пътуването би траело около 75 000 години: ${n} пъти колкото досегашния ти живот.`,
         ref: (n) => `Със скоростта на „Вояджър 1“ пътуването би траело около 75 000 години: ${n} пъти колкото живота на човек на 30.`,
       },
+      exoWhat: {
+        title: "Какво са екзопланетите?", goal: "Знаеш какво е екзопланета и кога са открити първите.",
+        text: [
+          "Екзопланетата е планета извън нашата Слънчева система. Обикновено обикаля друга звезда, но някои се скитат без слънце из галактиката, във вечен мрак.",
+          "Първите екзопланети са открити през 1992 г., около пулсар. През 1995 г. последва 51 Пегас b, първата около звезда като Слънцето; откривателите ѝ Мишел Майор и Дидие Кело получиха за това Нобелова награда за физика през 2019 г. Каталогът на тази карта, архивът на екзопланетите на NASA, съдържа 6423 потвърдени планети (октомври 2026 г.).",
+        ],
+        task: "Полети до 51 Пегас b, първата планета, открита около звезда като Слънцето.",
+        remember: [
+          "Екзопланетата е планета извън нашата Слънчева система; обикновено обикаля друга звезда.",
+          "Първите екзопланети са открити през 1992 г., около пулсар.",
+          "51 Пегас b (1995) е първата около звезда като Слънцето: Нобелова награда за физика 2019.",
+        ],
+        you: (at, now, year) => `През ${year} г., годината на раждането ти, са били открити ${at} от планетите в този каталог; днес са ${now}.`,
+        ref: (at, now, year) => `През ${year} г., когато се е родил човек, който днес е на 30, са били открити ${at} от планетите в този каталог; днес са ${now}.`,
+      },
+      exoHow: {
+        title: "Как се откриват?", goal: "Можеш да обясниш транзитния метод и метода на радиалната скорост.",
+        text: [
+          "Екзопланетите трудно се виждат пряко: звездите им са много по-ярки. Транзитният метод следи светлината на звезда: когато планета мине пред нея, звездата съвсем леко отслабва. Повечето известни екзопланети са открити така, хиляди от тях с телескопа „Кеплер“ на NASA.",
+          "Методът на радиалната скорост гледа самата звезда: планетата я дърпа и звездата леко се клати. Светлината ѝ се свива и разтяга на смени, леко се отмества към синьото и към червеното. Така са открити 51 Пегас b и Проксима b.",
+        ],
+        task: "Полети до Кеплер-22 b, планета, която телескопът „Кеплер“ откри с транзитния метод.",
+        remember: [
+          "Транзит: планета, която минава пред звездата си, леко отслабва светлината ѝ.",
+          "Радиална скорост: планетата клати звездата си и светлината на звездата се отмества.",
+          "Повечето известни екзопланети са открити с транзитния метод.",
+        ],
+        you: (n) => `От годината на раждането ти досега ${n} планети от този каталог са открити с транзитния метод.`,
+        ref: (n) => `От годината на раждане на човек, който днес е на 30, досега ${n} планети от този каталог са открити с транзитния метод.`,
+      },
+      exoRocky: {
+        title: "Скалисти светове и суперземи", goal: "Можеш да различиш земеподобните планети от суперземите.",
+        text: [
+          "Земеподобните планети са колкото Земята или по-малки и са от скали, силикати, вода или въглерод. Суперземите са по-масивни от Земята, но по-леки от Нептун; може да са от газ, скали или и двете.",
+          "Седем планети с размера на Земята обикалят TRAPPIST-1, малко червено джудже на около 40 светлинни години. Няколко от тях са в обитаемата му зона; колко точно, е различно в различните изследвания. TRAPPIST-1 e обикаля звездата си за 6,1 дни.",
+        ],
+        task: "Полети до TRAPPIST-1 e, планета с размера на Земята около малко червено джудже.",
+        remember: [
+          "Земеподобни планети: колкото Земята или по-малки, от скали, силикати, вода или въглерод.",
+          "Суперземи: по-масивни от Земята, по-леки от Нептун.",
+          "TRAPPIST-1 има седем планети с размера на Земята, на около 40 светлинни години от нас.",
+        ],
+        you: (n) => `На TRAPPIST-1 e щеше да си на ${n} години: годината там трае 6,1 дни.`,
+        ref: (n) => `Човек на 30 години щеше да е на ${n} години на TRAPPIST-1 e: годината там трае 6,1 дни.`,
+      },
+      exoGiants: {
+        title: "Газови гиганти и горещи юпитери", goal: "Знаеш какво са газовите гиганти и горещите юпитери.",
+        text: [
+          "Газовите гиганти са големи колкото Сатурн или Юпитер или много по-големи. Нептуноподобните планети са горе-долу колкото Нептун или Уран.",
+          "51 Пегас b е горещ юпитер: газов гигант, който обикаля звездата си само за 4,2 дни, на 0,05 а.е., много по-близо, отколкото е Меркурий до Слънцето (0,39 а.е.). HD 209458 b е друг газов гигант близо до звездата си: годината му трае 3,5 дни.",
+        ],
+        task: "Полети до HD 209458 b, газов гигант, чиято година трае 3,5 дни.",
+        remember: [
+          "Газовите гиганти са колкото Сатурн или Юпитер или много по-големи.",
+          "Горещият юпитер е газов гигант много близо до звездата си.",
+          "51 Пегас b обикаля звездата си за 4,2 дни.",
+        ],
+        you: (n) => `На 51 Пегас b щеше да си на ${n} години: годината там трае 4,2 дни.`,
+        ref: (n) => `Човек на 30 години щеше да е на ${n} години на 51 Пегас b: годината там трае 4,2 дни.`,
+      },
+      exoStrange: {
+        title: "Странни светове", goal: "Познаваш няколко свята, различни от всичко в нашата Слънчева система.",
+        text: [
+          "55 Рак e е суперземя, която обикаля звездата си за 0,74 дни, по-малко от 18 часа. NASA я описва като свръхгорещ свят, покрит с океан от лава.",
+          "Не всяка екзопланета има слънце: някои се скитат сами из галактиката, във вечен мрак. Всяка година в каталога влизат нови светове; всичките 6423 от тази карта можеш да разгледаш в 3D изгледа.",
+        ],
+        task: "Полети до 55 Рак e, света с океан от лава.",
+        remember: [
+          "55 Рак e: суперземя с година под 18 часа и океан от лава.",
+          "Някои екзопланети нямат слънце и се скитат в мрака из галактиката.",
+          "Всяка година се откриват нови екзопланети.",
+        ],
+        you: (n) => `На 55 Рак e вече щеше да имаш ${n} рождени дни: годината там трае по-малко от 18 часа.`,
+        ref: (n) => `Човек на 30 години вече щеше да има ${n} рождени дни на 55 Рак e: годината там трае по-малко от 18 часа.`,
+      },
     },
     q: {
       sunLight: { q: "Колко време пътува слънчевата светлина до Земята?", o: ["Около 8 минути", "Около 8 секунди", "Около 8 часа"], e: "Около 8 минути и 20 секунди: Слънцето е на 150 милиона километра, а светлината изминава около 300 000 километра в секунда." },
@@ -1063,6 +1478,26 @@ export const LEARN_TEXT = {
       lightTrips: { you: "Колко пъти светлината би могла да измине пътя от Проксима до нас през досегашния ти живот?", ref: "Колко пъти светлината може да измине пътя от Проксима до нас за 30 години?", e: (n) => `${n} пъти: за пътя са ѝ нужни около 4,2 години.` },
       proximaBAge: { you: "На колко години щеше да си на Проксима b?", ref: "На колко години щеше да е на Проксима b човек на 30?", e: (n) => `${n}: годината на Проксима b трае само 11,2 дни.` },
       lifetimes: { you: "Колко пъти колкото досегашния ти живот би траело пътуването със скоростта на „Вояджър 1“?", ref: "Колко пъти колкото живота на човек на 30 би траело пътуването със скоростта на „Вояджър 1“?", e: (n) => `Около ${n} пъти: пътуването би траело около 75 000 години.` },
+      exoDefinition: { q: "Какво е екзопланета?", o: ["Планета извън нашата Слънчева система", "Луна на голяма планета", "Звезда без светлина"], e: "Планета извън нашата Слънчева система; обикновено обикаля друга звезда." },
+      firstSunLike: { q: "През коя година е открита първата планета около звезда като Слънцето?", o: ["1995", "1965", "2015"], e: "1995: 51 Пегас b. Откривателите ѝ получиха Нобелова награда за физика през 2019 г." },
+      firstPulsar: { q: "Около какъв обект са открити първите екзопланети през 1992 г.?", o: ["Пулсар", "Звезда като Слънцето", "Черна дупка"], e: "Пулсар. Три години по-късно дойде 51 Пегас b, първата около звезда като Слънцето." },
+      transitDim: { q: "Какво измерва транзитният метод?", o: ["Лекото отслабване на звезда, когато планета мине пред нея", "Светлината на самата планета", "Радиосигнали от планетата"], e: "Лекото отслабване на звездата, докато планетата минава пред нея." },
+      wobble: { q: "Какво търси методът на радиалната скорост?", o: ["Клатенето на звездата, която планетата ѝ дърпа", "Сянка върху Земята", "Луните на планетата"], e: "Клатенето на звездата: светлината ѝ леко се отмества към синьото и към червеното." },
+      mostMethod: { q: "С кой метод са открити повечето известни екзопланети?", o: ["Транзит", "Радиална скорост", "Снимки"], e: "Транзит: в тази карта 4770 от 6423 планети." },
+      superEarth: { q: "Какво е суперземя?", o: ["Планета, по-масивна от Земята, но по-лека от Нептун", "Планета със свръхгорещо ядро", "Всяка планета, по-голяма от Юпитер"], e: "По-масивна от Земята, по-лека от Нептун; може да е от газ, скали или и двете." },
+      terrestrialMade: { q: "От какво са земеподобните планети?", o: ["От скали, силикати, вода или въглерод", "Главно от водород и хелий", "Само от лед"], e: "От скали, силикати, вода или въглерод; те са колкото Земята или по-малки." },
+      trappistSeven: { q: "Колко планети с размера на Земята обикалят TRAPPIST-1?", o: ["Седем", "Две", "Дванадесет"], e: "Седем, около малко червено джудже на около 40 светлинни години." },
+      hotJupiter: { q: "Какво е горещ юпитер?", o: ["Газов гигант много близо до звездата си", "Юпитер с вулкани", "Звезда, която прилича на Юпитер"], e: "Газов гигант много близо до звездата си, като 51 Пегас b." },
+      pegYear: { q: "Колко трае една година на 51 Пегас b?", o: ["Около 4 дни", "Около 4 години", "Около 40 години"], e: "Около 4,2 дни." },
+      gasGiantSize: { q: "Колко големи са газовите гиганти?", o: ["Колкото Сатурн или Юпитер или много по-големи", "Колкото Земята", "Колкото Луната"], e: "Колкото Сатурн или Юпитер или много по-големи." },
+      lavaWorld: { q: "Какво покрива 55 Рак e според NASA?", o: ["Океан от лава по цялата планета", "Дебел слой лед", "Гори"], e: "Океан от лава по цялата планета: това е свръхгорещ свят." },
+      rogue: { q: "Всички екзопланети ли обикалят звезда?", o: ["Не, някои се скитат из галактиката без слънце", "Да, всички", "Нито една"], e: "Не: обикновено обикалят звезда, но някои се скитат без слънце във вечен мрак." },
+      keplerScope: { q: "Кой космически телескоп откри хиляди екзопланети с транзитния метод?", o: ["Кеплер", "Хъбъл", "Вояджър"], e: "Телескопът „Кеплер“ на NASA." },
+      knownAtBirth: { you: "Колко планети от този каталог са били открити до годината на раждането ти?", ref: "Колко планети от този каталог са били открити до годината на раждане на човек, който днес е на 30?", e: (n) => `${n}: каталогът расте всяка година.` },
+      transitSince: { you: "Колко планети от този каталог са открити с транзитния метод от годината на раждането ти?", ref: "Колко планети от този каталог са открити с транзитния метод през последните 30 години?", e: (n) => `${n}: много от тях с телескопа „Кеплер“.` },
+      trappistAge: { you: "На колко години щеше да си на TRAPPIST-1 e?", ref: "На колко години щеше да е на TRAPPIST-1 e човек на 30?", e: (n) => `${n}: годината на TRAPPIST-1 e трае 6,1 дни.` },
+      pegAge: { you: "На колко години щеше да си на 51 Пегас b?", ref: "На колко години щеше да е на 51 Пегас b човек на 30?", e: (n) => `${n}: годината на 51 Пегас b трае 4,2 дни.` },
+      cancriAge: { you: "Колко рождени дни щеше вече да имаш на 55 Рак e?", ref: "Колко рождени дни щеше вече да има на 55 Рак e човек на 30?", e: (n) => `${n}: годината на 55 Рак e трае по-малко от 18 часа.` },
     },
   },
 };
@@ -1075,6 +1510,9 @@ export function personalLine(step, nums, lang) {
   if (step === "inner") return (nums.you ? s.you : s.ref)(fmt(nums.mars), fmt(nums.mercury));
   if (step === "outer") return (nums.you ? s.you : s.ref)(fmt(nums.jupiterLaps));
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
+  if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
+  const exo = { exoHow: "transitSince", exoRocky: "trappistAge", exoGiants: "pegAge", exoStrange: "cancriAge" }[step];
+  if (exo) return (nums.you ? s.you : s.ref)(fmt(nums[exo]));
   const alpha = { neighbors: "proximaLeft", pair: "lapShare", proxima: "lightTrips", proximaB: "proximaBAge", travel: "lifetimes" }[step];
   if (alpha) return (nums.you ? s.you : s.ref)(nums[alpha] == null ? null : fmt(nums[alpha]));
   return nums.star ? s.you(nums.star.name, fmt(nums.star.dist, 1), nums.star.year) : s.ref;
@@ -1123,10 +1561,12 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const nums = () => personalNumbers(personal());
 
   // a small picture for each step, from the same drawings as the rest of My Universe
+  const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
   const pictureOf = (step) =>
     ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
     : step === "proximaB" ? planetCanvas({ temp: 218 }, "uni-orb small", 28)
+    : EXO_PICTURE[step] ? planetCanvas({ temp: EXO_PICTURE[step] }, "uni-orb small", 28)
     : step === "sun" ? starCanvas(5772, "uni-orb small star", 28)
     : planetCanvas({ name: { inner: "Mars", outer: "Saturn", moons: "Moon", scale: "Neptune" }[step] }, "uni-orb small", 28);
   // Reading a step aloud: only with a voice that runs on the device. An online voice (some of Chrome's) would send the text, with the
@@ -1195,7 +1635,8 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     track(`learn-step-${step}`);
   }
 
-  const pathPicture = (path, cls, size) => (path === "alpha" ? starCanvas(5790, `${cls} star`, size) : planetCanvas({ name: "Saturn" }, cls, size));
+  const pathPicture = (path, cls, size) =>
+    path === "alpha" ? starCanvas(5790, `${cls} star`, size) : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size) : planetCanvas({ name: "Saturn" }, cls, size);
 
   // all the paths: a card each, with its progress
   function listView(onChange) {
