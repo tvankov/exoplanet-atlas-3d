@@ -98,18 +98,19 @@ export function initAmbient({ getLang }) {
     // a low filter that opens and closes very slowly
     const filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.value = 900;
+    filter.frequency.value = 650;
     filter.Q.value = 0.6;
     filter.connect(master);
     const lfo = ctx.createOscillator();
     lfo.frequency.value = 0.04;
     const lfoDepth = ctx.createGain();
-    lfoDepth.gain.value = 350;
+    lfoDepth.gain.value = 200;
     lfo.connect(lfoDepth).connect(filter.frequency);
     lfo.start();
     // two tones a fifth apart, and a third one a little out of tune, so that it moves. An octave higher than a deep drone would be, because the
-    // small speakers of laptops and phones hardly play anything below 100 Hz (the first version was too quiet there).
-    for (const [freq, type, level] of [[110, "sine", 0.5], [164.81, "sine", 0.34], [220.8, "triangle", 0.14]]) {
+    // small speakers of laptops and phones hardly play anything below 100 Hz (the first version was too quiet there). All sine waves and a dark
+    // filter: the second version, with a brighter third tone, was found a little tiring.
+    for (const [freq, type, level] of [[110, "sine", 0.5], [164.81, "sine", 0.3], [220.8, "sine", 0.1]]) {
       const osc = ctx.createOscillator();
       osc.type = type;
       osc.frequency.value = freq;
@@ -135,7 +136,7 @@ export function initAmbient({ getLang }) {
     band.frequency.value = 700;
     band.Q.value = 0.7;
     const hiss = ctx.createGain();
-    hiss.gain.value = 0.05;
+    hiss.gain.value = 0.03;
     noise.connect(band).connect(hiss).connect(master);
     noise.start();
   }
@@ -150,7 +151,7 @@ export function initAmbient({ getLang }) {
     if (!ctx) build();
     await ctx.resume();
     playing = true;
-    fadeTo(0.16, 3);
+    fadeTo(0.07, 4);
     render();
   }
   function stop() {
