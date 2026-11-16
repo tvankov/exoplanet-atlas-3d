@@ -5448,7 +5448,7 @@ reco = initRecommendations({
   explorer,
   data: () => ({
     exo: (exoList ??= stars.flatMap((s) =>
-      s.planets.map((p) => ({ name: p.pl_name, host: s.hostname, dist: s.dist_ly, radius: p.pl_rade, temp: p.pl_eqt, habitable: !!p.habitable }))
+      s.planets.map((p) => ({ name: p.pl_name, host: s.hostname, dist: s.dist_ly, radius: p.pl_rade, radiusCalc: !!p.radius_calculated, temp: p.pl_eqt, habitable: !!p.habitable }))
     )),
     solar: PLANETS.map((p) => p.name).filter((n) => n !== "Earth"),
   }),

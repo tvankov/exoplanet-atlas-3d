@@ -8,7 +8,7 @@ import { disclosure } from "./disclosure.js";
 
 const ZODIAC = ["Ari", "Tau", "Gem", "Cnc", "Leo", "Vir", "Lib", "Sco", "Sgr", "Cap", "Aqr", "Psc"];
 
-// exo: [{ name, host, dist, radius, temp, habitable }] (the exoplanets); solar: ["Mercury", ...] (without the Earth); history: [{ name, t }]
+// exo: [{ name, host, dist, radius, radiusCalc, temp, habitable }] (the exoplanets; radiusCalc: the radius is only worked out from the mass); solar: ["Mercury", ...] (without the Earth); history: [{ name, t }]
 // newest first; favourites: [{ name, t }]; seen: names already looked at; seenFigures: constellations already seen in 3D; since: only history
 // and favourites after this time count (the reset); hasEvent: there is a next event in the sky.
 export function recommend({ interest, exo, solar, history = [], favourites = [], seen = [], seenFigures = [], since = 0, hasEvent = false, limit = 3 }) {
@@ -35,7 +35,7 @@ export function recommend({ interest, exo, solar, history = [], favourites = [],
       const score = Math.abs(Math.log(p.radius / ref.radius)) + Math.abs(p.temp - ref.temp) / 300;
       if (score < bestScore) (bestScore = score), (best = p);
     }
-    if (best) add({ kind: "planet", name: best.name, reason: { key: "similar", of: ref.name, radius: best.radius, temp: best.temp } });
+    if (best) add({ kind: "planet", name: best.name, reason: { key: "similar", of: ref.name, radius: best.radius, calc: !!best.radiusCalc, temp: best.temp } });
   }
   // 2. a planet of the same system as the newest favourite
   const fav = favourites.find((f) => f.t > since && byName.has(f.name));
@@ -68,7 +68,7 @@ export function recommend({ interest, exo, solar, history = [], favourites = [],
 export const RECO_TEXT = {
   en: {
     title: "Recommended for you",
-    similar: (of, r, temp) => `Like ${of}, which you looked at: about ${r} Earth radii and ${temp} K.`,
+    similar: (of, r, temp, calc) => `Like ${of}, which you looked at: about ${r} Earth radii${calc ? " (worked out from the mass, not measured)" : ""} and ${temp} K.`,
     sibling: (of, host) => `Because you saved ${of}: this planet orbits the same star, ${host}.`,
     interestExo: "Because exoplanets interest you: the nearest candidate you have not seen yet.",
     interestSolar: "Because the planets of the Solar System interest you.",
@@ -82,7 +82,7 @@ export const RECO_TEXT = {
   },
   de: {
     title: "Für dich empfohlen",
-    similar: (of, r, temp) => `Ähnlich wie ${of}, das du angesehen hast: etwa ${r} Erdradien und ${temp} K.`,
+    similar: (of, r, temp, calc) => `Ähnlich wie ${of}, das du angesehen hast: etwa ${r} Erdradien${calc ? " (aus der Masse berechnet, nicht gemessen)" : ""} und ${temp} K.`,
     sibling: (of, host) => `Weil du ${of} gespeichert hast: Dieser Planet kreist um denselben Stern, ${host}.`,
     interestExo: "Weil dich Exoplaneten interessieren: der nächste Kandidat, den du noch nicht gesehen hast.",
     interestSolar: "Weil dich die Planeten des Sonnensystems interessieren.",
@@ -96,7 +96,7 @@ export const RECO_TEXT = {
   },
   ja: {
     title: "あなたへのおすすめ",
-    similar: (of, r, temp) => `あなたが見た${of}に似ています：半径は地球の約${r}倍、温度は${temp} K。`,
+    similar: (of, r, temp, calc) => `あなたが見た${of}に似ています：半径は地球の約${r}倍${calc ? "（測定ではなく質量から計算した値）" : ""}、温度は${temp} K。`,
     sibling: (of, host) => `${of}を保存したので：この惑星も同じ恒星${host}を回っています。`,
     interestExo: "系外惑星に興味があるので：まだ見ていない、いちばん近い候補です。",
     interestSolar: "太陽系の惑星に興味があるので。",
@@ -110,7 +110,7 @@ export const RECO_TEXT = {
   },
   bg: {
     title: "Препоръчано за теб",
-    similar: (of, r, temp) => `Подобна на ${of}, която разгледа: около ${r} земни радиуса и ${temp} K.`,
+    similar: (of, r, temp, calc) => `Подобна на ${of}, която разгледа: около ${r} земни радиуса${calc ? " (изчислени от масата, не измерени)" : ""} и ${temp} K.`,
     sibling: (of, host) => `Защото запази ${of}: тази планета обикаля същата звезда, ${host}.`,
     interestExo: "Защото те интересуват екзопланетите: най-близкият кандидат, който още не си видял.",
     interestSolar: "Защото те интересуват планетите на Слънчевата система.",
@@ -140,7 +140,7 @@ export function initRecommendations({ getLang, explorer, data, nameOf, act, next
 
   function reasonText(r) {
     const tx = t();
-    if (r.key === "similar") return tx.similar(r.of, fmt(r.radius, 1), fmt(Math.round(r.temp), 0));
+    if (r.key === "similar") return tx.similar(r.of, fmt(r.radius, 1), fmt(Math.round(r.temp), 0), r.calc);
     if (r.key === "sibling") return tx.sibling(r.of, r.host);
     return tx[r.key];
   }

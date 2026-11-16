@@ -23,7 +23,7 @@ test("like the last planet looked at: the closest in size and temperature, not o
   const r = recommend({ exo, solar, history: [{ name: "TOI-700 d", t: 5 }] });
   // Ross 128 b: 1.1 against 1.14 Earth radii and 301 against 269 K is closer (on these scales) than TOI-700 e with 0.92 and 273 K
   assert.equal(r[0].name, "Ross 128 b");
-  assert.deepEqual(r[0].reason, { key: "similar", of: "TOI-700 d", radius: 1.1, temp: 301 });
+  assert.deepEqual(r[0].reason, { key: "similar", of: "TOI-700 d", radius: 1.1, calc: false, temp: 301 });
   assert.ok(!r.some((x) => x.name === "TOI-700 d"));
 });
 
@@ -47,4 +47,18 @@ test("after a reset the old history and favourites do not count, and nothing is 
   const all = recommend({ exo, solar, interest: "exoplanets", history: [{ name: "Ross 128 b", t: 5 }], favourites: [{ name: "TOI-700 d", t: 5 }], limit: 5 });
   assert.equal(new Set(all.map((x) => x.name)).size, all.length);
   assert.ok(all.length <= 5);
+});
+
+test("a radius that is only worked out from the mass is marked as such in the reason, in every language", async () => {
+  const { RECO_TEXT } = await import("../web/recommend.js");
+  const withCalc = exo.map((p) => (p.name === "Ross 128 b" ? { ...p, radiusCalc: true } : p));
+  const r = recommend({ exo: withCalc, solar, history: [{ name: "TOI-700 d", t: 5 }] });
+  assert.equal(r[0].name, "Ross 128 b");
+  assert.equal(r[0].reason.calc, true);
+  for (const [lang, tx] of Object.entries(RECO_TEXT)) {
+    const measured = tx.similar("X", "1,1", "301", false);
+    const calculated = tx.similar("X", "1,1", "301", true);
+    assert.ok(calculated.length > measured.length, `${lang}: the calculated radius says so`);
+    assert.ok(!measured.includes("undefined") && !calculated.includes("undefined"), lang);
+  }
 });
