@@ -3552,3 +3552,46 @@ body:has(#day-flight:not([hidden])) #tour {
     animation: none !important;
   }
 }
+
+/* The dock cards with their drawn pictures (dockart.js): a soft light in the colour of the picture behind it, and a small lift on hover. */
+.dock-card {
+  --tint: 124, 160, 255;
+  background: radial-gradient(circle at 82% 26%, rgba(var(--tint), 0.2), transparent 52%), linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)), rgba(10, 14, 24, 0.66);
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.25s ease;
+}
+.dock-card:hover {
+  transform: translateY(-3px);
+  background: radial-gradient(circle at 82% 26%, rgba(var(--tint), 0.3), transparent 56%), linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.05)), rgba(20, 28, 48, 0.8);
+}
+.dock-art {
+  transition: transform 0.35s ease;
+}
+.dock-card:hover .dock-art {
+  transform: scale(1.06);
+}
+#dock-daily {
+  --tint: 120, 170, 255;
+}
+#dock-near {
+  --tint: 255, 140, 90;
+}
+#dock-games,
+#dock-log {
+  --tint: 124, 255, 178;
+}
+#dock-sky {
+  --tint: 255, 200, 120;
+}
+#dock-plan {
+  --tint: 127, 200, 255;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock-card,
+  .dock-art {
+    transition: none;
+  }
+  .dock-card:hover,
+  .dock-card:hover .dock-art {
+    transform: none;
+  }
+}

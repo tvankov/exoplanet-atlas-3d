@@ -8,7 +8,8 @@ import { initEvents } from "./events.js";
 import { initUniverse } from "./universe.js";
 import { initJournal } from "./journal.js";
 import { initMyStar } from "./mystar.js";
-import { initBirthSky } from "./birthsky.js";
+import { initBirthSky, sunConstellation } from "./birthsky.js";
+import { drawDock, drawLevel } from "./dockart.js";
 import { initAmbient } from "./atmosphere.js";
 import { initDailyFlight, FLIGHT_TEXT } from "./dailyflight.js";
 import { initRecommendations } from "./recommend.js"; // also writes a fact on the loading screen at once
@@ -5379,6 +5380,25 @@ myStar = initMyStar({
   },
   onChange: () => auth?.render(),
 });
+// The lines of a constellation from the stars of the map: [[ra, dec, mag], ...] (a star without a position is left out), or null.
+function figureLines(id) {
+  const c = sky?.data.constellations.find((x) => x.id === id);
+  if (!c) return null;
+  return c.lines.map((line) => line.map((h) => sky.data.stars[h]).filter(Boolean).map((s) => [s[0], s[1], s[3]]));
+}
+// The pictures of the cards in the dock (dockart.js): the planet of the day, the nearest candidate, the constellation of the Sun today, the
+// level. Drawn after the first flight, when the maps of the planets are loaded anyway.
+function renderDock() {
+  const target = daily?.entry ? resolvePlace(daily.entry.target) : null;
+  const near = nearestCandidate();
+  const today = new Date();
+  drawDock({
+    daily: target?.kind === "planet" ? { solar: target.name } : target?.kind === "exo" ? { temp: target.planet.pl_eqt } : null,
+    near: near ? { temp: near.planet.pl_eqt, teff: near.star.teff_missing ? null : near.star.st_teff } : null,
+    figure: figureLines(sunConstellation(today.getUTCMonth() + 1, today.getUTCDate())),
+    level: explorer?.progress(),
+  });
+}
 // The flight of the day: three stops built from the data of today (the discovery, the next event in the sky, and a place for the visitor).
 dayFlight = initDailyFlight({
   getLang: () => lang,
@@ -5453,12 +5473,7 @@ birthSky = initBirthSky({
     const c = sky?.data.constellations.find((x) => x.id === id);
     return c ? sky.data.nameOf(c, lang) : id;
   },
-  // the lines of the figure from the stars of the map: [[ra, dec, mag], ...] (a star without a position is left out)
-  figure: (id) => {
-    const c = sky?.data.constellations.find((x) => x.id === id);
-    if (!c) return null;
-    return c.lines.map((line) => line.map((h) => sky.data.stars[h]).filter(Boolean).map((s) => [s[0], s[1], s[3]]));
-  },
+  figure: figureLines,
   showFigure: (id) => atlas?.showFigure(id),
   onChange: () => auth?.render(),
 });
@@ -5493,6 +5508,16 @@ universe = initUniverse({
 });
 auth = initAuth({ getLang: () => lang, explorer, universe });
 universe.setOnChange(() => auth.render());
+// the level ring on the card of the missions, drawn again when the XP change
+{
+  let shown = "";
+  explorer.onRender(() => {
+    const pr = explorer.progress();
+    if (`${pr.level}:${pr.xp}` === shown) return;
+    shown = `${pr.level}:${pr.xp}`;
+    drawLevel(pr);
+  });
+}
 skyEvents = await initEvents({
   getLang: () => lang,
   explore: (name) => {
@@ -5744,6 +5769,7 @@ if (flight) flight.ms = 3200;
     if (flight && performance.now() < giveUp) return;
     clearInterval(timer);
     openLateLoads(); // the big pictures of the planets and of the Milky Way first,
+    setTimeout(renderDock, 8000); // the pictures of the dock from them
     setTimeout(() => {
       if (!gaiaOn) gaiaButton.click(); // then the star layers
       if (!IS_MOBILE) setTimeout(() => !deepOn && deepButton.click(), 1500); // one after the other, so that the uploads do not meet

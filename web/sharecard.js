@@ -58,7 +58,15 @@ export const PLANET_LOOK = {
   Saturn: { paint: (lat) => mix([232, 214, 168], [198, 168, 112], 0.5 + 0.5 * Math.sin(lat * 16)), ring: "222,204,160" },
   Uranus: { paint: (lat) => shadeOf([164, 228, 234], 0.95 + 0.08 * Math.abs(Math.sin(lat))) },
   Neptune: { paint: (lat) => shadeOf([78, 116, 222], 0.9 + 0.1 * Math.cos(lat * 9)) },
+  Moon: { map: "textures/moon.jpg", lon: 0 },
 };
+// An exoplanet has no picture: a smooth sphere in a colour by its temperature (cold blue to hot red, the same scale as in My Universe), with
+// soft bands, as a sign and not as a surface.
+export function exoLook(kelvin) {
+  const k = kelvin ?? 300;
+  const c = k < 200 ? [207, 227, 255] : k < 330 ? [77, 143, 224] : k < 600 ? [217, 160, 102] : k < 1200 ? [200, 100, 58] : [255, 122, 61];
+  return { paint: (lat) => shadeOf(c, 0.9 + 0.1 * Math.sin(lat * 5)) };
+}
 const shadeOf = (c, k) => c.map((x) => x * k);
 const mix = (a, b, t) => a.map((x, i) => x + (b[i] - x) * t);
 // Load the backdrop and the maps before the visitor clicks "Share", so that the share sheet opens at once (some browsers allow it only right
@@ -172,9 +180,9 @@ function drawBackdrop(g, img, at) {
 }
 
 // A planet as a lit sphere, from its map or painted; the light comes from the upper left. Saturn gets its rings, the Earth its clouds and a
-// thin blue air.
+// thin blue air. name: a planet of the Solar System (or "Moon"), or a look of its own ({ map } or { paint }, see exoLook).
 export async function drawPlanet(g, name, cx, cy, r) {
-  const look = PLANET_LOOK[name];
+  const look = typeof name === "string" ? PLANET_LOOK[name] : name;
   if (!look) return;
   const map = look.map ? await mapPixels(look.map) : null;
   const clouds = look.clouds ? await mapPixels(look.clouds) : null;
