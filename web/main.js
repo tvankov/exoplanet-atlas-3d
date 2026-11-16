@@ -5496,11 +5496,11 @@ universe = initUniverse({
     if (!place) return null;
     if (place.kind === "planet") {
       const p = PLANETS.find((x) => x.name === place.name);
-      return { kind: "solar", name: planetLabel(p.name), color: `#${p.color.toString(16).padStart(6, "0")}`, au: p.au };
+      return { kind: "solar", id: p.name, name: planetLabel(p.name), color: `#${p.color.toString(16).padStart(6, "0")}`, au: p.au };
     }
     if (place.kind === "exo") return { kind: "exo", name: place.planet.pl_name, dist: place.star.dist_ly, temp: place.planet.pl_eqt ?? null };
-    if (place.star === SUN_POINT) return { kind: "sun", name: sunLabel() };
-    return { kind: "star", name: place.star.hostname, dist: place.star.dist_ly, planets: place.star.planets.length };
+    if (place.star === SUN_POINT) return { kind: "sun", name: sunLabel(), teff: 5772 };
+    return { kind: "star", name: place.star.hostname, dist: place.star.dist_ly, planets: place.star.planets.length, teff: place.star.teff_missing ? null : place.star.st_teff };
   },
   openSky: () => skyEvents?.open(),
   openAtlas: () => atlas?.open(),

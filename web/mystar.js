@@ -7,7 +7,7 @@
 
 import { track } from "./stats.js";
 import { disclosure } from "./disclosure.js";
-import { sharePicture, preload, W, font, wrap, panel, drawPlanet, drawStar, starColor } from "./sharecard.js";
+import { sharePicture, preload, W, font, wrap, panel, drawPlanet, drawStar, starColor, planetCanvas, starCanvas } from "./sharecard.js";
 
 export const KEY = "birth-year"; // localStorage, never sent, never saved to the account
 const EARTH_ORBIT_KM = 2 * Math.PI * 149597870.7; // the length of one trip round the Sun, about 940 million km
@@ -305,8 +305,7 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
       s.append(el("p", "", tx.young));
     } else {
       const card = el("div", "star-hero");
-      const glow = el("div", "star-glow");
-      glow.setAttribute("aria-hidden", "true");
+      const glow = starCanvas(host.teff, "star-glow", 76); // in the colour of its temperature
       const body = el("div", "star-body");
       const facts = el("div", "star-facts");
       const fact = (value, label) => {
@@ -345,9 +344,8 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
       const text = fmt(value, value < 10 ? 1 : 0);
       values.push({ id: p.id, name: p.name, value: text, earth: p.years === 1 });
       const tile = el("div", `age-tile${p.years === 1 ? " earth" : ""}`);
-      const dot = el("i", `age-dot${p.rings ? " ring" : ""}`);
+      const dot = planetCanvas({ name: p.id }, "age-dot", 30); // from the NASA map, or painted as in the 3D view
       dot.style.setProperty("--c", p.color ?? "#9aa");
-      dot.setAttribute("aria-hidden", "true");
       tile.append(dot, el("b", "", text), el("span", "", p.name));
       list.append(tile);
     }

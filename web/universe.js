@@ -7,6 +7,7 @@
 import { track } from "./stats.js";
 import { INTERESTS, LEVELS } from "./profile.js";
 import { disclosure } from "./disclosure.js";
+import { planetCanvas, starCanvas } from "./sharecard.js";
 
 export const UNIVERSE_TEXT = {
   en: {
@@ -136,7 +137,7 @@ export const UNIVERSE_TEXT = {
 };
 
 // explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. describe(name): what the map
-// knows of a place ({ kind: "solar" | "exo" | "star" | "sun", name, color, au, dist, temp, planets }) or null. openSky(), openAtlas(),
+// knows of a place ({ kind: "solar" | "exo" | "star" | "sun", id, name, color, au, dist, temp, teff, planets }) or null. openSky(), openAtlas(),
 // closePanel(): open the events, the zodiac, close the profile panel.
 export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, explore, describe, openSky, openAtlas, closePanel }) {
   const t = () => UNIVERSE_TEXT[getLang()] ?? UNIVERSE_TEXT.en;
@@ -241,15 +242,21 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     return row;
   }
   const fmt = (x, d = 1) => x.toLocaleString(getLang(), { maximumFractionDigits: d, minimumFractionDigits: d });
-  // A round picture for a place: the colour of a planet of the Solar System, a colour by the temperature for an exoplanet (cold blue to hot
-  // red, a schematic, the number is written next to it), a glow for a star.
+  // A round picture for a place (sharecard.js draws it): a planet of the Solar System from its NASA map, an exoplanet in a colour by its
+  // temperature (cold blue to hot red, a schematic, the number is written next to it), a star as a glow in the colour of its temperature. The
+  // plain colour stands in until the picture is drawn.
   const tempColor = (k) => (k == null ? "#8fa8d8" : k < 200 ? "#cfe3ff" : k < 330 ? "#4d8fe0" : k < 600 ? "#d9a066" : k < 1200 ? "#c8643a" : "#ff7a3d");
   function orb(info, size = "") {
-    const o = el("i", `uni-orb ${size}`.trim());
-    o.setAttribute("aria-hidden", "true");
-    if (!info) return o;
-    if (info.kind === "star" || info.kind === "sun") o.classList.add("star");
-    else o.style.setProperty("--orb", info.kind === "solar" ? info.color : tempColor(info.temp));
+    const cls = `uni-orb ${size}`.trim();
+    const px = size === "small" ? 28 : 72;
+    if (!info) {
+      const o = el("i", cls);
+      o.setAttribute("aria-hidden", "true");
+      return o;
+    }
+    if (info.kind === "star" || info.kind === "sun") return starCanvas(info.teff, `${cls} star`, px);
+    const o = planetCanvas(info.kind === "solar" ? { name: info.id } : { temp: info.temp }, cls, px);
+    o.style.setProperty("--orb", info.kind === "solar" ? info.color : tempColor(info.temp));
     return o;
   }
   function icon(glyph) {

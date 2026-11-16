@@ -3401,24 +3401,19 @@ body:has(#day-flight:not([hidden])) #tour {
 }
 .age-dot {
   --c: #99aaaa;
-  position: relative;
   display: block;
-  width: 14px;
-  height: 14px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.7), var(--c) 45%, #000 140%);
 }
-.age-dot.ring::after {
-  content: "";
-  position: absolute;
-  top: 4px;
-  right: -6px;
-  bottom: 4px;
-  left: -6px;
-  border: 1.5px solid var(--c);
-  border-radius: 50%;
-  transform: rotate(-18deg);
-  opacity: 0.85;
+/* the real pictures (sharecard.js) replace the plain colours once they are drawn; Saturn's rings and the glow of a star go past the circle */
+.uni-orb.drawn,
+.star-glow.drawn,
+.age-dot.drawn {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
 }
 .age-tile.age-km {
   grid-column: 1 / -1;

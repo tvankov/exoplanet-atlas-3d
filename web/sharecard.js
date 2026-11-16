@@ -253,6 +253,57 @@ function ring(g, cx, cy, r, rgb, from, to) {
   g.restore();
 }
 
+// ---------------------------------------------------------------- small pictures for the page (My Universe)
+// A planet or a star as a canvas of the size the stylesheet gives it, drawn at up to twice the pixels, so that it is sharp on a phone. Each one
+// is drawn once per look and size and then copied, because the panel is drawn again after every change. Until it is drawn, the canvas shows
+// the plain colour of its class (uni-orb, star-glow, age-dot); then it gets the class "drawn".
+const drawnSpheres = new Map();
+function sphereCanvas(key, cls, size, draw) {
+  const px = Math.round(size * Math.min(2, window.devicePixelRatio || 1));
+  const c = document.createElement("canvas");
+  c.width = c.height = px;
+  c.className = cls;
+  c.setAttribute("aria-hidden", "true");
+  const id = `${key}:${px}`;
+  if (!drawnSpheres.has(id))
+    drawnSpheres.set(
+      id,
+      (async () => {
+        const off = document.createElement("canvas");
+        off.width = off.height = px;
+        await draw(off.getContext("2d"), px);
+        return off;
+      })().catch(() => (drawnSpheres.delete(id), null))
+    );
+  drawnSpheres.get(id).then((off) => {
+    if (!off) return;
+    c.getContext("2d").drawImage(off, 0, 0);
+    c.classList.add("drawn");
+  });
+  return c;
+}
+// name: a planet of the Solar System, or null with temp for an exoplanet; size: the size on the screen in CSS pixels.
+export function planetCanvas({ name, temp }, cls, size) {
+  const look = name ? name : exoLook(temp);
+  const key = name ?? `exo-${Math.round((temp ?? 300) / 50)}`;
+  const share = name === "Saturn" ? 0.45 : name === "Earth" ? 0.86 : 0.94; // room for the rings and the air
+  return sphereCanvas(key, cls, size, (g, px) => drawPlanet(g, look, px / 2, px / 2, (px / 2) * share));
+}
+export function starCanvas(kelvin, cls, size) {
+  const rgb = starColor(kelvin ?? 5772);
+  return sphereCanvas(`star-${rgb}`, cls, size, (g, px) => {
+    // a fuller light than on the big pictures, so that the star reads at this small size
+    const r = px / 2;
+    const light = g.createRadialGradient(r, r, 0, r, r, r);
+    light.addColorStop(0, `rgba(${rgb},0.9)`);
+    light.addColorStop(0.3, `rgba(${rgb},0.45)`);
+    light.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = light;
+    g.fillRect(0, 0, px, px);
+    drawStar(g, r, r, r, rgb);
+  });
+}
+
 // ---------------------------------------------------------------- the picture and the share
 // kind: a short name for the counting ("star", "ages", "sky"); title: the line at the top; text: the message that goes with the picture;
 // backdrop: where in the Milky Way (0 to 1); sources: the credit of what the picture shows besides the Milky Way; draw(g): draws the middle
