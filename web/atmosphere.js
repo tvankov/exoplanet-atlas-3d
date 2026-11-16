@@ -1,7 +1,7 @@
-// Atmosphere: a short true fact on the loading screen, and a calm sound of space that the visitor can switch on (it is off by default and never
-// starts by itself). The sound is made in the browser (Web Audio: two low tones a fifth apart, a slowly moving filter and a soft hiss), so there is
-// no sound file and nothing to license. The choice is remembered in this browser (localStorage "sound"); a remembered "on" still waits for the
-// first click or key, because browsers do not allow sound before that.
+// Atmosphere: a short true fact on the loading screen, and a calm sound of space. The sound is on by default and starts with the first click or
+// key of the visit, because browsers do not allow sound before that; one click on the button switches it off. The sound is made in the browser
+// (Web Audio: two tones a fifth apart, a slowly moving filter and a soft hiss), so there is no sound file and nothing to license. The choice is
+// remembered in this browser (localStorage "sound").
 
 import { track } from "./stats.js";
 
@@ -80,11 +80,11 @@ const SOUND_TEXT = {
 
 export function initAmbient({ getLang }) {
   const button = document.getElementById("sound-toggle");
-  let wanted = false;
+  let wanted = true;
   try {
-    wanted = localStorage.getItem("sound") === "on";
+    wanted = localStorage.getItem("sound") !== "off";
   } catch {
-    // storage blocked: off
+    // storage blocked: on, as for everyone
   }
   let ctx = null;
   let master = null;
@@ -179,12 +179,13 @@ export function initAmbient({ getLang }) {
     } else stop();
     render();
   });
-  // a remembered "on": the first click or key of the visit starts it
+  // on (by default, or remembered): the first click or key of the visit starts it. A click on the button itself is left to the button, so
+  // that the first click there switches it off and does not start it.
   if (wanted) {
-    const first = () => {
+    const first = (e) => {
       window.removeEventListener("pointerdown", first);
       window.removeEventListener("keydown", first);
-      if (wanted) start();
+      if (wanted && !button.contains(e.target)) start();
     };
     window.addEventListener("pointerdown", first);
     window.addEventListener("keydown", first);
