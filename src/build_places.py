@@ -1,7 +1,8 @@
 """Builds web/data/places.json, the places for the ascendant ("the sky at your birth", web/birthsky.js), from the GeoNames file cities15000.zip.
 
-Kept: every place with at least 100,000 inhabitants, and every capital. For each: the name (as GeoNames writes it, often in the language of the
-country, for example "München"), the name in plain letters, the country code, latitude and longitude (4 decimals, about 10 metres), and the time
+Kept: every place of the file (all places with more than 15,000 inhabitants, and every capital; about 34,000). For each: the name (as GeoNames
+writes it, often in the language of the country, for example "München"), the name in plain letters, the country code, latitude and longitude
+(3 decimals, about 100 metres, far more than the ascendant needs), and the time
 zone (an IANA name such as "Europe/Berlin", which the browser uses to turn a local hour of birth, with the summer time and the history of that
 zone, into world time). Sorted by population, so that the search shows the bigger places first.
 
@@ -19,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "web" / "data" / "places.json"
-MIN_POPULATION = 100_000
+MIN_POPULATION = 0 # every place of cities15000 (more than 15,000 inhabitants, and the capitals)
 
 
 def main() -> None:
@@ -37,12 +38,12 @@ def main() -> None:
             name, ascii_name, country, tz = f[1], f[2], f[8], f[17]
             if not tz or not name:
                 continue
-            lat, lon = round(float(f[4]), 4), round(float(f[5]), 4)
+            lat, lon = round(float(f[4]), 3), round(float(f[5]), 3)
             rows.append((population, [name, ascii_name if ascii_name != name else "", country, lat, lon, tz]))
     rows.sort(key=lambda r: -r[0])
     places = [r[1] for r in rows]
     data = {
-        "source": "GeoNames (https://www.geonames.org), CC BY 4.0, cities15000, places with at least 100,000 inhabitants and capitals",
+        "source": "GeoNames (https://www.geonames.org), CC BY 4.0, cities15000: places with more than 15,000 inhabitants and capitals",
         "fields": ["name", "ascii name (empty if the same)", "country code", "latitude", "longitude", "time zone"],
         "places": places,
     }

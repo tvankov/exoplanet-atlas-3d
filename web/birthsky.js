@@ -129,7 +129,8 @@ export const BIRTHSKY_TEXT = {
     approx: "The constellation follows the boundaries of the International Astronomical Union, the dates are about (± 1 day).",
     fly: "See the constellation in 3D", change: "Change the date", remove: "Remove the date",
     ascTitle: "Ascendant", ascIntro: "The ascendant is the point of the Sun's path that rose in the east at the moment of your birth. It needs the hour and the place of birth.",
-    time: "Hour of birth (local time)", place: "Place of birth", placeSearch: "Type a city …", calc: "Show the ascendant", loading: "Loading the places …", noPlace: "No place found. Try the largest city near you.",
+    time: "Hour of birth (local time)", place: "Place of birth", placeSearch: "Type a city …", calc: "Show the ascendant", loading: "Loading the places …", noPlace: "No place found. Try the nearest larger town.",
+    smallPlace: "The list has every place with more than 15,000 inhabitants. Born in a smaller place? Take the nearest larger town: 50 km move the ascendant only by about a degree.",
     ascAstrology: "Ascendant in astrology", ascSky: "Rising in the east", ascSkyLine: (name) => `the constellation ${name}`,
     ascNote: "Four minutes earlier or later move the ascendant by about one degree: without an exact hour of birth it is uncertain.",
     placeLine: (name, country, tz) => `${name}, ${country} (time zone ${tz})`, changeAsc: "Change hour or place", removeAsc: "Remove hour and place",
@@ -149,7 +150,8 @@ export const BIRTHSKY_TEXT = {
     approx: "Das Sternbild folgt den Grenzen der Internationalen Astronomischen Union, die Tage sind ungefähr (± 1 Tag).",
     fly: "Das Sternbild in 3D ansehen", change: "Datum ändern", remove: "Datum entfernen",
     ascTitle: "Aszendent", ascIntro: "Der Aszendent ist der Punkt der Sonnenbahn, der im Moment deiner Geburt im Osten aufging. Dafür braucht es Uhrzeit und Ort der Geburt.",
-    time: "Uhrzeit der Geburt (Ortszeit)", place: "Geburtsort", placeSearch: "Stadt eingeben …", calc: "Aszendent zeigen", loading: "Orte werden geladen …", noPlace: "Kein Ort gefunden. Versuch die größte Stadt in der Nähe.",
+    time: "Uhrzeit der Geburt (Ortszeit)", place: "Geburtsort", placeSearch: "Stadt eingeben …", calc: "Aszendent zeigen", loading: "Orte werden geladen …", noPlace: "Kein Ort gefunden. Versuch den nächsten größeren Ort.",
+    smallPlace: "Die Liste enthält jeden Ort mit mehr als 15.000 Einwohnern. In einem kleineren Ort geboren? Nimm den nächsten größeren: 50 km verschieben den Aszendenten nur um etwa ein Grad.",
     ascAstrology: "Aszendent in der Astrologie", ascSky: "Im Osten ging auf", ascSkyLine: (name) => `das Sternbild ${name}`,
     ascNote: "Vier Minuten früher oder später verschieben den Aszendenten um etwa ein Grad: Ohne genaue Geburtszeit ist er unsicher.",
     placeLine: (name, country, tz) => `${name}, ${country} (Zeitzone ${tz})`, changeAsc: "Uhrzeit oder Ort ändern", removeAsc: "Uhrzeit und Ort entfernen",
@@ -169,7 +171,8 @@ export const BIRTHSKY_TEXT = {
     approx: "星座は国際天文学連合の境界に従います。日付はおおよそです（±1日）。",
     fly: "星座を3Dで見る", change: "日付を変更", remove: "日付を削除",
     ascTitle: "アセンダント", ascIntro: "アセンダントとは、あなたが生まれた瞬間に東の地平線から昇っていた黄道上の点です。生まれた時刻と場所が必要です。",
-    time: "生まれた時刻（現地時間）", place: "出生地", placeSearch: "都市名を入力 …", calc: "アセンダントを見る", loading: "場所を読み込み中 …", noPlace: "場所が見つかりません。近くの大きな都市を試してください。",
+    time: "生まれた時刻（現地時間）", place: "出生地", placeSearch: "都市名を入力 …", calc: "アセンダントを見る", loading: "場所を読み込み中 …", noPlace: "場所が見つかりません。近くの大きな町を試してください。",
+    smallPlace: "一覧には人口1万5000人を超えるすべての場所が入っています。小さな町で生まれた場合は、近くの大きな町を選んでください。50 km の違いでアセンダントが動くのは約1度だけです。",
     ascAstrology: "占星術のアセンダント", ascSky: "東から昇っていたのは", ascSkyLine: (name) => `${name}`,
     ascNote: "時刻が4分ずれるとアセンダントは約1度動きます。正確な出生時刻がなければ不確かです。",
     placeLine: (name, country, tz) => `${name}、${country}（タイムゾーン ${tz}）`, changeAsc: "時刻や場所を変更", removeAsc: "時刻と場所を削除",
@@ -189,7 +192,8 @@ export const BIRTHSKY_TEXT = {
     approx: "Съзвездието следва границите на Международния астрономически съюз, датите са приблизителни (± 1 ден).",
     fly: "Виж съзвездието в 3D", change: "Промени датата", remove: "Премахни датата",
     ascTitle: "Асцендент", ascIntro: "Асцендентът е точката от пътя на Слънцето, която е изгряла на изток в момента на раждането ти. За него са нужни часът и мястото на раждане.",
-    time: "Час на раждане (местно време)", place: "Място на раждане", placeSearch: "Въведи град …", calc: "Покажи асцендента", loading: "Местата се зареждат …", noPlace: "Няма намерено място. Опитай най-големия град наблизо.",
+    time: "Час на раждане (местно време)", place: "Място на раждане", placeSearch: "Въведи град …", calc: "Покажи асцендента", loading: "Местата се зареждат …", noPlace: "Няма намерено място. Опитай най-близкия по-голям град.",
+    smallPlace: "Списъкът съдържа всяко място с над 15 000 жители. Роден си в по-малко място? Избери най-близкия по-голям град: 50 км местят асцендента само с около градус.",
     ascAstrology: "Асцендент в астрологията", ascSky: "На изток изгрява", ascSkyLine: (name) => `съзвездието ${name}`,
     ascNote: "Четири минути по-рано или по-късно преместват асцендента с около един градус: без точен час на раждане той е несигурен.",
     placeLine: (name, country, tz) => `${name}, ${country} (часова зона ${tz})`, changeAsc: "Промени часа или мястото", removeAsc: "Премахни часа и мястото",
@@ -313,7 +317,7 @@ export function initBirthSky({ getLang, nameOf, showFigure, onChange }) {
       timeLabel.append(el("span", "", tx.time), timeInput);
       const placeLabel = el("label", "account-field");
       placeLabel.append(el("span", "", tx.place), search);
-      s.append(timeLabel, placeLabel, results);
+      s.append(timeLabel, placeLabel, results, el("p", "hint", tx.smallPlace));
       const row = el("div", "uni-places");
       row.append(
         button(tx.calc, "account-main", () => {
