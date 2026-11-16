@@ -3951,3 +3951,8 @@ body:has(#day-flight:not([hidden])) #tour {
     transform: none;
   }
 }
+
+/* My Universe keeps one size, whichever area is shown: a short area (the certificates) must not make the panel jump smaller. */
+#profile-panel {
+  height: min(860px, calc(100dvh - 64px));
+}
