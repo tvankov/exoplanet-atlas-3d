@@ -7,6 +7,7 @@
 
 import { track } from "./stats.js";
 import { disclosure } from "./disclosure.js";
+import { sharePicture, W, font, wrap, roundRect, planetDot } from "./sharecard.js";
 
 export const KEY = "birth-year"; // localStorage, never sent, never saved to the account
 const EARTH_ORBIT_KM = 2 * Math.PI * 149597870.7; // the length of one trip round the Sun, about 940 million km
@@ -65,8 +66,11 @@ export const STAR_TEXT = {
     key: (year) => `Its light arriving today set off around ${year}: about when you were born.`,
     ages: "Your age on the planets", km: "travelled round the Sun with the Earth", kmUnit: "km",
     years: (n) => `${n} years`,
-    cardTitle: "My star", cardLight: (name, year) => `The light of ${name} that arrives today set off around ${year}, the year I was born.`,
+    cardTitle: "My star", cardLight: (name, year) => `The light of ${name} that arrives today set off around ${year}, about the year I was born.`,
     cardDist: (dist) => `${dist} light years away`,
+    starMessage: "The light of my star set off when I was born. Find yours:",
+    cardAges: "My age on the planets", agesQuestion: "How old are you on Mars?",
+    agesMessage: "My age on the planets of the Solar System. How old are you on Mars?",
   },
   de: {
     title: "Dein Stern",
@@ -84,8 +88,11 @@ export const STAR_TEXT = {
     key: (year) => `Sein Licht, das heute ankommt, brach um ${year} auf: etwa als du geboren wurdest.`,
     ages: "Dein Alter auf den Planeten", km: "mit der Erde um die Sonne gereist", kmUnit: "km",
     years: (n) => `${n} Jahre`,
-    cardTitle: "Mein Stern", cardLight: (name, year) => `Das Licht von ${name}, das heute ankommt, brach um ${year} auf, in meinem Geburtsjahr.`,
+    cardTitle: "Mein Stern", cardLight: (name, year) => `Das Licht von ${name}, das heute ankommt, brach um ${year} auf, etwa in meinem Geburtsjahr.`,
     cardDist: (dist) => `${dist} Lichtjahre entfernt`,
+    starMessage: "Das Licht meines Sterns brach auf, als ich geboren wurde. Finde deinen:",
+    cardAges: "Mein Alter auf den Planeten", agesQuestion: "Wie alt bist du auf dem Mars?",
+    agesMessage: "Mein Alter auf den Planeten des Sonnensystems. Wie alt bist du auf dem Mars?",
   },
   ja: {
     title: "あなたの星",
@@ -105,6 +112,9 @@ export const STAR_TEXT = {
     years: (n) => `${n}歳`,
     cardTitle: "私の星", cardLight: (name, year) => `今日届く${name}の光は、私が生まれた${year}年ごろに出発しました。`,
     cardDist: (dist) => `${dist}光年`,
+    starMessage: "私の星の光は、私が生まれた頃に旅立ちました。あなたの星も探してみて：",
+    cardAges: "惑星での私の年齢", agesQuestion: "あなたは火星で何歳？",
+    agesMessage: "太陽系の惑星での私の年齢。あなたは火星で何歳？",
   },
   bg: {
     title: "Твоята звезда",
@@ -122,8 +132,11 @@ export const STAR_TEXT = {
     key: (year) => `Светлината ѝ, която пристига днес, е тръгнала около ${year} г., приблизително когато си се родил.`,
     ages: "Твоята възраст на планетите", km: "пропътувани със Земята около Слънцето", kmUnit: "км",
     years: (n) => `${n} години`,
-    cardTitle: "Моята звезда", cardLight: (name, year) => `Светлината на ${name}, която пристига днес, е тръгнала около ${year} г., годината, в която съм роден.`,
+    cardTitle: "Моята звезда", cardLight: (name, year) => `Светлината на ${name}, която пристига днес, е тръгнала около ${year} г., приблизително в годината на раждането ми.`,
     cardDist: (dist) => `на ${dist} светлинни години`,
+    starMessage: "Светлината на моята звезда е тръгнала в годината на раждането ми. Намери своята:",
+    cardAges: "Моята възраст на планетите", agesQuestion: "На колко години си на Марс?",
+    agesMessage: "Моята възраст на планетите от Слънчевата система. На колко години си на Марс?",
   },
 };
 
@@ -163,74 +176,79 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
   let editing = false;
   const fmt = (x, digits = 1) => x.toLocaleString(getLang(), { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
-  // the picture to share: no name, only the star, the year and the distance
-  async function shareCard(host) {
+  // The pictures to share (sharecard.js draws the frame): no name and no year of birth, only the star, its distance and the year its light set
+  // off; or the age on the planets.
+  function shareStar(host) {
     const tx = t();
-    const c = document.createElement("canvas");
-    c.width = c.height = 1080;
-    const g = c.getContext("2d");
-    const sky = g.createRadialGradient(540, 420, 40, 540, 540, 760);
-    sky.addColorStop(0, "#1b2340");
-    sky.addColorStop(1, "#05060a");
-    g.fillStyle = sky;
-    g.fillRect(0, 0, 1080, 1080);
-    for (let i = 0; i < 260; i++) {
-      g.fillStyle = `rgba(255,255,255,${(Math.random() * 0.6 + 0.2).toFixed(2)})`;
-      g.fillRect(Math.random() * 1080, Math.random() * 1080, Math.random() * 2 + 0.5, Math.random() * 2 + 0.5);
-    }
-    const glow = g.createRadialGradient(540, 380, 0, 540, 380, 120);
-    glow.addColorStop(0, "rgba(255,240,210,1)");
-    glow.addColorStop(0.25, "rgba(255,200,140,0.6)");
-    glow.addColorStop(1, "rgba(255,200,140,0)");
-    g.fillStyle = glow;
-    g.fillRect(400, 240, 280, 280);
-    g.textAlign = "center";
-    g.fillStyle = "#b8e6c1";
-    g.font = "600 34px system-ui, 'Segoe UI', sans-serif";
-    g.fillText(tx.cardTitle.toUpperCase(), 540, 160);
-    g.fillStyle = "#ffffff";
-    g.font = "700 72px system-ui, 'Segoe UI', sans-serif";
-    g.fillText(host.name, 540, 610);
-    g.font = "400 34px system-ui, 'Segoe UI', sans-serif";
-    g.fillStyle = "#c4d0ea";
-    g.fillText(tx.cardDist(fmt(host.dist)), 540, 665);
-    // the sentence, wrapped by width
-    g.fillStyle = "#ffffff";
-    g.font = "400 38px system-ui, 'Segoe UI', sans-serif";
-    const words = tx.cardLight(host.name, leftIn(host.dist)).split(" ");
-    const lines = [];
-    let line = "";
-    for (const w of words) {
-      const next = line ? `${line} ${w}` : w;
-      if (g.measureText(next).width > 860 && line) (lines.push(line), (line = w));
-      else line = next;
-    }
-    if (line) lines.push(line);
-    lines.forEach((l, i) => g.fillText(l, 540, 770 + i * 52));
-    g.fillStyle = "#7cffb2";
-    g.font = "500 28px system-ui, 'Segoe UI', sans-serif";
-    g.fillText("space.todorvankov.com", 540, 1020);
-    const blob = await new Promise((resolve) => c.toBlob(resolve, "image/png"));
-    const file = new File([blob], "my-star.png", { type: "image/png" });
-    track("star-share");
-    if (navigator.canShare?.({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file], title: tx.cardTitle });
-        return;
-      } catch {
-        // cancelled: nothing to do
-        return;
-      }
-    }
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "my-star.png";
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    sharePicture({
+      kind: "star",
+      title: tx.cardTitle,
+      text: tx.starMessage,
+      draw: (g) => {
+        const glow = g.createRadialGradient(540, 470, 0, 540, 470, 170);
+        glow.addColorStop(0, "rgba(255,244,220,1)");
+        glow.addColorStop(0.2, "rgba(255,210,150,0.75)");
+        glow.addColorStop(1, "rgba(255,200,140,0)");
+        g.fillStyle = glow;
+        g.fillRect(370, 300, 340, 340);
+        g.fillStyle = "#ffffff";
+        g.font = font(700, 76);
+        g.fillText(host.name, 540, 760);
+        g.fillStyle = "#ffe0b5";
+        g.font = font(500, 38);
+        g.fillText(tx.cardDist(fmt(host.dist)), 540, 822);
+        g.fillStyle = "#ffffff";
+        g.font = font(400, 40);
+        wrap(g, tx.cardLight(host.name, leftIn(host.dist)), 860).forEach((line, i) => g.fillText(line, 540, 940 + i * 56));
+      },
+    });
+  }
+  // values: [{ name, value (the text), color, rings, earth }]; km: the way round the Sun, as text
+  function shareAges(values, km) {
+    const tx = t();
+    sharePicture({
+      kind: "ages",
+      title: tx.cardAges,
+      text: tx.agesMessage,
+      draw: (g) => {
+        const gap = 24;
+        const w = (W - 160 - 3 * gap) / 4;
+        const h = 250;
+        values.forEach((v, i) => {
+          const x = 80 + (i % 4) * (w + gap);
+          const y = 240 + Math.floor(i / 4) * (h + gap);
+          roundRect(g, x, y, w, h, 28);
+          g.fillStyle = v.earth ? "rgba(77,163,255,0.18)" : "rgba(255,255,255,0.07)";
+          g.fill();
+          if (v.earth) {
+            g.strokeStyle = "rgba(77,163,255,0.6)";
+            g.lineWidth = 3;
+            g.stroke();
+          }
+          planetDot(g, x + w / 2, y + 62, 24, v.color, v.rings);
+          g.fillStyle = "#ffffff";
+          g.font = font(700, 66);
+          g.fillText(v.value, x + w / 2, y + 160);
+          g.fillStyle = "#c4d0ea";
+          g.font = font(400, 30);
+          g.fillText(v.name, x + w / 2, y + 214);
+        });
+        roundRect(g, 80, 800, W - 160, 190, 28);
+        g.fillStyle = "rgba(255,255,255,0.07)";
+        g.fill();
+        g.fillStyle = "#ffffff";
+        g.font = font(700, 62);
+        g.fillText(km, 540, 885);
+        g.fillStyle = "#c4d0ea";
+        g.font = font(400, 32);
+        g.fillText(tx.km, 540, 945);
+        g.fillStyle = "#ffffff";
+        g.font = font(500, 46);
+        g.fillText(tx.agesQuestion, 540, 1110);
+      },
+    });
   }
 
-  // Two parts for My Universe: the star (a highlight card) and the age on the planets (tiles). The year is asked first, and changed with two small
-  // links at the bottom.
   function sections(closePanel) {
     const tx = t();
     const s = el("section", "uni-section star-section");
@@ -285,7 +303,7 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
           closePanel?.();
           explore(host.name);
         }),
-        button(tx.share, "uni-link", () => shareCard(host))
+        button(tx.share, "uni-link", () => shareStar(host))
       );
       body.append(el("strong", "star-name", host.name), facts, el("p", "star-key", tx.key(leftIn(host.dist))), actions);
       card.append(glow, body);
@@ -302,13 +320,16 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
     a.append(el("h3", "", tx.ages));
     const list = el("div", "star-ages");
     const ordered = [...planets()].sort((p, q) => (q.years === 1) - (p.years === 1));
+    const values = [];
     for (const p of ordered) {
       const value = ageOn(age, p.years);
+      const text = fmt(value, value < 10 ? 1 : 0);
+      values.push({ name: p.name, value: text, color: p.color ?? "#99aaaa", rings: p.rings, earth: p.years === 1 });
       const tile = el("div", `age-tile${p.years === 1 ? " earth" : ""}`);
       const dot = el("i", `age-dot${p.rings ? " ring" : ""}`);
       dot.style.setProperty("--c", p.color ?? "#9aa");
       dot.setAttribute("aria-hidden", "true");
-      tile.append(dot, el("b", "", fmt(value, value < 10 ? 1 : 0)), el("span", "", p.name));
+      tile.append(dot, el("b", "", text), el("span", "", p.name));
       list.append(tile);
     }
     // "32 Mrd.", "32B", "320億": the number short, in the language of the page
@@ -317,8 +338,10 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
     travel.append(el("b", "", `${km} ${tx.kmUnit}`), el("span", "", tx.km));
     list.append(travel);
     a.append(list);
-    const editRow = el("div", "uni-edit");
-    editRow.append(
+    // one line under the tiles: share on the left, the year and its changes on the right
+    const foot = el("div", "uni-edit ages-foot");
+    const edits = el("span", "ages-year");
+    edits.append(
       el("span", "", tx.yearLine(year)),
       button(tx.edit, "uni-link", () => ((editing = true), onChange?.())),
       button(tx.remove, "uni-link", () => {
@@ -327,7 +350,8 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
         onChange?.();
       })
     );
-    a.append(editRow);
+    foot.append(button(tx.share, "uni-link", () => shareAges(values, `${km} ${tx.kmUnit}`)), edits);
+    a.append(foot);
     return [s, a];
   }
   return {

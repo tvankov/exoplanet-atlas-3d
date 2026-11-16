@@ -1,6 +1,6 @@
 import { initDaily } from "./daily.js";
 import { initExplorer } from "./explorer.js";
-import { track, trackOnce, trackLoadTime, startSessionStats, startTechStats } from "./stats.js";
+import { track, trackOnce, trackLoadTime, startSessionStats, startTechStats, trackShareArrival } from "./stats.js";
 import { initConstellations } from "./constellations.js";
 import { initAtlas, ATLAS_TEXT } from "./atlas.js";
 import { initAuth } from "./auth.js";
@@ -5372,7 +5372,7 @@ myStar = initMyStar({
     return namedList.map((s) => ({ ...s, constellation: s.figure ? sky.data.nameOf(s.figure, lang) : null }));
   },
   // the colour of each planet for its small symbol, and the ring of Saturn
-  planets: () => PLANETS.map((p) => ({ name: solarName(p.name, lang), years: p.years, color: `#${p.color.toString(16).padStart(6, "0")}`, rings: p.name === "Saturn" })),
+  planets: () => PLANETS.map((p) => ({ name: planetLabel(p.name), years: p.years, color: `#${p.color.toString(16).padStart(6, "0")}`, rings: p.name === "Saturn" })),
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);
@@ -5481,7 +5481,7 @@ universe = initUniverse({
     if (!place) return null;
     if (place.kind === "planet") {
       const p = PLANETS.find((x) => x.name === place.name);
-      return { kind: "solar", name: solarName(p.name, lang), color: `#${p.color.toString(16).padStart(6, "0")}`, au: p.au };
+      return { kind: "solar", name: planetLabel(p.name), color: `#${p.color.toString(16).padStart(6, "0")}`, au: p.au };
     }
     if (place.kind === "exo") return { kind: "exo", name: place.planet.pl_name, dist: place.star.dist_ly, temp: place.planet.pl_eqt ?? null };
     if (place.star === SUN_POINT) return { kind: "sun", name: sunLabel() };
@@ -5502,6 +5502,7 @@ skyEvents = await initEvents({
 });
 startSessionStats();
 startTechStats();
+trackShareArrival();
 if (daily.answered()) explorer.emit("answer"); // answered before the missions were opened, or in an earlier visit of the day
 zoneGame = initZoneGame({
   getStars: () => stars,

@@ -58,6 +58,21 @@ export function trackLoadTime(ms) {
   setTimeout(() => trackOnce(`load-${step}`), 4000);
 }
 
+// A visit that came through a shared picture (sharecard.js puts ?ref=share-star, share-ages or share-sky into the link): counted once as
+// "from-share-<kind>", a few seconds later like the other events, and then the parameter is taken out of the address bar, so that a bookmark
+// or a reload does not count it again.
+export function trackShareArrival() {
+  const params = new URLSearchParams(location.search);
+  const ref = params.get("ref");
+  if (!/^share-(star|ages|sky)$/.test(ref ?? "")) return;
+  setTimeout(() => {
+    trackOnce(`from-${ref}`);
+    params.delete("ref");
+    const rest = params.toString();
+    history.replaceState(history.state, "", `${location.pathname}${rest ? `?${rest}` : ""}${location.hash}`);
+  }, 4000);
+}
+
 export function startTechStats() {
   window.addEventListener("error", (e) => {
     if (e.filename && !e.filename.startsWith(location.origin)) return; // a script of somebody else

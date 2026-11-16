@@ -7,6 +7,7 @@
 
 import { track } from "./stats.js";
 import { disclosure } from "./disclosure.js";
+import { sharePicture, font, wrap, fitText, roundRect } from "./sharecard.js";
 
 export const KEY = "birth-date"; // "YYYY-MM-DD" in localStorage, never sent, never saved to the account
 export const SIGNS = ["Ari", "Tau", "Gem", "Cnc", "Leo", "Vir", "Lib", "Sco", "Sgr", "Cap", "Aqr", "Psc"];
@@ -190,6 +191,8 @@ export const BIRTHSKY_TEXT = {
     astroCard: "Astrology", skyCard: "In the real sky", figureLine: (n) => n, differShort: "The Sun stood in front of other stars than astrology says.",
     why: "Why?", ascSection: "Ascendant and birth data", hour: "Hour", ascMissing: "The ascendant needs the hour and the place of birth.",
     ascAdd: "Add hour and place", edit: "Edit", cancel: "Cancel", placeHelp: "Place not in the list?", more: "Learn more",
+    share: "Share as a picture", cardSky: "The sky at my birth",
+    skyMessage: "Astrology says one thing, the real sky another. See the sky at your birth:",
   },
   de: {
     title: "Dein Himmel bei der Geburt",
@@ -215,6 +218,8 @@ export const BIRTHSKY_TEXT = {
     astroCard: "Astrologie", skyCard: "Am echten Himmel", figureLine: (n) => `Sternbild ${n}`, differShort: "Die Sonne stand vor anderen Sternen, als die Astrologie sagt.",
     why: "Warum?", ascSection: "Aszendent und Geburtsdaten", hour: "Uhrzeit", ascMissing: "Für den Aszendenten braucht es Uhrzeit und Ort der Geburt.",
     ascAdd: "Uhrzeit und Ort eingeben", edit: "Bearbeiten", cancel: "Abbrechen", placeHelp: "Ort nicht in der Liste?", more: "Mehr erfahren",
+    share: "Als Bild teilen", cardSky: "Mein Himmel bei der Geburt",
+    skyMessage: "Die Astrologie sagt das eine, der echte Himmel etwas anderes. Sieh deinen Himmel bei der Geburt:",
   },
   ja: {
     title: "生まれた日の空",
@@ -240,6 +245,8 @@ export const BIRTHSKY_TEXT = {
     astroCard: "占星術", skyCard: "実際の空", figureLine: (n) => n, differShort: "太陽は、占星術が言うのとは別の星々の前にありました。",
     why: "なぜ？", ascSection: "アセンダントと出生データ", hour: "時刻", ascMissing: "アセンダントには、生まれた時刻と場所が必要です。",
     ascAdd: "時刻と場所を入力", edit: "編集", cancel: "キャンセル", placeHelp: "場所が一覧にない場合", more: "くわしく",
+    share: "画像で共有", cardSky: "私が生まれた日の空",
+    skyMessage: "占星術と実際の空は違います。あなたが生まれた日の空を見てみよう：",
   },
   bg: {
     title: "Небето при раждането ти",
@@ -265,6 +272,8 @@ export const BIRTHSKY_TEXT = {
     astroCard: "Астрология", skyCard: "На истинското небе", figureLine: (n) => `Съзвездие ${n}`, differShort: "Слънцето е стояло пред други звезди, а не там, където казва астрологията.",
     why: "Защо?", ascSection: "Асцендент и данни за раждането", hour: "Час", ascMissing: "За асцендента са нужни часът и мястото на раждане.",
     ascAdd: "Въведи час и място", edit: "Редактирай", cancel: "Отказ", placeHelp: "Мястото липсва в списъка?", more: "Научи повече",
+    share: "Сподели като картинка", cardSky: "Небето при раждането ми",
+    skyMessage: "Астрологията казва едно, истинското небе друго. Виж небето при раждането си:",
   },
 };
 
@@ -364,6 +373,74 @@ export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange }) 
       svg.append(c);
     }
     return svg;
+  }
+  // The picture to share (sharecard.js draws the frame): the sign and the real constellation, no date.
+  function shareSky(signId, realId) {
+    const tx = t();
+    sharePicture({
+      kind: "sky",
+      title: tx.cardSky,
+      text: tx.skyMessage,
+      draw: (g) => {
+        const panel = (x, label, sky) => {
+          roundRect(g, x, 230, 440, 560, 36);
+          if (sky) {
+            const glow = g.createRadialGradient(x + 220, 470, 10, x + 220, 470, 300);
+            glow.addColorStop(0, "rgba(124,255,178,0.16)");
+            glow.addColorStop(1, "rgba(124,255,178,0.03)");
+            g.fillStyle = glow;
+            g.fill();
+            g.setLineDash([]);
+            g.strokeStyle = "rgba(124,255,178,0.6)";
+          } else {
+            g.fillStyle = "rgba(255,255,255,0.04)";
+            g.fill();
+            g.setLineDash([14, 10]);
+            g.strokeStyle = "rgba(255,255,255,0.4)";
+          }
+          g.lineWidth = 3;
+          g.stroke();
+          g.setLineDash([]);
+          g.fillStyle = "rgba(230,236,255,0.75)";
+          fitText(g, label.toLocaleUpperCase(), x + 220, 300, 380, 600, 28);
+        };
+        panel(80, tx.astroCard, false);
+        panel(560, tx.skyCard, true);
+        // the sign as its old symbol
+        g.fillStyle = "rgba(255,255,255,0.9)";
+        g.font = font(400, 210, "'Segoe UI Symbol', 'Noto Sans Symbols', 'Apple Symbols', sans-serif");
+        g.textBaseline = "middle";
+        g.fillText(`${GLYPH[signId]}\uFE0E`, 300, 480);
+        g.textBaseline = "alphabetic";
+        // the real figure from the stars of the map
+        const drawn = figure?.(realId) && projectFigure(figure(realId), 360, 280, 24);
+        if (drawn) {
+          g.strokeStyle = "#b8e6c1";
+          g.lineWidth = 3;
+          g.lineCap = "round";
+          for (const [x1, y1, x2, y2] of drawn.segments) {
+            g.beginPath();
+            g.moveTo(600 + x1, 340 + y1);
+            g.lineTo(600 + x2, 340 + y2);
+            g.stroke();
+          }
+          g.fillStyle = "#ffffff";
+          for (const [x, y, mag] of drawn.stars) {
+            g.beginPath();
+            g.arc(600 + x, 340 + y, Math.min(9, Math.max(3, 9 - 1.2 * (mag ?? 4))), 0, Math.PI * 2);
+            g.fill();
+          }
+        }
+        g.fillStyle = "#ffffff";
+        fitText(g, tx.signLine(nameOf(signId)), 300, 720, 380, 700, 50);
+        fitText(g, tx.figureLine(nameOf(realId)), 780, 720, 380, 700, 50);
+        g.font = font(500, 40);
+        wrap(g, signId === realId ? tx.same : tx.differShort, 900).forEach((line, i) => g.fillText(line, 540, 900 + i * 54));
+        g.fillStyle = "rgba(230,236,255,0.7)";
+        g.font = font(400, 30);
+        wrap(g, tx.science, 880).forEach((line, i) => g.fillText(line, 540, 1060 + i * 42));
+      },
+    });
   }
   const card = (cls, label, picture, name) => {
     const c = el("div", `birthsky-card ${cls}`);
@@ -538,7 +615,7 @@ export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange }) 
     }
     const sign = tropicalSign(sunLongitude(birth.noon));
     const real = sunConstellation(birth.month, birth.day);
-    const glyph = el("span", "birthsky-glyph", `${GLYPH[sign.id]}︎`);
+    const glyph = el("span", "birthsky-glyph", `${GLYPH[sign.id]}\uFE0E`);
     glyph.setAttribute("aria-hidden", "true");
     const pair = el("div", "birthsky-pair");
     pair.append(card("astrology", tx.astroCard, glyph, tx.signLine(nameOf(sign.id))), card("sky", tx.skyCard, figureSvg(real), tx.figureLine(nameOf(real))));
@@ -549,7 +626,8 @@ export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange }) 
         track("birthsky-fly");
         closePanel?.();
         showFigure(real);
-      })
+      }),
+      button(tx.share, "uni-link", () => shareSky(sign.id, real))
     );
     s.append(row);
     const why = [el("p", "", tx.science)];

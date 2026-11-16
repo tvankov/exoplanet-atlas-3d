@@ -3111,6 +3111,15 @@ body:has(#day-flight:not([hidden])) #tour {
   font-size: 12.5px;
   color: var(--uni-muted);
 }
+.ages-foot {
+  justify-content: space-between;
+}
+.ages-year {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+}
 
 /* what next: a card with a picture, then a short list where each row is one button */
 .uni-discover,
