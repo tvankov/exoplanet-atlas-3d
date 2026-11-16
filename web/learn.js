@@ -1895,8 +1895,11 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     }));
   // open a path in the area Learn (from the certificates)
   const open = (path) => {
+    if (!PATHS[path]) return false;
     choose(path);
     view = "path";
+    show?.(PATH_VIEWS[path]);
+    return true;
   };
   return { area, paths, open, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
 }

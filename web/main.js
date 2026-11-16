@@ -5662,6 +5662,7 @@ universe = initUniverse({
   openSky: () => skyEvents?.open(),
   openAtlas: () => atlas?.open(),
   openZoneQuiz: () => zoneGame?.open(),
+  openPanel: () => auth?.open(),
   closePanel: () => auth?.close(),
 });
 auth = initAuth({ getLang: () => lang, explorer, universe });
@@ -5827,7 +5828,17 @@ function closeWelcome() {
   if (welcome.hidden) return;
   welcome.hidden = true;
   showHintLine();
-  setTimeout(() => universe?.maybeOnboard(), 800); // the first visit: a small card, only if the visitor has not been through it or skipped it
+  setTimeout(() => {
+    universe?.maybeOnboard(); // the first visit: a small card, only if the visitor has not been through it or skipped it
+    // the link of a shared certificate leads into its learning path; the address loses the parameter, a reload starts as usual
+    const params = new URLSearchParams(location.search);
+    const path = params.get("learn");
+    if (!path) return;
+    universe?.openLearnPath(path);
+    params.delete("learn");
+    const rest = params.toString();
+    history.replaceState(history.state, "", `${location.pathname}${rest ? `?${rest}` : ""}${location.hash}`);
+  }, 800);
 }
 // What is used in the dock: only the name of the button is counted (see stats.js).
 for (const id of ["dock-daily", "dock-near", "dock-games", "dock-sky", "dock-plan", "dock-log"]) {

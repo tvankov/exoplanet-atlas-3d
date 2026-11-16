@@ -7,7 +7,7 @@
 import { track } from "./stats.js";
 import { INTERESTS, LEVELS } from "./profile.js";
 import { disclosure } from "./disclosure.js";
-import { planetCanvas, starCanvas, medalCanvas, roundRect, drawCertificate, sharePicture } from "./sharecard.js";
+import { planetCanvas, starCanvas, medalCanvas, roundRect, drawCertificate, sharePicture, SITE } from "./sharecard.js";
 import { dockPicture } from "./dockart.js";
 import { storeBirthDate, storedBirthDate } from "./birthsky.js";
 
@@ -30,7 +30,10 @@ export const UNIVERSE_TEXT = {
     certPrivate: "A private confirmation of what was learned in Space Explorer, not an accredited qualification.",
     certNoName: "an explorer", certShare: "Share as a picture", certOpen: "To the learning path",
     certPassed: (p, d) => (d ? `Passed with ${p} % · ${d}` : `Passed with ${p} %`), certMissing: (d, all) => `${d} of ${all} steps · final test still open`,
-    certMessage: (title) => `I passed the learning path "${title}" in Space Explorer.`,
+    certMessage: (title) => `I passed the learning path "${title}" in Space Explorer. Try it yourself:`,
+    certShareMenu: "Share", certSharePicture: "Share the picture", certSavePicture: "Save the picture", certLinkedInProfile: "Add to my LinkedIn profile",
+    certLinkedInPost: "Post on LinkedIn", certMail: "E-mail", certCopy: "Copy the link", certCopied: "Link copied.",
+    certLinkHint: "The link leads straight to this learning path, so that others can try it.",
     heroBack: (name) => (name ? `Welcome back, ${name}` : "Welcome back"),
     next: "What next", continueGo: "Continue exploring", discover: "Discover", lastSeen: (when) => `Seen last · ${when}`, forYou: "For you",
     kindSolar: (au) => `Planet of the Solar System · ${au} AU from the Sun`,
@@ -84,7 +87,10 @@ export const UNIVERSE_TEXT = {
     certPrivate: "Eine private Bestätigung dessen, was in Space Explorer gelernt wurde, kein anerkannter Abschluss.",
     certNoName: "ein Explorer", certShare: "Als Bild teilen", certOpen: "Zum Lernpfad",
     certPassed: (p, d) => (d ? `Bestanden mit ${p} % · ${d}` : `Bestanden mit ${p} %`), certMissing: (d, all) => `${d} von ${all} Schritten · Abschlusstest noch offen`,
-    certMessage: (title) => `Ich habe in Space Explorer den Lernpfad „${title}“ bestanden.`,
+    certMessage: (title) => `Ich habe in Space Explorer den Lernpfad „${title}“ bestanden. Probier ihn selbst aus:`,
+    certShareMenu: "Teilen", certSharePicture: "Bild teilen", certSavePicture: "Bild speichern", certLinkedInProfile: "Zum LinkedIn-Profil hinzufügen",
+    certLinkedInPost: "Auf LinkedIn posten", certMail: "E-Mail", certCopy: "Link kopieren", certCopied: "Link kopiert.",
+    certLinkHint: "Der Link führt direkt zu diesem Lernpfad, damit andere ihn selbst ausprobieren können.",
     heroBack: (name) => (name ? `Willkommen zurück, ${name}` : "Willkommen zurück"),
     next: "Als Nächstes", continueGo: "Weiter erkunden", discover: "Entdecken", lastSeen: (when) => `Zuletzt angesehen · ${when}`, forYou: "Für dich",
     kindSolar: (au) => `Planet des Sonnensystems · ${au} AE von der Sonne`,
@@ -138,7 +144,10 @@ export const UNIVERSE_TEXT = {
     certPrivate: "Space Explorerで学んだことを私的に証明するもので、公的に認められた資格ではありません。",
     certNoName: "エクスプローラー", certShare: "画像として共有", certOpen: "学習コースへ",
     certPassed: (p, d) => (d ? `${p} %で合格 · ${d}` : `${p} %で合格`), certMissing: (d, all) => `${all}ステップ中${d}完了 · 最終テストはまだ`,
-    certMessage: (title) => `Space Explorerで学習コース「${title}」に合格しました。`,
+    certMessage: (title) => `Space Explorerで学習コース「${title}」に合格しました。あなたもやってみませんか：`,
+    certShareMenu: "共有", certSharePicture: "画像を共有", certSavePicture: "画像を保存", certLinkedInProfile: "LinkedInのプロフィールに追加",
+    certLinkedInPost: "LinkedInに投稿", certMail: "メール", certCopy: "リンクをコピー", certCopied: "リンクをコピーしました。",
+    certLinkHint: "リンクはこの学習コースに直接つながるので、ほかの人もためせます。",
     heroBack: (name) => (name ? `おかえりなさい、${name}さん` : "おかえりなさい"),
     next: "次はこちら", continueGo: "探検をつづける", discover: "発見する", lastSeen: (when) => `最後に見たもの · ${when}`, forYou: "あなたへ",
     kindSolar: (au) => `太陽系の惑星 · 太陽から${au} au`,
@@ -192,7 +201,10 @@ export const UNIVERSE_TEXT = {
     certPrivate: "Лично потвърждение за наученото в Space Explorer, а не признат документ за образование.",
     certNoName: "изследовател", certShare: "Сподели като снимка", certOpen: "Към учебната пътека",
     certPassed: (p, d) => (d ? `Издържан с ${p} % · ${d}` : `Издържан с ${p} %`), certMissing: (d, all) => `${d} от ${all} стъпки · финалният тест предстои`,
-    certMessage: (title) => `Издържах учебната пътека „${title}“ в Space Explorer.`,
+    certMessage: (title) => `Издържах учебната пътека „${title}“ в Space Explorer. Опитай и ти:`,
+    certShareMenu: "Сподели", certSharePicture: "Сподели снимката", certSavePicture: "Запази снимката", certLinkedInProfile: "Добави към профила ми в LinkedIn",
+    certLinkedInPost: "Публикувай в LinkedIn", certMail: "Имейл", certCopy: "Копирай връзката", certCopied: "Връзката е копирана.",
+    certLinkHint: "Връзката води направо към тази учебна пътека, за да могат и други да я опитат.",
     heroBack: (name) => (name ? `Добре дошъл отново, ${name}` : "Добре дошъл отново"),
     next: "Следва", continueGo: "Продължи изследването", discover: "Открий", lastSeen: (when) => `Разгледано последно · ${when}`, forYou: "За теб",
     kindSolar: (au) => `Планета от Слънчевата система · ${au} а.е. от Слънцето`,
@@ -233,7 +245,7 @@ export const UNIVERSE_TEXT = {
 // explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. describe(name): what the map
 // knows of a place ({ kind: "solar" | "exo" | "star" | "sun", id, name, color, au, dist, temp, teff, planets }) or null. openSky(), openAtlas(),
 // openZoneQuiz(), closePanel(): open the events, the zodiac, the zone quiz, close the profile panel.
-export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, learn, explore, describe, openSky, openAtlas, openZoneQuiz, closePanel }) {
+export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, learn, explore, describe, openSky, openAtlas, openZoneQuiz, openPanel, closePanel }) {
   const t = () => UNIVERSE_TEXT[getLang()] ?? UNIVERSE_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -302,6 +314,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       track(skipped ? "onboarding-skip" : "onboarding-done");
       card.hidden = true;
       renderAll();
+      if (pendingPath) openLearnPath(pendingPath); // a visitor who came by the link of a certificate: on to that path
     };
     card.replaceChildren(
       el("strong", "", tx.onboardTitle),
@@ -335,6 +348,17 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     myStar?.reload();
     birthSky?.reload();
     track("birth-date-given");
+  }
+  // A visitor who came by the link of a shared certificate (?learn=<path>) lands in that learning path, after the welcome card if it is up.
+  let pendingPath = null;
+  function openLearnPath(path) {
+    if (!card.hidden) return void (pendingPath = path);
+    pendingPath = null;
+    if (!learn?.open(path)) return;
+    area = "learn";
+    openPanel?.();
+    renderAll();
+    track(`arrival-learn-${path}`);
   }
   // after the slogan: only for a visitor who has neither been through it nor skipped it
   function maybeOnboard() {
@@ -742,6 +766,57 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       labels: { heading: tx.certHeading, confirms: tx.certConfirms, completed: tx.certCompleted, scoreLine: tx.certScoreLine, privateLine: tx.certPrivate },
     };
   }
+  // The ways to share a certificate. The picture goes through the share sheet (or into a file); the others share the link, which leads
+  // straight into the learning path (?learn=<path>), so that every share invites others to try it. Only the title of the path and the link
+  // go to the other service, never the name of the visitor (that is on the picture alone, which the visitor sends where they like).
+  function shareMenu(tx, p, d) {
+    const link = `https://${SITE}/?ref=share-certificate&learn=${p.id}`;
+    const message = tx.certMessage(p.title);
+    const q = encodeURIComponent;
+    const menu = el("div", "uni-share");
+    menu.hidden = true;
+    const picture = (save) =>
+      sharePicture({ kind: "certificate", title: tx.certHeading, text: message, backdrop: 0.3, link, save, draw: (g) => drawCertificate(g, 80, 220, 920, d) });
+    const canShareFiles = !!navigator.canShare;
+    if (canShareFiles) menu.append(button(tx.certSharePicture, "uni-share-item", () => picture(false)));
+    menu.append(button(tx.certSavePicture, "uni-share-item", () => picture(true)));
+    const badge = explorer.getState().badges?.find((b) => b.id === `${p.id}-scholar`);
+    const when = badge?.t ? new Date(badge.t) : new Date();
+    const out = [
+      ["linkedin-profile", tx.certLinkedInProfile, `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${q(p.title)}&organizationName=${q("Space Explorer")}&issueYear=${when.getFullYear()}&issueMonth=${when.getMonth() + 1}&certUrl=${q(link)}`],
+      ["linkedin-post", tx.certLinkedInPost, `https://www.linkedin.com/sharing/share-offsite/?url=${q(link)}`],
+      ["x", "X", `https://twitter.com/intent/tweet?text=${q(message)}&url=${q(link)}`],
+      ["facebook", "Facebook", `https://www.facebook.com/sharer/sharer.php?u=${q(link)}`],
+      ["whatsapp", "WhatsApp", `https://wa.me/?text=${q(`${message} ${link}`)}`],
+      ["mail", tx.certMail, `mailto:?subject=${q(tx.certHeading)}&body=${q(`${message}\n${link}`)}`],
+    ];
+    for (const [id, label, href] of out) {
+      const a = el("a", "uni-share-item", label);
+      a.href = href;
+      if (id !== "mail") {
+        a.target = "_blank";
+        a.rel = "noopener";
+      }
+      a.addEventListener("click", () => track(`cert-share-${id}`));
+      menu.append(a);
+    }
+    const copied = el("span", "hint", "");
+    copied.setAttribute("role", "status");
+    menu.append(
+      button(tx.certCopy, "uni-share-item", async () => {
+        try {
+          await navigator.clipboard.writeText(link);
+          copied.textContent = tx.certCopied;
+          track("cert-share-copy");
+        } catch {
+          copied.textContent = link; // no clipboard: the link to copy by hand
+        }
+      }),
+      copied,
+      el("p", "hint", tx.certLinkHint)
+    );
+    return menu;
+  }
   function certsArea(tx) {
     const paths = learn?.paths() ?? [];
     const intro = el("div", "uni-cert-empty");
@@ -763,20 +838,19 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       const info = el("div", "uni-cert-text");
       info.append(el("strong", "", p.title), el("small", "", p.passed ? tx.certPassed(p.best, d.date) : tx.certMissing(p.done, p.all)));
       const row = el("div", "uni-actions");
-      row.append(
-        p.passed
-          ? button(tx.certShare, "uni-primary", () =>
-              sharePicture({
-                kind: "certificate",
-                title: tx.certHeading,
-                text: tx.certMessage(p.title),
-                backdrop: 0.3,
-                draw: (g) => drawCertificate(g, 80, 220, 920, d),
-              })
-            )
-          : button(tx.certOpen, "uni-link", () => (learn.open(p.id), show("learn")))
-      );
-      info.append(row);
+      if (p.passed) {
+        const menu = shareMenu(tx, p, d);
+        const toggle = button(`${tx.certShareMenu} ▾`, "uni-primary", () => {
+          menu.hidden = !menu.hidden;
+          toggle.setAttribute("aria-expanded", String(!menu.hidden));
+        });
+        toggle.setAttribute("aria-expanded", "false");
+        row.append(toggle);
+        info.append(row, menu);
+      } else {
+        row.append(button(tx.certOpen, "uni-link", () => (learn.open(p.id), show("learn"))));
+        info.append(row);
+      }
       card.append(c, info);
       list.append(card);
     }
@@ -820,5 +894,5 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     else render();
   }
   let onChange = null;
-  return { render, buttonLabel, maybeOnboard, title: () => t().title, setOnChange: (fn) => (onChange = fn) };
+  return { render, buttonLabel, maybeOnboard, openLearnPath, title: () => t().title, setOnChange: (fn) => (onChange = fn) };
 }

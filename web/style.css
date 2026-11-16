@@ -4334,3 +4334,34 @@ input.uni-date {
 .uni-cert-text .uni-actions {
   margin-top: 6px;
 }
+
+/* The share menu of a certificate */
+.uni-share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.uni-share[hidden] {
+  display: none;
+}
+#universe-body .uni-share-item {
+  padding: 5px 10px;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+#universe-body .uni-share-item:hover {
+  background: rgba(124, 255, 178, 0.14);
+  border-color: rgba(124, 255, 178, 0.5);
+}
+.uni-share .hint {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+}

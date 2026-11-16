@@ -582,7 +582,8 @@ export function drawCertificate(g, x, y, w, d) {
 // kind: a short name for the counting ("star", "ages", "sky"); title: the line at the top; text: the message that goes with the picture;
 // backdrop: where in the Milky Way (0 to 1); sources: the credit of what the picture shows besides the Milky Way; draw(g): draws the middle
 // (between about y 210 and y 1190), may be async (the planets).
-export async function sharePicture({ kind, title, text, backdrop = 0.5, sources = "", draw }) {
+// link: the address that goes with it (default: the page with ?ref=share-<kind>); save: straight into a file, without the share sheet.
+export async function sharePicture({ kind, title, text, backdrop = 0.5, sources = "", draw, link: own, save = false }) {
   const c = document.createElement("canvas");
   c.width = W;
   c.height = H;
@@ -609,8 +610,8 @@ export async function sharePicture({ kind, title, text, backdrop = 0.5, sources 
   const blob = await new Promise((resolve) => c.toBlob(resolve, "image/jpeg", 0.92));
   const file = new File([blob], `space-explorer-${kind}.jpg`, { type: "image/jpeg" });
   track(`share-${kind}`);
-  const link = `https://${SITE}/?ref=share-${kind}`;
-  if (navigator.canShare?.({ files: [file] })) {
+  const link = own ?? `https://${SITE}/?ref=share-${kind}`;
+  if (!save && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title, text: `${text} ${link}` });
       return;

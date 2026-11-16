@@ -29,9 +29,9 @@ test("a visit through a shared picture: counted once after a few seconds, then t
   assert.deepEqual(replaced, [{ state: { keep: 1 }, url: "/index.html?lang=de#mars" }], "the rest of the address and the state stay");
 });
 
-test("each of the three pictures has its own count", async (t) => {
+test("each of the pictures has its own count", async (t) => {
   t.mock.timers.enable({ apis: ["setTimeout"] });
-  for (const kind of ["star", "ages", "sky"]) {
+  for (const kind of ["star", "ages", "sky", "certificate"]) {
     browser(`?ref=share-${kind}`);
     const { trackShareArrival } = await fresh();
     trackShareArrival();

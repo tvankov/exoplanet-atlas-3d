@@ -64,7 +64,7 @@ export function trackLoadTime(ms) {
 export function trackShareArrival() {
   const params = new URLSearchParams(location.search);
   const ref = params.get("ref");
-  if (!/^share-(star|ages|sky)$/.test(ref ?? "")) return;
+  if (!/^share-(star|ages|sky|certificate)$/.test(ref ?? "")) return;
   setTimeout(() => {
     trackOnce(`from-${ref}`);
     params.delete("ref");
