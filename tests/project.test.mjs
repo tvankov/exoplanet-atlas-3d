@@ -54,3 +54,11 @@ test("no debugging left in the scripts", () => {
     assert.ok(!/^\s*debugger\b/m.test(code), `${f} has debugger`);
   }
 });
+
+test("every aria-controls and aria-labelledby of the page points to an element that is there", () => {
+  const html = read("index.html");
+  const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]));
+  for (const [, attr, value] of html.matchAll(/\b(aria-controls|aria-labelledby|aria-describedby|for)="([^"]+)"/g))
+    for (const id of value.split(/\s+/)) assert.ok(ids.has(id), `${attr}="${id}" points to an element of the page`);
+  assert.equal(new Set([...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1])).size, [...html.matchAll(/\bid="([^"]+)"/g)].length, "no id twice");
+});
