@@ -2998,3 +2998,15 @@ body:has(#sky-panel:not([hidden])) #dock {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 8px;
 }
+
+/* A true fact on the loading screen. */
+#loading-fact {
+  max-width: min(32em, calc(100vw - 48px));
+  margin: 18px auto 0;
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.75;
+}
+#loading-fact:empty {
+  display: none;
+}

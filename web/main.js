@@ -9,6 +9,7 @@ import { initUniverse } from "./universe.js";
 import { initJournal } from "./journal.js";
 import { initMyStar } from "./mystar.js";
 import { initBirthSky } from "./birthsky.js";
+import { initAmbient } from "./atmosphere.js"; // also writes a fact on the loading screen at once
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -3168,6 +3169,7 @@ window.addEventListener("keydown", (e) => {
 
 const langSelect = document.getElementById("lang");
 langSelect.value = lang;
+const ambient = initAmbient({ getLang: () => lang }); // the sound of space, off until the visitor switches it on
 langSelect.addEventListener("change", () => {
   lang = langSelect.value;
   track(`language-${lang}`);
@@ -3230,6 +3232,7 @@ function applyLanguage() {
   explorer?.render();
   auth?.render();
   journal?.render();
+  ambient.render();
   skyEvents?.render();
   showSkyState();
   sky?.refresh();
