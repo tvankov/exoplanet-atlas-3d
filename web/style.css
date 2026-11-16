@@ -4244,3 +4244,34 @@ input.uni-date {
   font-size: 12px;
   opacity: 0.7;
 }
+/* Learning path: the facts to remember and the sources of a step */
+.learn-remember {
+  margin: 12px 0;
+  padding: 10px 14px;
+  background: rgba(124, 255, 178, 0.06);
+  border-left: 3px solid rgba(124, 255, 178, 0.6);
+  border-radius: 8px;
+}
+.learn-remember small {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.learn-remember ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.learn-remember li + li {
+  margin-top: 4px;
+}
+#universe-body p.learn-sources {
+  margin-top: 16px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+#universe-body .learn-sources a {
+  color: inherit;
+}

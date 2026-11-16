@@ -3,8 +3,9 @@
 // questions with the answer explained. When the task is done and every question is answered right, the step is done (XP); when all steps
 // are done, the final test opens: 10 questions from all steps, some with the visitor's own numbers, passed from 80 % (XP and a badge). The
 // progress lives in the explorer's log (explorer.js: total.learnTasks, learnSteps, learnPaths and "learnBest:<path>"), so it is merged with
-// the account like the rest. The facts in the texts are the numbers of the map (main.js, moons.js) and the well known ones of NASA's fact
-// sheets. The rules are pure functions, tested in tests/learn.test.mjs. The first path is Our Solar System; more will follow.
+// the account like the rest. Every step has a box of the facts to remember and its sources (SOURCES): the facts were checked against those
+// NASA pages in November 2026, so that a step can be checked again when the science changes. The rules are pure functions, tested in
+// tests/learn.test.mjs. The first path is Our Solar System; more will follow.
 
 import { track } from "./stats.js";
 import { MOONS } from "./moons.js";
@@ -16,6 +17,34 @@ export const PATHS = {
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 export const TASKS = { sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale" };
+// The sources of each step, against which its texts, facts to remember and questions were checked (titles as on the pages).
+export const SOURCES = {
+  sun: [
+    { label: "NASA Science: Sun, Facts", url: "https://science.nasa.gov/sun/facts/" },
+    { label: "NASA NSSDCA: Sun Fact Sheet", url: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html" },
+  ],
+  inner: [
+    { label: "NASA Science: Planets", url: "https://science.nasa.gov/solar-system/planets/" },
+    { label: "NASA Science: Venus, Facts", url: "https://science.nasa.gov/venus/facts/" },
+    { label: "NASA Science: Mars, Facts", url: "https://science.nasa.gov/mars/facts/" },
+  ],
+  outer: [
+    { label: "NASA Science: Planets", url: "https://science.nasa.gov/solar-system/planets/" },
+    { label: "NASA Science: Jupiter, Facts", url: "https://science.nasa.gov/jupiter/facts/" },
+    { label: "NASA Science: Saturn, Facts", url: "https://science.nasa.gov/saturn/facts/" },
+    { label: "NASA Science: Neptune, Facts", url: "https://science.nasa.gov/neptune/facts/" },
+  ],
+  moons: [
+    { label: "NASA Science: Moon, Facts", url: "https://science.nasa.gov/moon/facts/" },
+    { label: "NASA Science: Ganymede", url: "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/" },
+  ],
+  scale: [
+    { label: "NASA Science: Neptune, Facts", url: "https://science.nasa.gov/neptune/facts/" },
+    { label: "NASA Science: Asteroids, Facts", url: "https://science.nasa.gov/solar-system/asteroids/facts/" },
+    { label: "NASA Science: Comets, Facts", url: "https://science.nasa.gov/solar-system/comets/facts/" },
+    { label: "NASA Science: Planets", url: "https://science.nasa.gov/solar-system/planets/" },
+  ],
+};
 const REFERENCE_AGE = 30; // without a year of birth, the sentences speak of a person of 30
 const MOON_DAYS = MOONS.Earth[0].days;
 
@@ -60,7 +89,7 @@ export const QUESTIONS = {
   inner: [{ id: "venusDay" }, { id: "marsAge", number: "mars" }, { id: "closest" }],
   outer: [{ id: "largest" }, { id: "saturnDensity" }, { id: "jupiterLaps", number: "jupiterLaps" }],
   moons: [{ id: "largestMoon" }, { id: "galileo" }, { id: "sameSide" }, { id: "moonLaps", number: "moonLaps" }],
-  scale: [{ id: "neptune" }, { id: "starLight", number: "starLight" }, { id: "sunSize" }],
+  scale: [{ id: "neptune" }, { id: "starLight", number: "starLight" }, { id: "sunSize" }, { id: "asteroidBelt" }, { id: "cometTail" }],
 };
 
 // The questions of a step, ready to show: [{ id, text, options (labels), answer (the right label), explain }].
@@ -101,7 +130,7 @@ export const LEARN_TEXT = {
       rule: "5 steps, then a final test with 10 questions; passed from 80 %.",
     },
     status: { done: "Done", next: "Next", open: "To do", locked: "All steps first" },
-    back: "All steps", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", forYou: "For you", example: "An example", exampleHint: "With your date of birth (in the overview of My Universe) this becomes your own number.",
+    back: "All steps", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", rememberLabel: "Remember", sourcesLabel: "Sources", forYou: "For you", example: "An example", exampleHint: "With your date of birth (in the overview of My Universe) this becomes your own number.",
     taskLabel: "In the 3D view", taskGo: "Show in 3D", scaleBack: "Back to the explanation scale", taskDone: "Done", check: "Check your understanding", right: "Right.", wrong: "Not quite.",
     stepDone: (xp) => `Step done · +${xp} XP`, nextStep: "Next step", toTest: "To the final test",
     needTask: "Do the task in the 3D view too, then the step is done.", progress: (d, all) => `${d} of ${all} steps`,
@@ -119,6 +148,12 @@ export const LEARN_TEXT = {
           "In its core hydrogen fuses into helium. That frees the energy that reaches us as light and warmth, from about 150 million kilometres away.",
         ],
         task: "Fly to the Sun and look at it from close by.",
+        remember: [
+          "The Sun is a star, a ball of hot gas. It formed about 4.6 billion years ago.",
+          "Its energy comes from nuclear fusion: in its core, at about 15 million °C, hydrogen fuses into helium.",
+          "It holds 99.8 % of the mass of the Solar System; about 109 Earths fit side by side across it.",
+          "Its light needs about 8 minutes and 20 seconds to reach the Earth.",
+        ],
         you: (n) => `The light falling on you right now left the Sun about 8 minutes and 20 seconds ago. Since you were born, the Earth has carried you round it ${n} times.`,
         ref: (n) => `The light falling on you right now left the Sun about 8 minutes and 20 seconds ago. A person of 30 has been carried round it by the Earth ${n} times.`,
       },
@@ -126,9 +161,15 @@ export const LEARN_TEXT = {
         title: "The inner planets", goal: "You can name the four rocky planets and tell them apart.",
         text: [
           "Mercury, Venus, Earth and Mars are the rocky planets: small, with solid ground. Mercury is the closest to the Sun, Venus the hottest, because its thick air of carbon dioxide holds the heat.",
-          "Mars has the highest volcano we know, Olympus Mons, about two and a half times as tall as Mount Everest. A day on Venus lasts longer than its year.",
+          "Mars has the largest volcano of the Solar System, Olympus Mons, several times as tall as Mount Everest. A day on Venus lasts longer than its year.",
         ],
         task: "Fly to Mars and compare it with the Earth.",
+        remember: [
+          "Mercury, Venus, Earth and Mars are the inner planets: they have solid surfaces.",
+          "Venus is the hottest planet, about 467 °C at the surface, though Mercury is closer to the Sun.",
+          "A day on Venus (243 Earth days) is longer than its year (225 Earth days).",
+          "Olympus Mons on Mars is the largest volcano of the Solar System.",
+        ],
         you: (mars, mercury) => `On Mars you would be ${mars}, on Mercury ${mercury}: a year there is longer or shorter than ours.`,
         ref: (mars, mercury) => `A person of 30 would be ${mars} on Mars and ${mercury} on Mercury: a year there is longer or shorter than ours.`,
       },
@@ -139,6 +180,12 @@ export const LEARN_TEXT = {
           "Jupiter has more than twice the mass of all the other planets together. Saturn is so light for its size that it is less dense than water.",
         ],
         task: "Fly to Saturn and look at its rings.",
+        remember: [
+          "Jupiter and Saturn are gas giants, Uranus and Neptune ice giants.",
+          "Jupiter is the largest planet, with more than twice the mass of all the other planets together.",
+          "Saturn is the only planet less dense than water.",
+          "Saturn is not the only one with rings: Jupiter and Neptune have rings too.",
+        ],
         you: (n) => `Since you were born, Jupiter has gone round the Sun only ${n} times: one of its years lasts almost 12 of ours.`,
         ref: (n) => `In 30 years Jupiter goes round the Sun only ${n} times: one of its years lasts almost 12 of ours.`,
       },
@@ -149,18 +196,31 @@ export const LEARN_TEXT = {
           "Most large moons turn exactly once per orbit, so they always show their planet the same side. That is why we never see the far side of our Moon from the Earth.",
         ],
         task: "Fly to Jupiter and click one of its four large moons.",
+        remember: [
+          "A moon is a body that goes round a planet.",
+          "Ganymede, a moon of Jupiter, is the largest moon of the Solar System, bigger than the planet Mercury.",
+          "Our Moon always shows the Earth the same side: it turns exactly once per orbit.",
+          "Galileo Galilei found the four largest moons of Jupiter in 1610.",
+        ],
         you: (n) => `Since you were born, the Moon has gone round the Earth about ${n} times.`,
         ref: (n) => `In 30 years the Moon goes round the Earth about ${n} times.`,
       },
       scale: {
-        title: "Scale and distance", goal: "You can describe how big and how empty the Solar System is.",
+        title: "Small bodies, scale and distance", goal: "You can describe how big and how empty the Solar System is, and what asteroids and comets are.",
         text: [
           "The Solar System is mostly empty space. The distance from the Earth to the Sun, 150 million kilometres, is called one astronomical unit (AU). Neptune, the outermost planet, is about 30 AU from the Sun.",
           "Light from the Sun needs a little over 8 minutes to the Earth and about 4 hours to Neptune. In the real scale of the 3D view the planets become tiny dots in a huge space.",
+          "Between Mars and Jupiter lies the main asteroid belt, where most asteroids go round the Sun; its largest object, Ceres, is a dwarf planet. Comets are mostly ice with dust. When one comes near the Sun it warms up and grows an atmosphere, the coma; sunlight and the solar wind blow its dust and gas away from the Sun into long tails.",
         ],
         task: "Switch on the real scale and see how far apart the planets are.",
+        remember: [
+          "One astronomical unit (AU) is the mean distance from the Earth to the Sun, about 150 million kilometres.",
+          "Neptune is 30 AU from the Sun; sunlight needs about 4 hours to get there.",
+          "Most asteroids go round the Sun between Mars and Jupiter. The largest object there, Ceres, is a dwarf planet.",
+          "Comets are mostly ice and dust; near the Sun they grow tails that point away from the Sun.",
+        ],
         you: (name, dist, year) => `The light of your star, ${name}, that reaches you today set off around ${year}, about the year you were born. It has travelled ${dist} light years.`,
-        ref: "The light of the nearest star, Proxima Centauri, needs 4.2 years to reach us. Give your year of birth in \"You in the cosmos\" and find the star whose light set off when you were born.",
+        ref: "The light of the nearest star, Proxima Centauri, needs 4.2 years to reach us.",
       },
     },
     q: {
@@ -181,6 +241,8 @@ export const LEARN_TEXT = {
       starLight: { you: (name) => `For how many years did the light of your star, ${name}, travel to reach you?`, e: (n, name) => `About ${n} years: ${name} is about ${n} light years away, and a light year is the distance light travels in a year.` },
       proximaLight: { q: "How long does the light of Proxima Centauri, the nearest star after the Sun, travel to us?", o: ["About 4.2 years", "About 4.2 days", "About 42 years"], e: "About 4.2 years: Proxima Centauri is 4.24 light years away." },
       sunSize: { q: "About how many Earths would fit side by side across the Sun?", o: ["About 109", "About 11", "About 1,000"], e: "About 109: the radius of the Sun is about 109 times that of the Earth." },
+      asteroidBelt: { q: "Where do most asteroids go round the Sun?", o: ["Between Mars and Jupiter", "Between the Earth and Mars", "Between Saturn and Uranus"], e: "In the main asteroid belt between Mars and Jupiter. Its largest object, Ceres, is a dwarf planet." },
+      cometTail: { q: "Which way does the tail of a comet point?", o: ["Away from the Sun", "Towards the Sun", "Always towards the Earth"], e: "Away from the Sun: sunlight and the solar wind blow the dust and gas of the coma away from it." },
     },
   },
   de: {
@@ -191,7 +253,7 @@ export const LEARN_TEXT = {
       rule: "5 Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 80 %.",
     },
     status: { done: "Erledigt", next: "Als Nächstes", open: "Offen", locked: "Erst alle Schritte" },
-    back: "Alle Schritte", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
+    back: "Alle Schritte", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", rememberLabel: "Merke", sourcesLabel: "Quellen", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
     taskLabel: "In der 3D-Ansicht", taskGo: "In 3D zeigen", scaleBack: "Zurück zum Erklär-Maßstab", taskDone: "Erledigt", check: "Hast du es verstanden?", right: "Richtig.", wrong: "Nicht ganz.",
     stepDone: (xp) => `Schritt geschafft · +${xp} XP`, nextStep: "Nächster Schritt", toTest: "Zum Abschlusstest",
     needTask: "Mach noch die Aufgabe in der 3D-Ansicht, dann ist der Schritt geschafft.", progress: (d, all) => `${d} von ${all} Schritten`,
@@ -209,6 +271,12 @@ export const LEARN_TEXT = {
           "In ihrem Kern verschmilzt Wasserstoff zu Helium. Dabei wird die Energie frei, die uns als Licht und Wärme erreicht, aus etwa 150 Millionen Kilometern Entfernung.",
         ],
         task: "Flieg zur Sonne und sieh sie dir aus der Nähe an.",
+        remember: [
+          "Die Sonne ist ein Stern, eine Kugel aus heißem Gas. Sie entstand vor etwa 4,6 Milliarden Jahren.",
+          "Ihre Energie kommt aus Kernfusion: In ihrem Kern verschmilzt bei etwa 15 Millionen °C Wasserstoff zu Helium.",
+          "Sie enthält 99,8 % der Masse des Sonnensystems; etwa 109 Erden passen quer nebeneinander hinein.",
+          "Ihr Licht braucht etwa 8 Minuten und 20 Sekunden bis zur Erde.",
+        ],
         you: (n) => `Das Licht, das gerade auf dich fällt, hat die Sonne vor etwa 8 Minuten und 20 Sekunden verlassen. Seit deiner Geburt hat dich die Erde ${n}-mal um sie getragen.`,
         ref: (n) => `Das Licht, das gerade auf dich fällt, hat die Sonne vor etwa 8 Minuten und 20 Sekunden verlassen. Einen 30-jährigen Menschen hat die Erde schon ${n}-mal um sie getragen.`,
       },
@@ -216,9 +284,15 @@ export const LEARN_TEXT = {
         title: "Die inneren Planeten", goal: "Du kannst die vier Gesteinsplaneten nennen und unterscheiden.",
         text: [
           "Merkur, Venus, Erde und Mars sind die Gesteinsplaneten: klein und mit festem Boden. Merkur ist der Sonne am nächsten, Venus der heißeste, weil ihre dichte Luft aus Kohlendioxid die Wärme festhält.",
-          "Auf dem Mars steht der höchste bekannte Vulkan, Olympus Mons, etwa zweieinhalbmal so hoch wie der Mount Everest. Ein Tag auf der Venus dauert länger als ihr Jahr.",
+          "Auf dem Mars steht der größte Vulkan des Sonnensystems, Olympus Mons, um ein Vielfaches höher als der Mount Everest. Ein Tag auf der Venus dauert länger als ihr Jahr.",
         ],
         task: "Flieg zum Mars und vergleiche ihn mit der Erde.",
+        remember: [
+          "Merkur, Venus, Erde und Mars sind die inneren Planeten: Sie haben eine feste Oberfläche.",
+          "Venus ist der heißeste Planet, etwa 467 °C an der Oberfläche, obwohl Merkur näher an der Sonne ist.",
+          "Ein Tag auf der Venus (243 Erdtage) dauert länger als ihr Jahr (225 Erdtage).",
+          "Olympus Mons auf dem Mars ist der größte Vulkan des Sonnensystems.",
+        ],
         you: (mars, mercury) => `Auf dem Mars wärst du ${mars}, auf dem Merkur ${mercury}: Ein Jahr dauert dort länger oder kürzer als bei uns.`,
         ref: (mars, mercury) => `Ein 30-jähriger Mensch wäre auf dem Mars ${mars} und auf dem Merkur ${mercury}: Ein Jahr dauert dort länger oder kürzer als bei uns.`,
       },
@@ -229,6 +303,12 @@ export const LEARN_TEXT = {
           "Jupiter hat mehr als doppelt so viel Masse wie alle anderen Planeten zusammen. Saturn ist für seine Größe so leicht, dass seine Dichte geringer ist als die von Wasser.",
         ],
         task: "Flieg zum Saturn und sieh dir seine Ringe an.",
+        remember: [
+          "Jupiter und Saturn sind Gasriesen, Uranus und Neptun Eisriesen.",
+          "Jupiter ist der größte Planet, mit mehr als doppelt so viel Masse wie alle anderen Planeten zusammen.",
+          "Saturn ist der einzige Planet mit geringerer Dichte als Wasser.",
+          "Nicht nur Saturn hat Ringe: Auch Jupiter und Neptun haben welche.",
+        ],
         you: (n) => `Seit deiner Geburt ist Jupiter erst ${n}-mal um die Sonne gelaufen: Eines seiner Jahre dauert fast 12 von unseren.`,
         ref: (n) => `In 30 Jahren läuft Jupiter nur ${n}-mal um die Sonne: Eines seiner Jahre dauert fast 12 von unseren.`,
       },
@@ -239,18 +319,31 @@ export const LEARN_TEXT = {
           "Die meisten großen Monde drehen sich bei jedem Umlauf genau einmal um sich selbst und zeigen ihrem Planeten deshalb immer dieselbe Seite. Darum sehen wir von der Erde nie die Rückseite unseres Mondes.",
         ],
         task: "Flieg zum Jupiter und klicke auf einen seiner vier großen Monde.",
+        remember: [
+          "Ein Mond ist ein Himmelskörper, der um einen Planeten kreist.",
+          "Ganymed, ein Mond des Jupiter, ist der größte Mond des Sonnensystems, größer als der Planet Merkur.",
+          "Unser Mond zeigt der Erde immer dieselbe Seite: Er dreht sich bei jedem Umlauf genau einmal.",
+          "Galileo Galilei entdeckte 1610 die vier größten Monde des Jupiter.",
+        ],
         you: (n) => `Seit deiner Geburt hat der Mond die Erde etwa ${n}-mal umrundet.`,
         ref: (n) => `In 30 Jahren umrundet der Mond die Erde etwa ${n}-mal.`,
       },
       scale: {
-        title: "Maßstab und Entfernungen", goal: "Du kannst beschreiben, wie groß und wie leer das Sonnensystem ist.",
+        title: "Kleine Körper, Maßstab und Entfernungen", goal: "Du kannst beschreiben, wie groß und wie leer das Sonnensystem ist und was Asteroiden und Kometen sind.",
         text: [
           "Das Sonnensystem ist vor allem leerer Raum. Der Abstand von der Erde zur Sonne, 150 Millionen Kilometer, heißt eine Astronomische Einheit (AE). Neptun, der äußerste Planet, ist etwa 30 AE von der Sonne entfernt.",
           "Das Licht der Sonne braucht gut 8 Minuten bis zur Erde und etwa 4 Stunden bis zum Neptun. Im echten Maßstab der 3D-Ansicht werden die Planeten zu winzigen Punkten in einem riesigen Raum.",
+          "Zwischen Mars und Jupiter liegt der Asteroidengürtel, in dem die meisten Asteroiden um die Sonne laufen; sein größtes Objekt, Ceres, ist ein Zwergplanet. Kometen bestehen vor allem aus Eis mit Staub. Kommt einer der Sonne nahe, erwärmt er sich und bildet eine Hülle, die Koma; Sonnenlicht und Sonnenwind blasen Staub und Gas von der Sonne weg zu langen Schweifen.",
         ],
         task: "Schalte den echten Maßstab ein und sieh, wie weit die Planeten auseinanderliegen.",
+        remember: [
+          "Eine Astronomische Einheit (AE) ist der mittlere Abstand von der Erde zur Sonne, etwa 150 Millionen Kilometer.",
+          "Neptun ist 30 AE von der Sonne entfernt; das Sonnenlicht braucht etwa 4 Stunden bis dorthin.",
+          "Die meisten Asteroiden laufen zwischen Mars und Jupiter um die Sonne. Das größte Objekt dort, Ceres, ist ein Zwergplanet.",
+          "Kometen bestehen vor allem aus Eis und Staub; nahe der Sonne bilden sie Schweife, die von der Sonne weg zeigen.",
+        ],
         you: (name, dist, year) => `Das Licht deines Sterns, ${name}, das heute bei dir ankommt, brach um ${year} auf, etwa in deinem Geburtsjahr. Es ist ${dist} Lichtjahre gereist.`,
-        ref: "Das Licht des nächsten Sterns, Proxima Centauri, braucht 4,2 Jahre bis zu uns. Gib unter „Du im Kosmos“ dein Geburtsjahr ein und finde den Stern, dessen Licht bei deiner Geburt losflog.",
+        ref: "Das Licht des nächsten Sterns, Proxima Centauri, braucht 4,2 Jahre bis zu uns.",
       },
     },
     q: {
@@ -271,6 +364,8 @@ export const LEARN_TEXT = {
       starLight: { you: (name) => `Wie viele Jahre war das Licht deines Sterns, ${name}, bis zu dir unterwegs?`, e: (n, name) => `Etwa ${n} Jahre: ${name} ist etwa ${n} Lichtjahre entfernt, und ein Lichtjahr ist die Strecke, die das Licht in einem Jahr zurücklegt.` },
       proximaLight: { q: "Wie lange braucht das Licht von Proxima Centauri, dem nächsten Stern nach der Sonne, bis zu uns?", o: ["Etwa 4,2 Jahre", "Etwa 4,2 Tage", "Etwa 42 Jahre"], e: "Etwa 4,2 Jahre: Proxima Centauri ist 4,24 Lichtjahre entfernt." },
       sunSize: { q: "Wie viele Erden passen etwa quer nebeneinander in die Sonne?", o: ["Etwa 109", "Etwa 11", "Etwa 1.000"], e: "Etwa 109: Der Radius der Sonne ist etwa 109-mal so groß wie der der Erde." },
+      asteroidBelt: { q: "Wo laufen die meisten Asteroiden um die Sonne?", o: ["Zwischen Mars und Jupiter", "Zwischen Erde und Mars", "Zwischen Saturn und Uranus"], e: "Im Asteroidengürtel zwischen Mars und Jupiter. Sein größtes Objekt, Ceres, ist ein Zwergplanet." },
+      cometTail: { q: "In welche Richtung zeigt der Schweif eines Kometen?", o: ["Von der Sonne weg", "Zur Sonne hin", "Immer zur Erde"], e: "Von der Sonne weg: Sonnenlicht und Sonnenwind blasen Staub und Gas der Koma von ihr fort." },
     },
   },
   ja: {
@@ -281,7 +376,7 @@ export const LEARN_TEXT = {
       rule: "5つのステップのあと、10問の最終テスト。80 %以上で合格です。",
     },
     status: { done: "完了", next: "次はこれ", open: "未完了", locked: "先に全ステップを" },
-    back: "すべてのステップ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
+    back: "すべてのステップ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", rememberLabel: "覚えておこう", sourcesLabel: "出典", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
     taskLabel: "3D表示で", taskGo: "3Dで見る", scaleBack: "説明用の縮尺に戻す", taskDone: "完了", check: "理解できたか確かめよう", right: "正解です。", wrong: "ちょっと違います。",
     stepDone: (xp) => `ステップ完了 · +${xp} XP`, nextStep: "次のステップ", toTest: "最終テストへ",
     needTask: "3D表示での課題もやってみましょう。それでステップ完了です。", progress: (d, all) => `${all}ステップ中${d}完了`,
@@ -299,6 +394,12 @@ export const LEARN_TEXT = {
           "中心部では水素が融合してヘリウムになります。そのとき生まれるエネルギーが、約1億5000万キロメートル離れた私たちに光と熱として届きます。",
         ],
         task: "太陽まで飛んで、近くから見てみましょう。",
+        remember: [
+          "太陽は恒星で、熱いガスの球です。約46億年前に生まれました。",
+          "エネルギーは核融合から来ます。約1500万℃の中心部で、水素がヘリウムに融合します。",
+          "太陽系の質量の99.8 %が太陽にあります。直径には地球が約109個並びます。",
+          "太陽の光は約8分20秒で地球に届きます。",
+        ],
         you: (n) => `いまあなたに当たっている光は、約8分20秒前に太陽を出発しました。生まれてから、あなたは地球とともに太陽のまわりを${n}周しています。`,
         ref: (n) => `いまあなたに当たっている光は、約8分20秒前に太陽を出発しました。30歳の人は、地球とともに太陽のまわりをすでに${n}周しています。`,
       },
@@ -306,9 +407,15 @@ export const LEARN_TEXT = {
         title: "内側の惑星", goal: "4つの岩石惑星の名前を挙げ、見分けられます。",
         text: [
           "水星、金星、地球、火星は岩石惑星です。小さく、かたい地面があります。太陽にいちばん近いのは水星、いちばん熱いのは金星です。厚い二酸化炭素の大気が熱を閉じこめるからです。",
-          "火星には知られている中でもっとも高い火山、オリンポス山があり、高さはエベレストの約2.5倍です。金星の1日は、金星の1年より長いのです。",
+          "火星には太陽系最大の火山、オリンポス山があり、エベレストの何倍もの高さがあります。金星の1日は、金星の1年より長いのです。",
         ],
         task: "火星まで飛んで、地球とくらべてみましょう。",
+        remember: [
+          "水星、金星、地球、火星は内側の惑星で、かたい地表をもっています。",
+          "いちばん熱い惑星は金星で、地表は約467℃です。太陽に近いのは水星なのに、です。",
+          "金星の1日（地球の243日）は、金星の1年（地球の225日）より長いのです。",
+          "火星のオリンポス山は太陽系最大の火山です。",
+        ],
         you: (mars, mercury) => `火星ではあなたは${mars}歳、水星では${mercury}歳です。1年の長さが私たちとはちがうからです。`,
         ref: (mars, mercury) => `30歳の人は、火星では${mars}歳、水星では${mercury}歳です。1年の長さが私たちとはちがうからです。`,
       },
@@ -319,6 +426,12 @@ export const LEARN_TEXT = {
           "木星の質量は、ほかのすべての惑星を合わせた質量の2倍以上です。土星は大きさのわりにとても軽く、密度は水より小さいのです。",
         ],
         task: "土星まで飛んで、環を見てみましょう。",
+        remember: [
+          "木星と土星は巨大ガス惑星、天王星と海王星は巨大氷惑星です。",
+          "木星はいちばん大きな惑星で、質量はほかのすべての惑星を合わせた2倍以上です。",
+          "土星は、密度が水より小さい唯一の惑星です。",
+          "環をもつのは土星だけではありません。木星と海王星にも環があります。",
+        ],
         you: (n) => `あなたが生まれてから、木星は太陽のまわりをまだ${n}周しかしていません。木星の1年は地球の約12年だからです。`,
         ref: (n) => `30年のあいだに、木星は太陽のまわりを${n}周しかしません。木星の1年は地球の約12年だからです。`,
       },
@@ -329,18 +442,31 @@ export const LEARN_TEXT = {
           "大きな衛星の多くは、1周するあいだにちょうど1回自転するため、いつも惑星に同じ面を向けています。だから地球から月の裏側は見えません。",
         ],
         task: "木星まで飛んで、4つの大きな衛星のどれかをクリックしてみましょう。",
+        remember: [
+          "衛星とは、惑星のまわりを回る天体です。",
+          "木星の衛星ガニメデは太陽系最大の衛星で、惑星の水星より大きいのです。",
+          "月はいつも地球に同じ面を向けています。1周するあいだにちょうど1回自転するからです。",
+          "1610年、ガリレオ・ガリレイが木星の4つの大きな衛星を発見しました。",
+        ],
         you: (n) => `あなたが生まれてから、月は地球のまわりを約${n}周しました。`,
         ref: (n) => `30年のあいだに、月は地球のまわりを約${n}周します。`,
       },
       scale: {
-        title: "大きさと距離", goal: "太陽系がどれほど大きく、がらんとしているかを説明できます。",
+        title: "小天体、大きさと距離", goal: "太陽系がどれほど大きく、がらんとしているか、そして小惑星と彗星が何かを説明できます。",
         text: [
           "太陽系のほとんどは何もない空間です。地球から太陽までの距離、約1億5000万キロメートルを1天文単位（au）と呼びます。いちばん外側の惑星である海王星は、太陽から約30 auの距離にあります。",
           "太陽の光は地球まで8分あまり、海王星まで約4時間かかります。3D表示の実寸モードでは、惑星は広大な空間の中の小さな点になります。",
+          "火星と木星のあいだには小惑星帯があり、ほとんどの小惑星がそこで太陽のまわりを回っています。その中で最大の天体ケレスは準惑星です。彗星はおもに氷とちりでできています。太陽に近づくとあたためられて、コマと呼ばれる大気ができ、太陽の光と太陽風がちりとガスを太陽と反対の方向へ吹き流して、長い尾をつくります。",
         ],
         task: "実寸表示をオンにして、惑星どうしがどれほど離れているか見てみましょう。",
+        remember: [
+          "1天文単位（au）は地球と太陽の平均距離で、約1億5000万キロメートルです。",
+          "海王星は太陽から30 auの距離にあり、太陽の光が届くまで約4時間かかります。",
+          "ほとんどの小惑星は火星と木星のあいだで太陽のまわりを回っています。そこで最大の天体ケレスは準惑星です。",
+          "彗星はおもに氷とちりでできていて、太陽に近づくと太陽と反対の方向に尾がのびます。",
+        ],
         you: (name, dist, year) => `あなたの星${name}から今日届く光は、${year}年ごろ、あなたが生まれた頃に出発しました。${dist}光年を旅してきたのです。`,
-        ref: "太陽の次に近い恒星プロキシマ・ケンタウリの光は、私たちに届くまで4.2年かかります。「宇宙の中のあなた」で生まれた年を入れると、あなたが生まれた頃に光が出発した星が見つかります。",
+        ref: "太陽の次に近い恒星プロキシマ・ケンタウリの光は、私たちに届くまで4.2年かかります。",
       },
     },
     q: {
@@ -361,6 +487,8 @@ export const LEARN_TEXT = {
       starLight: { you: (name) => `あなたの星${name}の光は、あなたに届くまで何年旅しましたか？`, e: (n, name) => `約${n}年です。${name}までは約${n}光年で、1光年は光が1年に進む距離です。` },
       proximaLight: { q: "太陽の次に近い恒星プロキシマ・ケンタウリの光は、私たちに届くまでどれくらいかかりますか？", o: ["約4.2年", "約4.2日", "約42年"], e: "約4.2年です。プロキシマ・ケンタウリまでは4.24光年です。" },
       sunSize: { q: "太陽の直径には、地球がおよそいくつ並びますか？", o: ["約109個", "約11個", "約1000個"], e: "約109個です。太陽の半径は地球の約109倍です。" },
+      asteroidBelt: { q: "ほとんどの小惑星は、どこで太陽のまわりを回っていますか？", o: ["火星と木星のあいだ", "地球と火星のあいだ", "土星と天王星のあいだ"], e: "火星と木星のあいだの小惑星帯です。その中で最大の天体ケレスは準惑星です。" },
+      cometTail: { q: "彗星の尾はどちらを向いていますか？", o: ["太陽と反対の方向", "太陽の方向", "いつも地球の方向"], e: "太陽と反対の方向です。太陽の光と太陽風が、コマのちりとガスを太陽から吹き流すからです。" },
     },
   },
   bg: {
@@ -371,7 +499,7 @@ export const LEARN_TEXT = {
       rule: "5 стъпки, после финален тест с 10 въпроса; издържан от 80 %.",
     },
     status: { done: "Готово", next: "Следва", open: "Предстои", locked: "Първо всички стъпки" },
-    back: "Всички стъпки", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", forYou: "За теб", example: "Пример", exampleHint: "С датата ти на раждане (в прегледа на „Моята вселена“) това става твоето собствено число.",
+    back: "Всички стъпки", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", rememberLabel: "Запомни", sourcesLabel: "Източници", forYou: "За теб", example: "Пример", exampleHint: "С датата ти на раждане (в прегледа на „Моята вселена“) това става твоето собствено число.",
     taskLabel: "В 3D изгледа", taskGo: "Покажи в 3D", scaleBack: "Обратно към обяснителния мащаб", taskDone: "Готово", check: "Провери какво разбра", right: "Вярно.", wrong: "Не съвсем.",
     stepDone: (xp) => `Стъпката е готова · +${xp} XP`, nextStep: "Следваща стъпка", toTest: "Към финалния тест",
     needTask: "Направи и задачата в 3D изгледа и стъпката е готова.", progress: (d, all) => `${d} от ${all} стъпки`,
@@ -389,6 +517,12 @@ export const LEARN_TEXT = {
           "В ядрото му водородът се слива в хелий. Така се освобождава енергията, която достига до нас като светлина и топлина, от около 150 милиона километра.",
         ],
         task: "Полети до Слънцето и го разгледай отблизо.",
+        remember: [
+          "Слънцето е звезда, кълбо от горещ газ. Образувало се е преди около 4,6 милиарда години.",
+          "Енергията му идва от ядрен синтез: в ядрото, при около 15 милиона °C, водородът се слива в хелий.",
+          "В него е 99,8 % от масата на Слънчевата система; в диаметъра му се нареждат около 109 Земи.",
+          "Светлината му стига до Земята за около 8 минути и 20 секунди.",
+        ],
         you: (n) => `Светлината, която пада върху теб сега, е напуснала Слънцето преди около 8 минути и 20 секунди. От раждането ти Земята те е пренесла около него ${n} пъти.`,
         ref: (n) => `Светлината, която пада върху теб сега, е напуснала Слънцето преди около 8 минути и 20 секунди. Човек на 30 години вече е пренесен от Земята около него ${n} пъти.`,
       },
@@ -396,9 +530,15 @@ export const LEARN_TEXT = {
         title: "Вътрешните планети", goal: "Можеш да назовеш и различиш четирите скалисти планети.",
         text: [
           "Меркурий, Венера, Земята и Марс са скалистите планети: малки, с твърда повърхност. Меркурий е най-близо до Слънцето, Венера е най-горещата, защото плътната ѝ атмосфера от въглероден диоксид задържа топлината.",
-          "На Марс е най-високият известен вулкан, Олимп, около два пъти и половина по-висок от Еверест. Денят на Венера е по-дълъг от нейната година.",
+          "На Марс е най-големият вулкан в Слънчевата система, Олимп, няколко пъти по-висок от Еверест. Денят на Венера е по-дълъг от нейната година.",
         ],
         task: "Полети до Марс и го сравни със Земята.",
+        remember: [
+          "Меркурий, Венера, Земята и Марс са вътрешните планети: имат твърда повърхност.",
+          "Венера е най-горещата планета, около 467 °C на повърхността, макар че Меркурий е по-близо до Слънцето.",
+          "Денят на Венера (243 земни дни) е по-дълъг от годината ѝ (225 земни дни).",
+          "Олимп на Марс е най-големият вулкан в Слънчевата система.",
+        ],
         you: (mars, mercury) => `На Марс щеше да си на ${mars}, на Меркурий на ${mercury}: годината там е по-дълга или по-къса от нашата.`,
         ref: (mars, mercury) => `Човек на 30 години щеше да е на ${mars} на Марс и на ${mercury} на Меркурий: годината там е по-дълга или по-къса от нашата.`,
       },
@@ -409,6 +549,12 @@ export const LEARN_TEXT = {
           "Юпитер има повече от два пъти масата на всички други планети взети заедно. Сатурн е толкова лек за размера си, че плътността му е по-малка от тази на водата.",
         ],
         task: "Полети до Сатурн и разгледай пръстените му.",
+        remember: [
+          "Юпитер и Сатурн са газови гиганти, Уран и Нептун ледени гиганти.",
+          "Юпитер е най-голямата планета, с повече от два пъти масата на всички други планети заедно.",
+          "Сатурн е единствената планета с плътност по-малка от тази на водата.",
+          "Не само Сатурн има пръстени: Юпитер и Нептун също имат.",
+        ],
         you: (n) => `От раждането ти Юпитер е обиколил Слънцето само ${n} пъти: една негова година трае почти 12 наши.`,
         ref: (n) => `За 30 години Юпитер обикаля Слънцето само ${n} пъти: една негова година трае почти 12 наши.`,
       },
@@ -419,18 +565,31 @@ export const LEARN_TEXT = {
           "Повечето големи луни се завъртат точно веднъж около себе си при всяка обиколка и затова винаги са обърнати към планетата си с една и съща страна. Затова от Земята никога не виждаме обратната страна на Луната.",
         ],
         task: "Полети до Юпитер и щракни върху една от четирите му големи луни.",
+        remember: [
+          "Луната е тяло, което обикаля около планета.",
+          "Ганимед, луна на Юпитер, е най-голямата луна в Слънчевата система, по-голяма от планетата Меркурий.",
+          "Нашата Луна винаги е обърната към Земята с една и съща страна: завърта се точно веднъж при всяка обиколка.",
+          "Галилео Галилей открива четирите най-големи луни на Юпитер през 1610 г.",
+        ],
         you: (n) => `От раждането ти Луната е обиколила Земята около ${n} пъти.`,
         ref: (n) => `За 30 години Луната обикаля Земята около ${n} пъти.`,
       },
       scale: {
-        title: "Мащаб и разстояния", goal: "Можеш да опишеш колко голяма и колко празна е Слънчевата система.",
+        title: "Малки тела, мащаб и разстояния", goal: "Можеш да опишеш колко голяма и колко празна е Слънчевата система и какво са астероидите и кометите.",
         text: [
           "Слънчевата система е предимно празно пространство. Разстоянието от Земята до Слънцето, 150 милиона километра, се нарича астрономическа единица (а.е.). Нептун, най-външната планета, е на около 30 а.е. от Слънцето.",
           "Светлината на Слънцето пътува малко над 8 минути до Земята и около 4 часа до Нептун. В истинския мащаб на 3D изгледа планетите стават мънички точки в огромно пространство.",
+          "Между Марс и Юпитер е астероидният пояс, където обикалят Слънцето повечето астероиди; най-голямото тяло там, Церера, е джудже планета. Кометите са главно от лед и прах. Когато някоя наближи Слънцето, тя се затопля и образува обвивка, кома; слънчевата светлина и слънчевият вятър отнасят праха и газа далеч от Слънцето в дълги опашки.",
         ],
         task: "Включи истинския мащаб и виж колко далеч една от друга са планетите.",
+        remember: [
+          "Една астрономическа единица (а.е.) е средното разстояние от Земята до Слънцето, около 150 милиона километра.",
+          "Нептун е на 30 а.е. от Слънцето; слънчевата светлина пътува около 4 часа дотам.",
+          "Повечето астероиди обикалят Слънцето между Марс и Юпитер. Най-голямото тяло там, Церера, е джудже планета.",
+          "Кометите са главно от лед и прах; близо до Слънцето образуват опашки, насочени далеч от Слънцето.",
+        ],
         you: (name, dist, year) => `Светлината на твоята звезда, ${name}, която пристига днес, е тръгнала около ${year} г., приблизително в годината на раждането ти. Пътувала е ${dist} светлинни години.`,
-        ref: "Светлината на най-близката звезда, Проксима Кентавър, пътува 4,2 години до нас. Въведи годината си на раждане в „Ти в космоса“ и намери звездата, чиято светлина е тръгнала при раждането ти.",
+        ref: "Светлината на най-близката звезда, Проксима Кентавър, пътува 4,2 години до нас.",
       },
     },
     q: {
@@ -451,6 +610,8 @@ export const LEARN_TEXT = {
       starLight: { you: (name) => `Колко години е пътувала светлината на твоята звезда, ${name}, до теб?`, e: (n, name) => `Около ${n} години: ${name} е на около ${n} светлинни години, а светлинна година е разстоянието, което светлината изминава за една година.` },
       proximaLight: { q: "Колко време пътува до нас светлината на Проксима Кентавър, най-близката звезда след Слънцето?", o: ["Около 4,2 години", "Около 4,2 дни", "Около 42 години"], e: "Около 4,2 години: Проксима Кентавър е на 4,24 светлинни години." },
       sunSize: { q: "Около колко Земи се нареждат в диаметъра на Слънцето?", o: ["Около 109", "Около 11", "Около 1000"], e: "Около 109: радиусът на Слънцето е около 109 пъти по-голям от този на Земята." },
+      asteroidBelt: { q: "Къде обикалят Слънцето повечето астероиди?", o: ["Между Марс и Юпитер", "Между Земята и Марс", "Между Сатурн и Уран"], e: "В астероидния пояс между Марс и Юпитер. Най-голямото тяло там, Церера, е джудже планета." },
+      cometTail: { q: "Накъде сочи опашката на кометата?", o: ["Далеч от Слънцето", "Към Слънцето", "Винаги към Земята"], e: "Далеч от Слънцето: слънчевата светлина и слънчевият вятър отнасят праха и газа на комата далеч от него." },
     },
   },
 };
@@ -607,6 +768,12 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
     if (!own) you.append(el("p", "hint", tx.exampleHint));
     parts.push(you);
     for (const p of s.text) parts.push(el("p", "learn-text", p));
+    // the facts to remember
+    const remember = el("div", "learn-remember");
+    const facts = el("ul", "");
+    for (const f of s.remember) facts.append(el("li", "", f));
+    remember.append(el("small", "", tx.rememberLabel), facts);
+    parts.push(remember);
     // the task in the 3D view
     const task = el("div", `learn-task${taskDone(step) ? " done" : ""}`);
     const tt = el("div", "");
@@ -655,6 +822,17 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
       );
       parts.push(done);
     } else if (allRight && !taskDone(step)) parts.push(el("p", "hint learn-missing", tx.needTask));
+    // where the facts come from
+    const sources = el("p", "hint learn-sources");
+    sources.append(`${tx.sourcesLabel}: `);
+    SOURCES[step].forEach((src, i) => {
+      const a = el("a", "", src.label);
+      a.href = src.url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      sources.append(...(i ? [" · ", a] : [a]));
+    });
+    parts.push(sources);
     return parts;
   }
 

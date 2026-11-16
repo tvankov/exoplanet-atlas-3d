@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, QUESTIONS, LEARN_TEXT, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine } from "../web/learn.js";
+import { PATHS, TASKS, QUESTIONS, LEARN_TEXT, SOURCES, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -107,4 +107,25 @@ test("every step has a task in the 3D view and a sentence for the visitor in eve
   assert.ok(personalLine("sun", you, "en").includes("36 times"));
   assert.ok(personalLine("inner", you, "de").includes(`Mars wärst du ${you.mars}`));
   assert.ok(personalLine("scale", you, "en").includes("HD 3651") && personalLine("scale", you, "en").includes("1991"));
+});
+
+test("every step has 3 to 5 facts to remember in every language, and its sources on NASA's pages", () => {
+  for (const step of PATHS.solar.steps) {
+    const count = LEARN_TEXT.en.steps[step].remember.length;
+    assert.ok(count >= 3 && count <= 5, `${step}: ${count} facts`);
+    for (const lang of LANGS) {
+      const facts = LEARN_TEXT[lang].steps[step].remember;
+      assert.equal(facts.length, count, `${step} ${lang}: as many facts as in English`);
+      assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
+    }
+    assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|nssdc\.gsfc\.nasa\.gov)\//, `${step}: ${src.url}`);
+  }
+});
+
+test("the step on scale asks about asteroids and comets too", () => {
+  const ids = buildQuestions("scale", nobody, "de").map((q) => q.id);
+  assert.ok(ids.includes("asteroidBelt") && ids.includes("cometTail"));
+  const belt = buildQuestions("scale", nobody, "de").find((q) => q.id === "asteroidBelt");
+  assert.equal(belt.answer, "Zwischen Mars und Jupiter");
 });
