@@ -1,7 +1,7 @@
 // Learning paths (the area Learn of My Universe). A path has steps; each step has a goal, a short text, a sentence about what it means for the
 // visitor (worked out from their year of birth and their star, or, without them, for a person of 30), a task in the 3D view and a few
 // questions with the answer explained. When the task is done and every question is answered right, the step is done (XP); when all steps
-// are done, the final test opens: 10 questions from all steps, some with the visitor's own numbers, passed from 80 % (XP and a badge). The
+// are done, the final test opens: 10 questions from all steps, some with the visitor's own numbers, passed from 70 % (XP and a badge). The
 // progress lives in the explorer's log (explorer.js: total.learnTasks, learnSteps, learnPaths and "learnBest:<path>"), so it is merged with
 // the account like the rest. Every step has a box of the facts to remember and its sources (SOURCES): the facts were checked against those
 // NASA pages in November 2026, so that a step can be checked again when the science changes. The rules are pure functions, tested in
@@ -13,7 +13,7 @@ import { XP_LEARN } from "./explorer.js";
 import { planetCanvas, starCanvas } from "./sharecard.js";
 
 export const PATHS = {
-  solar: { steps: ["sun", "inner", "outer", "moons", "scale"], minutes: 30, testSize: 10, pass: 0.8 },
+  solar: { steps: ["sun", "inner", "outer", "moons", "scale"], minutes: 30, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 export const TASKS = { sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale" };
@@ -127,7 +127,7 @@ export const LEARN_TEXT = {
       title: "Our Solar System",
       goal: "You can explain how our Solar System is built and tell its main bodies apart.",
       meta: (m) => `about ${m} minutes · for beginners`,
-      rule: "5 steps, then a final test with 10 questions; passed from 80 %.",
+      rule: "5 steps, then a final test with 10 questions; passed from 70 %.",
     },
     status: { done: "Done", next: "Next", open: "To do", locked: "All steps first" },
     back: "All steps", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", rememberLabel: "Remember", sourcesLabel: "Sources", forYou: "For you", example: "An example", exampleHint: "With your date of birth (in the overview of My Universe) this becomes your own number.",
@@ -250,7 +250,7 @@ export const LEARN_TEXT = {
       title: "Unser Sonnensystem",
       goal: "Du kannst erklären, wie unser Sonnensystem aufgebaut ist, und seine wichtigsten Himmelskörper unterscheiden.",
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
-      rule: "5 Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 80 %.",
+      rule: "5 Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 70 %.",
     },
     status: { done: "Erledigt", next: "Als Nächstes", open: "Offen", locked: "Erst alle Schritte" },
     back: "Alle Schritte", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", rememberLabel: "Merke", sourcesLabel: "Quellen", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
@@ -373,7 +373,7 @@ export const LEARN_TEXT = {
       title: "私たちの太陽系",
       goal: "太陽系のしくみを説明し、おもな天体を見分けられるようになります。",
       meta: (m) => `約${m}分 · 初心者向け`,
-      rule: "5つのステップのあと、10問の最終テスト。80 %以上で合格です。",
+      rule: "5つのステップのあと、10問の最終テスト。70 %以上で合格です。",
     },
     status: { done: "完了", next: "次はこれ", open: "未完了", locked: "先に全ステップを" },
     back: "すべてのステップ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", rememberLabel: "覚えておこう", sourcesLabel: "出典", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
@@ -496,7 +496,7 @@ export const LEARN_TEXT = {
       title: "Нашата Слънчева система",
       goal: "Можеш да обясниш как е устроена Слънчевата система и да различаваш основните ѝ тела.",
       meta: (m) => `около ${m} минути · за начинаещи`,
-      rule: "5 стъпки, после финален тест с 10 въпроса; издържан от 80 %.",
+      rule: "5 стъпки, после финален тест с 10 въпроса; издържан от 70 %.",
     },
     status: { done: "Готово", next: "Следва", open: "Предстои", locked: "Първо всички стъпки" },
     back: "Всички стъпки", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", rememberLabel: "Запомни", sourcesLabel: "Източници", forYou: "За теб", example: "Пример", exampleHint: "С датата ти на раждане (в прегледа на „Моята вселена“) това става твоето собствено число.",

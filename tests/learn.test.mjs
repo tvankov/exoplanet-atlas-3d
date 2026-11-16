@@ -79,7 +79,7 @@ test("the personal questions ask with the visitor's own numbers, or with those o
   assert.equal(byId(buildQuestions("moons", you, "de")).moonLaps.answer, you.moonLaps.toLocaleString("de"));
 });
 
-test("the final test: 10 questions from the steps, each once, another choice for another attempt, passed from 8 of 10", () => {
+test("the final test: 10 questions from the steps, each once, another choice for another attempt, passed from 7 of 10", () => {
   const all = new Set(PATHS.solar.steps.flatMap((s) => buildQuestions(s, you, "en").map((q) => q.id)));
   const t1 = testQuestions("solar", you, "en", 0);
   const t2 = testQuestions("solar", you, "en", 1);
@@ -88,8 +88,8 @@ test("the final test: 10 questions from the steps, each once, another choice for
   assert.ok(t1.every((q) => all.has(q.id)));
   assert.deepEqual(testQuestions("solar", you, "en", 0), t1, "the same attempt keeps its questions");
   assert.notDeepEqual(t2.map((q) => q.id), t1.map((q) => q.id), "a new attempt draws again");
-  assert.equal(passed(8, 10, "solar"), true);
-  assert.equal(passed(7, 10, "solar"), false);
+  assert.equal(passed(7, 10, "solar"), true);
+  assert.equal(passed(6, 10, "solar"), false);
   assert.equal(passed(0, 0, "solar"), false);
 });
 
