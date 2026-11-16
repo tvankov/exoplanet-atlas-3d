@@ -5357,7 +5357,7 @@ let hostList = null;
 let namedList = null;
 myStar = initMyStar({
   getLang: () => lang,
-  hosts: () => (hostList ??= stars.map((s) => ({ name: s.hostname, dist: s.dist_ly, planets: s.planets.length }))),
+  hosts: () => (hostList ??= stars.map((s) => ({ name: s.hostname, dist: s.dist_ly, planets: s.planets.length, teff: s.teff_missing ? null : s.st_teff }))),
   named: () => {
     if (!sky) return [];
     if (namedList) return namedList.map((s) => ({ ...s, constellation: s.figure ? sky.data.nameOf(s.figure, lang) : null }));
@@ -5372,7 +5372,7 @@ myStar = initMyStar({
     return namedList.map((s) => ({ ...s, constellation: s.figure ? sky.data.nameOf(s.figure, lang) : null }));
   },
   // the colour of each planet for its small symbol, and the ring of Saturn
-  planets: () => PLANETS.map((p) => ({ name: planetLabel(p.name), years: p.years, color: `#${p.color.toString(16).padStart(6, "0")}`, rings: p.name === "Saturn" })),
+  planets: () => PLANETS.map((p) => ({ id: p.name, name: planetLabel(p.name), years: p.years, color: `#${p.color.toString(16).padStart(6, "0")}`, rings: p.name === "Saturn" })),
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);

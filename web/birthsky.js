@@ -7,7 +7,7 @@
 
 import { track } from "./stats.js";
 import { disclosure } from "./disclosure.js";
-import { sharePicture, font, wrap, fitText, roundRect } from "./sharecard.js";
+import { sharePicture, preload, font, wrap, fitText, roundRect, panel, drawStar } from "./sharecard.js";
 
 export const KEY = "birth-date"; // "YYYY-MM-DD" in localStorage, never sent, never saved to the account
 export const SIGNS = ["Ari", "Tau", "Gem", "Cnc", "Leo", "Vir", "Lib", "Sco", "Sgr", "Cap", "Aqr", "Psc"];
@@ -381,64 +381,64 @@ export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange }) 
       kind: "sky",
       title: tx.cardSky,
       text: tx.skyMessage,
+      backdrop: 0.6,
+      sources: "Stars: Hipparcos (ESA)",
       draw: (g) => {
-        const panel = (x, label, sky) => {
-          roundRect(g, x, 230, 440, 560, 36);
-          if (sky) {
-            const glow = g.createRadialGradient(x + 220, 470, 10, x + 220, 470, 300);
-            glow.addColorStop(0, "rgba(124,255,178,0.16)");
-            glow.addColorStop(1, "rgba(124,255,178,0.03)");
-            g.fillStyle = glow;
-            g.fill();
-            g.setLineDash([]);
-            g.strokeStyle = "rgba(124,255,178,0.6)";
-          } else {
-            g.fillStyle = "rgba(255,255,255,0.04)";
-            g.fill();
-            g.setLineDash([14, 10]);
-            g.strokeStyle = "rgba(255,255,255,0.4)";
-          }
-          g.lineWidth = 3;
-          g.stroke();
-          g.setLineDash([]);
-          g.fillStyle = "rgba(230,236,255,0.75)";
-          fitText(g, label.toLocaleUpperCase(), x + 220, 300, 380, 600, 28);
-        };
-        panel(80, tx.astroCard, false);
-        panel(560, tx.skyCard, true);
-        // the sign as its old symbol
-        g.fillStyle = "rgba(255,255,255,0.9)";
-        g.font = font(400, 210, "'Segoe UI Symbol', 'Noto Sans Symbols', 'Apple Symbols', sans-serif");
+        // two glass cards: astrology (dashed, it is not the real sky) and the real sky (green)
+        panel(g, 80, 210, 440, 600, 36, "rgba(255,255,255,0.35)");
+        g.setLineDash([14, 10]);
+        roundRect(g, 80, 210, 440, 600, 36);
+        g.strokeStyle = "rgba(255,255,255,0.45)";
+        g.lineWidth = 3;
+        g.stroke();
+        g.setLineDash([]);
+        panel(g, 560, 210, 440, 600, 36, "rgba(124,255,178,0.7)", "rgba(10,30,24,0.5)");
+        g.fillStyle = "rgba(230,236,255,0.8)";
+        fitText(g, tx.astroCard.toLocaleUpperCase(), 300, 280, 380, 600, 28);
+        fitText(g, tx.skyCard.toLocaleUpperCase(), 780, 280, 380, 600, 28);
+        // the sign as its old symbol, golden
+        const gold = g.createLinearGradient(0, 380, 0, 600);
+        gold.addColorStop(0, "#fff1cf");
+        gold.addColorStop(1, "#e2b36a");
+        g.save();
+        g.shadowColor = "rgba(255,200,120,0.75)";
+        g.shadowBlur = 40;
+        g.fillStyle = gold;
+        g.font = font(400, 220, "'Segoe UI Symbol', 'Noto Sans Symbols', 'Apple Symbols', sans-serif");
         g.textBaseline = "middle";
-        g.fillText(`${GLYPH[signId]}\uFE0E`, 300, 480);
-        g.textBaseline = "alphabetic";
-        // the real figure from the stars of the map
-        const drawn = figure?.(realId) && projectFigure(figure(realId), 360, 280, 24);
+        g.fillText(`${GLYPH[signId]}︎`, 300, 500);
+        g.restore();
+        // the real figure from the stars of the map: glowing lines, and each star a glow by its brightness
+        const drawn = figure?.(realId) && projectFigure(figure(realId), 380, 320, 30);
         if (drawn) {
-          g.strokeStyle = "#b8e6c1";
+          const ox = 590;
+          const oy = 330;
+          g.save();
+          g.shadowColor = "rgba(124,255,178,0.8)";
+          g.shadowBlur = 14;
+          g.strokeStyle = "rgba(184,230,193,0.85)";
           g.lineWidth = 3;
           g.lineCap = "round";
           for (const [x1, y1, x2, y2] of drawn.segments) {
             g.beginPath();
-            g.moveTo(600 + x1, 340 + y1);
-            g.lineTo(600 + x2, 340 + y2);
+            g.moveTo(ox + x1, oy + y1);
+            g.lineTo(ox + x2, oy + y2);
             g.stroke();
           }
-          g.fillStyle = "#ffffff";
+          g.restore();
           for (const [x, y, mag] of drawn.stars) {
-            g.beginPath();
-            g.arc(600 + x, 340 + y, Math.min(9, Math.max(3, 9 - 1.2 * (mag ?? 4))), 0, Math.PI * 2);
-            g.fill();
+            const r = Math.min(34, Math.max(10, 34 - 5 * (mag ?? 4)));
+            drawStar(g, ox + x, oy + y, r * 1.6, "200,225,255");
           }
         }
         g.fillStyle = "#ffffff";
-        fitText(g, tx.signLine(nameOf(signId)), 300, 720, 380, 700, 50);
-        fitText(g, tx.figureLine(nameOf(realId)), 780, 720, 380, 700, 50);
-        g.font = font(500, 40);
-        wrap(g, signId === realId ? tx.same : tx.differShort, 900).forEach((line, i) => g.fillText(line, 540, 900 + i * 54));
-        g.fillStyle = "rgba(230,236,255,0.7)";
+        fitText(g, tx.signLine(nameOf(signId)), 300, 760, 380, 700, 52);
+        fitText(g, tx.figureLine(nameOf(realId)), 780, 760, 380, 700, 52);
+        g.font = font(600, 42);
+        wrap(g, signId === realId ? tx.same : tx.differShort, 900).forEach((line, i) => g.fillText(line, 540, 920 + i * 56));
+        g.fillStyle = "rgba(230,236,255,0.75)";
         g.font = font(400, 30);
-        wrap(g, tx.science, 880).forEach((line, i) => g.fillText(line, 540, 1060 + i * 42));
+        wrap(g, tx.science, 880).forEach((line, i) => g.fillText(line, 540, 1080 + i * 42));
       },
     });
   }
@@ -615,6 +615,7 @@ export function initBirthSky({ getLang, nameOf, figure, showFigure, onChange }) 
     }
     const sign = tropicalSign(sunLongitude(birth.noon));
     const real = sunConstellation(birth.month, birth.day);
+    preload(); // the Milky Way behind the picture to share
     const glyph = el("span", "birthsky-glyph", `${GLYPH[sign.id]}\uFE0E`);
     glyph.setAttribute("aria-hidden", "true");
     const pair = el("div", "birthsky-pair");

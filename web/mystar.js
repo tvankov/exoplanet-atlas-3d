@@ -7,7 +7,7 @@
 
 import { track } from "./stats.js";
 import { disclosure } from "./disclosure.js";
-import { sharePicture, W, font, wrap, roundRect, planetDot } from "./sharecard.js";
+import { sharePicture, preload, W, font, wrap, panel, drawPlanet, drawStar, starColor } from "./sharecard.js";
 
 export const KEY = "birth-year"; // localStorage, never sent, never saved to the account
 const EARTH_ORBIT_KM = 2 * Math.PI * 149597870.7; // the length of one trip round the Sun, about 940 million km
@@ -140,7 +140,8 @@ export const STAR_TEXT = {
   },
 };
 
-// getLang(); hosts(): [{ name, dist, planets }]; named(): [{ name, dist, mag, constellation }]; planets(): [{ name, years, color, rings }] of the Solar System
+// getLang(); hosts(): [{ name, dist, planets, teff }]; named(): [{ name, dist, mag, constellation }]; planets(): [{ id, name, years, color, rings }] of the
+// Solar System
 // (the names in the language of the page); explore(name) flies to a host star.
 export function initMyStar({ getLang, hosts, named, planets, explore, onChange }) {
   const t = () => STAR_TEXT[getLang()] ?? STAR_TEXT.en;
@@ -176,75 +177,92 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
   let editing = false;
   const fmt = (x, digits = 1) => x.toLocaleString(getLang(), { maximumFractionDigits: digits, minimumFractionDigits: digits });
 
-  // The pictures to share (sharecard.js draws the frame): no name and no year of birth, only the star, its distance and the year its light set
-  // off; or the age on the planets.
+  // The pictures to share (sharecard.js draws the frame and the planets): no name and no year of birth. The star: its light on the way to the
+  // Earth, from the year it set off to today. The ages: the eight planets as lit spheres with the age under each.
   function shareStar(host) {
     const tx = t();
     sharePicture({
       kind: "star",
       title: tx.cardTitle,
       text: tx.starMessage,
-      draw: (g) => {
-        const glow = g.createRadialGradient(540, 470, 0, 540, 470, 170);
-        glow.addColorStop(0, "rgba(255,244,220,1)");
-        glow.addColorStop(0.2, "rgba(255,210,150,0.75)");
-        glow.addColorStop(1, "rgba(255,200,140,0)");
-        g.fillStyle = glow;
-        g.fillRect(370, 300, 340, 340);
+      backdrop: 0.42,
+      sources: "Earth: NASA",
+      draw: async (g) => {
+        const star = [300, 420];
+        const earth = [800, 760];
+        // the way of the light: a dotted line from the star to the Earth, from the colour of the star to blue
+        const rgb = starColor(host.teff);
+        const beam = g.createLinearGradient(...star, ...earth);
+        beam.addColorStop(0, `rgba(${rgb},0.9)`);
+        beam.addColorStop(1, "rgba(140,190,255,0.9)");
+        g.strokeStyle = beam;
+        g.lineWidth = 5;
+        g.lineCap = "round";
+        g.setLineDash([2, 16]);
+        g.beginPath();
+        g.moveTo(star[0] + 60, star[1] + 47);
+        g.lineTo(earth[0] - 95, earth[1] - 74);
+        g.stroke();
+        g.setLineDash([]);
+        drawStar(g, ...star, 230, rgb);
+        await drawPlanet(g, "Earth", ...earth, 90);
+        // the distance along the way, and the two years at its ends
+        g.save();
+        g.translate((star[0] + earth[0]) / 2 + 26, (star[1] + earth[1]) / 2 - 26);
+        g.rotate(Math.atan2(earth[1] - star[1], earth[0] - star[0]));
         g.fillStyle = "#ffffff";
-        g.font = font(700, 76);
-        g.fillText(host.name, 540, 760);
+        g.font = font(600, 34);
+        g.fillText(tx.cardDist(fmt(host.dist)), 0, 0);
+        g.restore();
         g.fillStyle = "#ffe0b5";
-        g.font = font(500, 38);
-        g.fillText(tx.cardDist(fmt(host.dist)), 540, 822);
+        g.font = font(700, 46);
+        g.fillText(String(leftIn(host.dist)), star[0], star[1] + 150);
+        g.fillStyle = "#cfe0ff";
+        g.fillText(String(new Date().getUTCFullYear()), earth[0], earth[1] + 160);
         g.fillStyle = "#ffffff";
-        g.font = font(400, 40);
-        wrap(g, tx.cardLight(host.name, leftIn(host.dist)), 860).forEach((line, i) => g.fillText(line, 540, 940 + i * 56));
+        g.font = font(700, 78);
+        g.fillText(host.name, 540, 1010);
+        g.font = font(400, 36);
+        g.fillStyle = "rgba(255,255,255,0.92)";
+        wrap(g, tx.cardLight(host.name, leftIn(host.dist)), 880).forEach((line, i) => g.fillText(line, 540, 1076 + i * 48));
       },
     });
   }
-  // values: [{ name, value (the text), color, rings, earth }]; km: the way round the Sun, as text
+  // values: [{ id, name, value (the text), earth }]; km: the way round the Sun, as text
   function shareAges(values, km) {
     const tx = t();
     sharePicture({
       kind: "ages",
       title: tx.cardAges,
       text: tx.agesMessage,
-      draw: (g) => {
-        const gap = 24;
+      backdrop: 0.5,
+      sources: "Planet maps: NASA",
+      draw: async (g) => {
+        const gap = 22;
         const w = (W - 160 - 3 * gap) / 4;
-        const h = 250;
-        values.forEach((v, i) => {
+        const h = 280;
+        for (const [i, v] of values.entries()) {
           const x = 80 + (i % 4) * (w + gap);
-          const y = 240 + Math.floor(i / 4) * (h + gap);
-          roundRect(g, x, y, w, h, 28);
-          g.fillStyle = v.earth ? "rgba(77,163,255,0.18)" : "rgba(255,255,255,0.07)";
-          g.fill();
-          if (v.earth) {
-            g.strokeStyle = "rgba(77,163,255,0.6)";
-            g.lineWidth = 3;
-            g.stroke();
-          }
-          planetDot(g, x + w / 2, y + 62, 24, v.color, v.rings);
+          const y = 210 + Math.floor(i / 4) * (h + gap);
+          panel(g, x, y, w, h, 28, v.earth ? "rgba(120,170,255,0.7)" : "rgba(255,255,255,0.14)", v.earth ? "rgba(30,60,120,0.5)" : "rgba(8,11,20,0.55)");
+          await drawPlanet(g, v.id, x + w / 2, y + 82, v.id === "Saturn" ? 34 : 46);
           g.fillStyle = "#ffffff";
-          g.font = font(700, 66);
-          g.fillText(v.value, x + w / 2, y + 160);
+          g.font = font(700, 64);
+          g.fillText(v.value, x + w / 2, y + 200);
           g.fillStyle = "#c4d0ea";
           g.font = font(400, 30);
-          g.fillText(v.name, x + w / 2, y + 214);
-        });
-        roundRect(g, 80, 800, W - 160, 190, 28);
-        g.fillStyle = "rgba(255,255,255,0.07)";
-        g.fill();
+          g.fillText(v.name, x + w / 2, y + 250);
+        }
+        panel(g, 80, 834, W - 160, 180, 28);
         g.fillStyle = "#ffffff";
         g.font = font(700, 62);
-        g.fillText(km, 540, 885);
+        g.fillText(km, 540, 918);
         g.fillStyle = "#c4d0ea";
         g.font = font(400, 32);
-        g.fillText(tx.km, 540, 945);
+        g.fillText(tx.km, 540, 976);
         g.fillStyle = "#ffffff";
-        g.font = font(500, 46);
-        g.fillText(tx.agesQuestion, 540, 1110);
+        g.font = font(600, 48);
+        g.fillText(tx.agesQuestion, 540, 1120);
       },
     });
   }
@@ -282,6 +300,7 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
     }
     const age = ageFrom(year);
     const host = pickHost(hosts(), age);
+    preload(planets().map((p) => p.id)); // the Milky Way and the maps of the planets, ready before a click on "Share"
     if (!host || age < 4) {
       s.append(el("p", "", tx.young));
     } else {
@@ -324,7 +343,7 @@ export function initMyStar({ getLang, hosts, named, planets, explore, onChange }
     for (const p of ordered) {
       const value = ageOn(age, p.years);
       const text = fmt(value, value < 10 ? 1 : 0);
-      values.push({ name: p.name, value: text, color: p.color ?? "#99aaaa", rings: p.rings, earth: p.years === 1 });
+      values.push({ id: p.id, name: p.name, value: text, earth: p.years === 1 });
       const tile = el("div", `age-tile${p.years === 1 ? " earth" : ""}`);
       const dot = el("i", `age-dot${p.rings ? " ring" : ""}`);
       dot.style.setProperty("--c", p.color ?? "#9aa");
