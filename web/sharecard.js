@@ -431,6 +431,12 @@ const EMBLEM = {
     g.stroke();
     await drawPlanet(g, "Earth", r * 1.55, r * 0.78, r * 0.13);
   },
+  // Alpha Centauri: the pair A and B (a star like the Sun and a smaller, more orange one) and the small red Proxima
+  "alpha-scholar": (g, r) => {
+    drawStar(g, r * 0.78, r * 1.02, r * 0.44, starColor(5790));
+    drawStar(g, r * 1.24, r * 1.08, r * 0.32, starColor(5300));
+    drawStar(g, r * 1.42, r * 0.56, r * 0.14, starColor(3000));
+  },
   // ten missions: ten lights round the number
   regular: (g, r) => {
     for (let i = 0; i < 10; i++) {

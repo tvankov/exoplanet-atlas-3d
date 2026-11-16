@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, QUESTIONS, LEARN_TEXT, SOURCES, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine } from "../web/learn.js";
+import { PATHS, TASKS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -49,7 +49,7 @@ test("a fixed order for a seed, a different one for another seed, and nothing lo
 test("every question of every step, in every language: one right answer among different options, and an explanation", () => {
   for (const lang of LANGS)
     for (const nums of [you, nobody])
-      for (const step of PATHS.solar.steps) {
+      for (const step of Object.values(PATHS).flatMap((p) => p.steps)) {
         const qs = buildQuestions(step, nums, lang);
         assert.equal(qs.length, QUESTIONS[step].length);
         for (const q of qs) {
@@ -93,9 +93,9 @@ test("the final test: 10 questions from the steps, each once, another choice for
   assert.equal(passed(0, 0, "solar"), false);
 });
 
-test("every step has a task in the 3D view and a sentence for the visitor in every language", () => {
-  for (const step of PATHS.solar.steps) {
-    assert.ok(TASKS[step], `${step} has a task`);
+test("every step has a task in the 3D view (or none on purpose) and a sentence for the visitor in every language", () => {
+  for (const step of Object.values(PATHS).flatMap((p) => p.steps)) {
+    assert.ok(step in TASKS, `${step} has a task, or null`);
     for (const lang of LANGS) {
       const mine = personalLine(step, you, lang);
       const other = personalLine(step, nobody, lang);
@@ -109,8 +109,8 @@ test("every step has a task in the 3D view and a sentence for the visitor in eve
   assert.ok(personalLine("scale", you, "en").includes("HD 3651") && personalLine("scale", you, "en").includes("1991"));
 });
 
-test("every step has 3 to 5 facts to remember in every language, and its sources on NASA's pages", () => {
-  for (const step of PATHS.solar.steps) {
+test("every step has 3 to 5 facts to remember in every language, and its sources on NASA's or ESO's pages", () => {
+  for (const step of Object.values(PATHS).flatMap((p) => p.steps)) {
     const count = LEARN_TEXT.en.steps[step].remember.length;
     assert.ok(count >= 3 && count <= 5, `${step}: ${count} facts`);
     for (const lang of LANGS) {
@@ -119,7 +119,7 @@ test("every step has 3 to 5 facts to remember in every language, and its sources
       assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
     }
     assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
-    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|nssdc\.gsfc\.nasa\.gov)\//, `${step}: ${src.url}`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org)\//, `${step}: ${src.url}`);
   }
 });
 
@@ -134,4 +134,27 @@ test("the step on moons asks about the dwarf planets too", () => {
   const q = buildQuestions("moons", nobody, "de").find((x) => x.id === "dwarf");
   assert.equal(q.answer, "Pluto");
   assert.ok(LEARN_TEXT.de.steps.moons.text.some((p) => p.includes("Zwergplaneten")));
+});
+
+test("Alpha Centauri: the visitor's numbers, the trip at the speed of Voyager 1, and a small child", () => {
+  assert.ok(TRAVEL_YEARS > 74000 && TRAVEL_YEARS < 75500, `${TRAVEL_YEARS}`); // "about 75,000 years" in the texts
+  assert.equal(nobody.proximaLeft, 25); // 30 - 4.24
+  assert.equal(nobody.lapShare, 38); // 30 of 80 years
+  assert.equal(nobody.lightTrips, 7);
+  assert.equal(nobody.proximaBAge, 980); // 30 years of 11.18 days
+  assert.equal(nobody.lifetimes, Math.round(TRAVEL_YEARS / 30));
+  // a child of 3: the light of Proxima set off before the birth, and the question about it is replaced
+  const child = personalNumbers({ age: 3, years: YEARS, star: null });
+  assert.equal(child.proximaLeft, null);
+  assert.ok(personalLine("neighbors", child, "en").includes("before you were born"));
+  const ids = buildQuestions("neighbors", child, "en").map((q) => q.id);
+  assert.ok(ids.includes("proximaLight") && !ids.includes("proximaLeft"));
+});
+
+test("Alpha Centauri: a final test of 10 different questions, and a step that needs no task", () => {
+  const t1 = testQuestions("alpha", you, "de", 0);
+  assert.equal(t1.length, 10);
+  assert.equal(new Set(t1.map((q) => q.id)).size, 10);
+  assert.equal(TASKS.pair, null);
+  assert.ok(LEARN_TEXT.de.paths.alpha.title.includes("Alpha Centauri"));
 });

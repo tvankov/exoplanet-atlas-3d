@@ -5566,6 +5566,15 @@ const learn = initLearn({
   act: (task) => {
     if (task === "realScale") return realScale || setRealScale(true);
     if (task === "explanationScale") return realScale && setRealScale(false);
+    if (task.startsWith("figure:")) return atlas?.showFigure(task.slice(7)); // a constellation in the sky
+    if (task.startsWith("plan:")) {
+      // the trip planner, from the Earth to the place
+      planFrom.value = planetLabel("Earth");
+      planTo.value = task.slice(5);
+      planSpeed.value = "voyager"; // the speed of the step: Voyager 1
+      planSpeed.dispatchEvent(new Event("change"));
+      return togglePlanner(true);
+    }
     const place = resolvePlace(task);
     if (place) showPlace(place);
   },

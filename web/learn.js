@@ -5,7 +5,8 @@
 // progress lives in the explorer's log (explorer.js: total.learnTasks, learnSteps, learnPaths and "learnBest:<path>"), so it is merged with
 // the account like the rest. Every step has a box of the facts to remember and its sources (SOURCES): the facts were checked against those
 // NASA pages in November 2026, so that a step can be checked again when the science changes. The rules are pure functions, tested in
-// tests/learn.test.mjs. The first path is Our Solar System; more will follow.
+// tests/learn.test.mjs. The paths: Our Solar System, and Alpha Centauri (our nearest stars); more will follow. A step may have no task in the
+// 3D view when what it is about is not in the map (Alpha Centauri A and B): then the questions alone finish it.
 
 import { track } from "./stats.js";
 import { MOONS } from "./moons.js";
@@ -14,9 +15,14 @@ import { planetCanvas, starCanvas } from "./sharecard.js";
 
 export const PATHS = {
   solar: { steps: ["sun", "inner", "outer", "moons", "scale"], minutes: 30, testSize: 10, pass: 0.7 },
+  alpha: { steps: ["neighbors", "pair", "proxima", "proximaB", "travel"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
-export const TASKS = { sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale" };
+// ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
+export const TASKS = {
+  sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale",
+  neighbors: "figure:Cen", pair: null, proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
+};
 // The sources of each step, against which its texts, facts to remember and questions were checked (titles as on the pages).
 export const SOURCES = {
   sun: [
@@ -46,7 +52,34 @@ export const SOURCES = {
     { label: "NASA Science: Comets, Facts", url: "https://science.nasa.gov/solar-system/comets/facts/" },
     { label: "NASA Science: Planets", url: "https://science.nasa.gov/solar-system/planets/" },
   ],
+  neighbors: [
+    { label: "ESO: Planet Found in Habitable Zone Around Nearest Star (eso1629)", url: "https://www.eso.org/public/news/eso1629/" },
+    { label: "NASA Science: Hubble's Best Image of Alpha Centauri A and B", url: "https://science.nasa.gov/missions/hubble/hubbles-best-image-of-alpha-centauri-a-and-b/" },
+  ],
+  pair: [
+    { label: "NASA Science: Hubble's Best Image of Alpha Centauri A and B", url: "https://science.nasa.gov/missions/hubble/hubbles-best-image-of-alpha-centauri-a-and-b/" },
+    { label: "NASA Science: Alpha Centauri A Planet Candidate (Webb)", url: "https://science.nasa.gov/asset/webb/alpha-centauri-a-planet-candidate-artists-concept/" },
+  ],
+  proxima: [
+    { label: "ESO: Planet Found in Habitable Zone Around Nearest Star (eso1629)", url: "https://www.eso.org/public/news/eso1629/" },
+    { label: "ESO: VLT to Search for Planets in Alpha Centauri System (eso1702)", url: "https://www.eso.org/public/news/eso1702/" },
+  ],
+  proximaB: [
+    { label: "NASA Science: Proxima Centauri b", url: "https://science.nasa.gov/exoplanet-catalog/proxima-centauri-b/" },
+    { label: "ESO: Planet Found in Habitable Zone Around Nearest Star (eso1629)", url: "https://www.eso.org/public/news/eso1629/" },
+  ],
+  travel: [
+    { label: "NASA Science: Voyager 1", url: "https://science.nasa.gov/mission/voyager/voyager-1/" },
+    { label: "ESO: Planet Found in Habitable Zone Around Nearest Star (eso1629)", url: "https://www.eso.org/public/news/eso1629/" },
+  ],
 };
+// The numbers of Alpha Centauri: the distance of Proxima and the year of Proxima b as in the map (NASA Exoplanet Archive, web/data/stars.json;
+// NASA and ESO round them to 4.2 light years and 11.2 days), the speed of Voyager 1 from NASA (17.0 km/s, August 2024). The time of the trip
+// is worked out from them: about 74,800 years, "about 75,000" in the texts.
+export const PROXIMA_LY = 4.24;
+export const PROXIMA_B_DAYS = 11.18465;
+const VOYAGER_KMS = 17.0;
+export const TRAVEL_YEARS = (PROXIMA_LY * 9.4607e12) / VOYAGER_KMS / (365.25 * 86400);
 const REFERENCE_AGE = 30; // without a year of birth, the sentences speak of a person of 30
 const MOON_DAYS = MOONS.Earth[0].days;
 
@@ -61,6 +94,12 @@ export function personalNumbers(ctx) {
     jupiterLaps: Math.floor(age / ctx.years.Jupiter),
     moonLaps: Math.floor((age * 365.25) / MOON_DAYS),
     star: ctx.age != null ? ctx.star ?? null : null,
+    // Alpha Centauri
+    proximaLeft: age >= 5 ? Math.floor(age - PROXIMA_LY) : null, // how old the visitor was when the light of Proxima set off (none for a small child)
+    lapShare: Math.round((age / 80) * 100), // the share of one lap of A and B round each other, in %
+    lightTrips: Math.floor(age / PROXIMA_LY), // how often light could have come from Proxima to us
+    proximaBAge: Math.round((age * 365.25) / PROXIMA_B_DAYS), // the age on Proxima b
+    lifetimes: Math.round(TRAVEL_YEARS / Math.max(age, 1)), // the trip at the speed of Voyager 1, in lives so far
   };
 }
 
@@ -92,6 +131,12 @@ export const QUESTIONS = {
   outer: [{ id: "largest" }, { id: "saturnDensity" }, { id: "jupiterLaps", number: "jupiterLaps" }],
   moons: [{ id: "largestMoon" }, { id: "galileo" }, { id: "sameSide" }, { id: "dwarf" }, { id: "moonLaps", number: "moonLaps" }],
   scale: [{ id: "neptune" }, { id: "starLight", number: "starLight" }, { id: "sunSize" }, { id: "asteroidBelt" }, { id: "cometTail" }],
+  // Alpha Centauri; a personal number that does not exist (a small child) takes its fallback question
+  neighbors: [{ id: "nearestStar" }, { id: "lightYear" }, { id: "proximaLeft", number: "proximaLeft", fallback: "proximaLight" }],
+  pair: [{ id: "pairPeriod" }, { id: "pairSun" }, { id: "constellation" }],
+  proxima: [{ id: "redDwarf" }, { id: "proximaEye" }, { id: "thirdStar" }, { id: "lightTrips", number: "lightTrips" }],
+  proximaB: [{ id: "proximaBYear" }, { id: "habitable" }, { id: "howFound" }, { id: "proximaBAge", number: "proximaBAge" }],
+  travel: [{ id: "voyagerSpeed" }, { id: "travelTime" }, { id: "lifetimes", number: "lifetimes" }],
 };
 
 // The questions of a step, ready to show: [{ id, text, options (labels), answer (the right label), explain }].
@@ -101,6 +146,7 @@ export function buildQuestions(step, nums, lang) {
   return QUESTIONS[step].map((spec) => {
     // the light of your star; without a star the one of Proxima Centauri
     if (spec.number === "starLight" && !nums.star) spec = { id: "proximaLight" };
+    if (spec.fallback && nums[spec.number] == null) spec = { id: spec.fallback };
     if (spec.number === "starLight") {
       const n = Math.round(nums.star.dist);
       const q = tx.q.starLight;
@@ -125,12 +171,15 @@ export const passed = (right, total, path) => total > 0 && right / total >= PATH
 
 export const LEARN_TEXT = {
   en: {
+    paths: {
+      solar: { title: "Our Solar System", goal: "You can explain how our Solar System is built and tell its main bodies apart." },
+      alpha: { title: "Our nearest stars: Alpha Centauri", goal: "You can describe the star system closest to us, its planet Proxima b, and how far away it really is." },
+    },
     path: {
-      title: "Our Solar System",
-      goal: "You can explain how our Solar System is built and tell its main bodies apart.",
       meta: (m) => `about ${m} minutes · for beginners`,
       rule: "5 steps, then a final test with 10 questions; passed from 70 %.",
     },
+    allPaths: "All learning paths",
     status: { done: "Done", next: "Next", open: "To do", locked: "All steps first" },
     back: "All steps", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", speak: "Read aloud", speakStop: "Stop", speakTitle: "Read with a voice on your device; nothing is sent.", rememberLabel: "Remember", sourcesLabel: "Sources", forYou: "For you", example: "An example", exampleHint: "With your date of birth (in the overview of My Universe) this becomes your own number.",
     taskLabel: "In the 3D view", taskGo: "Show in 3D", scaleBack: "Back to the explanation scale", taskDone: "Done", check: "Check your understanding", right: "Right.", wrong: "Not quite.",
@@ -226,6 +275,82 @@ export const LEARN_TEXT = {
         you: (name, dist, year) => `The light of your star, ${name}, that reaches you today set off around ${year}, about the year you were born. It has travelled ${dist} light years.`,
         ref: "The light of the nearest star, Proxima Centauri, needs 4.2 years to reach us.",
       },
+      neighbors: {
+        title: "Our nearest stars", goal: "You know which stars are closest to us and what a light year is.",
+        text: [
+          "After the Sun, the nearest star to us is Proxima Centauri, about 4.2 light years away. A light year is not a time but a distance: how far light travels in a year, nearly 9.5 trillion kilometres.",
+          "Proxima belongs to Alpha Centauri, the closest star system to the Earth, in the constellation of Centaurus. Besides Proxima it has two bright stars, Alpha Centauri A and B, about 4.3 light years away.",
+        ],
+        task: "Look at the constellation of Centaurus: in that direction lie our nearest neighbours.",
+        remember: [
+          "After the Sun, Proxima Centauri is the nearest star, about 4.2 light years away.",
+          "A light year is a distance: how far light travels in one year.",
+          "Alpha Centauri is the closest star system to the Earth; it lies in the constellation of Centaurus.",
+        ],
+        you: (left) => (left == null ? "The light of Proxima Centauri that reaches you today set off about 4.2 years ago, before you were born." : `The light of Proxima Centauri that reaches you today set off about 4.2 years ago, when you were ${left}.`),
+        ref: (left) => `The light of Proxima Centauri that reaches us today set off about 4.2 years ago: a person of 30 today was ${left} then.`,
+      },
+      pair: {
+        title: "Alpha Centauri A and B", goal: "You can describe the two bright stars of Alpha Centauri and how they move.",
+        text: [
+          "Alpha Centauri A and B are a pair of stars that go round a common centre of gravity once every 80 years. At their closest they are about 11 times as far apart as the Earth and the Sun.",
+          "A is the same type of star as our Sun (G2) and a little bigger; B (type K1) is a little smaller. In 2025 the James Webb Space Telescope found signs of a possible giant planet round A, about as heavy as Saturn. Whether it is really there is still an open question.",
+        ],
+        task: "There is no task in the 3D view for this step: A and B are not in the map yet. Answer the questions, then the step is done.", // no task in the 3D view: A and B are not in the map
+        remember: [
+          "Alpha Centauri A and B go round each other once every 80 years.",
+          "A is the same type of star as the Sun and a little bigger, B a little smaller.",
+          "A possible planet round A, seen by the Webb telescope in 2025, is not confirmed yet.",
+        ],
+        you: (share) => `A and B need 80 years for one lap round each other: in your life so far they have done ${share} % of one.`,
+        ref: (share) => `A and B need 80 years for one lap round each other: in 30 years they do ${share} % of one.`,
+      },
+      proxima: {
+        title: "Proxima Centauri", goal: "You know what a red dwarf is and why Proxima cannot be seen with the naked eye.",
+        text: [
+          "Proxima Centauri is a red dwarf: a small, cool star, far fainter than the Sun. Although it is our nearest star, it is too faint to be seen with the naked eye.",
+          "It is the third and faintest star of the Alpha Centauri system. It sends out flares of ultraviolet light and X-rays, which matter a lot for its planet.",
+        ],
+        task: "Fly to Proxima Centauri and look at the small red star.",
+        remember: [
+          "Proxima Centauri is a red dwarf: small, cool and far fainter than the Sun.",
+          "It cannot be seen with the naked eye, although it is the nearest star.",
+          "It is the third and faintest star of the Alpha Centauri system, and it sends out flares of ultraviolet light and X-rays.",
+        ],
+        you: (trips) => `In your life so far, light could have made the way from Proxima to us ${trips} times.`,
+        ref: (trips) => `In 30 years, light can make the way from Proxima to us ${trips} times.`,
+      },
+      proximaB: {
+        title: "Proxima b", goal: "You know what is known about Proxima b, and why the habitable zone does not mean life.",
+        text: [
+          "In 2016 astronomers of the European Southern Observatory (ESO) announced a planet round Proxima Centauri: Proxima b. They found it from tiny shifts in the light of the star, which wobbles a little as the planet pulls on it. The planet goes round its star in 11.2 days and is at least about as heavy as the Earth.",
+          "Proxima b lies in the habitable zone of its star: the temperature there could allow liquid water, under the right conditions. But the flares of Proxima could strip away an atmosphere. Whether Proxima b has air, water or even life is unknown.",
+        ],
+        task: "Fly to Proxima b and look at it from close by.",
+        remember: [
+          "Proxima b, the planet of the nearest star, was announced by ESO in 2016.",
+          "A year on Proxima b lasts 11.2 days.",
+          "It was found from small wobbles of its star, not from a photo.",
+          "In the habitable zone does not mean inhabited: whether it has air or water is unknown.",
+        ],
+        you: (age) => `On Proxima b you would be ${age} years old: a year there lasts only 11.2 days.`,
+        ref: (age) => `A person of 30 would be ${age} years old on Proxima b: a year there lasts only 11.2 days.`,
+      },
+      travel: {
+        title: "Could we ever go there?", goal: "You can say how long a trip to our nearest star would take today.",
+        text: [
+          "Voyager 1, the farthest spacecraft, moves away from the Sun at about 17 kilometres per second, more than 61,000 kilometres per hour. At that speed a trip of 4.2 light years would take about 75,000 years (worked out from the distance and the speed).",
+          "Light needs about 4.2 years for the same way. That is how far apart the stars are: even our nearest neighbour is out of reach of today's spacecraft.",
+        ],
+        task: "Plan a trip from the Earth to Proxima b in the trip planner.",
+        remember: [
+          "Voyager 1 moves at about 17 kilometres per second.",
+          "At that speed the trip to Proxima would take about 75,000 years.",
+          "Light needs about 4.2 years for the same way.",
+        ],
+        you: (n) => `At the speed of Voyager 1 the trip would take about 75,000 years: ${n} times your life so far.`,
+        ref: (n) => `At the speed of Voyager 1 the trip would take about 75,000 years: ${n} times the life of a person of 30.`,
+      },
     },
     q: {
       sunLight: { q: "How long does sunlight need to reach the Earth?", o: ["About 8 minutes", "About 8 seconds", "About 8 hours"], e: "About 8 minutes and 20 seconds: the Sun is 150 million kilometres away, and light travels about 300,000 kilometres per second." },
@@ -248,15 +373,35 @@ export const LEARN_TEXT = {
       sunSize: { q: "About how many Earths would fit side by side across the Sun?", o: ["About 109", "About 11", "About 1,000"], e: "About 109: the radius of the Sun is about 109 times that of the Earth." },
       asteroidBelt: { q: "Where do most asteroids go round the Sun?", o: ["Between Mars and Jupiter", "Between the Earth and Mars", "Between Saturn and Uranus"], e: "In the main asteroid belt between Mars and Jupiter. Its largest object, Ceres, is a dwarf planet." },
       cometTail: { q: "Which way does the tail of a comet point?", o: ["Away from the Sun", "Towards the Sun", "Always towards the Earth"], e: "Away from the Sun: sunlight and the solar wind blow the dust and gas of the coma away from it." },
+      nearestStar: { q: "Which is the nearest star after the Sun?", o: ["Proxima Centauri", "Sirius", "Polaris"], e: "Proxima Centauri, about 4.2 light years away." },
+      lightYear: { q: "What is a light year?", o: ["A distance: how far light travels in a year", "A time: one year in space", "The age of a star"], e: "A distance. Light travels nearly 9.5 trillion kilometres in a year." },
+      pairPeriod: { q: "How long do Alpha Centauri A and B take to go round each other?", o: ["About 80 years", "About 80 days", "About 8,000 years"], e: "About 80 years. At their closest they are about 11 times as far apart as the Earth and the Sun." },
+      pairSun: { q: "Which star is the same type as our Sun?", o: ["Alpha Centauri A", "Alpha Centauri B", "Proxima Centauri"], e: "Alpha Centauri A, type G2 like the Sun, and a little bigger." },
+      constellation: { q: "In which constellation does Alpha Centauri lie?", o: ["Centaurus", "Orion", "Ursa Major"], e: "In Centaurus, the Centaur." },
+      redDwarf: { q: "What kind of star is Proxima Centauri?", o: ["A red dwarf", "A red giant", "A star like the Sun"], e: "A red dwarf: small, cool and far fainter than the Sun." },
+      proximaEye: { q: "Can you see Proxima Centauri with the naked eye?", o: ["No, it is too faint", "Yes, it is the brightest star in the sky", "Only in the daytime"], e: "No: although it is the nearest star, it is too faint for the naked eye." },
+      thirdStar: { q: "How many stars does the Alpha Centauri system have?", o: ["Three", "Two", "One"], e: "Three: Alpha Centauri A and B, and Proxima Centauri, the faintest." },
+      proximaBYear: { q: "How long is a year on Proxima b?", o: ["About 11 days", "About 11 months", "About 11 years"], e: "About 11.2 days: that is how fast it goes round its star." },
+      habitable: { q: "What does \"in the habitable zone\" mean?", o: ["Liquid water could exist there under the right conditions", "Life has been found there", "The planet certainly has air"], e: "Only that the temperature could allow liquid water. Whether Proxima b has air, water or life is unknown." },
+      howFound: { q: "How was Proxima b found?", o: ["From tiny wobbles of its star", "From a photo of the planet", "From a radio signal"], e: "From tiny shifts in the light of the star, which wobbles as the planet pulls on it." },
+      voyagerSpeed: { q: "About how fast does Voyager 1 move away from the Sun?", o: ["About 17 km per second", "About 17 km per hour", "About 17,000 km per second"], e: "About 17 kilometres per second, more than 61,000 kilometres per hour." },
+      travelTime: { q: "About how long would Voyager 1 need to reach Proxima Centauri?", o: ["About 75,000 years", "About 750 years", "About 7.5 million years"], e: "About 75,000 years: 4.2 light years at 17 kilometres per second." },
+      proximaLeft: { you: "How old were you when the light of Proxima that reaches you today set off?", ref: "How old was a person of 30 today when the light of Proxima that reaches us now set off?", e: (n) => `${n}: the light set off about 4.2 years ago.` },
+      lightTrips: { you: "How many times could light have made the way from Proxima to us in your life so far?", ref: "How many times can light make the way from Proxima to us in 30 years?", e: (n) => `${n} times: it needs about 4.2 years for the way.` },
+      proximaBAge: { you: "How old would you be on Proxima b?", ref: "How old would a person of 30 be on Proxima b?", e: (n) => `${n}: a year on Proxima b lasts only 11.2 days.` },
+      lifetimes: { you: "How many times your life so far would the trip at the speed of Voyager 1 take?", ref: "How many times the life of a person of 30 would the trip at the speed of Voyager 1 take?", e: (n) => `About ${n} times: the trip would take about 75,000 years.` },
     },
   },
   de: {
+    paths: {
+      solar: { title: "Unser Sonnensystem", goal: "Du kannst erklären, wie unser Sonnensystem aufgebaut ist, und seine wichtigsten Himmelskörper unterscheiden." },
+      alpha: { title: "Unsere nächsten Sterne: Alpha Centauri", goal: "Du kannst das Sternsystem beschreiben, das uns am nächsten ist, seinen Planeten Proxima b und wie weit weg es wirklich ist." },
+    },
     path: {
-      title: "Unser Sonnensystem",
-      goal: "Du kannst erklären, wie unser Sonnensystem aufgebaut ist, und seine wichtigsten Himmelskörper unterscheiden.",
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
       rule: "5 Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 70 %.",
     },
+    allPaths: "Alle Lernpfade",
     status: { done: "Erledigt", next: "Als Nächstes", open: "Offen", locked: "Erst alle Schritte" },
     back: "Alle Schritte", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", speak: "Vorlesen", speakStop: "Stopp", speakTitle: "Mit einer Stimme auf deinem Gerät vorlesen; es wird nichts gesendet.", rememberLabel: "Merke", sourcesLabel: "Quellen", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
     taskLabel: "In der 3D-Ansicht", taskGo: "In 3D zeigen", scaleBack: "Zurück zum Erklär-Maßstab", taskDone: "Erledigt", check: "Hast du es verstanden?", right: "Richtig.", wrong: "Nicht ganz.",
@@ -352,6 +497,82 @@ export const LEARN_TEXT = {
         you: (name, dist, year) => `Das Licht deines Sterns, ${name}, das heute bei dir ankommt, brach um ${year} auf, etwa in deinem Geburtsjahr. Es ist ${dist} Lichtjahre gereist.`,
         ref: "Das Licht des nächsten Sterns, Proxima Centauri, braucht 4,2 Jahre bis zu uns.",
       },
+      neighbors: {
+        title: "Unsere nächsten Sterne", goal: "Du weißt, welche Sterne uns am nächsten sind und was ein Lichtjahr ist.",
+        text: [
+          "Nach der Sonne ist Proxima Centauri der nächste Stern, etwa 4,2 Lichtjahre entfernt. Ein Lichtjahr ist keine Zeit, sondern eine Strecke: wie weit das Licht in einem Jahr kommt, fast 9,5 Billionen Kilometer.",
+          "Proxima gehört zu Alpha Centauri, dem Sternsystem, das der Erde am nächsten ist, im Sternbild Zentaur. Außer Proxima hat es zwei helle Sterne, Alpha Centauri A und B, etwa 4,3 Lichtjahre entfernt.",
+        ],
+        task: "Sieh dir das Sternbild Zentaur an: In dieser Richtung liegen unsere nächsten Nachbarn.",
+        remember: [
+          "Nach der Sonne ist Proxima Centauri der nächste Stern, etwa 4,2 Lichtjahre entfernt.",
+          "Ein Lichtjahr ist eine Strecke: wie weit das Licht in einem Jahr kommt.",
+          "Alpha Centauri ist das Sternsystem, das der Erde am nächsten ist; es liegt im Sternbild Zentaur.",
+        ],
+        you: (left) => (left == null ? "Das Licht von Proxima Centauri, das heute bei dir ankommt, ist vor etwa 4,2 Jahren losgeflogen, noch vor deiner Geburt." : `Das Licht von Proxima Centauri, das heute bei dir ankommt, ist vor etwa 4,2 Jahren losgeflogen, als du ${left} warst.`),
+        ref: (left) => `Das Licht von Proxima Centauri, das heute bei uns ankommt, ist vor etwa 4,2 Jahren losgeflogen: Ein heute 30-jähriger Mensch war damals ${left}.`,
+      },
+      pair: {
+        title: "Alpha Centauri A und B", goal: "Du kannst die beiden hellen Sterne von Alpha Centauri beschreiben und wie sie sich bewegen.",
+        text: [
+          "Alpha Centauri A und B sind ein Sternpaar, das alle 80 Jahre einmal um einen gemeinsamen Schwerpunkt läuft. Am nächsten kommen sie sich auf etwa den 11-fachen Abstand von Erde und Sonne.",
+          "A ist ein Stern derselben Art wie unsere Sonne (G2) und etwas größer; B (Typ K1) ist etwas kleiner. 2025 fand das James-Webb-Weltraumteleskop Hinweise auf einen möglichen Riesenplaneten um A, etwa so schwer wie Saturn. Ob es ihn wirklich gibt, ist noch eine offene Frage.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht: A und B sind noch nicht auf der Karte. Beantworte die Fragen, dann ist der Schritt geschafft.", // no task in the 3D view: A and B are not in the map
+        remember: [
+          "Alpha Centauri A und B laufen alle 80 Jahre einmal umeinander.",
+          "A ist ein Stern derselben Art wie die Sonne und etwas größer, B etwas kleiner.",
+          "Ein möglicher Planet um A, 2025 vom Webb-Teleskop gesehen, ist noch nicht bestätigt.",
+        ],
+        you: (share) => `A und B brauchen 80 Jahre für eine Runde umeinander: In deinem bisherigen Leben haben sie ${share} % davon geschafft.`,
+        ref: (share) => `A und B brauchen 80 Jahre für eine Runde umeinander: In 30 Jahren schaffen sie ${share} % davon.`,
+      },
+      proxima: {
+        title: "Proxima Centauri", goal: "Du weißt, was ein Roter Zwerg ist und warum man Proxima nicht mit bloßem Auge sieht.",
+        text: [
+          "Proxima Centauri ist ein Roter Zwerg: ein kleiner, kühler Stern, viel lichtschwächer als die Sonne. Obwohl er unser nächster Stern ist, ist er zu schwach, um ihn mit bloßem Auge zu sehen.",
+          "Er ist der dritte und schwächste Stern des Systems Alpha Centauri. Er sendet Ausbrüche von ultraviolettem Licht und Röntgenstrahlen aus, und das ist für seinen Planeten sehr wichtig.",
+        ],
+        task: "Flieg zu Proxima Centauri und sieh dir den kleinen roten Stern an.",
+        remember: [
+          "Proxima Centauri ist ein Roter Zwerg: klein, kühl und viel lichtschwächer als die Sonne.",
+          "Man sieht ihn nicht mit bloßem Auge, obwohl er der nächste Stern ist.",
+          "Er ist der dritte und schwächste Stern von Alpha Centauri und sendet Ausbrüche von ultraviolettem Licht und Röntgenstrahlen aus.",
+        ],
+        you: (trips) => `In deinem bisherigen Leben hätte das Licht den Weg von Proxima zu uns ${trips}-mal zurücklegen können.`,
+        ref: (trips) => `In 30 Jahren kann das Licht den Weg von Proxima zu uns ${trips}-mal zurücklegen.`,
+      },
+      proximaB: {
+        title: "Proxima b", goal: "Du weißt, was über Proxima b bekannt ist und warum die bewohnbare Zone kein Leben bedeutet.",
+        text: [
+          "2016 gaben Astronomen der Europäischen Südsternwarte (ESO) einen Planeten um Proxima Centauri bekannt: Proxima b. Sie fanden ihn an winzigen Verschiebungen im Licht des Sterns, der ein wenig wackelt, weil der Planet an ihm zieht. Der Planet läuft in 11,2 Tagen um seinen Stern und ist mindestens etwa so schwer wie die Erde.",
+          "Proxima b liegt in der bewohnbaren Zone seines Sterns: Die Temperatur dort könnte unter den richtigen Bedingungen flüssiges Wasser erlauben. Aber die Ausbrüche von Proxima könnten eine Atmosphäre wegreißen. Ob Proxima b Luft, Wasser oder sogar Leben hat, weiß niemand.",
+        ],
+        task: "Flieg zu Proxima b und sieh ihn dir aus der Nähe an.",
+        remember: [
+          "Proxima b, der Planet des nächsten Sterns, wurde 2016 von der ESO bekanntgegeben.",
+          "Ein Jahr auf Proxima b dauert 11,2 Tage.",
+          "Man fand ihn am Wackeln seines Sterns, nicht auf einem Foto.",
+          "In der bewohnbaren Zone heißt nicht bewohnt: Ob er Luft oder Wasser hat, ist unbekannt.",
+        ],
+        you: (age) => `Auf Proxima b wärst du ${age} Jahre alt: Ein Jahr dauert dort nur 11,2 Tage.`,
+        ref: (age) => `Ein 30-jähriger Mensch wäre auf Proxima b ${age} Jahre alt: Ein Jahr dauert dort nur 11,2 Tage.`,
+      },
+      travel: {
+        title: "Könnten wir je dorthin?", goal: "Du kannst sagen, wie lange eine Reise zu unserem nächsten Stern heute dauern würde.",
+        text: [
+          "Voyager 1, die fernste Raumsonde, entfernt sich mit etwa 17 Kilometern pro Sekunde von der Sonne, mehr als 61.000 Kilometer pro Stunde. Mit diesem Tempo würde eine Reise über 4,2 Lichtjahre etwa 75.000 Jahre dauern (aus Entfernung und Geschwindigkeit berechnet).",
+          "Das Licht braucht für denselben Weg etwa 4,2 Jahre. So weit liegen die Sterne auseinander: Selbst unser nächster Nachbar ist für heutige Raumsonden unerreichbar.",
+        ],
+        task: "Plane im Reiseplaner eine Reise von der Erde zu Proxima b.",
+        remember: [
+          "Voyager 1 fliegt mit etwa 17 Kilometern pro Sekunde.",
+          "Mit diesem Tempo würde die Reise zu Proxima etwa 75.000 Jahre dauern.",
+          "Das Licht braucht für denselben Weg etwa 4,2 Jahre.",
+        ],
+        you: (n) => `Mit dem Tempo von Voyager 1 würde die Reise etwa 75.000 Jahre dauern: ${n}-mal so lang wie dein bisheriges Leben.`,
+        ref: (n) => `Mit dem Tempo von Voyager 1 würde die Reise etwa 75.000 Jahre dauern: ${n}-mal so lang wie das Leben eines 30-jährigen Menschen.`,
+      },
     },
     q: {
       sunLight: { q: "Wie lange braucht Sonnenlicht bis zur Erde?", o: ["Etwa 8 Minuten", "Etwa 8 Sekunden", "Etwa 8 Stunden"], e: "Etwa 8 Minuten und 20 Sekunden: Die Sonne ist 150 Millionen Kilometer entfernt, und Licht legt etwa 300.000 Kilometer pro Sekunde zurück." },
@@ -374,15 +595,35 @@ export const LEARN_TEXT = {
       sunSize: { q: "Wie viele Erden passen etwa quer nebeneinander in die Sonne?", o: ["Etwa 109", "Etwa 11", "Etwa 1.000"], e: "Etwa 109: Der Radius der Sonne ist etwa 109-mal so groß wie der der Erde." },
       asteroidBelt: { q: "Wo laufen die meisten Asteroiden um die Sonne?", o: ["Zwischen Mars und Jupiter", "Zwischen Erde und Mars", "Zwischen Saturn und Uranus"], e: "Im Asteroidengürtel zwischen Mars und Jupiter. Sein größtes Objekt, Ceres, ist ein Zwergplanet." },
       cometTail: { q: "In welche Richtung zeigt der Schweif eines Kometen?", o: ["Von der Sonne weg", "Zur Sonne hin", "Immer zur Erde"], e: "Von der Sonne weg: Sonnenlicht und Sonnenwind blasen Staub und Gas der Koma von ihr fort." },
+      nearestStar: { q: "Welcher ist nach der Sonne der nächste Stern?", o: ["Proxima Centauri", "Sirius", "Polarstern"], e: "Proxima Centauri, etwa 4,2 Lichtjahre entfernt." },
+      lightYear: { q: "Was ist ein Lichtjahr?", o: ["Eine Strecke: wie weit das Licht in einem Jahr kommt", "Eine Zeit: ein Jahr im Weltraum", "Das Alter eines Sterns"], e: "Eine Strecke. Das Licht legt in einem Jahr fast 9,5 Billionen Kilometer zurück." },
+      pairPeriod: { q: "Wie lange brauchen Alpha Centauri A und B für eine Runde umeinander?", o: ["Etwa 80 Jahre", "Etwa 80 Tage", "Etwa 8.000 Jahre"], e: "Etwa 80 Jahre. Am nächsten kommen sie sich auf etwa den 11-fachen Abstand von Erde und Sonne." },
+      pairSun: { q: "Welcher Stern ist von derselben Art wie unsere Sonne?", o: ["Alpha Centauri A", "Alpha Centauri B", "Proxima Centauri"], e: "Alpha Centauri A, Typ G2 wie die Sonne, und etwas größer." },
+      constellation: { q: "In welchem Sternbild liegt Alpha Centauri?", o: ["Zentaur", "Orion", "Großer Bär"], e: "Im Zentaur." },
+      redDwarf: { q: "Was für ein Stern ist Proxima Centauri?", o: ["Ein Roter Zwerg", "Ein Roter Riese", "Ein Stern wie die Sonne"], e: "Ein Roter Zwerg: klein, kühl und viel lichtschwächer als die Sonne." },
+      proximaEye: { q: "Kann man Proxima Centauri mit bloßem Auge sehen?", o: ["Nein, er ist zu schwach", "Ja, er ist der hellste Stern am Himmel", "Nur am Tag"], e: "Nein: Obwohl er der nächste Stern ist, ist er für das bloße Auge zu schwach." },
+      thirdStar: { q: "Wie viele Sterne hat das System Alpha Centauri?", o: ["Drei", "Zwei", "Einen"], e: "Drei: Alpha Centauri A und B und Proxima Centauri, den schwächsten." },
+      proximaBYear: { q: "Wie lange dauert ein Jahr auf Proxima b?", o: ["Etwa 11 Tage", "Etwa 11 Monate", "Etwa 11 Jahre"], e: "Etwa 11,2 Tage: So schnell läuft er um seinen Stern." },
+      habitable: { q: "Was bedeutet „in der bewohnbaren Zone“?", o: ["Dort könnte unter den richtigen Bedingungen flüssiges Wasser sein", "Dort wurde Leben gefunden", "Der Planet hat sicher Luft"], e: "Nur, dass die Temperatur flüssiges Wasser erlauben könnte. Ob Proxima b Luft, Wasser oder Leben hat, ist unbekannt." },
+      howFound: { q: "Wie wurde Proxima b gefunden?", o: ["Am winzigen Wackeln seines Sterns", "Auf einem Foto des Planeten", "Durch ein Funksignal"], e: "An winzigen Verschiebungen im Licht des Sterns, der wackelt, weil der Planet an ihm zieht." },
+      voyagerSpeed: { q: "Wie schnell entfernt sich Voyager 1 etwa von der Sonne?", o: ["Etwa 17 km pro Sekunde", "Etwa 17 km pro Stunde", "Etwa 17.000 km pro Sekunde"], e: "Etwa 17 Kilometer pro Sekunde, mehr als 61.000 Kilometer pro Stunde." },
+      travelTime: { q: "Wie lange bräuchte Voyager 1 etwa bis Proxima Centauri?", o: ["Etwa 75.000 Jahre", "Etwa 750 Jahre", "Etwa 7,5 Millionen Jahre"], e: "Etwa 75.000 Jahre: 4,2 Lichtjahre mit 17 Kilometern pro Sekunde." },
+      proximaLeft: { you: "Wie alt warst du, als das Licht von Proxima losflog, das heute bei dir ankommt?", ref: "Wie alt war ein heute 30-jähriger Mensch, als das Licht von Proxima losflog, das jetzt bei uns ankommt?", e: (n) => `${n}: Das Licht ist vor etwa 4,2 Jahren losgeflogen.` },
+      lightTrips: { you: "Wie oft hätte das Licht in deinem bisherigen Leben den Weg von Proxima zu uns zurücklegen können?", ref: "Wie oft kann das Licht in 30 Jahren den Weg von Proxima zu uns zurücklegen?", e: (n) => `${n}-mal: Es braucht für den Weg etwa 4,2 Jahre.` },
+      proximaBAge: { you: "Wie alt wärst du auf Proxima b?", ref: "Wie alt wäre ein 30-jähriger Mensch auf Proxima b?", e: (n) => `${n}: Ein Jahr auf Proxima b dauert nur 11,2 Tage.` },
+      lifetimes: { you: "Wie oft so lang wie dein bisheriges Leben würde die Reise mit dem Tempo von Voyager 1 dauern?", ref: "Wie oft so lang wie das Leben eines 30-jährigen Menschen würde die Reise mit dem Tempo von Voyager 1 dauern?", e: (n) => `Etwa ${n}-mal: Die Reise würde etwa 75.000 Jahre dauern.` },
     },
   },
   ja: {
+    paths: {
+      solar: { title: "私たちの太陽系", goal: "太陽系のしくみを説明し、おもな天体を見分けられるようになります。" },
+      alpha: { title: "いちばん近い星たち：ケンタウルス座アルファ星", goal: "私たちにいちばん近い恒星系、その惑星プロキシマb、そしてそれが実際にどれほど遠いかを説明できます。" },
+    },
     path: {
-      title: "私たちの太陽系",
-      goal: "太陽系のしくみを説明し、おもな天体を見分けられるようになります。",
       meta: (m) => `約${m}分 · 初心者向け`,
       rule: "5つのステップのあと、10問の最終テスト。70 %以上で合格です。",
     },
+    allPaths: "すべての学習パス",
     status: { done: "完了", next: "次はこれ", open: "未完了", locked: "先に全ステップを" },
     back: "すべてのステップ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", speak: "読み上げ", speakStop: "停止", speakTitle: "端末内の音声で読み上げます。何も送信されません。", rememberLabel: "覚えておこう", sourcesLabel: "出典", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
     taskLabel: "3D表示で", taskGo: "3Dで見る", scaleBack: "説明用の縮尺に戻す", taskDone: "完了", check: "理解できたか確かめよう", right: "正解です。", wrong: "ちょっと違います。",
@@ -478,6 +719,82 @@ export const LEARN_TEXT = {
         you: (name, dist, year) => `あなたの星${name}から今日届く光は、${year}年ごろ、あなたが生まれた頃に出発しました。${dist}光年を旅してきたのです。`,
         ref: "太陽の次に近い恒星プロキシマ・ケンタウリの光は、私たちに届くまで4.2年かかります。",
       },
+      neighbors: {
+        title: "いちばん近い星たち", goal: "私たちにいちばん近い恒星がどれか、そして光年とは何かがわかります。",
+        text: [
+          "太陽の次に近い恒星はプロキシマ・ケンタウリで、約4.2光年の距離にあります。光年は時間ではなく距離です。光が1年に進む距離で、約9兆5000億キロメートルです。",
+          "プロキシマは、地球にいちばん近い恒星系であるケンタウルス座アルファ星の一員です。プロキシマのほかに、約4.3光年の距離にある明るい2つの星、アルファ・ケンタウリAとBがあります。",
+        ],
+        task: "ケンタウルス座を見てみましょう。その方向に私たちのいちばん近い隣人たちがいます。",
+        remember: [
+          "太陽の次に近い恒星はプロキシマ・ケンタウリで、約4.2光年の距離にあります。",
+          "光年は距離です。光が1年に進む距離です。",
+          "ケンタウルス座アルファ星は地球にいちばん近い恒星系で、ケンタウルス座にあります。",
+        ],
+        you: (left) => (left == null ? "今日あなたに届いたプロキシマ・ケンタウリの光は、約4.2年前、あなたが生まれる前に出発しました。" : `今日あなたに届いたプロキシマ・ケンタウリの光は、約4.2年前、あなたが${left}歳のときに出発しました。`),
+        ref: (left) => `今日私たちに届いたプロキシマ・ケンタウリの光は、約4.2年前に出発しました。いま30歳の人は、そのとき${left}歳でした。`,
+      },
+      pair: {
+        title: "アルファ・ケンタウリAとB", goal: "ケンタウルス座アルファ星の明るい2つの星と、その動きを説明できます。",
+        text: [
+          "アルファ・ケンタウリAとBは、共通の重心のまわりを80年に1回まわる2つの星です。いちばん近づくときの間隔は、地球と太陽の距離の約11倍です。",
+          "Aは私たちの太陽と同じタイプの星（G2）で、少し大きく、B（K1型）は少し小さい星です。2025年、ジェームズ・ウェッブ宇宙望遠鏡が、Aのまわりに土星くらいの重さの巨大惑星があるかもしれない手がかりを見つけました。本当にあるかどうかは、まだ未解決の問いです。",
+        ],
+        task: "このステップには3D表示での課題がありません。AとBはまだ地図にないからです。問題に答えれば、ステップ完了です。", // no task in the 3D view: A and B are not in the map
+        remember: [
+          "アルファ・ケンタウリAとBは、80年に1回たがいのまわりをまわります。",
+          "Aは太陽と同じタイプの星で少し大きく、Bは少し小さい星です。",
+          "2025年にウェッブ望遠鏡が見つけたAのまわりの惑星候補は、まだ確認されていません。",
+        ],
+        you: (share) => `AとBがたがいのまわりを1周するには80年かかります。あなたのこれまでの人生で、その${share} %をまわりました。`,
+        ref: (share) => `AとBがたがいのまわりを1周するには80年かかります。30年でその${share} %をまわります。`,
+      },
+      proxima: {
+        title: "プロキシマ・ケンタウリ", goal: "赤色矮星とは何か、そしてプロキシマが肉眼で見えない理由がわかります。",
+        text: [
+          "プロキシマ・ケンタウリは赤色矮星です。小さくて温度の低い星で、太陽よりずっと暗いのです。いちばん近い恒星なのに、暗すぎて肉眼では見えません。",
+          "ケンタウルス座アルファ星の3番目の、いちばん暗い星です。紫外線やX線のフレアを放ち、それはその惑星にとってとても重要です。",
+        ],
+        task: "プロキシマ・ケンタウリまで飛んで、小さな赤い星を見てみましょう。",
+        remember: [
+          "プロキシマ・ケンタウリは赤色矮星で、小さく、温度が低く、太陽よりずっと暗い星です。",
+          "いちばん近い恒星なのに、肉眼では見えません。",
+          "ケンタウルス座アルファ星の3番目でいちばん暗い星で、紫外線やX線のフレアを放ちます。",
+        ],
+        you: (trips) => `あなたのこれまでの人生のあいだに、光はプロキシマから私たちまでの道のりを${trips}回進めたことになります。`,
+        ref: (trips) => `30年のあいだに、光はプロキシマから私たちまでの道のりを${trips}回進めます。`,
+      },
+      proximaB: {
+        title: "プロキシマb", goal: "プロキシマbについてわかっていること、そしてハビタブルゾーンが生命を意味しない理由がわかります。",
+        text: [
+          "2016年、ヨーロッパ南天天文台（ESO）の天文学者が、プロキシマ・ケンタウリをまわる惑星プロキシマbを発表しました。惑星に引っぱられて星がわずかにゆれ、その光が少しずれることから見つけたのです。この惑星は11.2日で星を1周し、少なくとも地球と同じくらいの重さがあります。",
+          "プロキシマbは星のハビタブルゾーンにあります。条件がそろえば、液体の水がありえる温度だということです。しかしプロキシマのフレアが大気をはぎ取るかもしれません。プロキシマbに空気や水、まして生命があるかどうかは、わかっていません。",
+        ],
+        task: "プロキシマbまで飛んで、近くから見てみましょう。",
+        remember: [
+          "いちばん近い恒星の惑星プロキシマbは、2016年にESOが発表しました。",
+          "プロキシマbの1年は11.2日です。",
+          "写真ではなく、星のわずかなゆれから見つかりました。",
+          "ハビタブルゾーンにあることは、生命がいることを意味しません。空気や水があるかはわかっていません。",
+        ],
+        you: (age) => `プロキシマbでは、あなたは${age}歳です。そこでの1年はたった11.2日だからです。`,
+        ref: (age) => `30歳の人は、プロキシマbでは${age}歳です。そこでの1年はたった11.2日だからです。`,
+      },
+      travel: {
+        title: "いつか行けるでしょうか？", goal: "いちばん近い恒星への旅が、いまならどれくらいかかるかを説明できます。",
+        text: [
+          "いちばん遠くにある探査機ボイジャー1号は、秒速約17キロメートル、時速6万1000キロメートル以上で太陽から遠ざかっています。この速さだと、4.2光年の旅には約7万5000年かかります（距離と速さから計算した値）。",
+          "光なら同じ道のりを約4.2年で進みます。星と星はそれほど離れているのです。いちばん近い隣人でさえ、いまの探査機では届きません。",
+        ],
+        task: "旅行プランナーで、地球からプロキシマbへの旅を計画してみましょう。",
+        remember: [
+          "ボイジャー1号は秒速約17キロメートルで飛んでいます。",
+          "その速さだと、プロキシマまでの旅は約7万5000年かかります。",
+          "光なら同じ道のりを約4.2年で進みます。",
+        ],
+        you: (n) => `ボイジャー1号の速さだと、旅は約7万5000年かかります。あなたのこれまでの人生の${n}倍です。`,
+        ref: (n) => `ボイジャー1号の速さだと、旅は約7万5000年かかります。30歳の人の人生の${n}倍です。`,
+      },
     },
     q: {
       sunLight: { q: "太陽の光が地球に届くまでどれくらいかかりますか？", o: ["約8分", "約8秒", "約8時間"], e: "約8分20秒です。太陽は1億5000万キロメートル離れていて、光は1秒に約30万キロメートル進みます。" },
@@ -500,15 +817,35 @@ export const LEARN_TEXT = {
       sunSize: { q: "太陽の直径には、地球がおよそいくつ並びますか？", o: ["約109個", "約11個", "約1000個"], e: "約109個です。太陽の半径は地球の約109倍です。" },
       asteroidBelt: { q: "ほとんどの小惑星は、どこで太陽のまわりを回っていますか？", o: ["火星と木星のあいだ", "地球と火星のあいだ", "土星と天王星のあいだ"], e: "火星と木星のあいだの小惑星帯です。その中で最大の天体ケレスは準惑星です。" },
       cometTail: { q: "彗星の尾はどちらを向いていますか？", o: ["太陽と反対の方向", "太陽の方向", "いつも地球の方向"], e: "太陽と反対の方向です。太陽の光と太陽風が、コマのちりとガスを太陽から吹き流すからです。" },
+      nearestStar: { q: "太陽の次に近い恒星はどれですか？", o: ["プロキシマ・ケンタウリ", "シリウス", "北極星"], e: "プロキシマ・ケンタウリで、約4.2光年の距離です。" },
+      lightYear: { q: "光年とは何ですか？", o: ["距離：光が1年に進む距離", "時間：宇宙での1年", "星の年齢"], e: "距離です。光は1年に約9兆5000億キロメートル進みます。" },
+      pairPeriod: { q: "アルファ・ケンタウリAとBがたがいのまわりを1周するのに、どれくらいかかりますか？", o: ["約80年", "約80日", "約8000年"], e: "約80年です。いちばん近づくときの間隔は、地球と太陽の距離の約11倍です。" },
+      pairSun: { q: "私たちの太陽と同じタイプの星はどれですか？", o: ["アルファ・ケンタウリA", "アルファ・ケンタウリB", "プロキシマ・ケンタウリ"], e: "アルファ・ケンタウリAです。太陽と同じG2型で、少し大きい星です。" },
+      constellation: { q: "ケンタウルス座アルファ星は、どの星座にありますか？", o: ["ケンタウルス座", "オリオン座", "おおぐま座"], e: "ケンタウルス座です。" },
+      redDwarf: { q: "プロキシマ・ケンタウリはどんな星ですか？", o: ["赤色矮星", "赤色巨星", "太陽のような星"], e: "赤色矮星です。小さく、温度が低く、太陽よりずっと暗い星です。" },
+      proximaEye: { q: "プロキシマ・ケンタウリは肉眼で見えますか？", o: ["いいえ、暗すぎます", "はい、空でいちばん明るい星です", "昼間だけ見えます"], e: "いいえ。いちばん近い恒星ですが、肉眼で見るには暗すぎます。" },
+      thirdStar: { q: "ケンタウルス座アルファ星にはいくつの星がありますか？", o: ["3つ", "2つ", "1つ"], e: "3つです。アルファ・ケンタウリAとB、そしていちばん暗いプロキシマ・ケンタウリです。" },
+      proximaBYear: { q: "プロキシマbの1年はどれくらいですか？", o: ["約11日", "約11か月", "約11年"], e: "約11.2日です。それほど速く星のまわりをまわっています。" },
+      habitable: { q: "「ハビタブルゾーンにある」とはどういう意味ですか？", o: ["条件がそろえば液体の水がありえる", "そこで生命が見つかった", "その惑星にはかならず空気がある"], e: "温度が液体の水を許すかもしれない、という意味だけです。プロキシマbに空気や水、生命があるかはわかっていません。" },
+      howFound: { q: "プロキシマbはどのように見つかりましたか？", o: ["星のわずかなゆれから", "惑星の写真から", "電波信号から"], e: "惑星に引っぱられてゆれる星の、光のわずかなずれから見つかりました。" },
+      voyagerSpeed: { q: "ボイジャー1号は、およそどれくらいの速さで太陽から遠ざかっていますか？", o: ["秒速約17キロメートル", "時速約17キロメートル", "秒速約1万7000キロメートル"], e: "秒速約17キロメートル、時速6万1000キロメートル以上です。" },
+      travelTime: { q: "ボイジャー1号がプロキシマ・ケンタウリに着くには、およそどれくらいかかりますか？", o: ["約7万5000年", "約750年", "約750万年"], e: "約7万5000年です。4.2光年を秒速17キロメートルで進んだ場合です。" },
+      proximaLeft: { you: "今日あなたに届いたプロキシマの光が出発したとき、あなたは何歳でしたか？", ref: "いま私たちに届いたプロキシマの光が出発したとき、いま30歳の人は何歳でしたか？", e: (n) => `${n}歳です。光は約4.2年前に出発しました。` },
+      lightTrips: { you: "あなたのこれまでの人生で、光はプロキシマから私たちまでの道のりを何回進めたでしょうか？", ref: "30年のあいだに、光はプロキシマから私たちまでの道のりを何回進めますか？", e: (n) => `${n}回です。その道のりには約4.2年かかります。` },
+      proximaBAge: { you: "プロキシマbでは、あなたは何歳ですか？", ref: "30歳の人は、プロキシマbでは何歳ですか？", e: (n) => `${n}歳です。プロキシマbの1年はたった11.2日です。` },
+      lifetimes: { you: "ボイジャー1号の速さでの旅は、あなたのこれまでの人生の何倍かかりますか？", ref: "ボイジャー1号の速さでの旅は、30歳の人の人生の何倍かかりますか？", e: (n) => `約${n}倍です。旅は約7万5000年かかります。` },
     },
   },
   bg: {
+    paths: {
+      solar: { title: "Нашата Слънчева система", goal: "Можеш да обясниш как е устроена Слънчевата система и да различаваш основните ѝ тела." },
+      alpha: { title: "Най-близките ни звезди: Алфа Кентавър", goal: "Можеш да опишеш най-близката до нас звездна система, нейната планета Проксима b и колко далеч е тя всъщност." },
+    },
     path: {
-      title: "Нашата Слънчева система",
-      goal: "Можеш да обясниш как е устроена Слънчевата система и да различаваш основните ѝ тела.",
       meta: (m) => `около ${m} минути · за начинаещи`,
       rule: "5 стъпки, после финален тест с 10 въпроса; издържан от 70 %.",
     },
+    allPaths: "Всички учебни пътеки",
     status: { done: "Готово", next: "Следва", open: "Предстои", locked: "Първо всички стъпки" },
     back: "Всички стъпки", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", speak: "Прочети на глас", speakStop: "Спри", speakTitle: "Чете се с глас на устройството ти; нищо не се изпраща.", rememberLabel: "Запомни", sourcesLabel: "Източници", forYou: "За теб", example: "Пример", exampleHint: "С датата ти на раждане (в прегледа на „Моята вселена“) това става твоето собствено число.",
     taskLabel: "В 3D изгледа", taskGo: "Покажи в 3D", scaleBack: "Обратно към обяснителния мащаб", taskDone: "Готово", check: "Провери какво разбра", right: "Вярно.", wrong: "Не съвсем.",
@@ -604,6 +941,82 @@ export const LEARN_TEXT = {
         you: (name, dist, year) => `Светлината на твоята звезда, ${name}, която пристига днес, е тръгнала около ${year} г., приблизително в годината на раждането ти. Пътувала е ${dist} светлинни години.`,
         ref: "Светлината на най-близката звезда, Проксима Кентавър, пътува 4,2 години до нас.",
       },
+      neighbors: {
+        title: "Най-близките ни звезди", goal: "Знаеш кои звезди са най-близо до нас и какво е светлинна година.",
+        text: [
+          "След Слънцето най-близката до нас звезда е Проксима Кентавър, на около 4,2 светлинни години. Светлинната година не е време, а разстояние: колко далеч стига светлината за една година, почти 9,5 трилиона километра.",
+          "Проксима е част от Алфа Кентавър, най-близката до Земята звездна система, в съзвездието Кентавър. Освен Проксима в нея има две ярки звезди, Алфа Кентавър A и B, на около 4,3 светлинни години.",
+        ],
+        task: "Разгледай съзвездието Кентавър: в тази посока са най-близките ни съседи.",
+        remember: [
+          "След Слънцето Проксима Кентавър е най-близката звезда, на около 4,2 светлинни години.",
+          "Светлинната година е разстояние: колко далеч стига светлината за една година.",
+          "Алфа Кентавър е най-близката до Земята звездна система; тя е в съзвездието Кентавър.",
+        ],
+        you: (left) => (left == null ? "Светлината на Проксима Кентавър, която стига до теб днес, е тръгнала преди около 4,2 години, още преди да се родиш." : `Светлината на Проксима Кентавър, която стига до теб днес, е тръгнала преди около 4,2 години, когато беше на ${left}.`),
+        ref: (left) => `Светлината на Проксима Кентавър, която стига до нас днес, е тръгнала преди около 4,2 години: човек, който днес е на 30, тогава е бил на ${left}.`,
+      },
+      pair: {
+        title: "Алфа Кентавър A и B", goal: "Можеш да опишеш двете ярки звезди на Алфа Кентавър и как се движат.",
+        text: [
+          "Алфа Кентавър A и B са двойка звезди, които обикалят около общ център на тежестта веднъж на 80 години. Когато са най-близо, разстоянието между тях е около 11 пъти разстоянието Земя–Слънце.",
+          "A е звезда от същия вид като нашето Слънце (G2) и е малко по-голяма; B (тип K1) е малко по-малка. През 2025 г. космическият телескоп „Джеймс Уеб“ откри следи от възможна гигантска планета около A, тежка колкото Сатурн. Дали тя наистина съществува, е още открит въпрос.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа: A и B още ги няма на картата. Отговори на въпросите и стъпката е готова.", // no task in the 3D view: A and B are not in the map
+        remember: [
+          "Алфа Кентавър A и B обикалят една около друга веднъж на 80 години.",
+          "A е звезда от същия вид като Слънцето и е малко по-голяма, B е малко по-малка.",
+          "Възможна планета около A, видяна от телескопа „Уеб“ през 2025 г., още не е потвърдена.",
+        ],
+        you: (share) => `A и B имат нужда от 80 години за една обиколка една около друга: през досегашния ти живот са изминали ${share} % от нея.`,
+        ref: (share) => `A и B имат нужда от 80 години за една обиколка една около друга: за 30 години изминават ${share} % от нея.`,
+      },
+      proxima: {
+        title: "Проксима Кентавър", goal: "Знаеш какво е червено джудже и защо Проксима не се вижда с просто око.",
+        text: [
+          "Проксима Кентавър е червено джудже: малка, хладна звезда, много по-слаба от Слънцето. Макар да е най-близката ни звезда, тя е твърде слаба, за да се види с просто око.",
+          "Тя е третата и най-слабата звезда на системата Алфа Кентавър. Изпраща изблици на ултравиолетова светлина и рентгенови лъчи, а това е много важно за нейната планета.",
+        ],
+        task: "Полети до Проксима Кентавър и разгледай малката червена звезда.",
+        remember: [
+          "Проксима Кентавър е червено джудже: малка, хладна и много по-слаба от Слънцето.",
+          "Не се вижда с просто око, макар да е най-близката звезда.",
+          "Тя е третата и най-слабата звезда на Алфа Кентавър и изпраща изблици на ултравиолетова светлина и рентгенови лъчи.",
+        ],
+        you: (trips) => `През досегашния ти живот светлината би могла да измине пътя от Проксима до нас ${trips} пъти.`,
+        ref: (trips) => `За 30 години светлината може да измине пътя от Проксима до нас ${trips} пъти.`,
+      },
+      proximaB: {
+        title: "Проксима b", goal: "Знаеш какво се знае за Проксима b и защо обитаемата зона не означава живот.",
+        text: [
+          "През 2016 г. астрономи от Европейската южна обсерватория (ESO) обявиха планета около Проксима Кентавър: Проксима b. Откриха я по мънички отмествания в светлината на звездата, която леко се клати, защото планетата я дърпа. Планетата обикаля звездата си за 11,2 дни и е поне горе-долу колкото Земята по маса.",
+          "Проксима b е в обитаемата зона на звездата си: температурата там би могла да позволи течна вода при подходящи условия. Но изблиците на Проксима може да отнесат атмосферата ѝ. Дали Проксима b има въздух, вода или дори живот, не е известно.",
+        ],
+        task: "Полети до Проксима b и я разгледай отблизо.",
+        remember: [
+          "Проксима b, планетата на най-близката звезда, е обявена от ESO през 2016 г.",
+          "Една година на Проксима b трае 11,2 дни.",
+          "Открита е по клатенето на звездата си, а не на снимка.",
+          "В обитаемата зона не значи обитавана: не е известно дали има въздух или вода.",
+        ],
+        you: (age) => `На Проксима b щеше да си на ${age} години: годината там трае само 11,2 дни.`,
+        ref: (age) => `Човек на 30 години щеше да е на ${age} години на Проксима b: годината там трае само 11,2 дни.`,
+      },
+      travel: {
+        title: "Бихме ли стигнали някога дотам?", goal: "Можеш да кажеш колко дълго би траело днес пътуване до най-близката звезда.",
+        text: [
+          "„Вояджър 1“, най-далечната космическа сонда, се отдалечава от Слънцето с около 17 километра в секунда, над 61 000 километра в час. С тази скорост пътуване от 4,2 светлинни години би траело около 75 000 години (изчислено от разстоянието и скоростта).",
+          "Светлината изминава същия път за около 4,2 години. Толкова далеч са звездите една от друга: дори най-близкият ни съсед е недостижим за днешните сонди.",
+        ],
+        task: "Планирай в планера за пътувания пътуване от Земята до Проксима b.",
+        remember: [
+          "„Вояджър 1“ лети с около 17 километра в секунда.",
+          "С тази скорост пътуването до Проксима би траело около 75 000 години.",
+          "Светлината изминава същия път за около 4,2 години.",
+        ],
+        you: (n) => `Със скоростта на „Вояджър 1“ пътуването би траело около 75 000 години: ${n} пъти колкото досегашния ти живот.`,
+        ref: (n) => `Със скоростта на „Вояджър 1“ пътуването би траело около 75 000 години: ${n} пъти колкото живота на човек на 30.`,
+      },
     },
     q: {
       sunLight: { q: "Колко време пътува слънчевата светлина до Земята?", o: ["Около 8 минути", "Около 8 секунди", "Около 8 часа"], e: "Около 8 минути и 20 секунди: Слънцето е на 150 милиона километра, а светлината изминава около 300 000 километра в секунда." },
@@ -626,6 +1039,23 @@ export const LEARN_TEXT = {
       sunSize: { q: "Около колко Земи се нареждат в диаметъра на Слънцето?", o: ["Около 109", "Около 11", "Около 1000"], e: "Около 109: радиусът на Слънцето е около 109 пъти по-голям от този на Земята." },
       asteroidBelt: { q: "Къде обикалят Слънцето повечето астероиди?", o: ["Между Марс и Юпитер", "Между Земята и Марс", "Между Сатурн и Уран"], e: "В астероидния пояс между Марс и Юпитер. Най-голямото тяло там, Церера, е джудже планета." },
       cometTail: { q: "Накъде сочи опашката на кометата?", o: ["Далеч от Слънцето", "Към Слънцето", "Винаги към Земята"], e: "Далеч от Слънцето: слънчевата светлина и слънчевият вятър отнасят праха и газа на комата далеч от него." },
+      nearestStar: { q: "Коя е най-близката звезда след Слънцето?", o: ["Проксима Кентавър", "Сириус", "Полярната звезда"], e: "Проксима Кентавър, на около 4,2 светлинни години." },
+      lightYear: { q: "Какво е светлинна година?", o: ["Разстояние: колко далеч стига светлината за година", "Време: една година в космоса", "Възрастта на звезда"], e: "Разстояние. Светлината изминава почти 9,5 трилиона километра за година." },
+      pairPeriod: { q: "За колко време Алфа Кентавър A и B обикалят една около друга?", o: ["За около 80 години", "За около 80 дни", "За около 8000 години"], e: "За около 80 години. Когато са най-близо, разстоянието между тях е около 11 пъти разстоянието Земя–Слънце." },
+      pairSun: { q: "Коя звезда е от същия вид като нашето Слънце?", o: ["Алфа Кентавър A", "Алфа Кентавър B", "Проксима Кентавър"], e: "Алфа Кентавър A, тип G2 като Слънцето, и малко по-голяма." },
+      constellation: { q: "В кое съзвездие е Алфа Кентавър?", o: ["Кентавър", "Орион", "Голямата мечка"], e: "В Кентавър." },
+      redDwarf: { q: "Каква звезда е Проксима Кентавър?", o: ["Червено джудже", "Червен гигант", "Звезда като Слънцето"], e: "Червено джудже: малка, хладна и много по-слаба от Слънцето." },
+      proximaEye: { q: "Може ли Проксима Кентавър да се види с просто око?", o: ["Не, твърде слаба е", "Да, тя е най-ярката звезда на небето", "Само през деня"], e: "Не: макар да е най-близката звезда, тя е твърде слаба за просто око." },
+      thirdStar: { q: "Колко звезди има системата Алфа Кентавър?", o: ["Три", "Две", "Една"], e: "Три: Алфа Кентавър A и B и Проксима Кентавър, най-слабата." },
+      proximaBYear: { q: "Колко трае една година на Проксима b?", o: ["Около 11 дни", "Около 11 месеца", "Около 11 години"], e: "Около 11,2 дни: толкова бързо обикаля звездата си." },
+      habitable: { q: "Какво означава „в обитаемата зона“?", o: ["При подходящи условия там би могло да има течна вода", "Там е открит живот", "Планетата със сигурност има въздух"], e: "Само че температурата би могла да позволи течна вода. Дали Проксима b има въздух, вода или живот, не е известно." },
+      howFound: { q: "Как е открита Проксима b?", o: ["По мъничкото клатене на звездата ѝ", "На снимка на планетата", "По радиосигнал"], e: "По мънички отмествания в светлината на звездата, която се клати, защото планетата я дърпа." },
+      voyagerSpeed: { q: "Приблизително колко бързо се отдалечава „Вояджър 1“ от Слънцето?", o: ["Около 17 км в секунда", "Около 17 км в час", "Около 17 000 км в секунда"], e: "Около 17 километра в секунда, над 61 000 километра в час." },
+      travelTime: { q: "Приблизително колко време би му трябвало на „Вояджър 1“ до Проксима Кентавър?", o: ["Около 75 000 години", "Около 750 години", "Около 7,5 милиона години"], e: "Около 75 000 години: 4,2 светлинни години със 17 километра в секунда." },
+      proximaLeft: { you: "На колко години беше, когато е тръгнала светлината на Проксима, която стига до теб днес?", ref: "На колко години е бил човек, който днес е на 30, когато е тръгнала светлината на Проксима, която стига до нас сега?", e: (n) => `На ${n}: светлината е тръгнала преди около 4,2 години.` },
+      lightTrips: { you: "Колко пъти светлината би могла да измине пътя от Проксима до нас през досегашния ти живот?", ref: "Колко пъти светлината може да измине пътя от Проксима до нас за 30 години?", e: (n) => `${n} пъти: за пътя са ѝ нужни около 4,2 години.` },
+      proximaBAge: { you: "На колко години щеше да си на Проксима b?", ref: "На колко години щеше да е на Проксима b човек на 30?", e: (n) => `${n}: годината на Проксима b трае само 11,2 дни.` },
+      lifetimes: { you: "Колко пъти колкото досегашния ти живот би траело пътуването със скоростта на „Вояджър 1“?", ref: "Колко пъти колкото живота на човек на 30 би траело пътуването със скоростта на „Вояджър 1“?", e: (n) => `Около ${n} пъти: пътуването би траело около 75 000 години.` },
     },
   },
 };
@@ -638,6 +1068,8 @@ export function personalLine(step, nums, lang) {
   if (step === "inner") return (nums.you ? s.you : s.ref)(fmt(nums.mars), fmt(nums.mercury));
   if (step === "outer") return (nums.you ? s.you : s.ref)(fmt(nums.jupiterLaps));
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
+  const alpha = { neighbors: "proximaLeft", pair: "lapShare", proxima: "lightTrips", proximaB: "proximaBAge", travel: "lifetimes" }[step];
+  if (alpha) return (nums.you ? s.you : s.ref)(nums[alpha] == null ? null : fmt(nums[alpha]));
   return nums.star ? s.you(nums.star.name, fmt(nums.star.dist, 1), nums.star.year) : s.ref;
 }
 
@@ -658,8 +1090,8 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
     b.addEventListener("click", onClick);
     return b;
   };
-  const PATH = "solar";
-  let view = "path"; // "path", a step, or "test"
+  let PATH = "solar"; // the path open now
+  let view = "list"; // "list" (all the paths), "path", a step, or "test"
   const answers = {}; // step -> question -> the label chosen last (for this visit)
   let attempt = 0;
   let testChosen = {};
@@ -669,15 +1101,26 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
   const has = (list, id) => (total()[list] ?? []).includes(id);
   const stepDone = (step) => has("learnSteps", `${PATH}/${step}`);
   const taskDone = (step) => has("learnTasks", `${PATH}/${step}`);
-  const steps = PATHS[PATH].steps;
+  let steps = PATHS[PATH].steps;
+  const doneOf = (path) => PATHS[path].steps.filter((step) => has("learnSteps", `${path}/${step}`)).length;
+  function choose(path) {
+    PATH = path;
+    steps = PATHS[path].steps;
+    attempt = 0;
+    testChosen = {};
+    testChecked = false;
+  }
   const doneCount = () => steps.filter(stepDone).length;
   const best = () => total()[`learnBest:${PATH}`] ?? 0;
   const pathPassed = () => has("learnPaths", PATH);
   const nums = () => personalNumbers(personal());
 
   // a small picture for each step, from the same drawings as the rest of My Universe
+  const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
   const pictureOf = (step) =>
-    step === "sun" ? starCanvas(5772, "uni-orb small star", 28)
+    ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
+    : step === "proximaB" ? planetCanvas({ temp: 218 }, "uni-orb small", 28)
+    : step === "sun" ? starCanvas(5772, "uni-orb small star", 28)
     : planetCanvas({ name: { inner: "Mars", outer: "Saturn", moons: "Moon", scale: "Neptune" }[step] }, "uni-orb small", 28);
   // Reading a step aloud: only with a voice that runs on the device. An online voice (some of Chrome's) would send the text, with the
   // visitor's own numbers in it, to a server; without a voice on the device there is no button.
@@ -739,19 +1182,42 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
 
   // a step counts as done once: its task done and every question answered right
   function maybeFinish(step, questions) {
-    if (stepDone(step) || !taskDone(step)) return;
+    if (stepDone(step) || (TASKS[step] && !taskDone(step))) return;
     if (!questions.every((q) => answers[step]?.[q.id] === q.answer)) return;
     explorer.emit("learnStep", `${PATH}/${step}`);
     track(`learn-step-${step}`);
   }
 
+  const pathPicture = (path, cls, size) => (path === "alpha" ? starCanvas(5790, `${cls} star`, size) : planetCanvas({ name: "Saturn" }, cls, size));
+
+  // all the paths: a card each, with its progress
+  function listView(onChange) {
+    const tx = t();
+    const list = el("div", "uni-list");
+    for (const path of Object.keys(PATHS)) {
+      const all = PATHS[path].steps.length;
+      const passedIt = has("learnPaths", path);
+      const row = el("button", `uni-item learn-step${passedIt ? " done" : ""}`);
+      row.type = "button";
+      const text = el("span", "uni-item-text");
+      text.append(el("strong", "", tx.paths[path].title), el("small", "", `${tx.path.meta(PATHS[path].minutes)} · ${tx.progress(doneOf(path), all)}`));
+      const arrow = el("span", "uni-arrow", passedIt ? "★" : "›");
+      arrow.setAttribute("aria-hidden", "true");
+      row.append(pathPicture(path, "uni-orb small", 28), text, arrow);
+      row.addEventListener("click", () => (choose(path), (view = "path"), track(`learn-path-${path}`), onChange?.()));
+      list.append(row);
+    }
+    return [list];
+  }
+
   function pathView(onChange) {
     const tx = t();
+    const back = button(`‹ ${tx.allPaths}`, "uni-link learn-back", () => ((view = "list"), onChange?.()));
     const card = el("div", "learn-path");
     const head = el("div", "learn-path-head");
     const text = el("div", "");
-    text.append(el("strong", "", tx.path.title), el("p", "", tx.path.goal), el("small", "", `${tx.path.meta(PATHS[PATH].minutes)} · ${tx.progress(doneCount(), steps.length)}`));
-    head.append(planetCanvas({ name: "Saturn" }, "learn-path-pic", 64), text);
+    text.append(el("strong", "", tx.paths[PATH].title), el("p", "", tx.paths[PATH].goal), el("small", "", `${tx.path.meta(PATHS[PATH].minutes)} · ${tx.progress(doneCount(), steps.length)}`));
+    head.append(pathPicture(PATH, "learn-path-pic", 64), text);
     const bar = el("div", "uni-bar");
     bar.setAttribute("role", "progressbar");
     bar.setAttribute("aria-valuemin", "0");
@@ -787,7 +1253,7 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
     testRow.append(statusIcon(pathPassed() ? "★" : "?"), tt, el("span", "uni-arrow", open ? "›" : ""));
     if (open) testRow.addEventListener("click", () => ((view = "test"), onChange?.()));
     list.append(testRow);
-    return [card, list];
+    return [back, card, list];
   }
 
   function questionBlock(q, chosen, onPick, reveal) {
@@ -845,7 +1311,8 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
     for (const f of s.remember) facts.append(el("li", "", f));
     remember.append(el("small", "", tx.rememberLabel), facts);
     parts.push(remember);
-    // the task in the 3D view
+    // the task in the 3D view (a step without one says so)
+    if (!TASKS[step]) parts.push(el("p", "hint", s.task));
     const task = el("div", `learn-task${taskDone(step) ? " done" : ""}`);
     const tt = el("div", "");
     tt.append(el("small", "", tx.taskLabel), el("p", "", s.task));
@@ -869,7 +1336,7 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
         })
       );
     task.append(tt, buttons);
-    parts.push(task);
+    if (TASKS[step]) parts.push(task);
     // the questions: an answer can be changed until it is right; the explanation comes with every answer
     parts.push(el("h3", "learn-check", tx.check));
     for (const q of questions)
@@ -893,7 +1360,7 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
           : button(tx.toTest, "uni-primary", () => ((view = doneCount() === steps.length ? "test" : "path"), onChange?.()))
       );
       parts.push(done);
-    } else if (allRight && !taskDone(step)) parts.push(el("p", "hint learn-missing", tx.needTask));
+    } else if (allRight && TASKS[step] && !taskDone(step)) parts.push(el("p", "hint learn-missing", tx.needTask));
     // where the facts come from
     const sources = el("p", "hint learn-sources");
     sources.append(`${tx.sourcesLabel}: `);
@@ -964,7 +1431,8 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
     if (speaking && view !== speaking) stopSpeaking(); // another step, the path or the test: the reading stops
     if (view === "test") return { nodes: testView(onChange), overview: false };
     if (steps.includes(view)) return { nodes: stepView(view, onChange), overview: false };
-    return { nodes: pathView(onChange), overview: true };
+    if (view === "path") return { nodes: pathView(onChange), overview: false };
+    return { nodes: listView(onChange), overview: true };
   }
   return { area, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
 }
