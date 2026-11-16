@@ -723,6 +723,9 @@ const milkyWay = new THREE.Mesh(
   })
 );
 milkyWay.renderOrder = -100; // before everything else
+let skyWanted = true; // the setting "Background"
+let skyReady = false; // its shader is translated (see compileAsync near animate())
+milkyWay.visible = false;
 milkyWay.frustumCulled = false;
 scene.add(milkyWay);
 
@@ -902,6 +905,7 @@ function starGlow(color, size) {
 const SUN_RADIUS = 0.08; // map units
 const SUN_COLOR = 0xffd166;
 const sun = starBody(SUN_COLOR, "Sun", SUN_RADIUS);
+let sunReady = false; // its shader is translated (see compileAsync near animate()); until then it is not drawn
 scene.add(sun);
 
 // Streamers of the corona: soft rays that fan out from the Sun, drawn on a flat sheet that always faces the
@@ -1884,7 +1888,9 @@ const SOLAR_LOOK_FRAGMENT = `
     vec3 p = n * 3.0 + seedOffset(uSeed);
     float lat = n.y;
     vec3 base;
-    if (uKind == 0) {
+    // only the part of this planet is compiled (KIND, a define of the material): one shader with all four took seconds to translate
+    #if KIND == 0
+    {
       // Venus as the ultraviolet pictures of probes show it: cream white cloud with streaks that the
       // wind stretches along the latitude, peach orange patches near the equator, and a swirl at the
       // poles. The overall look is known, the exact pattern is invented.
@@ -1908,7 +1914,9 @@ const SOLAR_LOOK_FRAGMENT = `
       float r = 1.0 - abs(lat); // distance from the pole
       float spiral = sin(atan(n.z, n.x) * 2.0 + r * 16.0 + warp * 3.0);
       base = mix(base, mix(cream, white, 0.5 + 0.5 * spiral), smoothstep(0.35, 0.05, r) * 0.7);
-    } else if (uKind == 1) {
+    }
+    #elif KIND == 1
+    {
       // Saturn as the Cassini pictures show it: cream and tan bands, orange brown belts with wavy edges,
       // and a bluish grey north. The band edges are pushed sideways by noise, which gives the wavy look.
       // No regular stripes: a few broad zones, soft at the edges, with cloud mottling inside them.
@@ -1926,7 +1934,9 @@ const SOLAR_LOOK_FRAGMENT = `
       base = mix(base, grey, smoothstep(0.5, 0.85, latW) * 0.7 + smoothstep(0.8, 0.97, -latW) * 0.35);
       float grain = fbm(vec3(p.x * 3.0, p.y * 16.0, p.z * 3.0) + 9.0);
       base *= 0.92 + 0.16 * grain;
-    } else if (uKind == 2) {
+    }
+    #elif KIND == 2
+    {
       // Uranus: turquoise with soft, darker teal bands. Real Uranus is much
       // plainer from space (the bands only show in processed pictures), so this is an artistic look.
       float wob = fbm(vec3(p.x * 0.8, p.y * 0.3, p.z * 0.8));
@@ -1941,7 +1951,9 @@ const SOLAR_LOOK_FRAGMENT = `
       base = mix(base, light, smoothstep(0.7, 0.95, lat) * 0.5);
       float grain = fbm(vec3(p.x * 3.0, p.y * 14.0, p.z * 3.0) + 9.0);
       base *= 0.93 + 0.14 * grain;
-    } else {
+    }
+    #else
+    {
       // Neptune as Voyager 2 saw it: saturated royal blue, very soft faint bands, a bright band in the
       // north, one big dark oval with bright streaks of high cloud beside it. The pattern is invented.
       float wob = fbm(vec3(p.x * 0.8, p.y * 0.3, p.z * 0.8));
@@ -1970,6 +1982,7 @@ const SOLAR_LOOK_FRAGMENT = `
       float thin = smoothstep(0.66, 0.85, noise(vec3(n.x * 3.0, n.y * 22.0, n.z * 3.0) + seedOffset(uSeed * 3.0)));
       base = mix(base, vec3(0.7, 0.82, 1.0), thin * 0.1 * (1.0 - smoothstep(0.1, 0.7, abs(lat + 0.2))));
     }
+    #endif
 
     float facing = dot(normalize(vNormal), normalize(uLightDir));
     float shade = uRingShadow > 0.5 ? ringShadow() : 0.0;
@@ -1992,6 +2005,7 @@ function solarLookMaterial(p) {
       uSpin: { value: 0 }, // updated every frame from the clock of the system
       uLightDir: { value: new THREE.Vector3(0, 0, 1) }, // updated every frame from the orbit
     },
+    defines: { KIND: p.look },
     vertexShader: GAS_VERTEX,
     fragmentShader: SOLAR_LOOK_FRAGMENT,
   });
@@ -3520,12 +3534,13 @@ function adaptDeepQuality(dt) {
 // The picture of the Milky Way behind everything can be switched off, the sky is then black with the stars only.
 const backgroundButton = document.getElementById("bg-toggle");
 function showBackgroundState() {
-  const on = milkyWay.visible;
+  const on = skyWanted;
   backgroundButton.textContent = on ? UI[lang].backgroundOn : UI[lang].backgroundOff;
   backgroundButton.setAttribute("aria-pressed", String(on));
 }
 backgroundButton.addEventListener("click", () => {
-  milkyWay.visible = !milkyWay.visible;
+  skyWanted = !skyWanted;
+  milkyWay.visible = skyWanted && skyReady;
   showBackgroundState();
 });
 
@@ -4032,7 +4047,7 @@ function animate() {
   milkyWay.position.copy(camera.position);
   sunRays.quaternion.copy(camera.quaternion); // the sheet faces the camera
   sunRays.material.uniforms.uTime.value = now;
-  sun.visible = !(realScale && realHome); // in the home system of another star the Sun is just a star of the sky
+  sun.visible = sunReady && !(realScale && realHome); // in the home system of another star the Sun is just a star of the sky
   sunRays.visible = sun.visible && camera.position.length() > SUN_RADIUS * 2.5;
   if (activeExo?.rays) {
     // The streamers of the star of the system that is open, the same sheet as the Sun's
@@ -5728,6 +5743,34 @@ for (const id of ["atlas-panel", "zone-panel", "profile-panel"]) {
     panel.classList.remove("sheet-down");
     handle.setAttribute("aria-expanded", "true");
   }).observe(panel, { attributes: true, attributeFilter: ["hidden"] });
+}
+// The shaders of the scene are translated now, while the welcome card is on screen, and where the browser can (KHR_parallel_shader_compile)
+// beside the drawing instead of in its way. Before, the painted planets (SOLAR_LOOK_FRAGMENT) were translated the moment they first came
+// into view, and the page stood still for seconds (about 8 s measured in Chrome on Windows). A hidden exoplanet joins them, so that the
+// first visit of another system does not stop the page either; three.js compiles hidden objects too. The scene is drawn into the buffer of
+// the bloom (composer), not onto the canvas, and the shaders depend on that (colour space, tone mapping): they are made for that buffer.
+// They also depend on the number of lights in view. Far from the Sun (the start, the other stars) the light of the Solar System is out of
+// view: the sky, the Sun and the stars are made for that, and everything for its light.
+const warmPlanet = new THREE.Mesh(new THREE.SphereGeometry(0.001, 8, 6), planetMaterial({ name: "warm-up", type: "rocky", temp: 288 }));
+warmPlanet.visible = false;
+{
+  const before = renderer.getRenderTarget();
+  renderer.setRenderTarget(composer.readBuffer);
+  scene.remove(solar.group); // without the light of the Solar System
+  scene.add(warmPlanet);
+  const far = renderer.compileAsync(scene, camera);
+  // The sky and the Sun are on screen from the first frame. Drawn before their shaders are ready, the page would wait for them (about
+  // 2 s each); so they come in when ready, while the welcome card is still up, and the card's animation runs smoothly.
+  const showSky = () => ((skyReady = true), (milkyWay.visible = skyWanted));
+  const showSun = () => (sunReady = true);
+  renderer.compileAsync(milkyWay, camera, scene).catch(() => {}).finally(showSky);
+  renderer.compileAsync(sun, camera, scene).catch(() => {}).finally(showSun);
+  setTimeout(() => (skyReady || showSky(), sunReady || showSun()), 8000); // never without them, whatever happens to the translation
+  scene.remove(warmPlanet);
+  scene.add(solar.group);
+  const near = renderer.compileAsync(scene, camera); // with it, everything (the sky and the Sun are seen in its light too)
+  renderer.setRenderTarget(before);
+  Promise.all([far, near]).catch(() => {}); // a shader that fails is reported when it is drawn, as before
 }
 animate();
 // The first visit: a card with three things to try, and a line at the bottom that says how to move. The start is the Solar System with

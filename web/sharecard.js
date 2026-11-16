@@ -62,7 +62,9 @@ function mapPixels(src) {
           const c = document.createElement("canvas");
           c.width = 1024;
           c.height = 512;
-          const g = c.getContext("2d");
+          // read once, never shown: a canvas kept in memory (willReadFrequently) gives its pixels back at once, one on the graphics card
+          // has to copy them back first (1.6 s for the maps of the dock, measured in Chrome on Windows)
+          const g = c.getContext("2d", { willReadFrequently: true });
           g.drawImage(img, 0, 0, c.width, c.height);
           img.close?.(); // an ImageBitmap gives its memory back at once
           return g.getImageData(0, 0, c.width, c.height);
