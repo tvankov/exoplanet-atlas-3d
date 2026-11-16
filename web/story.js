@@ -3,6 +3,7 @@
 // explanations of the discovery methods. Anything unknown is left out instead of guessed.
 
 import { UI_EXTRA, TEXT_EXTRA, DURATION_EXTRA, SOLAR_TITLES, LOCALES } from "./i18n-extra.js";
+import { moonName, moonStory } from "./moons.js";
 
 export const UI = {
   en: {
@@ -722,6 +723,8 @@ export function buildStory(star, planet, lang) {
   const t = TEXT[lang];
   // The other planets of our own system. One that has no text of its own shows only its name.
   if (planet.solarObject) return { title: planet.pl_name, paragraphs: objectStory(planet.solarObject, lang) };
+  // a moon of the Earth or of Jupiter (moons.js)
+  if (planet.moon) return { title: moonName(planet.moon.id, lang), paragraphs: moonStory(planet.moon, planet.moonOf, lang) };
   if (planet.solarOther) {
     const story = SOLAR_STORIES[planet.pl_name];
     return story ? { title: story.title[lang] ?? SOLAR_TITLES[lang]?.[planet.pl_name] ?? story.title.en, paragraphs: story[lang] ?? story.en } : { title: planet.pl_name, paragraphs: [] };

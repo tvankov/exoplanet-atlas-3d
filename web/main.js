@@ -10,6 +10,7 @@ import { initJournal } from "./journal.js";
 import { initMyStar } from "./mystar.js";
 import { initBirthSky, sunConstellation } from "./birthsky.js";
 import { drawDock, drawLevel } from "./dockart.js";
+import { MOONS, moonScale, moonName, facingRotation } from "./moons.js";
 import { initAmbient } from "./atmosphere.js";
 import { initDailyFlight, FLIGHT_TEXT } from "./dailyflight.js";
 import { initRecommendations } from "./recommend.js"; // also writes a fact on the loading screen at once
@@ -986,9 +987,9 @@ const PLANETS = [
     radius: 1.0,
     color: 0x4da3ff,
     earth: true, // drawn with the NASA maps, see earthMaterial
-    // The Moon: 27.32 day orbit and 0.273 Earth radii are real. Its distance is not: in reality
-    // it is about 60 Earth radii away, which would leave the picture, so it is drawn at 2.6.
-    moon: { years: 27.32 / 365.25, size: 0.2727, orbit: 2.6, color: 0xb4b4b4, label: "Moon", texture: "textures/moon.jpg" },
+    // The Moon (moons.js): its 27.3 day orbit and its size are real. Its distance is not: in reality it is about 60 Earth radii away,
+    // which would leave the picture, so the explanation mode draws it at 2.6 (the real scale at 60.3).
+    moons: MOONS.Earth,
   },
   // Mars: the Viking Orbiter global colour mosaic (NASA/JPL/USGS), shrunk to 4096 x 2048. Its green is
   // not a measurement, it was made up from the red and violet pictures, so the colour is close to
@@ -996,7 +997,8 @@ const PLANETS = [
   { name: "Mars", au: 1.524, years: 1.881, radius: 0.532, color: 0xd1603d, texture: "textures/mars.jpg", bump: 8 },
   // Jupiter: Cassini's global map of December 2000 (NASA/JPL/Space Science Institute). The clouds
   // of a gas giant change, so it shows Jupiter as it looked then.
-  { name: "Jupiter", au: 5.203, years: 11.86, radius: 10.97, color: 0xd9b38c, texture: "textures/jupiter.jpg", flatten: 0.935 },
+  // Its four large moons (moons.js): real sizes and periods, the distances squeezed in the explanation mode and real in the real scale.
+  { name: "Jupiter", au: 5.203, years: 11.86, radius: 10.97, color: 0xd9b38c, texture: "textures/jupiter.jpg", flatten: 0.935, moons: MOONS.Jupiter },
   { name: "Saturn", au: 9.537, years: 29.46, radius: 9.14, color: 0xe6d3a3, rings: true, flatten: 0.902, look: 1, noteKey: "paintedNote" },
   { name: "Uranus", au: 19.19, years: 84.01, radius: 3.98, color: 0x9fe3e8, flatten: 0.977, rings: "uranus", look: 2, noteKey: "paintedNote" },
   { name: "Neptune", au: 30.07, years: 164.8, radius: 3.86, color: 0x4b70dd, flatten: 0.983, rings: "neptune", look: 3, noteKey: "paintedNote" },
@@ -1589,20 +1591,30 @@ function thinRings(planetRadius, rings) {
   return tilted;
 }
 
-// A moon on a circular orbit around its planet. The planet mesh is the parent, so the moon
-// travels with it. It is not part of the click targets, only planets are.
-function addMoon(planetMesh, planetRadius, moon) {
-  const map = moon.texture ? textureLoader.load(moon.texture) : null;
-  if (map) map.colorSpace = THREE.SRGBColorSpace;
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(planetRadius * moon.size, 32, 24),
-    new THREE.MeshLambertMaterial(map ? { map } : { color: moon.color })
-  );
-  const moonLabel = labelSprite(moon.label);
+// A moon on a circular orbit around its planet (moons.js). The planet mesh is the parent, so the moon travels with it. It turns once per
+// orbit and so shows its planet always the same side, as the real ones do; its map is turned so that longitude 0 is in the middle, the
+// side that faces the planet (see stepSystem). The Earth's Moon is a picture of the first view; the maps of Jupiter's moons come after the
+// first flight. An invisible sphere around it takes the clicks, like the ones of the planets.
+function addMoon(planetMesh, planetRadius, moon, planetSize) {
+  const scale = moonScale(moon, planetSize);
+  const material = new THREE.MeshLambertMaterial({ color: 0xb4b4b4 });
+  const setMap = (map) => {
+    map.colorSpace = THREE.SRGBColorSpace;
+    material.map = map;
+    material.color.set(0xffffff);
+    material.needsUpdate = true;
+  };
+  if (moon.id === "Moon") setMap(textureLoader.load(moon.texture));
+  else lateTexture(moon.texture, (texture, upload) => (setMap(texture), upload()));
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(planetRadius * scale.size, 32, 24), material);
+  mesh.userData.moon = moon.id;
+  const moonLabel = labelSprite(moonName(moon.id, "en")); // the language of the page is set later, with the names of the planets
   mesh.userData.label = moonLabel; // kept for the language switch, see updateSolarLabels
   mesh.add(moonLabel);
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(planetRadius * scale.size, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
+  mesh.add(hit);
   planetMesh.add(mesh);
-  return { mesh, years: moon.years, distance: planetRadius * moon.orbit };
+  return { id: moon.id, data: moon, mesh, hit, years: scale.years, orbit: scale.orbit, real: scale.real, distance: planetRadius * scale.orbit };
 }
 
 const artUniform = { value: 0 }; // 0 schematic, 1 artistic
@@ -2181,12 +2193,12 @@ function makeSystem({ starName, starColor, starRadius, planets, viewDistance }) 
       mesh.userData.ringMaterial = ringObject.userData.material; // only Saturn's rings have one that needs the light
       mesh.userData.closeupRadii = thin ? 5 : 7; // the rings reach 2.3 radii out, the default distance would cut them off
     }
-    const moon = p.moon ? addMoon(mesh, radius, p.moon) : null;
-    if (moon) mesh.userData.closeupRadii = 5; // far enough back that the Moon's orbit fits into the picture
+    const moons = (p.moons ?? []).map((m) => addMoon(mesh, radius, m, p.radiusEarths));
+    if (moons.length) mesh.userData.closeupRadii = 5; // far enough back that the orbits of the moons fit into the picture
     const clouds = p.earth ? addClouds(mesh, radius) : null;
     if (p.earth) addAtmosphere(mesh, radius);
     group.add(mesh);
-    return { ...p, mesh, hit, moon, clouds, orbitLine, start: i * 1.7 };
+    return { ...p, mesh, hit, moons, clouds, orbitLine, start: i * 1.7 };
   });
   return { group, bodies, viewDistance, time: 0, starMesh, rays };
 }
@@ -2248,10 +2260,12 @@ function stepSystem(system, dt) {
       b.clouds.rotation.y = drift + b.spin; // the clouds are carried along by the ground and drift on top of that
       b.mesh.material.uniforms.uCloudRot.value = drift; // the ground reads its cloud shadows with the drift alone
     }
-    if (b.moon) {
-      // Same clock as the planets, so the Moon's real 27 day period stays in proportion to the year.
-      const m = (system.time * Math.PI * 2) / b.moon.years;
-      b.moon.mesh.position.set(Math.cos(m) * b.moon.distance, 0, Math.sin(m) * b.moon.distance);
+    for (const moon of b.moons ?? []) {
+      // Same clock as the planets, so the real periods of the moons (Io 1.8 days, the Moon 27 days) stay in proportion to the year. Turned
+      // with its orbit, the side with longitude 0 (the middle of its map) always faces the planet.
+      const m = (system.time * Math.PI * 2) / moon.years;
+      moon.mesh.position.set(Math.cos(m) * moon.distance, 0, Math.sin(m) * moon.distance);
+      moon.mesh.rotation.y = facingRotation(m);
     }
   }
   // Up close it is useful, from far away it is clutter around the star. The limit is small on
@@ -2296,7 +2310,8 @@ const solar = makeSystem({
     look: p.look,
     earth: p.earth,
     rings: p.rings,
-    moon: p.moon,
+    moons: p.moons,
+    radiusEarths: p.radius, // the moons are measured in it (moons.js)
   })),
 });
 solar.group.add(new THREE.PointLight(0xffffff, 3, 0, 0)); // the Sun, no falloff so all textured planets are lit
@@ -2908,7 +2923,8 @@ function enterCloseup(keepView = false) {
   closeup = true;
   if (current.system.zoneMesh) current.system.zoneMesh.visible = false;
   if (current.follow.userData.label) current.follow.userData.label.visible = false;
-  const radius = current.follow.geometry.parameters.radius * current.follow.scale.x; // the real scale shrinks the planet meshes
+  // the real scale shrinks the planet meshes, and a moon with its planet
+  const radius = current.follow.geometry.parameters.radius * current.follow.scale.x * (current.follow.userData.moon ? current.follow.parent.scale.x : 1);
   const follow = current.follow;
   // The camera comes in from the side of the star, a little from above. Seen from there the planet
   // shows its lit half. From a fixed direction it was often the night side, and a dark planet
@@ -2989,7 +3005,7 @@ let hasClip = false; // only the candidates and Earth have a recording, the rest
 function showStory(star, planet, quiet = false) {
   stopSpeaking();
   storyId = slug(planet.pl_name);
-  hasClip = !!(planet.habitable || star.solarSystem) && !planet.solarObject; // the visitors have no recording
+  hasClip = !!(planet.habitable || star.solarSystem) && !planet.solarObject && !planet.moon; // the visitors and the moons have no recording
   const story = buildStory(star, planet, lang);
   storyParagraphs = story.paragraphs;
   if (star.planets?.includes(planet) && !planet.pl_orbper && !planet.pl_orbsmax) {
@@ -3019,7 +3035,7 @@ function showStory(star, planet, quiet = false) {
   hasStory = true;
   applyStoryVisibility();
   updateCloseupButton();
-  if (!quiet) explorer?.viewed(planet.pl_name, !!planet.habitable);
+  if (!quiet && !planet.moon) explorer?.viewed(planet.pl_name, !!planet.habitable);
 }
 
 listenButton.addEventListener("click", () => {
@@ -3057,9 +3073,15 @@ canvas.addEventListener("pointerup", (e) => {
 
 function pickPlanet(x, y) {
   const systems = [solar, activeExo].filter((s) => s?.group.visible);
-  const targets = systems.flatMap((s) => s.bodies.map((b) => b.hit));
+  const moons = systems.flatMap((s) => s.bodies.flatMap((b) => (b.moons ?? []).map((moon) => ({ system: s, body: b, moon }))));
+  const targets = [...systems.flatMap((s) => s.bodies.map((b) => b.hit)), ...moons.map((m) => m.moon.hit)];
   raycaster.setFromCamera(new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1), camera);
   const hit = raycaster.intersectObjects(targets, false)[0]?.object;
+  const moon = moons.find((m) => m.moon.hit === hit);
+  if (moon) {
+    track("moon-click");
+    return selectMoon(moon.system, moon.body, moon.moon);
+  }
   for (const system of systems) {
     const body = system.bodies.find((b) => b.hit === hit);
     if (body) {
@@ -3087,6 +3109,17 @@ function selectBody(system, body, keepView = false) {
   enterCloseup(keepView); // the camera goes straight to the planet that was clicked
   showStory(star, planet);
   buildHabitableMenu(); // moves the highlight, or clears it when the planet is not a candidate
+  buildSolarMenu();
+}
+
+// A moon: the camera goes to it, the info panel tells its story (moons.js). It is not a planet, so it does not count for the missions.
+function selectMoon(system, body, moon) {
+  leaveCloseup();
+  const planet = { pl_name: moonName(moon.id, lang), solarOther: true, moon: moon.data, moonOf: body.name };
+  current = { star: EARTH.star, system, follow: moon.mesh, planet };
+  enterCloseup();
+  showStory(EARTH.star, planet);
+  buildHabitableMenu();
   buildSolarMenu();
 }
 
@@ -3355,7 +3388,7 @@ function focusStar() {
 function updateSolarLabels() {
   for (const b of solar.bodies) {
     b.mesh.userData.label?.userData.setText(b.name === "Earth" ? UI[lang].earthShort : solarName(b.name, lang));
-    b.moon?.mesh.userData.label.userData.setText(UI[lang].moonName);
+    for (const moon of b.moons ?? []) moon.mesh.userData.label.userData.setText(moonName(moon.id, lang));
   }
   beltLabel.userData.setText(UI[lang].beltName);
 }
@@ -3759,7 +3792,7 @@ function applyBodyScale(b, on) {
   const s = on && b.size ? b.size / drawn : 1; // a planet without a known radius keeps the drawn marker
   b.mesh.scale.setScalar(s);
   if (!on) b.hit.scale.setScalar(1);
-  for (const label of [b.mesh.userData.label, b.moon?.mesh.userData.label]) {
+  for (const label of [b.mesh.userData.label, ...(b.moons ?? []).map((m) => m.mesh.userData.label)]) {
     if (!label) continue;
     label.userData.baseScale ??= label.scale.clone();
     label.scale.copy(label.userData.baseScale).divideScalar(s);
@@ -3794,7 +3827,7 @@ function setRealScale(on) {
     if (!PLANETS.some((p) => p.name === b.name)) continue;
     const drawn = b.mesh.geometry.parameters.radius;
     applyBodyScale(b, on);
-    if (b.moon) b.moon.distance = (on ? 60.3 : 2.6) * drawn; // the Moon is 60.3 Earth radii away, the explanation mode draws it at 2.6
+    for (const moon of b.moons ?? []) moon.distance = (on ? moon.real : moon.orbit) * drawn; // the real distance, or the squeezed one
     if (b.orbitLine) {
       b.orbitLine.geometry.dispose();
       b.orbitLine.geometry = new THREE.BufferGeometry().setFromPoints(planetOrbitPoints(b.name));
@@ -3843,7 +3876,13 @@ function updateCameraRange() {
     for (const b of system.bodies) {
       if (b.visitor) continue;
       check(b.mesh);
-      if (b.moon) check(b.moon.mesh);
+      for (const moon of b.moons ?? []) {
+        check(moon.mesh);
+        // a moon can be clicked from a little further away than its size: its sphere is at least 0.6 % of the distance to the camera
+        const own = moon.mesh.geometry.parameters.radius;
+        const d = camera.position.distanceTo(moon.mesh.getWorldPosition(rangeTmp)) / moon.mesh.getWorldScale(moonScaleTmp).x;
+        moon.hit.scale.setScalar(Math.max(1, (d * 0.006) / own));
+      }
       // A click on a planet must be possible from far away: the hit sphere is at least 1.2 % of the distance to the camera.
       const world = b.mesh.getWorldPosition(rangeTmp);
       const desired = Math.max(b.hit.geometry.parameters.radius * b.mesh.scale.x, camera.position.distanceTo(world) * 0.012);
@@ -3856,6 +3895,7 @@ function updateCameraRange() {
     camera.updateProjectionMatrix();
   }
 }
+const moonScaleTmp = new THREE.Vector3();
 // The stars of the real scale are a sky around the camera: the layers move with it.
 function followSky() {
   for (const layer of [points, gaia?.points, deep?.points]) layer?.position.copy(camera.position);
