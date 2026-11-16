@@ -2897,14 +2897,16 @@ function layoutView() {
   const atlasPanel = document.getElementById("atlas-panel");
   // On a phone the atlas and the zone quiz are sheets at the bottom: the picture is centred in the part above the sheet (a sheet that is
   // pushed down, see below, leaves the whole screen).
-  const sheet = w <= 640 ? [atlasPanel, document.getElementById("zone-panel")].find((p) => !p.hidden) : null;
+  const profilePanel = document.getElementById("profile-panel"); // My Universe: at the right, on a phone a sheet at the bottom
+  const sheet = w <= 640 ? [atlasPanel, document.getElementById("zone-panel"), profilePanel].find((p) => !p.hidden) : null;
   if (sheet) {
     const h = window.innerHeight;
     camera.setViewOffset(w, h, 0, h / 2 - Math.min(sheet.getBoundingClientRect().top, h) / 2, w, h);
     camera.updateProjectionMatrix();
     return;
   }
-  const right = !atlasPanel.hidden ? atlasPanel.getBoundingClientRect().left : storyPanel.hidden ? w : storyPanel.getBoundingClientRect().left;
+  const side = [profilePanel, atlasPanel, storyPanel].find((p) => !p.hidden);
+  const right = side ? side.getBoundingClientRect().left : w;
   // The picture stays in the middle of the window as long as the middle is free: a panel at the right (Info, the atlas) lies over the right
   // side and does not move the picture, so that opening it does not make the camera jump. Only when the panel reaches over the middle (a
   // narrow window) the picture is centred between the menu at the left and the panel, so that it is not hidden behind it.
@@ -5618,7 +5620,7 @@ document.getElementById("dock-games").addEventListener("click", () => atlas?.ope
 document.getElementById("atlas-open").textContent = (ATLAS_TEXT[lang] ?? ATLAS_TEXT.en).button;
 // On a phone the sheets at the bottom (atlas, zone quiz) cover the picture. A tap on the bar at the top or on the title pushes the sheet down so
 // that only its title stays; another tap brings it back up. Opening a sheet always shows it whole.
-for (const id of ["atlas-panel", "zone-panel"]) {
+for (const id of ["atlas-panel", "zone-panel", "profile-panel"]) {
   const panel = document.getElementById(id);
   const title = panel.querySelector("h2");
   const handle = document.createElement("button");
@@ -5636,6 +5638,7 @@ for (const id of ["atlas-panel", "zone-panel"]) {
   title.addEventListener("click", () => innerWidth <= 640 && toggleSheet());
   panel.addEventListener("transitionend", (e) => e.target === panel && layoutView());
   new MutationObserver(() => {
+    layoutView(); // the picture makes room for the panel, or takes the room back
     if (panel.hidden) return;
     panel.classList.remove("sheet-down");
     handle.setAttribute("aria-expanded", "true");

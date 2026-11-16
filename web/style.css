@@ -4167,3 +4167,38 @@ body:has(#day-flight:not([hidden])) #tour {
   font: inherit;
   cursor: pointer;
 }
+
+/* My Universe like the zodiac atlas: at the right on a wide screen, so that the 3D view stays visible in the middle (it keeps one size
+   and leaves the buttons at the top free); on a phone a sheet at the bottom that a tap on its bar pushes down. */
+#profile-panel {
+  top: 72px;
+  bottom: 16px;
+  left: auto;
+  right: 16px;
+  width: min(460px, calc(100vw - 32px));
+  height: auto;
+  max-height: none;
+  transform: none;
+}
+@media (max-width: 640px) {
+  #profile-panel {
+    top: auto;
+    bottom: 12px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    height: 62dvh;
+    transition: transform 0.25s ease;
+  }
+  #profile-panel.sheet-down {
+    overflow: hidden;
+    transform: translateY(calc(100% - 48px));
+  }
+  #profile-title {
+    margin-top: 6px;
+    cursor: pointer;
+  }
+  body:has(#profile-panel:not([hidden])) #dock {
+    display: none;
+  }
+}
