@@ -3299,6 +3299,7 @@ function applyLanguage() {
   showGaiaState();
   showDeepState();
   showBackgroundState();
+  showOrbitsState();
   buildPlanner();
   stopSpeaking();
   if (current) showStory(current.star, current.planet, true); // a change of language is not a visit
@@ -3526,6 +3527,30 @@ function showBackgroundState() {
 backgroundButton.addEventListener("click", () => {
   milkyWay.visible = !milkyWay.visible;
   showBackgroundState();
+});
+
+// The lines of the planets' orbits (of our system and of every exoplanet system, they share one material) can be switched off; the choice
+// is remembered in this browser. The paths of the comets and spacecraft stay, they are not planets.
+const orbitsButton = document.getElementById("orbits-toggle");
+try {
+  orbitLineMaterial.visible = localStorage.getItem("orbits") !== "off";
+} catch {
+  // no memory of the choice, the orbits stay on
+}
+function showOrbitsState() {
+  const on = orbitLineMaterial.visible;
+  orbitsButton.textContent = on ? UI[lang].orbitsOn : UI[lang].orbitsOff;
+  orbitsButton.setAttribute("aria-pressed", String(on));
+}
+orbitsButton.addEventListener("click", () => {
+  orbitLineMaterial.visible = !orbitLineMaterial.visible;
+  try {
+    localStorage.setItem("orbits", orbitLineMaterial.visible ? "on" : "off");
+  } catch {
+    // not remembered, still works for this visit
+  }
+  track(orbitLineMaterial.visible ? "orbits-on" : "orbits-off");
+  showOrbitsState();
 });
 
 function showDeepState(state = deepOn ? "on" : "off") {
