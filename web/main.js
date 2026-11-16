@@ -5578,6 +5578,11 @@ const learn = initLearn({
     const place = resolvePlace(task);
     if (place) showPlace(place);
   },
+  // the picture of an open path or step: the camera flies there, My Universe stays open beside it
+  show: (where) => {
+    const place = resolvePlace(where);
+    if (place) showPlace(place);
+  },
   isRealScale: () => realScale,
   closePanel: () => auth?.close(),
 });

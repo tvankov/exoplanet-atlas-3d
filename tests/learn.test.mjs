@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine } from "../web/learn.js";
+import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -157,4 +157,11 @@ test("Alpha Centauri: a final test of 10 different questions, and a step that ne
   assert.equal(new Set(t1.map((q) => q.id)).size, 10);
   assert.equal(TASKS.pair, null);
   assert.ok(LEARN_TEXT.de.paths.alpha.title.includes("Alpha Centauri"));
+});
+
+test("every path and every step has a place for the 3D view behind it", () => {
+  for (const [path, p] of Object.entries(PATHS)) {
+    assert.ok(PATH_VIEWS[path], path);
+    for (const step of p.steps) assert.ok(VIEWS[step], step);
+  }
 });

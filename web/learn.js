@@ -23,6 +23,13 @@ export const TASKS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale",
   neighbors: "figure:Cen", pair: null, proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
 };
+// What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
+// of the step. The task above is the visitor's own action; this is only the picture behind the text.
+export const VIEWS = {
+  sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "Neptune",
+  neighbors: "Proxima Cen", pair: "Proxima Cen", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
+};
+export const PATH_VIEWS = { solar: "Sun", alpha: "Proxima Cen" };
 // The sources of each step, against which its texts, facts to remember and questions were checked (titles as on the pages).
 export const SOURCES = {
   sun: [
@@ -1076,7 +1083,7 @@ export function personalLine(step, nums, lang) {
 // The area Learn: the path with its steps, a step, or the final test. personal(): the context of personalNumbers; act(task): do a task
 // (TASKS) in the 3D view, or "explanationScale" (back from the real scale); isRealScale(): whether the real scale is on; closePanel():
 // close My Universe.
-export function initLearn({ getLang, explorer, personal, act, isRealScale, closePanel }) {
+export function initLearn({ getLang, explorer, personal, act, show, isRealScale, closePanel }) {
   const t = () => LEARN_TEXT[getLang()] ?? LEARN_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -1204,7 +1211,7 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
       const arrow = el("span", "uni-arrow", passedIt ? "★" : "›");
       arrow.setAttribute("aria-hidden", "true");
       row.append(pathPicture(path, "uni-orb small", 28), text, arrow);
-      row.addEventListener("click", () => (choose(path), (view = "path"), track(`learn-path-${path}`), onChange?.()));
+      row.addEventListener("click", () => (choose(path), (view = "path"), show?.(PATH_VIEWS[path]), track(`learn-path-${path}`), onChange?.()));
       list.append(row);
     }
     return [list];
@@ -1240,7 +1247,7 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
       const arrow = el("span", "uni-arrow", stepDone(step) ? "✓" : "›");
       arrow.setAttribute("aria-hidden", "true");
       row.append(pictureOf(step), t2, arrow);
-      row.addEventListener("click", () => ((view = step), track(`learn-open-${step}`), onChange?.()));
+      row.addEventListener("click", () => ((view = step), show?.(VIEWS[step]), track(`learn-open-${step}`), onChange?.()));
       list.append(row);
     });
     // the final test, open when all steps are done
@@ -1356,7 +1363,7 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
       done.append(el("strong", "", tx.stepDone(XP_LEARN.step)));
       done.append(
         next
-          ? button(tx.nextStep, "uni-primary", () => ((view = next), onChange?.()))
+          ? button(tx.nextStep, "uni-primary", () => ((view = next), show?.(VIEWS[next]), onChange?.()))
           : button(tx.toTest, "uni-primary", () => ((view = doneCount() === steps.length ? "test" : "path"), onChange?.()))
       );
       parts.push(done);
