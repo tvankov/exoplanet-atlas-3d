@@ -3812,3 +3812,142 @@ body:has(#day-flight:not([hidden])) #tour {
   outline: 2px solid #7cffb2;
   outline-offset: 2px;
 }
+
+/* The six areas of My Universe (universe.js): a row of tabs that stays on top while the panel scrolls (it scrolls sideways on a phone), the
+   overview with a tile for each area, and the account, which belongs to the collection (or shows while a sign-in is in progress). */
+.uni-tabs {
+  position: sticky;
+  top: -16px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  margin: -4px -18px 18px;
+  padding: 10px 18px;
+  overflow-x: auto;
+  background: rgba(10, 14, 24, 0.97);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  scrollbar-width: none;
+}
+.uni-tabs::-webkit-scrollbar {
+  display: none;
+}
+#universe-body button.uni-tab {
+  font: inherit;
+  cursor: pointer;
+  flex: none;
+  min-height: 34px;
+  padding: 6px 13px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--uni-muted);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+#universe-body button.uni-tab:hover {
+  color: #fff;
+}
+#universe-body button.uni-tab[aria-selected="true"] {
+  color: #7cffb2;
+  background: rgba(124, 255, 178, 0.12);
+  border-color: rgba(124, 255, 178, 0.5);
+}
+.uni-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 20px;
+}
+#universe-body button.uni-tile {
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 8px;
+  min-height: 132px;
+  padding: 14px;
+  text-align: left;
+  background: radial-gradient(circle at 80% 15%, rgba(120, 160, 255, 0.14), transparent 60%), rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+#universe-body button.uni-tile:hover {
+  transform: translateY(-2px);
+  background: radial-gradient(circle at 80% 15%, rgba(120, 160, 255, 0.22), transparent 60%), rgba(255, 255, 255, 0.07);
+}
+#universe-body button.tile-self {
+  background: radial-gradient(circle at 80% 15%, rgba(255, 200, 140, 0.16), transparent 60%), rgba(255, 255, 255, 0.04);
+}
+#universe-body button.tile-learn,
+#universe-body button.tile-collection {
+  background: radial-gradient(circle at 80% 15%, rgba(124, 255, 178, 0.12), transparent 60%), rgba(255, 255, 255, 0.04);
+}
+.uni-tile .uni-thumb {
+  width: 72px;
+  height: 45px;
+}
+.uni-tile-star,
+.uni-tile-medal {
+  display: block;
+  width: 48px;
+  height: 48px;
+}
+.uni-tile-text {
+  display: grid;
+  gap: 3px;
+}
+.uni-tile-text strong {
+  font-size: 15px;
+  font-weight: 650;
+}
+#universe-body .uni-tile-text small {
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.72;
+}
+#universe-body .uni-area-intro {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+#universe-body .uni-soon {
+  margin-top: 4px;
+  font-style: italic;
+}
+.uni-cert-empty {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+}
+.uni-cert-empty .uni-thumb {
+  width: 96px;
+  height: 60px;
+}
+.uni-cert-empty strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+#profile-panel:not([data-area="collection"]) #account-box:not(.account-flow) {
+  display: none;
+}
+@media (max-width: 360px) {
+  .uni-tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #universe-body button.uni-tile:hover {
+    transform: none;
+  }
+}

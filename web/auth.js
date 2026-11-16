@@ -416,6 +416,7 @@ export function initAuth({ getLang, explorer, universe }) {
       parts.push(form([password], tx.savePassword, () => (password.input.value.length < 8 ? fail(tx.badPassword) : savePassword(password.input.value))));
     }
     box.replaceChildren(...parts);
+    box.classList.toggle("account-flow", view !== "home" || !!notice); // in the middle of a sign-in: shown in every area of My Universe
     // the dashboard only while the panel is open (it draws about 40 pictures and loads the maps of the planets); the greeting always
     universe.render(panel.hidden ? null : document.getElementById("universe-body"));
   }

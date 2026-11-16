@@ -5544,6 +5544,7 @@ universe = initUniverse({
   },
   openSky: () => skyEvents?.open(),
   openAtlas: () => atlas?.open(),
+  openZoneQuiz: () => zoneGame?.open(),
   closePanel: () => auth?.close(),
 });
 auth = initAuth({ getLang: () => lang, explorer, universe });
