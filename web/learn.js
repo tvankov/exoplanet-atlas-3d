@@ -130,7 +130,7 @@ export const LEARN_TEXT = {
       rule: "5 steps, then a final test with 10 questions; passed from 70 %.",
     },
     status: { done: "Done", next: "Next", open: "To do", locked: "All steps first" },
-    back: "All steps", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", rememberLabel: "Remember", sourcesLabel: "Sources", forYou: "For you", example: "An example", exampleHint: "With your date of birth (in the overview of My Universe) this becomes your own number.",
+    back: "All steps", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", speak: "Read aloud", speakStop: "Stop", speakTitle: "Read with a voice on your device; nothing is sent.", rememberLabel: "Remember", sourcesLabel: "Sources", forYou: "For you", example: "An example", exampleHint: "With your date of birth (in the overview of My Universe) this becomes your own number.",
     taskLabel: "In the 3D view", taskGo: "Show in 3D", scaleBack: "Back to the explanation scale", taskDone: "Done", check: "Check your understanding", right: "Right.", wrong: "Not quite.",
     stepDone: (xp) => `Step done · +${xp} XP`, nextStep: "Next step", toTest: "To the final test",
     needTask: "Do the task in the 3D view too, then the step is done.", progress: (d, all) => `${d} of ${all} steps`,
@@ -253,7 +253,7 @@ export const LEARN_TEXT = {
       rule: "5 Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 70 %.",
     },
     status: { done: "Erledigt", next: "Als Nächstes", open: "Offen", locked: "Erst alle Schritte" },
-    back: "Alle Schritte", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", rememberLabel: "Merke", sourcesLabel: "Quellen", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
+    back: "Alle Schritte", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", speak: "Vorlesen", speakStop: "Stopp", speakTitle: "Mit einer Stimme auf deinem Gerät vorlesen; es wird nichts gesendet.", rememberLabel: "Merke", sourcesLabel: "Quellen", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
     taskLabel: "In der 3D-Ansicht", taskGo: "In 3D zeigen", scaleBack: "Zurück zum Erklär-Maßstab", taskDone: "Erledigt", check: "Hast du es verstanden?", right: "Richtig.", wrong: "Nicht ganz.",
     stepDone: (xp) => `Schritt geschafft · +${xp} XP`, nextStep: "Nächster Schritt", toTest: "Zum Abschlusstest",
     needTask: "Mach noch die Aufgabe in der 3D-Ansicht, dann ist der Schritt geschafft.", progress: (d, all) => `${d} von ${all} Schritten`,
@@ -376,7 +376,7 @@ export const LEARN_TEXT = {
       rule: "5つのステップのあと、10問の最終テスト。70 %以上で合格です。",
     },
     status: { done: "完了", next: "次はこれ", open: "未完了", locked: "先に全ステップを" },
-    back: "すべてのステップ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", rememberLabel: "覚えておこう", sourcesLabel: "出典", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
+    back: "すべてのステップ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", speak: "読み上げ", speakStop: "停止", speakTitle: "端末内の音声で読み上げます。何も送信されません。", rememberLabel: "覚えておこう", sourcesLabel: "出典", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
     taskLabel: "3D表示で", taskGo: "3Dで見る", scaleBack: "説明用の縮尺に戻す", taskDone: "完了", check: "理解できたか確かめよう", right: "正解です。", wrong: "ちょっと違います。",
     stepDone: (xp) => `ステップ完了 · +${xp} XP`, nextStep: "次のステップ", toTest: "最終テストへ",
     needTask: "3D表示での課題もやってみましょう。それでステップ完了です。", progress: (d, all) => `${all}ステップ中${d}完了`,
@@ -499,7 +499,7 @@ export const LEARN_TEXT = {
       rule: "5 стъпки, после финален тест с 10 въпроса; издържан от 70 %.",
     },
     status: { done: "Готово", next: "Следва", open: "Предстои", locked: "Първо всички стъпки" },
-    back: "Всички стъпки", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", rememberLabel: "Запомни", sourcesLabel: "Източници", forYou: "За теб", example: "Пример", exampleHint: "С датата ти на раждане (в прегледа на „Моята вселена“) това става твоето собствено число.",
+    back: "Всички стъпки", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", speak: "Прочети на глас", speakStop: "Спри", speakTitle: "Чете се с глас на устройството ти; нищо не се изпраща.", rememberLabel: "Запомни", sourcesLabel: "Източници", forYou: "За теб", example: "Пример", exampleHint: "С датата ти на раждане (в прегледа на „Моята вселена“) това става твоето собствено число.",
     taskLabel: "В 3D изгледа", taskGo: "Покажи в 3D", scaleBack: "Обратно към обяснителния мащаб", taskDone: "Готово", check: "Провери какво разбра", right: "Вярно.", wrong: "Не съвсем.",
     stepDone: (xp) => `Стъпката е готова · +${xp} XP`, nextStep: "Следваща стъпка", toTest: "Към финалния тест",
     needTask: "Направи и задачата в 3D изгледа и стъпката е готова.", progress: (d, all) => `${d} от ${all} стъпки`,
@@ -665,6 +665,58 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
   const pictureOf = (step) =>
     step === "sun" ? starCanvas(5772, "uni-orb small star", 28)
     : planetCanvas({ name: { inner: "Mars", outer: "Saturn", moons: "Moon", scale: "Neptune" }[step] }, "uni-orb small", 28);
+  // Reading a step aloud: only with a voice that runs on the device. An online voice (some of Chrome's) would send the text, with the
+  // visitor's own numbers in it, to a server; without a voice on the device there is no button.
+  let speaking = null; // the step being read
+  let speakToken = 0; // a stopped reading must not report its end
+  let waitingForVoices = false;
+  const localVoice = () => {
+    const synth = window.speechSynthesis;
+    if (!synth) return null;
+    return synth.getVoices().find((v) => v.localService && v.lang.toLowerCase().startsWith(getLang())) ?? null;
+  };
+  function stopSpeaking() {
+    speakToken += 1;
+    if (speaking) window.speechSynthesis?.cancel();
+    speaking = null;
+  }
+  function speakButton(step, texts, onChange) {
+    const voice = localVoice();
+    if (!voice) {
+      // some browsers load their voices late: draw again once they are there
+      if (window.speechSynthesis && !waitingForVoices) {
+        waitingForVoices = true;
+        speechSynthesis.addEventListener("voiceschanged", () => onChange?.(), { once: true });
+      }
+      return null;
+    }
+    const tx = t();
+    const on = speaking === step;
+    const b = button(on ? `■ ${tx.speakStop}` : `▶ ${tx.speak}`, `learn-speak${on ? " on" : ""}`, () => {
+      if (speaking === step) return stopSpeaking(), onChange?.();
+      stopSpeaking();
+      speaking = step;
+      const token = speakToken;
+      // one utterance per paragraph: some browsers cut long texts off
+      texts.forEach((text, i) => {
+        const u = new SpeechSynthesisUtterance(text);
+        u.voice = voice;
+        u.lang = voice.lang;
+        if (i === texts.length - 1)
+          u.onend = u.onerror = () => {
+            if (token !== speakToken) return;
+            speaking = null;
+            onChange?.();
+          };
+        speechSynthesis.speak(u);
+      });
+      track(`learn-speak-${step}`);
+      onChange?.();
+    });
+    b.title = tx.speakTitle;
+    b.setAttribute("aria-pressed", String(on));
+    return b;
+  }
   const statusIcon = (glyph) => {
     const i = el("i", "uni-orb small icon learn-status", glyph);
     i.setAttribute("aria-hidden", "true");
@@ -755,7 +807,12 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
     parts.push(button(`‹ ${tx.back}`, "uni-link learn-back", () => ((view = "path"), onChange?.())));
     const head = el("div", "learn-step-head");
     const ht = el("div", "");
-    ht.append(el("small", "", tx.stepOf(steps.indexOf(step) + 1, steps.length)), el("h3", "learn-title", s.title));
+    // the title, and right of it the button to read the step aloud: title, goal, the sentence for the visitor, the text, the facts to remember
+    const titleRow = el("div", "learn-title-row");
+    titleRow.append(el("h3", "learn-title", s.title));
+    const speak = speakButton(step, [s.title, `${tx.goalLabel}: ${s.goal}`, personalLine(step, n, getLang()), ...s.text, tx.rememberLabel, ...s.remember], onChange);
+    if (speak) titleRow.append(speak);
+    ht.append(el("small", "", tx.stepOf(steps.indexOf(step) + 1, steps.length)), titleRow);
     head.append(pictureOf(step), ht);
     parts.push(head);
     const goal = el("p", "learn-goal");
@@ -784,6 +841,7 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
         explorer.emit("learnTask", `${PATH}/${step}`);
         maybeFinish(step, questions);
         track(`learn-task-${step}`);
+        stopSpeaking();
         closePanel?.();
         act(TASKS[step]);
       })
@@ -889,9 +947,10 @@ export function initLearn({ getLang, explorer, personal, act, isRealScale, close
 
   // the nodes of the area: the path (with `overview` true, so that the rest of Learn shows below it), a step, or the test
   function area(onChange) {
+    if (speaking && view !== speaking) stopSpeaking(); // another step, the path or the test: the reading stops
     if (view === "test") return { nodes: testView(onChange), overview: false };
     if (steps.includes(view)) return { nodes: stepView(view, onChange), overview: false };
     return { nodes: pathView(onChange), overview: true };
   }
-  return { area, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
+  return { area, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
 }

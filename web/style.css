@@ -4275,3 +4275,25 @@ input.uni-date {
 #universe-body .learn-sources a {
   color: inherit;
 }
+
+/* Learning path: the button to read a step aloud, right of its title */
+.learn-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+#universe-body button.learn-speak {
+  padding: 4px 10px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(124, 255, 178, 0.45);
+  border-radius: 999px;
+}
+#universe-body button.learn-speak:hover {
+  background: rgba(124, 255, 178, 0.12);
+}
+#universe-body button.learn-speak.on {
+  background: rgba(124, 255, 178, 0.2);
+  border-color: rgba(124, 255, 178, 0.8);
+}

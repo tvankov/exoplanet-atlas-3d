@@ -5658,7 +5658,7 @@ for (const id of ["atlas-panel", "zone-panel", "profile-panel"]) {
   panel.addEventListener("transitionend", (e) => e.target === panel && layoutView());
   new MutationObserver(() => {
     layoutView(); // the picture makes room for the panel, or takes the room back
-    if (panel.hidden) return;
+    if (panel.hidden) return panel.id === "profile-panel" && learn?.stop(); // closed: a step read aloud stops too
     panel.classList.remove("sheet-down");
     handle.setAttribute("aria-expanded", "true");
   }).observe(panel, { attributes: true, attributeFilter: ["hidden"] });
