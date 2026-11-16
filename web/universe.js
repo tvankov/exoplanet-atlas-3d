@@ -8,6 +8,7 @@ import { track } from "./stats.js";
 import { INTERESTS, LEVELS } from "./profile.js";
 import { disclosure } from "./disclosure.js";
 import { planetCanvas, starCanvas } from "./sharecard.js";
+import { dockPicture } from "./dockart.js";
 
 export const UNIVERSE_TEXT = {
   en: {
@@ -29,6 +30,9 @@ export const UNIVERSE_TEXT = {
     discoveries: "Your discoveries", favourites: "Favourites", recent: "Seen lately", emptyDiscoveries: "Planets that you save or look at appear here.",
     stats: "Your numbers", statPlanets: "Planets seen", statFavourites: "Favourites", statMissions: "Missions finished", statBadges: "Badges",
     quick: "Quick actions", qMissions: "Missions and badges", qSky: "Sky events", qZodiac: "Zodiac signs",
+    qSkySub: "Eclipses, meteor showers and more, with a countdown", qZodiacSub: "The twelve constellations in 3D, with a quiz",
+    journalSub: (n, c) => `${n} ${n === 1 ? "note" : "notes"} · ${c} ${c === 1 ? "collection" : "collections"}`,
+    profileSub: "Name, interest and how much you know",
     profile: "Your profile", name: "Explorer name", nameHint: "Optional. Any name, no real name needed.",
     interest: "What would you like to discover?", level: "How much do you know?",
     interests: { planets: "Planets of the Solar System", exoplanets: "Exoplanets", stars: "Stars and constellations", events: "Events in the sky" },
@@ -60,6 +64,9 @@ export const UNIVERSE_TEXT = {
     discoveries: "Deine Entdeckungen", favourites: "Favoriten", recent: "Zuletzt angesehen", emptyDiscoveries: "Planeten, die du speicherst oder ansiehst, erscheinen hier.",
     stats: "Deine Zahlen", statPlanets: "Planeten gesehen", statFavourites: "Favoriten", statMissions: "Missionen erledigt", statBadges: "Abzeichen",
     quick: "Schnellzugriff", qMissions: "Missionen und Abzeichen", qSky: "Himmelsereignisse", qZodiac: "Sternzeichen",
+    qSkySub: "Finsternisse, Sternschnuppen und mehr, mit Countdown", qZodiacSub: "Die zwölf Sternbilder in 3D, mit Quiz",
+    journalSub: (n, c) => `${n} ${n === 1 ? "Notiz" : "Notizen"} · ${c} ${c === 1 ? "Sammlung" : "Sammlungen"}`,
+    profileSub: "Name, Interesse und Wissensstand",
     profile: "Dein Profil", name: "Explorer-Name", nameHint: "Freiwillig. Irgendein Name, ein echter Name ist nicht nötig.",
     interest: "Was möchtest du entdecken?", level: "Wie viel weißt du schon?",
     interests: { planets: "Planeten des Sonnensystems", exoplanets: "Exoplaneten", stars: "Sterne und Sternbilder", events: "Ereignisse am Himmel" },
@@ -91,6 +98,9 @@ export const UNIVERSE_TEXT = {
     discoveries: "あなたの発見", favourites: "お気に入り", recent: "最近見たもの", emptyDiscoveries: "保存した惑星や見た惑星がここに表示されます。",
     stats: "あなたの数字", statPlanets: "見た惑星", statFavourites: "お気に入り", statMissions: "完了したミッション", statBadges: "バッジ",
     quick: "ショートカット", qMissions: "ミッションとバッジ", qSky: "天文イベント", qZodiac: "黄道十二星座",
+    qSkySub: "日食・月食や流星群など、カウントダウン付き", qZodiacSub: "12星座を3Dで、クイズ付き",
+    journalSub: (n, c) => `メモ${n}件 · コレクション${c}件`,
+    profileSub: "名前、興味、知識レベル",
     profile: "プロフィール", name: "エクスプローラー名", nameHint: "任意です。好きな名前で、本名は不要です。",
     interest: "何を発見したいですか？", level: "どのくらい知っていますか？",
     interests: { planets: "太陽系の惑星", exoplanets: "系外惑星", stars: "恒星と星座", events: "空のできごと" },
@@ -122,6 +132,9 @@ export const UNIVERSE_TEXT = {
     discoveries: "Твоите открития", favourites: "Любими", recent: "Разгледани наскоро", emptyDiscoveries: "Планетите, които запазиш или разгледаш, се появяват тук.",
     stats: "Твоите числа", statPlanets: "Разгледани планети", statFavourites: "Любими", statMissions: "Изпълнени мисии", statBadges: "Значки",
     quick: "Бързи връзки", qMissions: "Мисии и значки", qSky: "Събития в небето", qZodiac: "Зодиакални знаци",
+    qSkySub: "Затъмнения, метеорни потоци и още, с обратно броене", qZodiacSub: "Дванадесетте съзвездия в 3D, с викторина",
+    journalSub: (n, c) => `${n} ${n === 1 ? "бележка" : "бележки"} · ${c} ${c === 1 ? "колекция" : "колекции"}`,
+    profileSub: "Име, интерес и ниво на знания",
     profile: "Твоят профил", name: "Име на изследовател", nameHint: "По желание. Което и да е име, истинско не е нужно.",
     interest: "Какво искаш да откриеш?", level: "Колко знаеш?",
     interests: { planets: "Планетите на Слънчевата система", exoplanets: "Екзопланети", stars: "Звезди и съзвездия", events: "Събития в небето" },
@@ -238,8 +251,23 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
   }
   function placeButtons(items) {
     const row = el("div", "uni-places");
-    for (const { name } of items) row.append(button(name, "uni-place", () => goTo(name)));
+    for (const { name } of items) {
+      const b = button("", "uni-place uni-chip", () => goTo(name));
+      const info = describe?.(name);
+      if (info) b.append(info.kind === "star" || info.kind === "sun" ? starCanvas(info.teff, "uni-chip-pic", 20) : planetCanvas(info.kind === "solar" ? { name: info.id } : { temp: info.temp }, "uni-chip-pic", 20));
+      b.append(info?.name ?? name);
+      row.append(b);
+    }
     return row;
+  }
+  // the head of a fold that is a part of its own (journal, profile, badges): a picture, a title and one line, like a row of the lists
+  function foldHead(picture, title, sub, ...more) {
+    const head = el("span", "uni-fold-head");
+    const text = el("span", "uni-item-text");
+    text.append(el("strong", "", title));
+    if (sub) text.append(el("small", "", sub));
+    head.append(picture, text, ...more);
+    return head;
   }
   const fmt = (x, d = 1) => x.toLocaleString(getLang(), { maximumFractionDigits: d, minimumFractionDigits: d });
   // A round picture for a place (sharecard.js draws it): a planet of the Solar System from its NASA map, an exoplanet in a colour by its
@@ -398,7 +426,10 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     missions.append(
       item(icon("◎"), tx.qMissions, `${tx.missionsLine(done, total)} · ${nextMission ? tx.nextMission(nextMission) : tx.allDone}`, () => (closePanel?.(), explorer.open()))
     );
-    parts.push(section(tx.progress, grid, missions));
+    // the badges as medals (explorer.js draws them), folded under a row of small medals
+    const badges = explorer.badges();
+    const badgeFold = disclosure("badges", foldHead(icon("\u2605"), badges.title, badges.line, explorer.medalStrip()), [badges.el], "uni-fold rich");
+    parts.push(section(tx.progress, grid, missions, badgeFold));
 
     // favourites and places seen lately
     const seen = state.history.slice(0, 4);
@@ -410,13 +441,17 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     parts.push(section(tx.discoveries, ...disc));
 
     // the journal: notes, collections, export and delete (journal.js), folded
-    if (journal) parts.push(disclosure("journal", journal.title(), [journal.section(closePanel, { heading: false })], "uni-fold"));
+    if (journal) {
+      const { notes, collections } = journal.counts();
+      parts.push(disclosure("journal", foldHead(icon("\u270E"), journal.title(), tx.journalSub(notes, collections)), [journal.section(closePanel, { heading: false })], "uni-fold rich"));
+    }
 
     // quick actions
-    const quick = el("div", "uni-places");
+    const quick = el("div", "uni-list");
+    const wide = (b) => (b.classList.add("wide"), b);
     quick.append(
-      button(tx.qSky, "uni-place", () => (closePanel?.(), openSky?.())),
-      button(tx.qZodiac, "uni-place", () => (closePanel?.(), openAtlas?.()))
+      wide(item(dockPicture("dock-sky") ?? icon("\u2604\uFE0E"), tx.qSky, tx.qSkySub, () => (closePanel?.(), openSky?.()))),
+      wide(item(dockPicture("dock-games") ?? icon("\u2726"), tx.qZodiac, tx.qZodiacSub, () => (closePanel?.(), openAtlas?.())))
     );
     parts.push(section(tx.quick, quick));
 
@@ -456,12 +491,15 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
         renderAll();
       })
     );
+    const avatar = el("span", "uni-orb small icon uni-avatar", (p.name ?? "").slice(0, 1).toUpperCase() || "\u2726");
+    avatar.setAttribute("aria-hidden", "true");
+    const profileSub = p.name ? [p.name, tx.interests[p.interest]].filter(Boolean).join(" · ") : tx.profileSub;
     parts.push(
       disclosure(
         "profile",
-        tx.profile,
+        foldHead(avatar, tx.profile, profileSub),
         [nameField, el("small", "", tx.interest), chip(INTERESTS, tx.interests, () => interest, (v) => (interest = v)), el("p", "hint", tx.interestNote), el("small", "", tx.level), chip(LEVELS, tx.levels, () => knows, (v) => (knows = v)), actions, message],
-        "uni-fold uni-profile"
+        "uni-fold rich uni-profile"
       )
     );
 

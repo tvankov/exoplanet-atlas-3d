@@ -286,5 +286,5 @@ export function initJournal({ getLang, explorer, explore, exists, onChange, onDe
 
   explorer.onRender(renderArea);
   renderArea();
-  return { section, render: renderArea, title: () => t().journal };
+  return { section, render: renderArea, title: () => t().journal, counts: () => ({ notes: liveNotes(explorer.getState().notes).length, collections: collections().length }) };
 }

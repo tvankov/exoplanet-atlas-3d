@@ -357,8 +357,13 @@ export function initAuth({ getLang, explorer, universe }) {
     parts.push(el("h3", "", tx.title));
     if (notice) parts.push(el("p", notice.error ? "account-error" : "account-ok", notice.text));
     if (user && view !== "newpassword") {
-      parts.push(el("p", "", tx.signedAs(username, user.email)));
-      parts.push(explorer.profileEl());
+      // who is signed in: the first letter as a round sign, the name and the address (the level and the badges are in My Universe above)
+      const card = el("div", "account-who");
+      card.title = tx.signedAs(username, user.email);
+      const text = el("div", "");
+      text.append(el("strong", "", username ?? who), el("small", "", user.email ?? ""));
+      card.append(el("span", "account-avatar", (username ?? who).slice(0, 1).toUpperCase() || "?"), text);
+      parts.push(card);
       if (saved !== null) parts.push(el("p", "hint", saved ? tx.saved : tx.saveFailed));
       if (confirmDelete) {
         parts.push(el("p", "account-error", tx.deleteAsk));

@@ -304,6 +304,142 @@ export function starCanvas(kelvin, cls, size) {
   });
 }
 
+// A badge as a medal: a golden rim, a night-blue face and a picture of what it is for, with the planets and stars of the pictures above. A badge
+// not earned yet uses the same medal, made grey by the stylesheet (badge-medal.locked).
+const TAU = Math.PI * 2;
+const EMBLEM = {
+  "first-look": (g, r) => drawPlanet(g, "Mars", r, r, r * 0.42),
+  "planets-25": async (g, r) => {
+    await drawPlanet(g, "Earth", r * 0.62, r * 0.66, r * 0.17);
+    await drawPlanet(g, "Mars", r * 1.38, r * 0.72, r * 0.19);
+    await drawPlanet(g, "Jupiter", r * 0.98, r * 1.18, r * 0.36);
+  },
+  "candidates-10": async (g, r) => {
+    g.strokeStyle = "rgba(124,255,178,0.75)";
+    g.lineWidth = r * 0.08;
+    g.beginPath();
+    g.ellipse(r, r, r * 0.62, r * 0.24, -0.35, 0, TAU);
+    g.stroke();
+    await drawPlanet(g, exoLook(280), r, r, r * 0.32);
+  },
+  "first-trip": async (g, r) => {
+    g.strokeStyle = "rgba(127,227,255,0.85)";
+    g.lineWidth = r * 0.06;
+    g.setLineDash([r * 0.06, r * 0.12]);
+    g.beginPath();
+    g.moveTo(r * 0.62, r * 1.36);
+    g.quadraticCurveTo(r * 0.9, r * 0.45, r * 1.4, r * 0.7);
+    g.stroke();
+    g.setLineDash([]);
+    await drawPlanet(g, "Earth", r * 0.6, r * 1.34, r * 0.2);
+    await drawPlanet(g, "Mars", r * 1.42, r * 0.68, r * 0.13);
+  },
+  "star-trip": (g, r) => drawStar(g, r, r, r * 0.78, starColor(4800)),
+  "zone-expert": (g, r) => {
+    g.save();
+    g.shadowColor = "rgba(124,255,178,0.9)";
+    g.shadowBlur = r * 0.2;
+    g.strokeStyle = "#7cffb2";
+    g.lineWidth = r * 0.11;
+    g.beginPath();
+    g.arc(r, r, r * 0.46, 0, TAU);
+    g.stroke();
+    g.restore();
+    g.strokeStyle = "#ffffff";
+    g.lineWidth = r * 0.11;
+    g.lineCap = "round";
+    g.lineJoin = "round";
+    g.beginPath();
+    g.moveTo(r * 0.8, r * 1.02);
+    g.lineTo(r * 0.95, r * 1.17);
+    g.lineTo(r * 1.24, r * 0.84);
+    g.stroke();
+  },
+  // the Big Dipper, the seven bright stars of the Great Bear, as most people know them
+  "sky-reader": (g, r) => {
+    const dipper = [[-0.6, -0.2], [-0.32, -0.26], [-0.08, -0.14], [0.14, 0.02], [0.2, 0.34], [0.56, 0.4], [0.6, 0.06], [0.14, 0.02]];
+    const at = ([x, y]) => [r + x * r * 0.95, r + y * r * 0.95];
+    g.save();
+    g.shadowColor = "rgba(124,255,178,0.8)";
+    g.shadowBlur = r * 0.12;
+    g.strokeStyle = "rgba(184,230,193,0.85)";
+    g.lineWidth = r * 0.05;
+    g.beginPath();
+    dipper.forEach((p, i) => (i ? g.lineTo(...at(p)) : g.moveTo(...at(p))));
+    g.stroke();
+    g.restore();
+    for (const p of dipper.slice(0, 7)) drawStar(g, ...at(p), r * 0.22, "210,230,255");
+  },
+  collector: (g, r) => {
+    const gold = g.createLinearGradient(r, r * 0.45, r, r * 1.5);
+    gold.addColorStop(0, "#fff3c8");
+    gold.addColorStop(1, "#e0a83c");
+    g.save();
+    g.shadowColor = "rgba(255,200,110,0.8)";
+    g.shadowBlur = r * 0.25;
+    g.fillStyle = gold;
+    g.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 5;
+      const k = i % 2 ? r * 0.22 : r * 0.52;
+      g.lineTo(r + Math.cos(a) * k, r * 1.04 + Math.sin(a) * k);
+    }
+    g.closePath();
+    g.fill();
+    g.restore();
+  },
+  // ten missions: ten lights round the number
+  regular: (g, r) => {
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + (i * TAU) / 10;
+      g.fillStyle = "#7cffb2";
+      g.beginPath();
+      g.arc(r + Math.cos(a) * r * 0.56, r + Math.sin(a) * r * 0.56, r * 0.06, 0, TAU);
+      g.fill();
+    }
+    g.fillStyle = "#ffe7b0";
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.font = `700 ${Math.round(r * 0.62)}px system-ui, 'Segoe UI', sans-serif`;
+    g.fillText("10", r, r * 1.04);
+  },
+};
+export function medalCanvas(id, cls, size) {
+  return sphereCanvas(`medal-${id}`, cls, size, async (g, px) => {
+    const r = px / 2;
+    const rim = g.createLinearGradient(0, 0, px, px);
+    rim.addColorStop(0, "#fff0c2");
+    rim.addColorStop(0.45, "#d9a441");
+    rim.addColorStop(1, "#7a4e16");
+    g.fillStyle = rim;
+    g.beginPath();
+    g.arc(r, r, r * 0.98, 0, TAU);
+    g.fill();
+    const face = g.createRadialGradient(r * 0.8, r * 0.7, r * 0.1, r, r, r * 0.86);
+    face.addColorStop(0, "#26355f");
+    face.addColorStop(1, "#060912");
+    g.fillStyle = face;
+    g.beginPath();
+    g.arc(r, r, r * 0.86, 0, TAU);
+    g.fill();
+    g.save();
+    g.beginPath();
+    g.arc(r, r, r * 0.86, 0, TAU);
+    g.clip();
+    await EMBLEM[id]?.(g, r);
+    g.restore();
+    // a soft shine on the upper left of the rim
+    const shine = g.createLinearGradient(0, 0, r, r);
+    shine.addColorStop(0, "rgba(255,255,255,0.35)");
+    shine.addColorStop(1, "rgba(255,255,255,0)");
+    g.strokeStyle = shine;
+    g.lineWidth = r * 0.06;
+    g.beginPath();
+    g.arc(r, r, r * 0.92, Math.PI * 0.95, Math.PI * 1.55);
+    g.stroke();
+  });
+}
+
 // ---------------------------------------------------------------- the picture and the share
 // kind: a short name for the counting ("star", "ages", "sky"); title: the line at the top; text: the message that goes with the picture;
 // backdrop: where in the Milky Way (0 to 1); sources: the credit of what the picture shows besides the Milky Way; draw(g): draws the middle

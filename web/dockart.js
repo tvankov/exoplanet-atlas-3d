@@ -60,6 +60,24 @@ const glow = (g, x, y, r, rgb, a = 0.35) => {
   g.fillRect(x - r * 2, y - r * 2, r * 4, r * 4);
 };
 
+// A copy of the picture of a dock card (for the quick actions of My Universe), or of its stand-in drawing while the picture is not drawn yet.
+export function dockPicture(id) {
+  const src = document.querySelector(`#${id} .dock-art`);
+  if (!src) return null;
+  if (src.tagName.toLowerCase() === "svg") {
+    const copy = src.cloneNode(true);
+    copy.setAttribute("class", "uni-thumb");
+    return copy;
+  }
+  const c = document.createElement("canvas");
+  c.width = src.width;
+  c.height = src.height;
+  c.className = "uni-thumb";
+  c.setAttribute("aria-hidden", "true");
+  c.getContext("2d").drawImage(src, 0, 0);
+  return c;
+}
+
 // daily: { solar (a planet of the Solar System) or temp (an exoplanet) }; near: { temp, teff }; figure: the lines of today's constellation
 // ([[ra, dec, mag], ...]) or null; level: { level, share } (explorer.progress()).
 export function drawDock({ daily, near, figure, level }) {

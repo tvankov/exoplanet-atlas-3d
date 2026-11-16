@@ -3664,3 +3664,216 @@ body:has(#day-flight:not([hidden])) #tour {
     bottom: 172px;
   }
 }
+
+/* The badges as medals (explorer.js, drawn by sharecard.js), in My Universe and in the missions: an earned one golden with its date, the
+   others grey with a bar of how far the visitor is. Grey is not the only sign: a locked badge shows its count ("7 / 25"). */
+.badges {
+  gap: 8px;
+}
+.badge {
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+.badge.earned {
+  background: radial-gradient(circle at 12% 50%, rgba(255, 200, 110, 0.14), transparent 60%), rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 210, 140, 0.4);
+}
+.badge-medal {
+  display: block;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #f3d48a, #8a5a1c);
+}
+.badge-medal.drawn {
+  background: none;
+  border-radius: 0;
+}
+.badge-medal.locked {
+  filter: grayscale(1) brightness(0.75);
+  opacity: 0.55;
+}
+.badge-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.badge-text strong {
+  font-size: 13.5px;
+}
+.badge-text span {
+  font-size: 12px;
+  line-height: 1.35;
+  opacity: 0.8;
+}
+.badge:not(.earned) .badge-text strong,
+.badge:not(.earned) .badge-text span {
+  opacity: 0.7;
+}
+.badge-date {
+  font-size: 11px;
+  opacity: 0.65;
+}
+.badge-bar {
+  height: 4px;
+  margin-top: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+.badge-bar i {
+  display: block;
+  height: 100%;
+  background: #7cffb2;
+  border-radius: 2px;
+}
+.medal-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-left: auto;
+}
+.badge-medal.small {
+  width: 22px;
+  height: 22px;
+}
+@media (max-width: 480px) {
+  .badges {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .medal-strip {
+    display: none; /* no room next to the title on a phone; the fold shows the medals */
+  }
+}
+
+/* The folds that are a part of their own (journal, profile, badges) look like a row of the lists: a picture, a title, one line, an arrow. */
+#universe-body .uni-fold.rich {
+  padding: 0;
+  border-top: 0;
+}
+#universe-body .uni-fold.rich > summary {
+  display: flex;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  font-size: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  color: inherit;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
+#universe-body .uni-fold.rich > summary:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+#universe-body .uni-fold.rich > summary::before {
+  display: none;
+}
+#universe-body .uni-fold.rich > summary::after {
+  content: "›";
+  align-self: center;
+  margin-left: 8px;
+  font-size: 20px;
+  opacity: 0.45;
+  transition: transform 0.2s ease;
+}
+#universe-body .uni-fold.rich[open] > summary::after {
+  transform: rotate(90deg);
+}
+.uni-fold-head {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.uni-fold-head .uni-item-text {
+  flex: 1;
+}
+#universe-body .uni-fold.rich > :not(summary) {
+  margin: 6px 10px 12px;
+}
+.uni-orb.icon.uni-avatar {
+  font-size: 14px;
+  font-weight: 700;
+  color: #04140b;
+  background: linear-gradient(135deg, #a6ffcb, #4fd18b);
+}
+
+/* The places seen and saved, each with its small picture; the quick actions with the pictures of the dock. */
+#universe-body button.uni-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 999px;
+}
+.uni-chip-pic {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+}
+.uni-chip-pic.drawn {
+  background: none;
+  border-radius: 0;
+}
+#universe-body button.uni-item.wide {
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+}
+.uni-thumb {
+  display: block;
+  width: 64px;
+  height: 40px;
+}
+
+/* The account: who is signed in, with the first letter of the name as a round sign. */
+.account-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+.account-who > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.account-who strong {
+  font-size: 15px;
+}
+.account-who small {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+.account-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #04140b;
+  background: linear-gradient(135deg, #a6ffcb, #4fd18b);
+  border-radius: 50%;
+}
+#universe-body .badge-date {
+  letter-spacing: 0;
+  text-transform: none;
+}

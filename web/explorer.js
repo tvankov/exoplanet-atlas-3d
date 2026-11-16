@@ -7,6 +7,7 @@ import { dayNumber } from "./daily.js";
 import { mergeState } from "./state-merge.js";
 import { cleanProfile } from "./profile.js";
 import { track } from "./stats.js";
+import { medalCanvas } from "./sharecard.js";
 
 const KEY = "explorer";
 const HISTORY_MAX = 12;
@@ -84,50 +85,50 @@ function levelOf(xp) {
   return level;
 }
 
-// test: whether the badge is earned, from the totals that are counted from the first visit on (state.total).
+// count: how far the visitor is, from the totals that are counted from the first visit on (state.total); need: where the badge is earned.
 const BADGES = [
   {
-    id: "first-look", test: (t) => (t.planets?.length ?? 0) >= 1,
+    id: "first-look", count: (t) => (t.planets?.length ?? 0), need: 1,
     en: ["First look", "Looked at your first planet"], de: ["Erster Blick", "Den ersten Planeten angesehen"],
     ja: ["最初の観察", "最初の惑星を見た"], bg: ["Първи поглед", "Разгледа първата си планета"],
   },
   {
-    id: "planets-25", test: (t) => (t.planets?.length ?? 0) >= 25,
+    id: "planets-25", count: (t) => (t.planets?.length ?? 0), need: 25,
     en: ["Planet watcher", "Looked at 25 different planets"], de: ["Planetenbeobachter", "25 verschiedene Planeten angesehen"],
     ja: ["惑星ウォッチャー", "25個の異なる惑星を見た"], bg: ["Наблюдател на планети", "Разгледа 25 различни планети"],
   },
   {
-    id: "candidates-10", test: (t) => (t.candidates?.length ?? 0) >= 10,
+    id: "candidates-10", count: (t) => (t.candidates?.length ?? 0), need: 10,
     en: ["Habitable hunter", "Visited 10 habitable candidates"], de: ["Jäger bewohnbarer Welten", "10 bewohnbare Kandidaten besucht"],
     ja: ["居住可能ハンター", "居住可能な候補を10個訪れた"], bg: ["Ловец на обитаеми светове", "Посети 10 кандидати за обитаеми светове"],
   },
   {
-    id: "first-trip", test: (t) => (t.trip ?? 0) >= 1,
+    id: "first-trip", count: (t) => (t.trip ?? 0), need: 1,
     en: ["First trip", "Flew a trip with the travel planner"], de: ["Erste Reise", "Eine Reise mit dem Reiseplaner geflogen"],
     ja: ["初めての旅", "旅行プランナーで旅をした"], bg: ["Първо пътуване", "Направи пътуване с планировчика"],
   },
   {
-    id: "star-trip", test: (t) => (t.starTrip ?? 0) >= 1,
+    id: "star-trip", count: (t) => (t.starTrip ?? 0), need: 1,
     en: ["Interstellar", "Flew to another star"], de: ["Interstellar", "Zu einem anderen Stern geflogen"],
     ja: ["恒星間飛行", "別の恒星へ飛んだ"], bg: ["Междузвезден", "Полетя до друга звезда"],
   },
   {
-    id: "zone-expert", test: (t) => (t.zoneWin ?? 0) >= 1,
+    id: "zone-expert", count: (t) => (t.zoneWin ?? 0), need: 1,
     en: ["Zone expert", "Got 4 of 5 right in the zone quiz"], de: ["Zonen-Experte", "4 von 5 im Zonen-Quiz richtig gelöst"],
     ja: ["ゾーンの達人", "ゾーンクイズで5問中4問正解した"], bg: ["Експерт по зоната", "Отговори вярно на 4 от 5 във викторината за зоната"],
   },
   {
-    id: "sky-reader", test: (t) => (t.constellations?.length ?? 0) >= 12,
+    id: "sky-reader", count: (t) => (t.constellations?.length ?? 0), need: 12,
     en: ["Sky reader", "Looked at 12 constellations in 3D"], de: ["Himmelsleser", "12 Sternbilder in 3D angesehen"],
     ja: ["星空の読み手", "12の星座を3Dで見た"], bg: ["Четец на небето", "Разгледа 12 съзвездия в 3D"],
   },
   {
-    id: "collector", test: (t) => (t.favourite ?? 0) >= 5,
+    id: "collector", count: (t) => (t.favourite ?? 0), need: 5,
     en: ["Collector", "Saved 5 planets as favourites"], de: ["Sammler", "5 Planeten als Favoriten gespeichert"],
     ja: ["コレクター", "5つの惑星をお気に入りに保存した"], bg: ["Колекционер", "Запази 5 планети като любими"],
   },
   {
-    id: "regular", test: (t) => (t.missions ?? 0) >= 10,
+    id: "regular", count: (t) => (t.missions ?? 0), need: 10,
     en: ["Regular", "Finished 10 missions"], de: ["Stammgast", "10 Missionen abgeschlossen"],
     ja: ["常連", "10個のミッションを完了した"], bg: ["Редовен", "Завърши 10 мисии"],
   },
@@ -140,7 +141,7 @@ const XP_TEXT = {
     howTitle: "How XP works",
     how: `A finished mission gives ${XP_MISSION.day} XP (daily) or ${XP_MISSION.week} XP (weekly). The first look at a planet gives ${XP_PLANET} XP, at a habitable candidate ${XP_CANDIDATE} more, and at a constellation ${XP_CONSTELLATION}. Nothing is lost when you skip a day. It is all stored in this browser.`,
     badgesTitle: "Badges",
-    badge: "Badge",
+    badge: "Badge", earnedOn: (d) => `Earned ${d}`, badgesLine: (n, all) => `${n} of ${all}`,
     levelUp: (n) => `Level ${n} reached`,
   },
   de: {
@@ -149,7 +150,7 @@ const XP_TEXT = {
     howTitle: "So funktionieren XP",
     how: `Eine abgeschlossene Mission gibt ${XP_MISSION.day} XP (täglich) oder ${XP_MISSION.week} XP (wöchentlich). Der erste Blick auf einen Planeten gibt ${XP_PLANET} XP, auf einen bewohnbaren Kandidaten ${XP_CANDIDATE} mehr, auf ein Sternbild ${XP_CONSTELLATION}. Wer einen Tag auslässt, verliert nichts. Alles bleibt in diesem Browser gespeichert.`,
     badgesTitle: "Abzeichen",
-    badge: "Abzeichen",
+    badge: "Abzeichen", earnedOn: (d) => `Erhalten am ${d}`, badgesLine: (n, all) => `${n} von ${all}`,
     levelUp: (n) => `Stufe ${n} erreicht`,
   },
   ja: {
@@ -158,7 +159,7 @@ const XP_TEXT = {
     howTitle: "XPのしくみ",
     how: `ミッションを完了すると、毎日のものは${XP_MISSION.day} XP、毎週のものは${XP_MISSION.week} XPがもらえます。惑星を初めて見ると${XP_PLANET} XP、居住可能な候補ならさらに${XP_CANDIDATE} XP、星座を初めて見ると${XP_CONSTELLATION} XPです。1日休んでも何も失いません。すべてこのブラウザに保存されます。`,
     badgesTitle: "バッジ",
-    badge: "バッジ",
+    badge: "バッジ", earnedOn: (d) => `${d}に獲得`, badgesLine: (n, all) => `${all}個中${n}個`,
     levelUp: (n) => `レベル${n}に到達`,
   },
   bg: {
@@ -167,7 +168,7 @@ const XP_TEXT = {
     howTitle: "Как работят XP",
     how: `Завършена мисия дава ${XP_MISSION.day} XP (дневна) или ${XP_MISSION.week} XP (седмична). Първият поглед към планета дава ${XP_PLANET} XP, към кандидат за обитаем свят още ${XP_CANDIDATE}, към съзвездие ${XP_CONSTELLATION}. Нищо не се губи, ако пропуснеш ден. Всичко се пази в този браузър.`,
     badgesTitle: "Значки",
-    badge: "Значка",
+    badge: "Значка", earnedOn: (d) => `Получена на ${d}`, badgesLine: (n, all) => `${n} от ${all}`,
     levelUp: (n) => `Достигнато ниво ${n}`,
   },
 };
@@ -281,7 +282,7 @@ export function initExplorer({ getLang, text, explore }) {
   }
   function checkBadges() {
     for (const b of BADGES) {
-      if (state.badges.some((x) => x.id === b.id) || !b.test(state.total)) continue;
+      if (state.badges.some((x) => x.id === b.id) || b.count(state.total) < b.need) continue;
       state.badges.push({ id: b.id, t: Date.now() });
       track(`badge-${b.id}`);
       toast(`${xpText().badge}: ${(b[getLang()] ?? b.en)[0]}`);
@@ -418,26 +419,37 @@ export function initExplorer({ getLang, text, explore }) {
     xpCard.append(how);
     return xpCard;
   }
-  // the badges: earned ones lit, the others dim with what they need
+  // the badges as medals (sharecard.js draws them): an earned one golden with its date, the others grey with how far the visitor is
   function buildBadges() {
     const grid = el("div", "badges");
     for (const b of BADGES) {
-      const got = state.badges.some((x) => x.id === b.id);
+      const got = state.badges.find((x) => x.id === b.id);
       const [name, need] = b[getLang()] ?? b.en;
       const cell = el("div", `badge${got ? " earned" : ""}`);
-      cell.append(el("strong", "", `${got ? "★ " : ""}${name}`), el("span", "", need));
+      const text = el("div", "badge-text");
+      text.append(el("strong", "", name), el("span", "", need));
+      if (got?.t) text.append(el("small", "badge-date", xpText().earnedOn(new Date(got.t).toLocaleDateString(getLang()))));
+      else if (!got) {
+        const have = Math.min(b.count(state.total), b.need);
+        const bar = el("div", "badge-bar");
+        const fill = el("i", "");
+        fill.style.width = `${(have / b.need) * 100}%`;
+        bar.append(fill);
+        text.append(bar, el("small", "badge-date", `${have} / ${b.need}`));
+      }
+      cell.append(medalCanvas(b.id, `badge-medal${got ? "" : " locked"}`, 46), text);
       grid.append(cell);
     }
     return grid;
   }
-  // what the profile shows (auth.js): the level card and the badges
-  function profileEl() {
-    const wrap = el("div", "profile-summary");
-    const section = el("section", "log-section");
-    section.append(el("h3", "", xpText().badgesTitle), buildBadges());
-    wrap.append(buildXpCard(), section);
-    return wrap;
-  }
+  // for My Universe: the medals, and how many are earned
+  const badges = () => ({ el: buildBadges(), earned: state.badges.length, all: BADGES.length, line: xpText().badgesLine(state.badges.length, BADGES.length), title: xpText().badgesTitle });
+  // a row of small medals for the fold of the badges in My Universe
+  const medalStrip = () => {
+    const strip = el("span", "medal-strip");
+    for (const b of BADGES) strip.append(medalCanvas(b.id, `badge-medal small${state.badges.some((x) => x.id === b.id) ? "" : " locked"}`, 22));
+    return strip;
+  };
 
   function render() {
     const { done, total } = counts();
@@ -478,7 +490,7 @@ export function initExplorer({ getLang, text, explore }) {
   window.addEventListener("keydown", (e) => e.key === "Escape" && !panel.hidden && toggle(false));
   favButton.addEventListener("click", () => toggleFavourite());
   render();
-  return { emit, viewed, render, open: () => toggle(true), counts, profileEl, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf,
+  return { emit, viewed, render, open: () => toggle(true), counts, badges, medalStrip, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf,
     // the level and the way to the next one, for My Universe: { level, xp, share (0 to 1), toNext (the text) }
     progress: () => {
       const level = levelOf(state.xp);

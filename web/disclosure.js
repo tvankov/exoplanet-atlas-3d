@@ -3,12 +3,14 @@
 
 const open = new Set();
 
+// summary: a text, or a node (a row with a picture, see universe.js)
 export function disclosure(key, summary, children, cls = "") {
   const d = document.createElement("details");
   d.className = `uni-more ${cls}`.trim();
   d.open = open.has(key);
   const s = document.createElement("summary");
-  s.textContent = summary;
+  if (typeof summary === "string") s.textContent = summary;
+  else s.append(summary);
   d.append(s, ...children);
   d.addEventListener("toggle", () => (d.open ? open.add(key) : open.delete(key)));
   return d;
