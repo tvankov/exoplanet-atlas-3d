@@ -4159,3 +4159,11 @@ body:has(#day-flight:not([hidden])) #tour {
   opacity: 0.45;
   cursor: default;
 }
+
+/* Every button in My Universe takes the light text of the panel (outside a section the browser's own black was used, so the answers of the
+   learning paths were not readable); buttons with a colour of their own keep it (their rules are more specific). */
+#universe-body button {
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
