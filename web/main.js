@@ -496,6 +496,7 @@ gaiaButton.addEventListener("click", async (event) => {
       showGaiaState("loading");
       await loadGaia();
       fadeIn(gaiaMaterial);
+      fadeRingIn(); // the ring of the chosen planet comes in with the stars
     }
     setGaiaVisible(true);
     showGaiaState();
@@ -2739,6 +2740,21 @@ const ring = new THREE.Sprite(
 ring.scale.set(0.07, 0.07, 1);
 ring.visible = false;
 scene.add(ring);
+// The ring stays hidden while the page flies in, and comes in softly with the stars of the Gaia layer (or a little later without them),
+// so that the first view is the planet alone.
+ring.material.opacity = 0;
+let ringShown = false;
+function fadeRingIn() {
+  if (ringShown) return;
+  ringShown = true;
+  const from = performance.now();
+  const step = () => {
+    const u = Math.min(1, (performance.now() - from) / 2000);
+    ring.material.opacity = u;
+    if (u < 1) requestAnimationFrame(step);
+  };
+  step();
+}
 
 const FLIGHT_MS = 1400; // a flight may set its own (flight.ms)
 let flight = null;
@@ -5831,6 +5847,7 @@ if (flight) flight.ms = 3200;
     clearInterval(timer);
     openLateLoads(); // the big pictures of the planets and of the Milky Way first,
     setTimeout(renderDock, 8000); // the pictures of the dock from them
+    setTimeout(fadeRingIn, 12000); // the ring, if the stars have not brought it yet (the layer is off, or slow)
     setTimeout(() => {
       if (!gaiaOn) gaiaButton.click(); // then the star layers
       if (!IS_MOBILE) setTimeout(() => !deepOn && deepButton.click(), 1500); // one after the other, so that the uploads do not meet
