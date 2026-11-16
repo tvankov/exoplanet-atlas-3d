@@ -3590,3 +3590,77 @@ body:has(#day-flight:not([hidden])) #tour {
     transform: none;
   }
 }
+
+/* The cards of the dock, readable: what a card is (the small line) is bigger, not in capitals, in the colour of the card and may take two
+   lines instead of being cut; the cards are a little taller for it, the picture a little smaller. */
+.dock-card {
+  min-height: 156px;
+}
+.dock-card small {
+  display: -webkit-box;
+  margin-right: -30px; /* the arrow sits lower, beside the title: this line may use the whole width */
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  white-space: normal;
+  color: rgb(var(--tint));
+  opacity: 1;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.dock-card small,
+.dock-card strong {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+.dock-art {
+  top: 8px;
+  width: 104px;
+  height: 65px;
+}
+#hint-line {
+  bottom: 192px; /* above the taller dock */
+}
+/* Each card keeps a width at which its title can be read; where six do not fit, the row scrolls sideways (as on a phone). The small padding
+   leaves room for the lift on hover and the shadow, which the scrolling row would cut. */
+.dock-cards {
+  margin: -6px -4px -12px;
+  padding: 6px 4px 12px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+.dock-card {
+  flex: 1 0 180px;
+  padding-right: 46px;
+  scroll-snap-align: start;
+}
+.dock-card strong {
+  font-size: 16px;
+}
+.dock-card .wl-arrow {
+  right: 12px;
+  bottom: 14px;
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+  border-radius: 9px;
+}
+@media (max-width: 640px) {
+  .dock-card {
+    flex: 0 0 236px;
+    min-height: 136px;
+  }
+  .dock-card small {
+    font-size: 12px;
+  }
+  .dock-art {
+    width: 88px;
+    height: 55px;
+  }
+  #hint-line {
+    bottom: 172px;
+  }
+}

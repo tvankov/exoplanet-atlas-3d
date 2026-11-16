@@ -71,17 +71,17 @@ export function drawDock({ daily, near, figure, level }) {
   if (near)
     paint("dock-near", async (g) => {
       const rgb = starColor(near.teff ?? 3000);
-      drawStar(g, 70, 76, 70, rgb);
+      drawStar(g, 70, 64, 64, rgb);
       // the habitable zone: a green band round the star, the planet on it
       g.strokeStyle = "rgba(124,255,178,0.28)";
       g.lineWidth = 14;
       g.beginPath();
-      g.ellipse(70, 76, 108, 40, -0.25, 0, Math.PI * 2);
+      g.ellipse(70, 64, 104, 34, -0.25, 0, Math.PI * 2);
       g.stroke();
       g.strokeStyle = "rgba(124,255,178,0.6)";
       g.lineWidth = 1.5;
       g.stroke();
-      await drawPlanet(g, exoLook(near.temp), 168, 46, 20);
+      await drawPlanet(g, exoLook(near.temp), 166, 38, 20);
     });
   if (figure)
     paint("dock-games", (g) => {
