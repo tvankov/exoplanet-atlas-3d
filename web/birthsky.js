@@ -145,7 +145,10 @@ export function projectFigure(lines, width = 120, height = 80, pad = 8) {
   const xs = all.map((p) => p[0]);
   const ys = all.map((p) => p[1]);
   const [minX, maxX, minY, maxY] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-  const scale = Math.min((width - 2 * pad) / (maxX - minX || 1), (height - 2 * pad) / (maxY - minY || 1));
+  // a figure in one line (all stars at the same height, or one above the other) is fitted by its length alone; a single star sits in the middle
+  const sx = maxX - minX > 1e-9 ? (width - 2 * pad) / (maxX - minX) : Infinity;
+  const sy = maxY - minY > 1e-9 ? (height - 2 * pad) / (maxY - minY) : Infinity;
+  const scale = Number.isFinite(Math.min(sx, sy)) ? Math.min(sx, sy) : 1;
   const ox = (width - (maxX - minX) * scale) / 2;
   const oy = (height - (maxY - minY) * scale) / 2;
   const place = ([x, y, mag]) => [ox + (x - minX) * scale, oy + (y - minY) * scale, mag];
@@ -188,7 +191,7 @@ export const BIRTHSKY_TEXT = {
     ascNote: "Four minutes earlier or later move the ascendant by about one degree: without an exact hour of birth it is uncertain.",
     placeLine: (name, country, tz) => `${name}, ${country} (time zone ${tz})`, changeAsc: "Change hour or place", removeAsc: "Remove hour and place",
     ascPrivacy: "Hour and place of birth stay in this browser only, like the date.", credit: "Places: GeoNames (CC BY 4.0)",
-    astroCard: "Astrology", skyCard: "In the real sky", figureLine: (n) => n, differShort: "The Sun stood in front of other stars than astrology says.",
+    astroCard: "Astrology", skyCard: "In the real sky", figureLine: (n) => `${n}`, differShort: "The Sun stood in front of other stars than astrology says.",
     why: "Why?", ascSection: "Ascendant and birth data", hour: "Hour", ascMissing: "The ascendant needs the hour and the place of birth.",
     ascAdd: "Add hour and place", edit: "Edit", cancel: "Cancel", placeHelp: "Place not in the list?", more: "Learn more",
     share: "Share as a picture", cardSky: "The sky at my birth",
@@ -242,7 +245,7 @@ export const BIRTHSKY_TEXT = {
     ascNote: "時刻が4分ずれるとアセンダントは約1度動きます。正確な出生時刻がなければ不確かです。",
     placeLine: (name, country, tz) => `${name}、${country}（タイムゾーン ${tz}）`, changeAsc: "時刻や場所を変更", removeAsc: "時刻と場所を削除",
     ascPrivacy: "生まれた時刻と場所も、日付と同じくこのブラウザ内だけに残ります。", credit: "場所：GeoNames（CC BY 4.0）",
-    astroCard: "占星術", skyCard: "実際の空", figureLine: (n) => n, differShort: "太陽は、占星術が言うのとは別の星々の前にありました。",
+    astroCard: "占星術", skyCard: "実際の空", figureLine: (n) => `${n}`, differShort: "太陽は、占星術が言うのとは別の星々の前にありました。",
     why: "なぜ？", ascSection: "アセンダントと出生データ", hour: "時刻", ascMissing: "アセンダントには、生まれた時刻と場所が必要です。",
     ascAdd: "時刻と場所を入力", edit: "編集", cancel: "キャンセル", placeHelp: "場所が一覧にない場合", more: "くわしく",
     share: "画像で共有", cardSky: "私が生まれた日の空",

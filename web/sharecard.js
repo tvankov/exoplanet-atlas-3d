@@ -404,6 +404,7 @@ const EMBLEM = {
     g.fillText("10", r, r * 1.04);
   },
 };
+export const MEDALS = Object.keys(EMBLEM); // the badges that have a picture (tests/badges.test.mjs checks that each has one)
 export function medalCanvas(id, cls, size) {
   return sphereCanvas(`medal-${id}`, cls, size, async (g, px) => {
     const r = px / 2;

@@ -78,15 +78,22 @@ const XP_MISSION = { day: 20, week: 50 };
 const XP_PLANET = 2;
 const XP_CANDIDATE = 5;
 const XP_CONSTELLATION = 2;
-const xpForLevel = (level) => 25 * level * (level - 1);
-function levelOf(xp) {
+export const xpForLevel = (level) => 25 * level * (level - 1);
+export function levelOf(xp) {
   let level = 1;
   while (xp >= xpForLevel(level + 1)) level++;
   return level;
 }
+// The level and the way to the next one: { level, low, high (the XP where this level starts and the next one starts), share (0 to 1) }.
+export function levelProgress(xp) {
+  const level = levelOf(xp);
+  const low = xpForLevel(level);
+  const high = xpForLevel(level + 1);
+  return { level, low, high, share: (xp - low) / (high - low) };
+}
 
 // count: how far the visitor is, from the totals that are counted from the first visit on (state.total); need: where the badge is earned.
-const BADGES = [
+export const BADGES = [
   {
     id: "first-look", count: (t) => (t.planets?.length ?? 0), need: 1,
     en: ["First look", "Looked at your first planet"], de: ["Erster Blick", "Den ersten Planeten angesehen"],
@@ -134,7 +141,15 @@ const BADGES = [
   },
 ];
 
-const XP_TEXT = {
+// Each badge with how far the visitor is: [{ id, have (at most need), need, earned }]. total: state.total; earned: the ids already earned.
+export function badgeProgress(total, earned = []) {
+  return BADGES.map((b) => {
+    const count = b.count(total);
+    return { id: b.id, have: Math.min(count, b.need), need: b.need, earned: earned.includes(b.id) || count >= b.need };
+  });
+}
+
+export const XP_TEXT = {
   en: {
     level: (n) => `Level ${n}`,
     toNext: (x, n) => `${x} XP to level ${n}`,
@@ -430,7 +445,7 @@ export function initExplorer({ getLang, text, explore }) {
       text.append(el("strong", "", name), el("span", "", need));
       if (got?.t) text.append(el("small", "badge-date", xpText().earnedOn(new Date(got.t).toLocaleDateString(getLang()))));
       else if (!got) {
-        const have = Math.min(b.count(state.total), b.need);
+        const have = badgeProgress(state.total).find((x) => x.id === b.id).have;
         const bar = el("div", "badge-bar");
         const fill = el("i", "");
         fill.style.width = `${(have / b.need) * 100}%`;
@@ -493,10 +508,8 @@ export function initExplorer({ getLang, text, explore }) {
   return { emit, viewed, render, open: () => toggle(true), counts, badges, medalStrip, getState: () => state, merge, onChange: (fn) => (changeListener = fn), getProfile, setProfile, resetProfile, getLast, nextMission, levelOf,
     // the level and the way to the next one, for My Universe: { level, xp, share (0 to 1), toNext (the text) }
     progress: () => {
-      const level = levelOf(state.xp);
-      const low = xpForLevel(level);
-      const high = xpForLevel(level + 1);
-      return { level, xp: state.xp, share: (state.xp - low) / (high - low), toNext: xpText().toNext(high - state.xp, level + 1) };
+      const { level, high, share } = levelProgress(state.xp);
+      return { level, xp: state.xp, share, toNext: xpText().toNext(high - state.xp, level + 1) };
     },
     update, resetAll, showing, getCurrent: () => current, onRender: (fn) => renderListeners.push(fn) };
 }

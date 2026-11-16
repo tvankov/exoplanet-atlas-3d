@@ -1,15 +1,20 @@
-# Tests of the small pure parts of the page that run without a browser (tests/). Runs when the code of the page or the tests change.
+# Tests of the page without a browser (tests/): the pure parts, the texts in four languages, the data of the pictures and the files of the
+# page. Runs when the code, the pages, the data or the tests change.
 name: Unit tests
 
 on:
   push:
     paths:
       - "web/*.js"
+      - "web/*.html"
+      - "web/data/**"
       - "tests/**"
       - ".github/workflows/unit-tests.yml"
   pull_request:
     paths:
       - "web/*.js"
+      - "web/*.html"
+      - "web/data/**"
       - "tests/**"
   workflow_dispatch:
 
