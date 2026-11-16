@@ -9,14 +9,14 @@ import { entryForInterest, readStoredProfile } from "./profile.js";
 const FALLBACK = {
   id: "mars-fallback",
   target: "Mars",
-  credit: "NASA Planetary Fact Sheet",
+  credit: "NASA Science: Mars, Facts",
   en: {
-    title: "Mars: a volcano as tall as three Everests",
-    text: "Olympus Mons on Mars is the tallest known volcano in the Solar System, about 22 kilometres high. That is roughly two and a half times the height of Mount Everest above sea level.",
-    q: "About how much taller than Mount Everest is Olympus Mons?",
-    options: ["Roughly 2.5 times", "Roughly the same", "Roughly 10 times"],
+    title: "Mars: the largest volcano in the Solar System",
+    text: "Olympus Mons on Mars is the largest volcano in the Solar System, several times as tall as Mount Everest. Its height is given differently from source to source, depending on whether it is measured from the plains around it or from the mean level of Mars.",
+    q: "On which planet is the largest volcano of the Solar System?",
+    options: ["Mars", "Venus", "Earth"],
     answer: 0,
-    explain: "Olympus Mons is about 22 km high, Everest about 8.8 km above sea level, so about 2.5 times.",
+    explain: "On Mars: Olympus Mons, several times as tall as Mount Everest (NASA, Mars facts).",
   },
 };
 
