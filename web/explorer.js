@@ -155,6 +155,11 @@ export const BADGES = [
     en: ["Exoplanet expert", "Passed the final test of Exoplanets"], de: ["Exoplaneten-Kenner", "Den Abschlusstest von „Exoplaneten“ bestanden"],
     ja: ["系外惑星エキスパート", "「系外惑星」の最終テストに合格した"], bg: ["Познавач на екзопланетите", "Издържа финалния тест на „Екзопланети“"],
   },
+  {
+    id: "hab-scholar", count: (t) => (t.learnPaths?.includes("hab") ? 1 : 0), need: 1,
+    en: ["Seeker of worlds", "Passed the final test of The search for habitable worlds"], de: ["Weltensucher", "Den Abschlusstest von „Die Suche nach bewohnbaren Welten“ bestanden"],
+    ja: ["世界をさがす人", "「住める世界をさがして」の最終テストに合格した"], bg: ["Търсач на светове", "Издържа финалния тест на „Търсенето на обитаеми светове“"],
+  },
 ];
 
 // Each badge with how far the visitor is: [{ id, have (at most need), need, earned }]. total: state.total; earned: the ids already earned.

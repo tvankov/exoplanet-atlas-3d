@@ -444,6 +444,15 @@ const EMBLEM = {
     drawStar(g, r, r, r * 0.62, starColor(5500));
     await drawPlanet(g, exoLook(1300), r * 1.18, r * 1.06, r * 0.2);
   },
+  // the search for habitable worlds: the Earth in the green ring of a habitable zone
+  "hab-scholar": async (g, r) => {
+    g.strokeStyle = "rgba(124,255,178,0.55)";
+    g.lineWidth = r * 0.16;
+    g.beginPath();
+    g.arc(r, r, r * 0.62, 0, TAU);
+    g.stroke();
+    await drawPlanet(g, "Earth", r, r, r * 0.36);
+  },
   // ten missions: ten lights round the number
   regular: (g, r) => {
     for (let i = 0; i < 10; i++) {

@@ -5608,7 +5608,7 @@ const learn = initLearn({
     years: Object.fromEntries(PLANETS.map((p) => [p.name, p.years])),
     star: myStar?.current() ?? null,
     birthYear: myStar?.current()?.year ?? null,
-    discoveries: (discoveries ??= stars.flatMap((s) => s.planets.map((p) => [p.disc_year, p.discoverymethod]))), // the year and method of every planet
+    discoveries: (discoveries ??= stars.flatMap((s) => s.planets.map((p) => [p.disc_year, p.discoverymethod, !!p.habitable]))), // year, method, candidate
   }),
   act: (task) => {
     if (task === "realScale") return realScale || setRealScale(true);

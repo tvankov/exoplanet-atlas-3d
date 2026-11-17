@@ -5,7 +5,7 @@
 // progress lives in the explorer's log (explorer.js: total.learnTasks, learnSteps, learnPaths and "learnBest:<path>"), so it is merged with
 // the account like the rest. Every step has a box of the facts to remember and its sources (SOURCES): the facts were checked against those
 // NASA pages in November 2026, so that a step can be checked again when the science changes. The rules are pure functions, tested in
-// tests/learn.test.mjs. The paths: Our Solar System, Alpha Centauri (our nearest stars) and Exoplanets; more will follow. A step may have no task in the
+// tests/learn.test.mjs. The paths: Our Solar System, Alpha Centauri (our nearest stars), Exoplanets and the search for habitable worlds. A step may have no task in the
 // 3D view when what it is about is not in the map (Alpha Centauri A and B): then the questions alone finish it.
 
 import { track } from "./stats.js";
@@ -17,6 +17,7 @@ export const PATHS = {
   solar: { steps: ["sun", "inner", "outer", "moons", "scale"], minutes: 30, testSize: 10, pass: 0.7 },
   alpha: { steps: ["neighbors", "pair", "proxima", "proximaB", "travel"], minutes: 25, testSize: 10, pass: 0.7 },
   exo: { steps: ["exoWhat", "exoHow", "exoRocky", "exoGiants", "exoStrange"], minutes: 25, testSize: 10, pass: 0.7 },
+  hab: { steps: ["habWhat", "habZone", "habWater", "habAtmos", "habLife"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -24,6 +25,7 @@ export const TASKS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale",
   neighbors: "figure:Cen", pair: null, proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
+  habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text.
@@ -31,8 +33,9 @@ export const VIEWS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "Neptune",
   neighbors: "Proxima Cen", pair: "Proxima Cen", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
+  habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "Proxima Cen", exo: "51 Peg b" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "Proxima Cen", exo: "51 Peg b", hab: "TOI-700 d" };
 // The sources of each step, against which its texts, facts to remember and questions were checked (titles as on the pages).
 export const SOURCES = {
   sun: [
@@ -105,9 +108,31 @@ export const SOURCES = {
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
   ],
+  habWhat: [
+    { label: "NASA Science: Habitable Zone", url: "https://science.nasa.gov/exoplanets/habitable-zone/" },
+    { label: "NASA Science: Can We Find Life?", url: "https://science.nasa.gov/exoplanets/can-we-find-life/" },
+  ],
+  habZone: [
+    { label: "NASA Science: Habitable Zone", url: "https://science.nasa.gov/exoplanets/habitable-zone/" },
+    { label: "NASA Science: TOI-700 d", url: "https://science.nasa.gov/exoplanet-catalog/toi-700-d/" },
+  ],
+  habWater: [
+    { label: "USGS Water Science School: The Water in You", url: "https://www.usgs.gov/special-topics/water-science-school/science/water-you-water-and-human-body" },
+    { label: "NASA Science: Europa", url: "https://science.nasa.gov/jupiter/jupiter-moons/europa/" },
+    { label: "NASA Science: Enceladus", url: "https://science.nasa.gov/saturn/moons/enceladus/" },
+  ],
+  habAtmos: [
+    { label: "NASA Science: Venus, Facts", url: "https://science.nasa.gov/venus/facts/" },
+    { label: "NASA Science: Mars, Facts", url: "https://science.nasa.gov/mars/facts/" },
+  ],
+  habLife: [
+    { label: "NASA Science: Can We Find Life?", url: "https://science.nasa.gov/exoplanets/can-we-find-life/" },
+    { label: "NASA Science: Exoplanet Catalog", url: "https://science.nasa.gov/exoplanets/exoplanet-catalog/" },
+  ],
 };
 // The years of the planets of the path Exoplanets, in days, from the catalogue of the map (NASA Exoplanet Archive, web/data/stars.json).
-const EXO_DAYS = { trappist: 6.101013, peg: 4.2307966, cancri: 0.7365474 };
+const EXO_DAYS = { trappist: 6.101013, peg: 4.2307966, cancri: 0.7365474, toi: 37.423457 };
+const EUROPA_DAYS = MOONS.Jupiter.find((m) => m.id === "Europa").days; // NASA Jovian Satellite Fact Sheet (moons.js)
 // The numbers of Alpha Centauri: the distance of Proxima and the year of Proxima b as in the map (NASA Exoplanet Archive, web/data/stars.json;
 // NASA and ESO round them to 4.2 light years and 11.2 days), the speed of Voyager 1 from NASA (17.0 km/s, August 2024). The time of the trip
 // is worked out from them: about 74,800 years, "about 75,000" in the texts.
@@ -119,7 +144,7 @@ const REFERENCE_AGE = 30; // without a year of birth, the sentences speak of a p
 const MOON_DAYS = MOONS.Earth[0].days;
 
 // The visitor's numbers. ctx: { age (years, or null), years: { Mercury, Mars, Jupiter } (their year in Earth years), star: { name, dist, year } or null,
-// birthYear (or null), discoveries: [[year, method], ...] of the planets of the catalogue, thisYear }.
+// birthYear (or null), discoveries: [[year, method, candidate], ...] of the planets of the catalogue, thisYear }.
 export function personalNumbers(ctx) {
   const age = ctx.age ?? REFERENCE_AGE;
   return {
@@ -152,6 +177,12 @@ function exoNumbers(ctx, age) {
     trappistAge: Math.round((age * 365.25) / EXO_DAYS.trappist),
     pegAge: Math.round((age * 365.25) / EXO_DAYS.peg),
     cancriAge: Math.round((age * 365.25) / EXO_DAYS.cancri),
+    // the search for habitable worlds: the candidates of the map (in a habitable zone, see the rule of stars.json) then and now, and three ages
+    candidatesAtBirth: found.filter(([year, , candidate]) => candidate && year <= born).length,
+    candidatesNow: found.filter(([, , candidate]) => candidate).length,
+    toiAge: Math.round((age * 365.25) / EXO_DAYS.toi),
+    europaLaps: Math.floor((age * 365.25) / EUROPA_DAYS),
+    venusAge: Math.round(age / (ctx.years.Venus ?? 0.615)),
   };
 }
 
@@ -195,6 +226,12 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // the search for habitable worlds
+  habWhat: [{ id: "hzDef" }, { id: "waterNeed" }, { id: "firstCut" }, { id: "habOrbits", number: "orbits" }],
+  habZone: [{ id: "zoneHot" }, { id: "redDwarfZone" }, { id: "toiYear" }, { id: "toiAge", number: "toiAge" }],
+  habWater: [{ id: "europaOcean" }, { id: "enceladusJets" }, { id: "bodyWater" }, { id: "europaLaps", number: "europaLaps" }],
+  habAtmos: [{ id: "venusGreenhouse" }, { id: "marsThin" }, { id: "venusTemp" }, { id: "venusAge", number: "venusAge" }],
+  habLife: [{ id: "onlyEarth" }, { id: "vents" }, { id: "biosignature" }, { id: "candidatesAtBirth", number: "candidatesAtBirth" }],
 };
 
 // The questions of a step, ready to show: [{ id, text, options (labels), answer (the right label), explain }].
@@ -233,6 +270,7 @@ export const LEARN_TEXT = {
       solar: { title: "Our Solar System", goal: "You can explain how our Solar System is built and tell its main bodies apart." },
       alpha: { title: "Our nearest stars: Alpha Centauri", goal: "You can describe the star system closest to us, its planet Proxima b, and how far away it really is." },
       exo: { title: "Exoplanets: worlds beyond the Solar System", goal: "You know what exoplanets are, how they are found and how different they can be." },
+      hab: { title: "The search for habitable worlds", goal: "You know what makes a planet possibly habitable, and why the habitable zone alone does not mean life." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -485,6 +523,81 @@ export const LEARN_TEXT = {
         you: (n) => `On 55 Cancri e you would have had ${n} birthdays: a year there lasts less than 18 hours.`,
         ref: (n) => `A person of 30 would have had ${n} birthdays on 55 Cancri e: a year there lasts less than 18 hours.`,
       },
+      habWhat: {
+        title: "What does habitable mean?", goal: "You can explain the habitable zone and why liquid water matters.",
+        text: [
+          "NASA defines the habitable zone as the distance from a star at which liquid water could exist on the surfaces of orbiting planets. Liquid water is essential for life as we know it.",
+          "But the zone is only a first cut, as NASA puts it. A planet also needs a suitable size, a suitable atmosphere and a calm star that does not sterilise it with flares.",
+        ],
+        task: "Fly to the Earth, the one planet we know with life.",
+        remember: [
+          "The habitable zone: the distances from a star at which liquid water could exist on a planet's surface.",
+          "Liquid water is essential for life as we know it.",
+          "The zone is only a first cut: size, atmosphere and a calm star matter too.",
+        ],
+        you: (n) => `Since you were born, the Earth has carried you round the Sun ${n} times, all the time inside its habitable zone.`,
+        ref: (n) => `In 30 years the Earth carries a person round the Sun ${n} times, all the time inside its habitable zone.`,
+      },
+      habZone: {
+        title: "The habitable zone", goal: "You know why the habitable zone differs from star to star.",
+        text: [
+          "The habitable zone depends on the star. Around hotter stars it is wider; around red dwarfs it is narrow and very close to the star.",
+          "TOI-700 d, for example, goes round a small M-type star in only 37.4 days and lies in its habitable zone. In the 3D view a green ring shows the habitable zone of a system.",
+        ],
+        task: "Fly to TOI-700 d and look at the green ring of its habitable zone.",
+        remember: [
+          "Around hotter stars the habitable zone is wider.",
+          "Around red dwarfs it is narrow and very close to the star.",
+          "TOI-700 d goes round its small star in 37.4 days.",
+        ],
+        you: (n) => `On TOI-700 d you would be ${n} years old: a year there lasts 37.4 days.`,
+        ref: (n) => `A person of 30 would be ${n} years old on TOI-700 d: a year there lasts 37.4 days.`,
+      },
+      habWater: {
+        title: "Liquid water", goal: "You know why water is sought, and where there may be oceans in our own Solar System.",
+        text: [
+          "Water is essential for all life on the Earth; up to 60 % of the adult human body is water. That is why the search for life is a search for liquid water first.",
+          "Oceans may hide under ice, too: there is strong evidence that Jupiter's moon Europa has a saltwater ocean, and Saturn's moon Enceladus has a global ocean inside, with jets that spew water vapour and ice particles into space.",
+        ],
+        task: "Fly to Jupiter and click its moon Europa.",
+        remember: [
+          "Water is essential for all life on the Earth; up to 60 % of the adult body is water.",
+          "There is strong evidence for a saltwater ocean in Jupiter's moon Europa.",
+          "Saturn's moon Enceladus has a global ocean and jets of water vapour and ice.",
+        ],
+        you: (n) => `Since you were born, Europa, the moon with the ocean, has gone round Jupiter ${n} times.`,
+        ref: (n) => `In 30 years Europa, the moon with the ocean, goes round Jupiter ${n} times.`,
+      },
+      habAtmos: {
+        title: "Atmospheres", goal: "You can explain why the air of a planet decides whether water can stay liquid.",
+        text: [
+          "Venus shows how much the air matters: its thick atmosphere, mostly carbon dioxide, traps heat in a runaway greenhouse effect, and the surface is about 467 °C.",
+          "Mars shows the other extreme: its thin atmosphere is too thin for liquid water to exist there for long. The Earth lies in between, and that is one reason why water stays liquid here.",
+        ],
+        task: "Fly to Venus, the planet with too much air.",
+        remember: [
+          "Venus: a thick atmosphere of carbon dioxide traps heat; the surface is about 467 °C.",
+          "Mars: the atmosphere is too thin for liquid water to last long.",
+          "The air of a planet decides whether water can stay liquid.",
+        ],
+        you: (n) => `On Venus you would be ${n} years old, on a world where the air traps the heat.`,
+        ref: (n) => `A person of 30 would be ${n} years old on Venus, on a world where the air traps the heat.`,
+      },
+      habLife: {
+        title: "Is there life out there?", goal: "You know how scientists look for life, and that the answer is still open.",
+        text: [
+          "So far the only life we know of is on the Earth. Life here even thrives at superheated vents on the ocean floor, which gives hope that it could exist in strange places elsewhere.",
+          "The James Webb Space Telescope could get the first glimpses of the gases in the air of Earth-sized exoplanets. Oxygen, carbon dioxide and methane together would be a strong indication of possible life. Whether we will find it is an open question.",
+        ],
+        task: "Fly to Proxima b, the nearest candidate of the map.",
+        remember: [
+          "So far we know of life only on the Earth.",
+          "Life on the Earth even lives at superheated vents on the ocean floor.",
+          "Gases in the air of an exoplanet (oxygen, carbon dioxide, methane together) could hint at life: an open question.",
+        ],
+        you: (at, now, year) => `In ${year}, the year you were born, this map knew ${at} candidates in a habitable zone; today it knows ${now}.`,
+        ref: (at, now, year) => `In ${year}, when a person of 30 today was born, this map knew ${at} candidates in a habitable zone; today it knows ${now}.`,
+      },
     },
     q: {
       sunLight: { q: "How long does sunlight need to reach the Earth?", o: ["About 8 minutes", "About 8 seconds", "About 8 hours"], e: "About 8 minutes and 20 seconds: the Sun is 150 million kilometres away, and light travels about 300,000 kilometres per second." },
@@ -544,6 +657,26 @@ export const LEARN_TEXT = {
       trappistAge: { you: "How old would you be on TRAPPIST-1 e?", ref: "How old would a person of 30 be on TRAPPIST-1 e?", e: (n) => `${n}: a year on TRAPPIST-1 e lasts 6.1 days.` },
       pegAge: { you: "How old would you be on 51 Pegasi b?", ref: "How old would a person of 30 be on 51 Pegasi b?", e: (n) => `${n}: a year on 51 Pegasi b lasts 4.2 days.` },
       cancriAge: { you: "How many birthdays would you have had on 55 Cancri e?", ref: "How many birthdays would a person of 30 have had on 55 Cancri e?", e: (n) => `${n}: a year on 55 Cancri e lasts less than 18 hours.` },
+      hzDef: { q: "What is the habitable zone?", o: ["The distances from a star at which liquid water could exist on a planet's surface", "The part of a planet where people live", "The area around a black hole"], e: "The distances from a star at which liquid water could exist on the surface of a planet, as NASA defines it." },
+      waterNeed: { q: "Why do scientists look for liquid water first?", o: ["It is essential for life as we know it", "It makes planets shine", "It keeps planets in their orbits"], e: "Liquid water is essential for life as we know it." },
+      firstCut: { q: "Is every planet in the habitable zone habitable?", o: ["No, the zone is only a first cut", "Yes, always", "Only if it has moons"], e: "No: size, atmosphere and a calm star matter too." },
+      zoneHot: { q: "Around which stars is the habitable zone wider?", o: ["Hotter stars", "Cooler stars", "It is the same for all stars"], e: "Around hotter stars." },
+      redDwarfZone: { q: "Where is the habitable zone of a red dwarf?", o: ["Narrow and very close to the star", "Far away from the star", "A red dwarf has none"], e: "Narrow and very close to the star: its planets go round in days or weeks." },
+      toiYear: { q: "How long is a year on TOI-700 d?", o: ["About 37 days", "About 37 years", "About 37 hours"], e: "About 37.4 days." },
+      europaOcean: { q: "What is there strong evidence for under the surface of Europa?", o: ["A saltwater ocean", "A sea of lava", "A frozen forest"], e: "A saltwater ocean." },
+      enceladusJets: { q: "What do the jets of Enceladus spew into space?", o: ["Water vapour and ice particles", "Lava", "Sand"], e: "Water vapour and ice particles, from its ocean inside." },
+      bodyWater: { q: "How much of the adult human body is water, according to the USGS?", o: ["Up to 60 %", "About 10 %", "Over 95 %"], e: "Up to 60 %." },
+      venusGreenhouse: { q: "Why is Venus so hot?", o: ["Its thick air of carbon dioxide traps the heat", "It is the planet closest to the Sun", "It has volcanoes everywhere"], e: "Its thick atmosphere traps heat in a runaway greenhouse effect; Mercury is closer to the Sun but not as hot." },
+      marsThin: { q: "Why can liquid water not last long on Mars today?", o: ["Its atmosphere is too thin", "It has no water at all", "It is too close to the Sun"], e: "Its atmosphere is too thin for liquid water to exist there for long." },
+      venusTemp: { q: "About how hot is the surface of Venus?", o: ["About 467 °C", "About 46 °C", "About -46 °C"], e: "About 467 °C." },
+      onlyEarth: { q: "Where do we know of life so far?", o: ["Only on the Earth", "On Mars", "On Proxima b"], e: "Only on the Earth, so far." },
+      vents: { q: "Where does life on the Earth thrive at superheated vents?", o: ["On the ocean floor", "On mountain tops", "In the clouds"], e: "On the ocean floor: a hint that life could exist in strange places elsewhere." },
+      biosignature: { q: "Which telescope could get the first glimpses of the gases in the air of Earth-sized exoplanets?", o: ["The James Webb Space Telescope", "Voyager 1", "Galileo's telescope"], e: "The James Webb Space Telescope, launched in 2021." },
+      habOrbits: { you: "How many times has the Earth carried you round the Sun inside its habitable zone?", ref: "How many times does the Earth carry a person round the Sun in 30 years?", e: (n) => `${n} times: once a year, always inside the habitable zone of the Sun.` },
+      toiAge: { you: "How old would you be on TOI-700 d?", ref: "How old would a person of 30 be on TOI-700 d?", e: (n) => `${n}: a year on TOI-700 d lasts 37.4 days.` },
+      europaLaps: { you: "How many times has Europa gone round Jupiter since you were born?", ref: "How many times does Europa go round Jupiter in 30 years?", e: (n) => `${n} times: one orbit takes 3.55 days.` },
+      venusAge: { you: "How old would you be on Venus?", ref: "How old would a person of 30 be on Venus?", e: (n) => `${n}: a year on Venus lasts 0.615 Earth years.` },
+      candidatesAtBirth: { you: "How many candidates in a habitable zone did this map know in the year you were born?", ref: "How many candidates in a habitable zone did this map know in the year a person of 30 today was born?", e: (n) => `${n}: most of them were found in the last few years.` },
     },
   },
   de: {
@@ -551,6 +684,7 @@ export const LEARN_TEXT = {
       solar: { title: "Unser Sonnensystem", goal: "Du kannst erklären, wie unser Sonnensystem aufgebaut ist, und seine wichtigsten Himmelskörper unterscheiden." },
       alpha: { title: "Unsere nächsten Sterne: Alpha Centauri", goal: "Du kannst das Sternsystem beschreiben, das uns am nächsten ist, seinen Planeten Proxima b und wie weit weg es wirklich ist." },
       exo: { title: "Exoplaneten: Welten jenseits des Sonnensystems", goal: "Du weißt, was Exoplaneten sind, wie man sie findet und wie verschieden sie sein können." },
+      hab: { title: "Die Suche nach bewohnbaren Welten", goal: "Du weißt, was einen Planeten möglicherweise bewohnbar macht und warum die bewohnbare Zone allein noch kein Leben bedeutet." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -803,6 +937,81 @@ export const LEARN_TEXT = {
         you: (n) => `Auf 55 Cancri e hättest du schon ${n} Geburtstage gefeiert: Ein Jahr dauert dort weniger als 18 Stunden.`,
         ref: (n) => `Ein 30-jähriger Mensch hätte auf 55 Cancri e schon ${n} Geburtstage gefeiert: Ein Jahr dauert dort weniger als 18 Stunden.`,
       },
+      habWhat: {
+        title: "Was heißt bewohnbar?", goal: "Du kannst die bewohnbare Zone erklären und warum flüssiges Wasser so wichtig ist.",
+        text: [
+          "Die NASA definiert die bewohnbare Zone als den Abstand zu einem Stern, in dem auf der Oberfläche umlaufender Planeten flüssiges Wasser existieren könnte. Flüssiges Wasser ist für Leben, wie wir es kennen, unverzichtbar.",
+          "Aber die Zone ist nur eine erste Auswahl, wie die NASA sagt. Ein Planet braucht auch die passende Größe, eine passende Atmosphäre und einen ruhigen Stern, der ihn nicht mit Ausbrüchen sterilisiert.",
+        ],
+        task: "Flieg zur Erde, dem einzigen Planeten, den wir mit Leben kennen.",
+        remember: [
+          "Die bewohnbare Zone: die Abstände zu einem Stern, in denen auf der Oberfläche eines Planeten flüssiges Wasser existieren könnte.",
+          "Flüssiges Wasser ist für Leben, wie wir es kennen, unverzichtbar.",
+          "Die Zone ist nur eine erste Auswahl: Größe, Atmosphäre und ein ruhiger Stern zählen auch.",
+        ],
+        you: (n) => `Seit deiner Geburt hat dich die Erde ${n}-mal um die Sonne getragen, die ganze Zeit innerhalb ihrer bewohnbaren Zone.`,
+        ref: (n) => `In 30 Jahren trägt die Erde einen Menschen ${n}-mal um die Sonne, die ganze Zeit innerhalb ihrer bewohnbaren Zone.`,
+      },
+      habZone: {
+        title: "Die bewohnbare Zone", goal: "Du weißt, warum die bewohnbare Zone von Stern zu Stern verschieden ist.",
+        text: [
+          "Die bewohnbare Zone hängt vom Stern ab. Um heißere Sterne ist sie breiter, um Rote Zwerge ist sie schmal und liegt sehr nah am Stern.",
+          "TOI-700 d zum Beispiel läuft in nur 37,4 Tagen um einen kleinen M-Stern und liegt in dessen bewohnbarer Zone. In der 3D-Ansicht zeigt ein grüner Ring die bewohnbare Zone eines Systems.",
+        ],
+        task: "Flieg zu TOI-700 d und sieh dir den grünen Ring seiner bewohnbaren Zone an.",
+        remember: [
+          "Um heißere Sterne ist die bewohnbare Zone breiter.",
+          "Um Rote Zwerge ist sie schmal und liegt sehr nah am Stern.",
+          "TOI-700 d läuft in 37,4 Tagen um seinen kleinen Stern.",
+        ],
+        you: (n) => `Auf TOI-700 d wärst du ${n} Jahre alt: Ein Jahr dauert dort 37,4 Tage.`,
+        ref: (n) => `Ein 30-jähriger Mensch wäre auf TOI-700 d ${n} Jahre alt: Ein Jahr dauert dort 37,4 Tage.`,
+      },
+      habWater: {
+        title: "Flüssiges Wasser", goal: "Du weißt, warum man nach Wasser sucht und wo es in unserem eigenen Sonnensystem Ozeane geben könnte.",
+        text: [
+          "Wasser ist für alles Leben auf der Erde unverzichtbar; bis zu 60 % des Körpers eines Erwachsenen sind Wasser. Darum ist die Suche nach Leben zuerst eine Suche nach flüssigem Wasser.",
+          "Ozeane können sich auch unter Eis verbergen: Es gibt starke Hinweise, dass der Jupitermond Europa einen Salzwasserozean hat, und der Saturnmond Enceladus hat innen einen weltweiten Ozean, mit Fontänen, die Wasserdampf und Eisteilchen ins All schleudern.",
+        ],
+        task: "Flieg zum Jupiter und klicke auf seinen Mond Europa.",
+        remember: [
+          "Wasser ist für alles Leben auf der Erde unverzichtbar; bis zu 60 % des Körpers eines Erwachsenen sind Wasser.",
+          "Es gibt starke Hinweise auf einen Salzwasserozean im Jupitermond Europa.",
+          "Der Saturnmond Enceladus hat einen weltweiten Ozean und Fontänen aus Wasserdampf und Eis.",
+        ],
+        you: (n) => `Seit deiner Geburt ist Europa, der Mond mit dem Ozean, ${n}-mal um Jupiter gelaufen.`,
+        ref: (n) => `In 30 Jahren läuft Europa, der Mond mit dem Ozean, ${n}-mal um Jupiter.`,
+      },
+      habAtmos: {
+        title: "Atmosphären", goal: "Du kannst erklären, warum die Luft eines Planeten darüber entscheidet, ob Wasser flüssig bleiben kann.",
+        text: [
+          "Die Venus zeigt, wie viel die Luft ausmacht: Ihre dichte Atmosphäre, vor allem aus Kohlendioxid, hält die Wärme in einem sich selbst verstärkenden Treibhauseffekt fest, und die Oberfläche ist etwa 467 °C heiß.",
+          "Der Mars zeigt das andere Extrem: Seine Atmosphäre ist zu dünn, als dass flüssiges Wasser dort lange bestehen könnte. Die Erde liegt dazwischen, und das ist ein Grund, warum Wasser hier flüssig bleibt.",
+        ],
+        task: "Flieg zur Venus, dem Planeten mit zu viel Luft.",
+        remember: [
+          "Venus: Eine dichte Atmosphäre aus Kohlendioxid hält die Wärme fest; die Oberfläche ist etwa 467 °C heiß.",
+          "Mars: Die Atmosphäre ist zu dünn, als dass flüssiges Wasser lange bestehen könnte.",
+          "Die Luft eines Planeten entscheidet, ob Wasser flüssig bleiben kann.",
+        ],
+        you: (n) => `Auf der Venus wärst du ${n} Jahre alt, auf einer Welt, deren Luft die Hitze festhält.`,
+        ref: (n) => `Ein 30-jähriger Mensch wäre auf der Venus ${n} Jahre alt, auf einer Welt, deren Luft die Hitze festhält.`,
+      },
+      habLife: {
+        title: "Gibt es Leben da draußen?", goal: "Du weißt, wie die Forschung nach Leben sucht und dass die Antwort noch offen ist.",
+        text: [
+          "Bisher kennen wir Leben nur auf der Erde. Hier gedeiht es sogar an superheißen Quellen am Meeresboden, und das macht Hoffnung, dass es auch an seltsamen Orten anderswo existieren könnte.",
+          "Das James-Webb-Weltraumteleskop könnte erste Blicke auf die Gase in der Luft erdgroßer Exoplaneten werfen. Sauerstoff, Kohlendioxid und Methan zusammen wären ein starker Hinweis auf mögliches Leben. Ob wir es finden, ist eine offene Frage.",
+        ],
+        task: "Flieg zu Proxima b, dem nächsten Kandidaten der Karte.",
+        remember: [
+          "Bisher kennen wir Leben nur auf der Erde.",
+          "Leben auf der Erde lebt sogar an superheißen Quellen am Meeresboden.",
+          "Gase in der Luft eines Exoplaneten (Sauerstoff, Kohlendioxid und Methan zusammen) könnten auf Leben hinweisen: eine offene Frage.",
+        ],
+        you: (at, now, year) => `${year}, im Jahr deiner Geburt, kannte diese Karte ${at} Kandidaten in einer bewohnbaren Zone; heute kennt sie ${now}.`,
+        ref: (at, now, year) => `${year}, als ein heute 30-jähriger Mensch geboren wurde, kannte diese Karte ${at} Kandidaten in einer bewohnbaren Zone; heute kennt sie ${now}.`,
+      },
     },
     q: {
       sunLight: { q: "Wie lange braucht Sonnenlicht bis zur Erde?", o: ["Etwa 8 Minuten", "Etwa 8 Sekunden", "Etwa 8 Stunden"], e: "Etwa 8 Minuten und 20 Sekunden: Die Sonne ist 150 Millionen Kilometer entfernt, und Licht legt etwa 300.000 Kilometer pro Sekunde zurück." },
@@ -862,6 +1071,26 @@ export const LEARN_TEXT = {
       trappistAge: { you: "Wie alt wärst du auf TRAPPIST-1 e?", ref: "Wie alt wäre ein 30-jähriger Mensch auf TRAPPIST-1 e?", e: (n) => `${n}: Ein Jahr auf TRAPPIST-1 e dauert 6,1 Tage.` },
       pegAge: { you: "Wie alt wärst du auf 51 Pegasi b?", ref: "Wie alt wäre ein 30-jähriger Mensch auf 51 Pegasi b?", e: (n) => `${n}: Ein Jahr auf 51 Pegasi b dauert 4,2 Tage.` },
       cancriAge: { you: "Wie viele Geburtstage hättest du auf 55 Cancri e schon gefeiert?", ref: "Wie viele Geburtstage hätte ein 30-jähriger Mensch auf 55 Cancri e schon gefeiert?", e: (n) => `${n}: Ein Jahr auf 55 Cancri e dauert weniger als 18 Stunden.` },
+      hzDef: { q: "Was ist die bewohnbare Zone?", o: ["Die Abstände zu einem Stern, in denen auf einer Planetenoberfläche flüssiges Wasser existieren könnte", "Der Teil eines Planeten, in dem Menschen wohnen", "Der Bereich um ein Schwarzes Loch"], e: "Die Abstände zu einem Stern, in denen auf der Oberfläche eines Planeten flüssiges Wasser existieren könnte, so definiert es die NASA." },
+      waterNeed: { q: "Warum sucht die Forschung zuerst nach flüssigem Wasser?", o: ["Es ist für Leben, wie wir es kennen, unverzichtbar", "Es lässt Planeten leuchten", "Es hält Planeten auf ihren Bahnen"], e: "Flüssiges Wasser ist für Leben, wie wir es kennen, unverzichtbar." },
+      firstCut: { q: "Ist jeder Planet in der bewohnbaren Zone bewohnbar?", o: ["Nein, die Zone ist nur eine erste Auswahl", "Ja, immer", "Nur wenn er Monde hat"], e: "Nein: Größe, Atmosphäre und ein ruhiger Stern zählen auch." },
+      zoneHot: { q: "Um welche Sterne ist die bewohnbare Zone breiter?", o: ["Um heißere Sterne", "Um kühlere Sterne", "Sie ist bei allen Sternen gleich"], e: "Um heißere Sterne." },
+      redDwarfZone: { q: "Wo liegt die bewohnbare Zone eines Roten Zwergs?", o: ["Schmal und sehr nah am Stern", "Weit weg vom Stern", "Ein Roter Zwerg hat keine"], e: "Schmal und sehr nah am Stern: Seine Planeten laufen in Tagen oder Wochen um ihn." },
+      toiYear: { q: "Wie lange dauert ein Jahr auf TOI-700 d?", o: ["Etwa 37 Tage", "Etwa 37 Jahre", "Etwa 37 Stunden"], e: "Etwa 37,4 Tage." },
+      europaOcean: { q: "Wofür gibt es unter der Oberfläche von Europa starke Hinweise?", o: ["Einen Salzwasserozean", "Ein Meer aus Lava", "Einen gefrorenen Wald"], e: "Einen Salzwasserozean." },
+      enceladusJets: { q: "Was schleudern die Fontänen von Enceladus ins All?", o: ["Wasserdampf und Eisteilchen", "Lava", "Sand"], e: "Wasserdampf und Eisteilchen, aus seinem Ozean im Inneren." },
+      bodyWater: { q: "Wie viel des Körpers eines Erwachsenen ist laut USGS Wasser?", o: ["Bis zu 60 %", "Etwa 10 %", "Über 95 %"], e: "Bis zu 60 %." },
+      venusGreenhouse: { q: "Warum ist die Venus so heiß?", o: ["Ihre dichte Luft aus Kohlendioxid hält die Wärme fest", "Sie ist der Sonne am nächsten", "Sie hat überall Vulkane"], e: "Ihre dichte Atmosphäre hält die Wärme in einem sich selbst verstärkenden Treibhauseffekt fest; Merkur ist näher an der Sonne, aber nicht so heiß." },
+      marsThin: { q: "Warum kann flüssiges Wasser auf dem Mars heute nicht lange bestehen?", o: ["Seine Atmosphäre ist zu dünn", "Er hat gar kein Wasser", "Er ist zu nah an der Sonne"], e: "Seine Atmosphäre ist zu dünn, als dass flüssiges Wasser dort lange bestehen könnte." },
+      venusTemp: { q: "Wie heiß ist die Oberfläche der Venus etwa?", o: ["Etwa 467 °C", "Etwa 46 °C", "Etwa -46 °C"], e: "Etwa 467 °C." },
+      onlyEarth: { q: "Wo kennen wir bisher Leben?", o: ["Nur auf der Erde", "Auf dem Mars", "Auf Proxima b"], e: "Bisher nur auf der Erde." },
+      vents: { q: "Wo gedeiht Leben auf der Erde an superheißen Quellen?", o: ["Am Meeresboden", "Auf Berggipfeln", "In den Wolken"], e: "Am Meeresboden: ein Hinweis, dass Leben auch an seltsamen Orten anderswo existieren könnte." },
+      biosignature: { q: "Welches Teleskop könnte erste Blicke auf die Gase in der Luft erdgroßer Exoplaneten werfen?", o: ["Das James-Webb-Weltraumteleskop", "Voyager 1", "Galileis Fernrohr"], e: "Das James-Webb-Weltraumteleskop, gestartet 2021." },
+      habOrbits: { you: "Wie oft hat dich die Erde innerhalb ihrer bewohnbaren Zone um die Sonne getragen?", ref: "Wie oft trägt die Erde einen Menschen in 30 Jahren um die Sonne?", e: (n) => `${n}-mal: einmal im Jahr, immer innerhalb der bewohnbaren Zone der Sonne.` },
+      toiAge: { you: "Wie alt wärst du auf TOI-700 d?", ref: "Wie alt wäre ein 30-jähriger Mensch auf TOI-700 d?", e: (n) => `${n}: Ein Jahr auf TOI-700 d dauert 37,4 Tage.` },
+      europaLaps: { you: "Wie oft ist Europa seit deiner Geburt um Jupiter gelaufen?", ref: "Wie oft läuft Europa in 30 Jahren um Jupiter?", e: (n) => `${n}-mal: Ein Umlauf dauert 3,55 Tage.` },
+      venusAge: { you: "Wie alt wärst du auf der Venus?", ref: "Wie alt wäre ein 30-jähriger Mensch auf der Venus?", e: (n) => `${n}: Ein Jahr auf der Venus dauert 0,615 Erdjahre.` },
+      candidatesAtBirth: { you: "Wie viele Kandidaten in einer bewohnbaren Zone kannte diese Karte in deinem Geburtsjahr?", ref: "Wie viele Kandidaten in einer bewohnbaren Zone kannte diese Karte im Geburtsjahr eines heute 30-jährigen Menschen?", e: (n) => `${n}: Die meisten wurden in den letzten Jahren gefunden.` },
     },
   },
   ja: {
@@ -869,6 +1098,7 @@ export const LEARN_TEXT = {
       solar: { title: "私たちの太陽系", goal: "太陽系のしくみを説明し、おもな天体を見分けられるようになります。" },
       alpha: { title: "いちばん近い星たち：ケンタウルス座アルファ星", goal: "私たちにいちばん近い恒星系、その惑星プロキシマb、そしてそれが実際にどれほど遠いかを説明できます。" },
       exo: { title: "系外惑星：太陽系の外の世界", goal: "系外惑星とは何か、どのように見つけるのか、そしてどれほど多様なのかがわかります。" },
+      hab: { title: "住める世界をさがして", goal: "惑星が住める可能性をもつ条件と、ハビタブルゾーンにあるだけでは生命を意味しない理由がわかります。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -1121,6 +1351,81 @@ export const LEARN_TEXT = {
         you: (n) => `かに座55番星eでは、あなたはもう${n}回誕生日を迎えています。そこでの1年は18時間足らずだからです。`,
         ref: (n) => `30歳の人は、かに座55番星eではもう${n}回誕生日を迎えています。そこでの1年は18時間足らずだからです。`,
       },
+      habWhat: {
+        title: "「住める」とはどういうこと？", goal: "ハビタブルゾーンと、液体の水が大切な理由を説明できます。",
+        text: [
+          "NASAはハビタブルゾーンを、まわる惑星の表面に液体の水が存在しうる、恒星からの距離と定義しています。液体の水は、私たちの知る生命にとって欠かせません。",
+          "でもNASAによれば、ゾーンは最初のふるい分けにすぎません。惑星には、ちょうどよい大きさ、ちょうどよい大気、そしてフレアで惑星を不毛にしない穏やかな恒星も必要です。",
+        ],
+        task: "生命が知られている唯一の惑星、地球まで飛んでみましょう。",
+        remember: [
+          "ハビタブルゾーン：惑星の表面に液体の水が存在しうる、恒星からの距離の範囲です。",
+          "液体の水は、私たちの知る生命にとって欠かせません。",
+          "ゾーンは最初のふるい分けにすぎず、大きさ、大気、穏やかな恒星も大切です。",
+        ],
+        you: (n) => `生まれてから、あなたは地球とともに太陽のまわりを${n}周しました。ずっとハビタブルゾーンの中で。`,
+        ref: (n) => `30年のあいだに、人は地球とともに太陽のまわりを${n}周します。ずっとハビタブルゾーンの中で。`,
+      },
+      habZone: {
+        title: "ハビタブルゾーン", goal: "ハビタブルゾーンが恒星ごとにちがう理由がわかります。",
+        text: [
+          "ハビタブルゾーンは恒星によって変わります。熱い恒星のまわりでは広く、赤色矮星のまわりではせまく、恒星のすぐ近くにあります。",
+          "たとえばTOI-700 dは、小さなM型星のまわりをたった37.4日でまわり、そのハビタブルゾーンの中にあります。3D表示では、緑の輪が恒星系のハビタブルゾーンを示します。",
+        ],
+        task: "TOI-700 dまで飛んで、ハビタブルゾーンの緑の輪を見てみましょう。",
+        remember: [
+          "熱い恒星のまわりでは、ハビタブルゾーンは広くなります。",
+          "赤色矮星のまわりでは、せまく、恒星のすぐ近くにあります。",
+          "TOI-700 dは37.4日で小さな恒星をまわります。",
+        ],
+        you: (n) => `TOI-700 dでは、あなたは${n}歳です。そこでの1年は37.4日だからです。`,
+        ref: (n) => `30歳の人は、TOI-700 dでは${n}歳です。そこでの1年は37.4日だからです。`,
+      },
+      habWater: {
+        title: "液体の水", goal: "水がさがされる理由と、私たちの太陽系のどこに海があるかもしれないかがわかります。",
+        text: [
+          "水は地球上のすべての生命に欠かせません。大人の体の最大60 %は水です。だから生命さがしは、まず液体の水さがしなのです。",
+          "海は氷の下にかくれていることもあります。木星の衛星エウロパには塩水の海があるという強い証拠があり、土星の衛星エンケラドゥスは内部に全球的な海をもち、水蒸気と氷の粒を宇宙へふき出しています。",
+        ],
+        task: "木星まで飛んで、衛星エウロパをクリックしてみましょう。",
+        remember: [
+          "水は地球上のすべての生命に欠かせません。大人の体の最大60 %は水です。",
+          "木星の衛星エウロパには塩水の海がある強い証拠があります。",
+          "土星の衛星エンケラドゥスには全球的な海と、水蒸気と氷のふき出しがあります。",
+        ],
+        you: (n) => `あなたが生まれてから、海をもつ衛星エウロパは木星のまわりを${n}周しました。`,
+        ref: (n) => `30年のあいだに、海をもつ衛星エウロパは木星のまわりを${n}周します。`,
+      },
+      habAtmos: {
+        title: "大気", goal: "惑星の大気が、水が液体のままでいられるかを決める理由を説明できます。",
+        text: [
+          "金星は、大気がどれほど大切かを示しています。おもに二酸化炭素からなる厚い大気が暴走温室効果で熱を閉じこめ、地表は約467℃です。",
+          "火星は逆の極端です。大気がうすすぎて、液体の水は長くは存在できません。地球はその中間にあり、それが水がここで液体のままでいられる理由のひとつです。",
+        ],
+        task: "大気が多すぎる惑星、金星まで飛んでみましょう。",
+        remember: [
+          "金星：二酸化炭素の厚い大気が熱を閉じこめ、地表は約467℃です。",
+          "火星：大気がうすすぎて、液体の水は長くはもちません。",
+          "惑星の大気が、水が液体のままでいられるかを決めます。",
+        ],
+        you: (n) => `金星では、あなたは${n}歳です。大気が熱を閉じこめる世界で。`,
+        ref: (n) => `30歳の人は、金星では${n}歳です。大気が熱を閉じこめる世界で。`,
+      },
+      habLife: {
+        title: "宇宙に生命はいるの？", goal: "科学者がどのように生命をさがしているか、そしてその答えがまだ出ていないことがわかります。",
+        text: [
+          "今のところ、私たちが知っている生命は地球だけです。ここでは海底の超高温の噴出口でさえ生命が栄えていて、ほかの場所のふしぎな環境にも生命がいるかもしれないという希望を与えてくれます。",
+          "ジェームズ・ウェッブ宇宙望遠鏡は、地球ほどの大きさの系外惑星の大気にある気体を初めて垣間見るかもしれません。酸素、二酸化炭素、メタンがそろえば、生命の可能性を強く示すでしょう。見つかるかどうかは、まだわからない問いです。",
+        ],
+        task: "地図でいちばん近い候補、プロキシマbまで飛んでみましょう。",
+        remember: [
+          "今のところ、生命が知られているのは地球だけです。",
+          "地球の生命は、海底の超高温の噴出口にさえいます。",
+          "系外惑星の大気の気体（酸素、二酸化炭素、メタンがそろうこと）が生命の手がかりになるかもしれません。答えはまだわかりません。",
+        ],
+        you: (at, now, year) => `あなたが生まれた${year}年、この地図にはハビタブルゾーンの候補が${at}個ありました。今日は${now}個です。`,
+        ref: (at, now, year) => `いま30歳の人が生まれた${year}年、この地図にはハビタブルゾーンの候補が${at}個ありました。今日は${now}個です。`,
+      },
     },
     q: {
       sunLight: { q: "太陽の光が地球に届くまでどれくらいかかりますか？", o: ["約8分", "約8秒", "約8時間"], e: "約8分20秒です。太陽は1億5000万キロメートル離れていて、光は1秒に約30万キロメートル進みます。" },
@@ -1180,6 +1485,26 @@ export const LEARN_TEXT = {
       trappistAge: { you: "TRAPPIST-1eでは、あなたは何歳ですか？", ref: "30歳の人は、TRAPPIST-1eでは何歳ですか？", e: (n) => `${n}歳です。TRAPPIST-1eの1年は6.1日です。` },
       pegAge: { you: "ペガスス座51番星bでは、あなたは何歳ですか？", ref: "30歳の人は、ペガスス座51番星bでは何歳ですか？", e: (n) => `${n}歳です。ペガスス座51番星bの1年は4.2日です。` },
       cancriAge: { you: "かに座55番星eでは、あなたはもう何回誕生日を迎えていますか？", ref: "30歳の人は、かに座55番星eではもう何回誕生日を迎えていますか？", e: (n) => `${n}回です。かに座55番星eの1年は18時間足らずです。` },
+      hzDef: { q: "ハビタブルゾーンとは何ですか？", o: ["惑星の表面に液体の水が存在しうる、恒星からの距離", "惑星の中で人が住んでいる部分", "ブラックホールのまわりの領域"], e: "NASAの定義では、惑星の表面に液体の水が存在しうる、恒星からの距離です。" },
+      waterNeed: { q: "科学者がまず液体の水をさがすのはなぜですか？", o: ["私たちの知る生命に欠かせないから", "惑星を光らせるから", "惑星を軌道にとどめるから"], e: "液体の水は、私たちの知る生命に欠かせません。" },
+      firstCut: { q: "ハビタブルゾーンにある惑星はすべて住めますか？", o: ["いいえ、ゾーンは最初のふるい分けにすぎません", "はい、いつも住めます", "衛星があるときだけ"], e: "いいえ。大きさ、大気、穏やかな恒星も大切です。" },
+      zoneHot: { q: "ハビタブルゾーンが広いのは、どんな恒星のまわりですか？", o: ["熱い恒星", "冷たい恒星", "どの恒星でも同じ"], e: "熱い恒星のまわりです。" },
+      redDwarfZone: { q: "赤色矮星のハビタブルゾーンはどこにありますか？", o: ["せまく、恒星のすぐ近く", "恒星から遠く", "赤色矮星にはない"], e: "せまく、恒星のすぐ近くです。その惑星は数日から数週間で恒星をまわります。" },
+      toiYear: { q: "TOI-700 dの1年はどれくらいですか？", o: ["約37日", "約37年", "約37時間"], e: "約37.4日です。" },
+      europaOcean: { q: "エウロパの表面の下には、何がある強い証拠がありますか？", o: ["塩水の海", "溶岩の海", "凍った森"], e: "塩水の海です。" },
+      enceladusJets: { q: "エンケラドゥスのふき出しは、宇宙へ何をふき出していますか？", o: ["水蒸気と氷の粒", "溶岩", "砂"], e: "内部の海から来る、水蒸気と氷の粒です。" },
+      bodyWater: { q: "USGSによると、大人の体のどれくらいが水ですか？", o: ["最大60 %", "約10 %", "95 %以上"], e: "最大60 %です。" },
+      venusGreenhouse: { q: "金星はなぜそんなに熱いのですか？", o: ["二酸化炭素の厚い大気が熱を閉じこめるから", "太陽にいちばん近い惑星だから", "いたるところに火山があるから"], e: "厚い大気が暴走温室効果で熱を閉じこめるからです。水星のほうが太陽に近いのに、金星ほど熱くありません。" },
+      marsThin: { q: "今の火星で、液体の水が長くもたないのはなぜですか？", o: ["大気がうすすぎるから", "水がまったくないから", "太陽に近すぎるから"], e: "大気がうすすぎて、液体の水が長く存在できないからです。" },
+      venusTemp: { q: "金星の地表はおよそ何度ですか？", o: ["約467℃", "約46℃", "約-46℃"], e: "約467℃です。" },
+      onlyEarth: { q: "今のところ、生命が知られているのはどこですか？", o: ["地球だけ", "火星", "プロキシマb"], e: "今のところ地球だけです。" },
+      vents: { q: "地球の生命が超高温の噴出口で栄えているのはどこですか？", o: ["海底", "山の頂上", "雲の中"], e: "海底です。ほかのふしぎな場所にも生命がいるかもしれないという手がかりです。" },
+      biosignature: { q: "地球ほどの大きさの系外惑星の大気の気体を初めて垣間見るかもしれない望遠鏡はどれですか？", o: ["ジェームズ・ウェッブ宇宙望遠鏡", "ボイジャー1号", "ガリレオの望遠鏡"], e: "2021年に打ち上げられたジェームズ・ウェッブ宇宙望遠鏡です。" },
+      habOrbits: { you: "地球はハビタブルゾーンの中で、あなたを太陽のまわりに何周運びましたか？", ref: "30年のあいだに、地球は人を太陽のまわりに何周運びますか？", e: (n) => `${n}周です。1年に1周、いつも太陽のハビタブルゾーンの中で。` },
+      toiAge: { you: "TOI-700 dでは、あなたは何歳ですか？", ref: "30歳の人は、TOI-700 dでは何歳ですか？", e: (n) => `${n}歳です。TOI-700 dの1年は37.4日です。` },
+      europaLaps: { you: "あなたが生まれてから、エウロパは木星のまわりを何周しましたか？", ref: "30年のあいだに、エウロパは木星のまわりを何周しますか？", e: (n) => `${n}周です。1周は3.55日です。` },
+      venusAge: { you: "金星では、あなたは何歳ですか？", ref: "30歳の人は、金星では何歳ですか？", e: (n) => `${n}歳です。金星の1年は地球の0.615年です。` },
+      candidatesAtBirth: { you: "あなたが生まれた年、この地図はハビタブルゾーンの候補をいくつ知っていましたか？", ref: "いま30歳の人が生まれた年、この地図はハビタブルゾーンの候補をいくつ知っていましたか？", e: (n) => `${n}個です。そのほとんどはここ数年で見つかりました。` },
     },
   },
   bg: {
@@ -1187,6 +1512,7 @@ export const LEARN_TEXT = {
       solar: { title: "Нашата Слънчева система", goal: "Можеш да обясниш как е устроена Слънчевата система и да различаваш основните ѝ тела." },
       alpha: { title: "Най-близките ни звезди: Алфа Кентавър", goal: "Можеш да опишеш най-близката до нас звездна система, нейната планета Проксима b и колко далеч е тя всъщност." },
       exo: { title: "Екзопланети: светове отвъд Слънчевата система", goal: "Знаеш какво са екзопланетите, как се откриват и колко различни могат да бъдат." },
+      hab: { title: "Търсенето на обитаеми светове", goal: "Знаеш какво прави една планета вероятно обитаема и защо самата обитаема зона още не означава живот." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -1439,6 +1765,81 @@ export const LEARN_TEXT = {
         you: (n) => `На 55 Рак e вече щеше да имаш ${n} рождени дни: годината там трае по-малко от 18 часа.`,
         ref: (n) => `Човек на 30 години вече щеше да има ${n} рождени дни на 55 Рак e: годината там трае по-малко от 18 часа.`,
       },
+      habWhat: {
+        title: "Какво значи обитаемо?", goal: "Можеш да обясниш обитаемата зона и защо течната вода е толкова важна.",
+        text: [
+          "NASA определя обитаемата зона като разстоянието от звезда, на което по повърхността на обикалящите планети би могла да съществува течна вода. Течната вода е незаменима за живота, какъвто го познаваме.",
+          "Но зоната е само първо пресяване, както казва NASA. Планетата има нужда и от подходящ размер, подходяща атмосфера и спокойна звезда, която не я стерилизира с изблици.",
+        ],
+        task: "Полети до Земята, единствената планета, на която познаваме живот.",
+        remember: [
+          "Обитаемата зона: разстоянията от звезда, на които по повърхността на планета би могла да има течна вода.",
+          "Течната вода е незаменима за живота, какъвто го познаваме.",
+          "Зоната е само първо пресяване: размерът, атмосферата и спокойната звезда също имат значение.",
+        ],
+        you: (n) => `От раждането ти Земята те е пренесла около Слънцето ${n} пъти, през цялото време в неговата обитаема зона.`,
+        ref: (n) => `За 30 години Земята пренася човек около Слънцето ${n} пъти, през цялото време в неговата обитаема зона.`,
+      },
+      habZone: {
+        title: "Обитаемата зона", goal: "Знаеш защо обитаемата зона е различна при различните звезди.",
+        text: [
+          "Обитаемата зона зависи от звездата. Около по-горещите звезди тя е по-широка, около червените джуджета е тясна и много близо до звездата.",
+          "TOI-700 d например обикаля малка звезда от тип M само за 37,4 дни и е в нейната обитаема зона. В 3D изгледа зелен пръстен показва обитаемата зона на системата.",
+        ],
+        task: "Полети до TOI-700 d и разгледай зеления пръстен на обитаемата ѝ зона.",
+        remember: [
+          "Около по-горещите звезди обитаемата зона е по-широка.",
+          "Около червените джуджета тя е тясна и много близо до звездата.",
+          "TOI-700 d обикаля малката си звезда за 37,4 дни.",
+        ],
+        you: (n) => `На TOI-700 d щеше да си на ${n} години: годината там трае 37,4 дни.`,
+        ref: (n) => `Човек на 30 години щеше да е на ${n} години на TOI-700 d: годината там трае 37,4 дни.`,
+      },
+      habWater: {
+        title: "Течна вода", goal: "Знаеш защо се търси вода и къде в нашата Слънчева система може да има океани.",
+        text: [
+          "Водата е незаменима за всичкия живот на Земята; до 60 % от тялото на възрастен човек е вода. Затова търсенето на живот е най-напред търсене на течна вода.",
+          "Океани може да се крият и под леда: има сериозни доказателства, че луната на Юпитер Европа има океан от солена вода, а луната на Сатурн Енцелад има вътре океан по цялото си кълбо, с фонтани, които изхвърлят водна пара и ледени частици в космоса.",
+        ],
+        task: "Полети до Юпитер и щракни върху луната му Европа.",
+        remember: [
+          "Водата е незаменима за всичкия живот на Земята; до 60 % от тялото на възрастния е вода.",
+          "Има сериозни доказателства за океан от солена вода в луната на Юпитер Европа.",
+          "Луната на Сатурн Енцелад има океан по цялото си кълбо и фонтани от водна пара и лед.",
+        ],
+        you: (n) => `От раждането ти Европа, луната с океана, е обиколила Юпитер ${n} пъти.`,
+        ref: (n) => `За 30 години Европа, луната с океана, обикаля Юпитер ${n} пъти.`,
+      },
+      habAtmos: {
+        title: "Атмосфери", goal: "Можеш да обясниш защо въздухът на една планета решава дали водата може да остане течна.",
+        text: [
+          "Венера показва колко важен е въздухът: плътната ѝ атмосфера, главно от въглероден диоксид, задържа топлината в неудържим парников ефект и повърхността е около 467 °C.",
+          "Марс показва другата крайност: атмосферата му е твърде рядка, за да може течна вода да съществува там дълго. Земята е по средата и това е една от причините водата тук да остава течна.",
+        ],
+        task: "Полети до Венера, планетата с твърде много въздух.",
+        remember: [
+          "Венера: плътна атмосфера от въглероден диоксид задържа топлината; повърхността е около 467 °C.",
+          "Марс: атмосферата е твърде рядка, за да издържи течна вода дълго.",
+          "Въздухът на една планета решава дали водата може да остане течна.",
+        ],
+        you: (n) => `На Венера щеше да си на ${n} години, на свят, чийто въздух задържа жегата.`,
+        ref: (n) => `Човек на 30 години щеше да е на ${n} години на Венера, на свят, чийто въздух задържа жегата.`,
+      },
+      habLife: {
+        title: "Има ли живот там навън?", goal: "Знаеш как учените търсят живот и че отговорът е още открит.",
+        text: [
+          "Засега познаваме живот само на Земята. Тук той вирее дори при свръхгорещите извори на океанското дъно и това дава надежда, че може да съществува и на странни места другаде.",
+          "Космическият телескоп „Джеймс Уеб“ може за първи път да зърне газовете във въздуха на екзопланети с размера на Земята. Кислород, въглероден диоксид и метан заедно биха били силен знак за възможен живот. Дали ще го намерим, е открит въпрос.",
+        ],
+        task: "Полети до Проксима b, най-близкия кандидат на картата.",
+        remember: [
+          "Засега познаваме живот само на Земята.",
+          "Животът на Земята живее дори при свръхгорещите извори на океанското дъно.",
+          "Газовете във въздуха на екзопланета (кислород, въглероден диоксид и метан заедно) може да подсказват за живот: открит въпрос.",
+        ],
+        you: (at, now, year) => `През ${year} г., годината на раждането ти, тази карта е познавала ${at} кандидати в обитаема зона; днес познава ${now}.`,
+        ref: (at, now, year) => `През ${year} г., когато се е родил човек, който днес е на 30, тази карта е познавала ${at} кандидати в обитаема зона; днес познава ${now}.`,
+      },
     },
     q: {
       sunLight: { q: "Колко време пътува слънчевата светлина до Земята?", o: ["Около 8 минути", "Около 8 секунди", "Около 8 часа"], e: "Около 8 минути и 20 секунди: Слънцето е на 150 милиона километра, а светлината изминава около 300 000 километра в секунда." },
@@ -1498,6 +1899,26 @@ export const LEARN_TEXT = {
       trappistAge: { you: "На колко години щеше да си на TRAPPIST-1 e?", ref: "На колко години щеше да е на TRAPPIST-1 e човек на 30?", e: (n) => `${n}: годината на TRAPPIST-1 e трае 6,1 дни.` },
       pegAge: { you: "На колко години щеше да си на 51 Пегас b?", ref: "На колко години щеше да е на 51 Пегас b човек на 30?", e: (n) => `${n}: годината на 51 Пегас b трае 4,2 дни.` },
       cancriAge: { you: "Колко рождени дни щеше вече да имаш на 55 Рак e?", ref: "Колко рождени дни щеше вече да има на 55 Рак e човек на 30?", e: (n) => `${n}: годината на 55 Рак e трае по-малко от 18 часа.` },
+      hzDef: { q: "Какво е обитаемата зона?", o: ["Разстоянията от звезда, на които по повърхността на планета би могла да има течна вода", "Частта от планетата, в която живеят хора", "Областта около черна дупка"], e: "Разстоянията от звезда, на които по повърхността на планета би могла да има течна вода, както я определя NASA." },
+      waterNeed: { q: "Защо учените търсят най-напред течна вода?", o: ["Тя е незаменима за живота, какъвто го познаваме", "Тя кара планетите да светят", "Тя държи планетите в орбитите им"], e: "Течната вода е незаменима за живота, какъвто го познаваме." },
+      firstCut: { q: "Всяка планета в обитаемата зона ли е обитаема?", o: ["Не, зоната е само първо пресяване", "Да, винаги", "Само ако има луни"], e: "Не: размерът, атмосферата и спокойната звезда също имат значение." },
+      zoneHot: { q: "Около кои звезди обитаемата зона е по-широка?", o: ["Около по-горещите звезди", "Около по-хладните звезди", "При всички звезди е еднаква"], e: "Около по-горещите звезди." },
+      redDwarfZone: { q: "Къде е обитаемата зона на червено джудже?", o: ["Тясна и много близо до звездата", "Далеч от звездата", "Червеното джудже няма такава"], e: "Тясна и много близо до звездата: планетите му го обикалят за дни или седмици." },
+      toiYear: { q: "Колко трае една година на TOI-700 d?", o: ["Около 37 дни", "Около 37 години", "Около 37 часа"], e: "Около 37,4 дни." },
+      europaOcean: { q: "За какво има сериозни доказателства под повърхността на Европа?", o: ["Океан от солена вода", "Море от лава", "Замръзнала гора"], e: "Океан от солена вода." },
+      enceladusJets: { q: "Какво изхвърлят фонтаните на Енцелад в космоса?", o: ["Водна пара и ледени частици", "Лава", "Пясък"], e: "Водна пара и ледени частици, от океана във вътрешността му." },
+      bodyWater: { q: "Каква част от тялото на възрастен човек е вода според USGS?", o: ["До 60 %", "Около 10 %", "Над 95 %"], e: "До 60 %." },
+      venusGreenhouse: { q: "Защо Венера е толкова гореща?", o: ["Плътният ѝ въздух от въглероден диоксид задържа топлината", "Тя е най-близката планета до Слънцето", "Навсякъде има вулкани"], e: "Плътната ѝ атмосфера задържа топлината в неудържим парников ефект; Меркурий е по-близо до Слънцето, но не е толкова горещ." },
+      marsThin: { q: "Защо днес течната вода не може да издържи дълго на Марс?", o: ["Атмосферата му е твърде рядка", "Изобщо няма вода", "Твърде близо е до Слънцето"], e: "Атмосферата му е твърде рядка, за да може течна вода да съществува там дълго." },
+      venusTemp: { q: "Около колко гореща е повърхността на Венера?", o: ["Около 467 °C", "Около 46 °C", "Около -46 °C"], e: "Около 467 °C." },
+      onlyEarth: { q: "Къде познаваме живот засега?", o: ["Само на Земята", "На Марс", "На Проксима b"], e: "Засега само на Земята." },
+      vents: { q: "Къде на Земята животът вирее при свръхгорещи извори?", o: ["На океанското дъно", "По върховете на планините", "В облаците"], e: "На океанското дъно: знак, че животът може да съществува и на странни места другаде." },
+      biosignature: { q: "Кой телескоп може за първи път да зърне газовете във въздуха на екзопланети с размера на Земята?", o: ["Космическият телескоп „Джеймс Уеб“", "„Вояджър 1“", "Телескопът на Галилей"], e: "Космическият телескоп „Джеймс Уеб“, изстрелян през 2021 г." },
+      habOrbits: { you: "Колко пъти Земята те е пренесла около Слънцето в своята обитаема зона?", ref: "Колко пъти Земята пренася човек около Слънцето за 30 години?", e: (n) => `${n} пъти: веднъж годишно, винаги в обитаемата зона на Слънцето.` },
+      toiAge: { you: "На колко години щеше да си на TOI-700 d?", ref: "На колко години щеше да е на TOI-700 d човек на 30?", e: (n) => `${n}: годината на TOI-700 d трае 37,4 дни.` },
+      europaLaps: { you: "Колко пъти Европа е обиколила Юпитер от раждането ти?", ref: "Колко пъти Европа обикаля Юпитер за 30 години?", e: (n) => `${n} пъти: една обиколка трае 3,55 дни.` },
+      venusAge: { you: "На колко години щеше да си на Венера?", ref: "На колко години щеше да е на Венера човек на 30?", e: (n) => `${n}: годината на Венера трае 0,615 земни години.` },
+      candidatesAtBirth: { you: "Колко кандидати в обитаема зона е познавала тази карта в годината на раждането ти?", ref: "Колко кандидати в обитаема зона е познавала тази карта в годината на раждане на човек, който днес е на 30?", e: (n) => `${n}: повечето са открити през последните години.` },
     },
   },
 };
@@ -1511,6 +1932,9 @@ export function personalLine(step, nums, lang) {
   if (step === "outer") return (nums.you ? s.you : s.ref)(fmt(nums.jupiterLaps));
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
+  if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  const hab = { habWhat: "orbits", habZone: "toiAge", habWater: "europaLaps", habAtmos: "venusAge" }[step];
+  if (hab) return (nums.you ? s.you : s.ref)(fmt(nums[hab]));
   const exo = { exoHow: "transitSince", exoRocky: "trappistAge", exoGiants: "pegAge", exoStrange: "cancriAge" }[step];
   if (exo) return (nums.you ? s.you : s.ref)(fmt(nums[exo]));
   const alpha = { neighbors: "proximaLeft", pair: "lapShare", proxima: "lightTrips", proximaB: "proximaBAge", travel: "lifetimes" }[step];
@@ -1561,12 +1985,14 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const nums = () => personalNumbers(personal());
 
   // a small picture for each step, from the same drawings as the rest of My Universe
+  const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
   const pictureOf = (step) =>
     ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
     : step === "proximaB" ? planetCanvas({ temp: 218 }, "uni-orb small", 28)
     : EXO_PICTURE[step] ? planetCanvas({ temp: EXO_PICTURE[step] }, "uni-orb small", 28)
+    : HAB_PICTURE[step] ? planetCanvas(HAB_PICTURE[step], "uni-orb small", 28)
     : step === "sun" ? starCanvas(5772, "uni-orb small star", 28)
     : planetCanvas({ name: { inner: "Mars", outer: "Saturn", moons: "Moon", scale: "Neptune" }[step] }, "uni-orb small", 28);
   // Reading a step aloud: only with a voice that runs on the device. An online voice (some of Chrome's) would send the text, with the
@@ -1636,7 +2062,10 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   }
 
   const pathPicture = (path, cls, size) =>
-    path === "alpha" ? starCanvas(5790, `${cls} star`, size) : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size) : planetCanvas({ name: "Saturn" }, cls, size);
+    path === "alpha" ? starCanvas(5790, `${cls} star`, size)
+    : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
+    : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
+    : planetCanvas({ name: "Saturn" }, cls, size);
 
   // all the paths: a card each, with its progress
   function listView(onChange) {

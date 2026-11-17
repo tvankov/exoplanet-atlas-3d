@@ -119,7 +119,7 @@ test("every step has 3 to 5 facts to remember in every language, and its sources
       assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
     }
     assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
-    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org)\//, `${step}: ${src.url}`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov)\//, `${step}: ${src.url}`);
   }
 });
 
@@ -178,4 +178,14 @@ test("Exoplanets: what the catalogue knew in the year of the birth, and the ages
   assert.ok(personalLine("exoWhat", plain, "de").includes("1996, als"));
   const t = testQuestions("exo", mine, "en", 0);
   assert.equal(new Set(t.map((q) => q.id)).size, 10);
+});
+
+test("The search for habitable worlds: the candidates of the map then and now, and the ages", () => {
+  const found = [[2016, "Radial Velocity", true], [2017, "Transit", true], [1995, "Radial Velocity", false], [2020, "Transit", true]];
+  const mine = personalNumbers({ age: 31.4, years: YEARS, star: null, birthYear: 1995, discoveries: found, thisYear: 2026 });
+  assert.deepEqual([mine.candidatesAtBirth, mine.candidatesNow], [0, 3]);
+  assert.equal(mine.toiAge, Math.round((31.4 * 365.25) / 37.423457));
+  assert.equal(mine.venusAge, Math.round(31.4 / 0.615));
+  assert.ok(personalLine("habLife", mine, "de").includes("1995, im Jahr deiner Geburt, kannte diese Karte 0 Kandidaten"));
+  assert.equal(new Set(testQuestions("hab", mine, "en", 0).map((q) => q.id)).size, 10);
 });
