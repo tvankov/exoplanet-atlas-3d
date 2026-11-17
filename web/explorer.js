@@ -166,6 +166,11 @@ export const BADGES = [
     ja: ["星座はかせ", "「星座と黄道十二宮」の最終テストに合格した"], bg: ["Познавач на съзвездията", "Издържа финалния тест на „Съзвездия и зодии“"],
   },
   {
+    id: "names-scholar", count: (t) => (t.learnPaths?.includes("names") ? 1 : 0), need: 1,
+    en: ["Name reader", "Passed the final test of Names in space"], de: ["Namenleser", "Den Abschlusstest von „Namen im All“ bestanden"],
+    ja: ["名前を読む人", "「宇宙の名前」の最終テストに合格した"], bg: ["Четец на имена", "Издържа финалния тест на „Имена в космоса“"],
+  },
+  {
     // all four foundation paths (the certificate of the four in universe.js)
     id: "foundations", count: (t) => ["solar", "alpha", "exo", "hab"].filter((p) => t.learnPaths?.includes(p)).length, need: 4,
     en: ["Foundations of Planetary Science", "Passed all four foundation learning paths"], de: ["Grundlagen der Planetenwissenschaft", "Alle vier Grundlagen-Lernpfade bestanden"],

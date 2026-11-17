@@ -20,6 +20,7 @@ export const PATHS = {
   exo: { steps: ["exoWhat", "exoHow", "exoRocky", "exoGiants", "exoStrange", "exoSystems", "exoFamous"], minutes: 35, testSize: 10, pass: 0.7 },
   hab: { steps: ["habWhat", "habZone", "habWater", "habAtmos", "habIngredients", "habExtreme", "habLife"], minutes: 35, testSize: 10, pass: 0.7 },
   zod: { steps: ["zodWhat", "zodPath", "zodShift", "zodScience", "zodLight"], minutes: 25, testSize: 10, pass: 0.7 },
+  names: { steps: ["nameLetters", "nameStars", "nameGreek", "nameCatalog", "nameStories"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -29,6 +30,7 @@ export const TASKS = {
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
   zodWhat: "figure:birth", zodPath: "figure:Oph", zodShift: "figure:birthSign", zodScience: null, zodLight: "figure:birth",
+  nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "figure:Cen", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -39,8 +41,9 @@ export const VIEWS = {
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
   zodWhat: "Earth", zodPath: "Sun", zodShift: "Sun", zodScience: "Earth", zodLight: "Earth",
+  nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "Earth", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -219,6 +222,28 @@ export const SOURCES = {
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
   ],
+  nameLetters: [
+    { label: "NASA Science: How do exoplanets get their names?", url: "https://science.nasa.gov/exoplanets/how-do-exoplanets-get-their-names/" },
+  ],
+  nameStars: [
+    { label: "NASA Science: How do exoplanets get their names?", url: "https://science.nasa.gov/exoplanets/how-do-exoplanets-get-their-names/" },
+  ],
+  nameGreek: [
+    { label: "IAU: The Constellations", url: "https://www.iau.org/IAU/IAU/Astronomy-FAQs/Constellations.aspx" },
+  ],
+  nameCatalog: [
+    { label: "NASA Science: How do exoplanets get their names?", url: "https://science.nasa.gov/exoplanets/how-do-exoplanets-get-their-names/" },
+    { label: "NASA HEASARC: Gliese Catalog of Nearby Stars, 3rd Edition", url: "https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/cns3.html" },
+    { label: "ESA: Hipparcos catalogues", url: "https://www.cosmos.esa.int/web/hipparcos/catalogues" },
+    { label: "NASA Science: Space Telescope Delivers the Goods: 2,200 Possible Planets (TOI)", url: "https://science.nasa.gov/universe/exoplanets/space-telescope-delivers-the-goods-2200-possible-planets/" },
+    { label: "NASA JPL: New Clues to Compositions of TRAPPIST-1 Planets", url: "https://www.jpl.nasa.gov/news/new-clues-to-compositions-of-trappist-1-planets/" },
+  ],
+  nameStories: [
+    { label: "NASA StarChild: The Planets", url: "https://starchild.gsfc.nasa.gov/docs/StarChild/solar_system_level2/planets.html" },
+    { label: "NASA Science: How do exoplanets get their names?", url: "https://science.nasa.gov/exoplanets/how-do-exoplanets-get-their-names/" },
+    { label: "IAU: Selects Names for 20 Exoplanetary Systems (2023)", url: "https://www.iau.org/IAU/IAU/News/PR2023/iau-names-exoplanetary-systems.aspx" },
+    { label: "IAU: Frequently Asked Questions (Can I buy a star?)", url: "https://www.iau.org/IAU/Astronomy-FAQs/FAQs.aspx" },
+  ],
   zodWhat: [
     { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
   ],
@@ -307,8 +332,42 @@ export function personalNumbers(ctx) {
     // Exoplanets: what the catalogue knew in the year of the birth (or 30 years ago), and the age on three of its planets
     ...exoNumbers(ctx, age),
     ...zodNumbers(ctx),
+    ...nameNumbers(ctx, age),
   };
 }
+// Names in space: the name of the visitor's star ("Your star", from the year of birth) and the planets the NASA table knows round it
+// (ctx.planetsOf(host), main.js); without a year of birth Proxima Centauri. The light of Alpha Centauri A and B (4.37 light years, as in the
+// lines of the neighbourhood) and the year 51 Pegasi b was found (1995, NASA), against the visitor's age.
+const ALPHA_CEN_LY = 4.37;
+const PEG_FOUND = 1995;
+function nameNumbers(ctx, age) {
+  const star = ctx.age != null ? ctx.star?.name ?? null : null;
+  const thisYear = ctx.thisYear ?? new Date().getFullYear();
+  const born = ctx.age != null ? ctx.birthYear ?? thisYear - Math.floor(age) : null;
+  return {
+    nameStar: star,
+    namePlanets: (ctx.planetsOf?.(star ?? "Proxima Cen") ?? []).slice().sort(),
+    alphaLeft: age >= ALPHA_CEN_LY ? Math.floor(age - ALPHA_CEN_LY) : null,
+    pegBefore: born != null ? born - PEG_FOUND : null, // years the planet was found before the birth (below 0: at that age)
+    pegAgo: thisYear - PEG_FOUND,
+  };
+}
+// The catalogue at the front of a star's name (the ones the step explains), or null
+export function catalogOf(name) {
+  if (!name) return null;
+  if (/^HD\s/.test(name)) return "HD";
+  if (/^(GJ|Gl|Gliese)\s/.test(name)) return "GJ";
+  if (/^HIP\s/.test(name)) return "HIP";
+  if (/^TOI-/.test(name)) return "TOI";
+  if (/^Kepler-/.test(name)) return "Kepler";
+  if (/^TRAPPIST-/.test(name)) return "TRAPPIST";
+  return null;
+}
+// The Latin genitive of the constellations of the Sun's path (IAU, The Constellations): "Alpha Tauri" is the alpha of Taurus
+export const GENITIVE = {
+  Ari: "Arietis", Tau: "Tauri", Gem: "Geminorum", Cnc: "Cancri", Leo: "Leonis", Vir: "Virginis", Lib: "Librae", Sco: "Scorpii", Oph: "Ophiuchi",
+  Sgr: "Sagittarii", Cap: "Capricorni", Aqr: "Aquarii", Psc: "Piscium",
+};
 // Constellations and zodiac signs: from the date of birth (ctx.birthDate { year, month, day }, kept in this browser) the constellation the Sun
 // stood in and the sign of astrology; without a date an example, the 1st of April (sign Aries, the Sun in Pisces). ctx.figureInfo(id): the
 // nearest and the farthest star of the figure in light years, from the map (main.js); a distance above 10,000 light years is only the floor
@@ -395,6 +454,12 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // Names in space
+  nameLetters: [{ id: "firstLetter" }, { id: "sameTime" }, { id: "letterOrder" }],
+  nameStars: [{ id: "capitals" }, { id: "hostA" }, { id: "starOrPlanet" }],
+  nameGreek: [{ id: "alphaAries" }, { id: "alphaCen" }, { id: "iau1922" }],
+  nameCatalog: [{ id: "hdMeaning" }, { id: "toiMeaning" }, { id: "trappistWhat" }, { id: "gjMeaning" }],
+  nameStories: [{ id: "romanGods" }, { id: "dimidium" }, { id: "buyStar" }, { id: "notReplace" }],
   // Constellations and zodiac signs
   zodWhat: [{ id: "constCount" }, { id: "notConnected" }, { id: "constShape" }],
   zodPath: [{ id: "thirteen" }, { id: "ophName" }, { id: "ophDates" }, { id: "ophPasses", number: "orbits" }],
@@ -451,6 +516,7 @@ export const LEARN_TEXT = {
       exo: { title: "Exoplanets: worlds beyond the Solar System", goal: "You know what exoplanets are, how they are found and how different they can be." },
       hab: { title: "The search for habitable worlds", goal: "You know what makes a planet possibly habitable, and why the habitable zone alone does not mean life." },
       zod: { title: "Constellations and zodiac signs", goal: "You can explain what a constellation is, why your zodiac sign and the sky disagree, and what the light of your constellation tells you." },
+      names: { title: "Names in space", goal: "You can read the names of planets and stars: the letters, the Greek letters, the catalogues and the names with a story." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -740,6 +806,87 @@ export const LEARN_TEXT = {
         you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
         ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
       },
+      nameLetters: {
+        title: "Planets get letters", goal: "You can read the name of an exoplanet: the star and a letter.",
+        text: [
+          "An exoplanet is usually called like its star, with a small letter after it. According to NASA the first planet found is always named b, the next ones c, d, e and so on. The star itself is the undeclared \"A\".",
+          "If several planets of a star are found at the same time, the one closest to the star gets the b. At TRAPPIST-1 the seven planets are called b to h, from the inside out. So the letter tells the order of discovery, not the distance: at Proxima Centauri the NASA table of this map has b and d, and d goes round the star closer than b, but was found later.",
+        ],
+        task: "Look at Proxima Centauri with its planets b and d.",
+        remember: [
+          "An exoplanet is called like its star, with a small letter.",
+          "The first planet found is b, the next ones c, d, e.",
+          "If several are found at once, the one closest to the star gets the b.",
+        ],
+        you: (star, list, n) => (n ? `Your star is called ${star}. The NASA table knows ${n === 1 ? "one planet" : `${n} planets`} round it: ${list}.` : `Your star is called ${star}. Its planets are called ${star} b, ${star} c and so on, in the order they were found.`),
+        ref: () => "At Proxima Centauri the planets are called Proxima Cen b and Proxima Cen d: the star is Proxima Cen, the letters count its planets.",
+      },
+      nameStars: {
+        title: "Stars get capital letters", goal: "You know how the stars of a system with several stars are called.",
+        text: [
+          "Many stars have companions: two, three or more stars that belong together. According to NASA stars get capital letters and planets small ones. The star with the planets is usually the undeclared A, the other stars may be called B, C.",
+          "Our nearest neighbours show it: Alpha Centauri A and Alpha Centauri B go round each other, and Proxima Centauri belongs to the same system as a third star. Capital and small letters keep stars and planets apart: Alpha Centauri B is a star, Proxima Cen b a planet.",
+        ],
+        task: "Look at Alpha Centauri A, with B beside it and Proxima marked nearby.",
+        remember: [
+          "Stars get capital letters, planets small ones.",
+          "The star with the planets is usually the undeclared A.",
+          "Alpha Centauri A and B are two stars; Proxima Cen b is a planet.",
+        ],
+        you: (left) => (left == null ? "The light of Alpha Centauri A and B that arrives today is 4.37 years on its way: it set off before you were born." : `The light of Alpha Centauri A and B that arrives today is 4.37 years on its way: it set off when you were ${left}.`),
+        ref: (left) => `The light of Alpha Centauri A and B is 4.37 years on its way to us. Someone who is 30 today was ${left} when it set off.`,
+      },
+      nameGreek: {
+        title: "Greek letters and constellations", goal: "You can read a star name like Alpha Centauri.",
+        text: [
+          "Many bright stars carry a Greek letter and the Latin name of their constellation in the form \"of ...\". The IAU gives Hamal, the brightest star in Aries, as an example: it is also called Alpha Arietis, \"the alpha of Aries\".",
+          "Alpha Centauri is read the same way: the alpha of Centaurus. The IAU agreed on the list of the 88 constellations that give these names in 1922, and on their boundaries in 1928.",
+        ],
+        task: "Look at the constellation Centaurus, the home of Alpha Centauri.",
+        remember: [
+          "A name like Alpha Arietis means: the alpha of Aries.",
+          "After the Greek letter comes the constellation in its Latin form \"of ...\".",
+          "The IAU agreed on the 88 constellations in 1922.",
+        ],
+        you: (name, gen) => `At your birth the Sun stood in ${name}. In Latin its stars are called Alpha ${gen}, Beta ${gen} and so on.`,
+        ref: (name, gen) => `On the 1st of April the Sun stands in ${name}. In Latin its stars are called Alpha ${gen}, Beta ${gen} and so on.`,
+      },
+      nameCatalog: {
+        title: "Catalogues and telescopes", goal: "You know what HD, GJ, HIP, TOI, Kepler and TRAPPIST mean in a name.",
+        text: [
+          "Most stars have no name of their own but a number in a catalogue. According to NASA the first part of a planet's name is usually the telescope or survey that found it, or the catalogue of its star. HD stands for the Henry Draper Catalogue, GJ for the catalogue of nearby stars by Wilhelm Gliese and Hartmut Jahreiss, HIP for the catalogue of ESA's satellite Hipparcos.",
+          "Kepler stands for NASA's Kepler space telescope (2009 to 2018), TOI for \"TESS Objects of Interest\", the candidates of NASA's satellite TESS. TRAPPIST is a small telescope in Chile: it gave the system TRAPPIST-1 its name.",
+        ],
+        task: "Look at TRAPPIST-1, named after a telescope.",
+        remember: [
+          "At the front of a name there is usually a catalogue, a telescope or a survey.",
+          "HD is the Henry Draper Catalogue, GJ the catalogue of nearby stars by Gliese and Jahreiss.",
+          "TOI are the candidates of the satellite TESS; TRAPPIST is a telescope in Chile.",
+        ],
+        cat: {
+          HD: "HD stands for the Henry Draper Catalogue.", GJ: "GJ (or Gl, Gliese) stands for the catalogue of nearby stars by Gliese and Jahreiss.",
+          HIP: "HIP stands for the catalogue of the satellite Hipparcos.", TOI: "TOI stands for the candidates of the satellite TESS.",
+          Kepler: "Kepler stands for the Kepler space telescope.", TRAPPIST: "TRAPPIST is a telescope in Chile.",
+          other: "Its name comes from another catalogue, or it is a name of its own.",
+        },
+        you: (star, what) => `Your star is called ${star}. ${what}`,
+        ref: (star, what) => `An example: ${star}. ${what}`,
+      },
+      nameStories: {
+        title: "Names with a story", goal: "You know where names in space come from and who gives them.",
+        text: [
+          "The planets of our Solar System carry old names. According to NASA every planet except the Earth is named after a Roman god or goddess. Mars, for example, is the Roman god of war.",
+          "Exoplanets can get names of their own too. In a public contest of the IAU, 51 Pegasi b, the first giant planet found round a star like the Sun (1995), got the name Dimidium, its star the name Helvetios. Such names do not replace the scientific designations. And star names cannot be bought: the IAU sells no names and distances itself from such offers.",
+        ],
+        task: "Look at 51 Pegasi b, the planet called Dimidium.",
+        remember: [
+          "According to NASA every planet except the Earth is named after a Roman god or goddess.",
+          "51 Pegasi b is also called Dimidium, its star Helvetios.",
+          "The IAU sells no star names.",
+        ],
+        you: (before, at) => (before != null ? `51 Pegasi b was found in 1995, ${before} years before you were born.` : at === "0" ? "51 Pegasi b was found in 1995, the year you were born." : `51 Pegasi b was found in 1995, when you were ${at}.`),
+        ref: (ago) => `51 Pegasi b was found in 1995, ${ago} years ago.`,
+      },
       zodWhat: {
         title: "What is a constellation?", goal: "You know what a constellation is and why its stars do not belong together.",
         text: [
@@ -1010,6 +1157,23 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
       kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
       rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
+      firstLetter: { q: "What is the first planet found round a star called?", o: ["The star's name with b", "The star's name with a", "The star's name with 1"], e: "b: the star itself is the undeclared A." },
+      sameTime: { q: "Several planets of a star are found at the same time. Which one gets the b?", o: ["The one closest to the star", "The biggest", "The one farthest out"], e: "The one closest to the star." },
+      letterOrder: { q: "What do the letters b, c, d follow?", o: ["The order of discovery", "The size of the planets", "Their colour"], e: "The order of discovery: Proxima d goes round closer than b, but was found later." },
+      capitals: { q: "What does a star in a system of several stars get?", o: ["A capital letter: A, B, C", "A small letter: b, c, d", "A colour"], e: "A capital letter; planets get small ones." },
+      hostA: { q: "Which letter is the star with the planets usually, even when it is not written?", o: ["A", "B", "Z"], e: "A: the undeclared A of the system." },
+      starOrPlanet: { q: "What is Proxima Cen b?", o: ["A planet", "A star", "A constellation"], e: "A planet: the small letter shows it." },
+      alphaAries: { q: "What does Alpha Arietis mean?", o: ["The alpha of Aries", "The Aries of the alpha", "The brightest planet"], e: "The alpha of Aries; the IAU's example is Hamal." },
+      alphaCen: { q: "Which constellation does Alpha Centauri belong to?", o: ["Centaurus", "Aries", "Ursa Major"], e: "Centaurus: Alpha Centauri is the alpha of Centaurus." },
+      iau1922: { q: "When did the IAU agree on the list of the 88 constellations?", o: ["1922", "1610", "1995"], e: "In 1922; their boundaries followed in 1928." },
+      hdMeaning: { q: "What does HD in a star's name stand for?", o: ["The Henry Draper Catalogue", "High Definition", "A bright double star"], e: "The Henry Draper Catalogue." },
+      toiMeaning: { q: "What does TOI stand for?", o: ["TESS Objects of Interest, candidates of the satellite TESS", "A constellation", "A probe to the Moon"], e: "TESS Objects of Interest: candidates of NASA's satellite TESS." },
+      trappistWhat: { q: "What is TRAPPIST?", o: ["A small telescope in Chile", "A star in Centaurus", "A planet of the Solar System"], e: "A small telescope in Chile; it gave TRAPPIST-1 its name." },
+      gjMeaning: { q: "What is the GJ catalogue?", o: ["A catalogue of nearby stars by Gliese and Jahreiss", "A catalogue of galaxies", "A list of the moons of Jupiter"], e: "A catalogue of nearby stars by Wilhelm Gliese and Hartmut Jahreiss." },
+      romanGods: { q: "According to NASA, what is every planet except the Earth named after?", o: ["A Roman god or goddess", "The person who found it", "A constellation"], e: "A Roman god or goddess; Mars is the god of war." },
+      dimidium: { q: "What is the name of its own of 51 Pegasi b?", o: ["Dimidium", "Helvetios", "Proxima"], e: "Dimidium; its star is called Helvetios." },
+      buyStar: { q: "Can you buy a star name from the IAU?", o: ["No, the IAU sells no names", "Yes, for any star", "Yes, but only for bright stars"], e: "No: the IAU sells no names and distances itself from such offers." },
+      notReplace: { q: "Does a name like Dimidium replace the scientific designation?", o: ["No, both are used side by side", "Yes, the old one is deleted", "Only in Europe"], e: "No: such names do not replace the scientific designations." },
       constCount: { q: "How many officially recognised constellations are there, according to NASA?", o: ["88", "12", "1,000"], e: "88." },
       notConnected: { q: "Are the stars of a constellation connected?", o: ["No, some are close, others very far away", "Yes, they are bound together", "Yes, they are all equally far away"], e: "No: they are not connected; some are close, others very far away." },
       constShape: { q: "What is a constellation?", o: ["A group of stars that seems to show a shape and has a name", "A cluster of stars that go round each other", "A galaxy"], e: "A group of stars that seems to show a shape in the sky and has been given a name." },
@@ -1040,6 +1204,7 @@ export const LEARN_TEXT = {
       exo: { title: "Exoplaneten: Welten jenseits des Sonnensystems", goal: "Du weißt, was Exoplaneten sind, wie man sie findet und wie verschieden sie sein können." },
       hab: { title: "Die Suche nach bewohnbaren Welten", goal: "Du weißt, was einen Planeten möglicherweise bewohnbar macht und warum die bewohnbare Zone allein noch kein Leben bedeutet." },
       zod: { title: "Sternbilder und Sternzeichen", goal: "Du kannst erklären, was ein Sternbild ist, warum dein Sternzeichen und der Himmel nicht übereinstimmen und was dir das Licht deines Sternbilds erzählt." },
+      names: { title: "Namen im All", goal: "Du kannst die Namen von Planeten und Sternen lesen: die Buchstaben, die griechischen Buchstaben, die Kataloge und die Namen mit Geschichte." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -1327,6 +1492,87 @@ export const LEARN_TEXT = {
         you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
         ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
       },
+      nameLetters: {
+        title: "Planeten bekommen Buchstaben", goal: "Du kannst den Namen eines Exoplaneten lesen: Stern und Buchstabe.",
+        text: [
+          "Ein Exoplanet heißt meist wie sein Stern, mit einem kleinen Buchstaben dahinter. Laut NASA heißt der erste gefundene Planet immer b, die nächsten c, d, e und so weiter. Der Stern selbst ist das ungenannte „A“.",
+          "Werden mehrere Planeten eines Sterns zur gleichen Zeit gefunden, bekommt der Planet, der dem Stern am nächsten ist, das b. Bei TRAPPIST-1 heißen die sieben Planeten von innen nach außen b bis h. Der Buchstabe nennt also die Reihenfolge der Entdeckung, nicht den Abstand: Bei Proxima Centauri stehen in der NASA-Tabelle dieser Karte b und d, und d kreist näher am Stern als b, wurde aber später gefunden.",
+        ],
+        task: "Sieh dir Proxima Centauri mit seinen Planeten b und d an.",
+        remember: [
+          "Ein Exoplanet heißt wie sein Stern, mit einem kleinen Buchstaben.",
+          "Der erste gefundene Planet heißt b, die nächsten c, d, e.",
+          "Werden mehrere auf einmal gefunden, bekommt der innerste das b.",
+        ],
+        you: (star, list, n) => (n ? `Dein Stern heißt ${star}. Die NASA-Tabelle kennt um ihn ${n === 1 ? "einen Planeten" : `${n} Planeten`}: ${list}.` : `Dein Stern heißt ${star}. Seine Planeten heißen ${star} b, ${star} c und so weiter, in der Reihenfolge ihrer Entdeckung.`),
+        ref: () => "Bei Proxima Centauri heißen die Planeten Proxima Cen b und Proxima Cen d: Der Stern heißt Proxima Cen, die Buchstaben zählen seine Planeten.",
+      },
+      nameStars: {
+        title: "Sterne bekommen Großbuchstaben", goal: "Du weißt, wie die Sterne eines Systems mit mehreren Sternen heißen.",
+        text: [
+          "Viele Sterne haben Begleiter: zwei, drei oder mehr Sterne, die zusammengehören. Laut NASA bekommen Sterne große Buchstaben und Planeten kleine. Der Stern mit den Planeten ist meist das ungenannte A, die anderen Sterne können B, C heißen.",
+          "Unsere nächsten Nachbarn zeigen es: Alpha Centauri A und Alpha Centauri B umkreisen einander, und Proxima Centauri gehört als dritter Stern zum selben System. Große und kleine Buchstaben halten Sterne und Planeten auseinander: Alpha Centauri B ist ein Stern, Proxima Cen b ein Planet.",
+        ],
+        task: "Sieh dir Alpha Centauri A an, mit B daneben und Proxima in der Nähe markiert.",
+        remember: [
+          "Sterne bekommen große Buchstaben, Planeten kleine.",
+          "Der Stern mit den Planeten ist meist das ungenannte A.",
+          "Alpha Centauri A und B sind zwei Sterne, Proxima Cen b ist ein Planet.",
+        ],
+        you: (left) => (left == null ? "Das Licht von Alpha Centauri A und B, das heute ankommt, ist 4,37 Jahre unterwegs: Es flog los, bevor du geboren wurdest." : `Das Licht von Alpha Centauri A und B, das heute ankommt, ist 4,37 Jahre unterwegs: Es flog los, als du ${left} Jahre alt warst.`),
+        ref: (left) => `Das Licht von Alpha Centauri A und B ist 4,37 Jahre zu uns unterwegs. Wer heute 30 ist, war ${left}, als es losflog.`,
+      },
+      nameGreek: {
+        title: "Griechische Buchstaben und Sternbilder", goal: "Du kannst einen Sternnamen wie Alpha Centauri lesen.",
+        text: [
+          "Viele helle Sterne tragen einen griechischen Buchstaben und den lateinischen Namen ihres Sternbilds in der Form „des …“. Die IAU nennt als Beispiel Hamal, den hellsten Stern im Widder: Er heißt auch Alpha Arietis, „das Alpha des Widders“.",
+          "Genauso ist Alpha Centauri zu lesen: das Alpha des Zentauren. Auf die Liste der 88 Sternbilder, die diese Namen geben, hat sich die IAU 1922 geeinigt, auf ihre Grenzen 1928.",
+        ],
+        task: "Sieh dir das Sternbild Zentaur an, die Heimat von Alpha Centauri.",
+        remember: [
+          "Ein Name wie Alpha Arietis heißt: das Alpha des Widders.",
+          "Nach dem griechischen Buchstaben kommt das Sternbild in der lateinischen Form „des …“.",
+          "Die IAU hat sich 1922 auf die 88 Sternbilder geeinigt.",
+        ],
+        you: (name, gen) => `Bei deiner Geburt stand die Sonne im Sternbild ${name}. Auf Latein heißen seine Sterne Alpha ${gen}, Beta ${gen} und so weiter.`,
+        ref: (name, gen) => `Am 1. April steht die Sonne im Sternbild ${name}. Auf Latein heißen seine Sterne Alpha ${gen}, Beta ${gen} und so weiter.`,
+      },
+      nameCatalog: {
+        title: "Kataloge und Teleskope", goal: "Du weißt, was HD, GJ, HIP, TOI, Kepler und TRAPPIST in einem Namen bedeuten.",
+        text: [
+          "Die meisten Sterne haben keinen eigenen Namen, sondern eine Nummer in einem Katalog. Laut NASA steht vorne im Namen eines Planeten meist das Teleskop oder die Himmelsdurchmusterung, die ihn gefunden hat, oder der Katalog seines Sterns. HD steht für den Henry-Draper-Katalog, GJ für den Katalog naher Sterne von Wilhelm Gliese und Hartmut Jahreiß, HIP für den Katalog des ESA-Satelliten Hipparcos.",
+          "Kepler steht für das Weltraumteleskop Kepler der NASA (2009 bis 2018), TOI für „TESS Objects of Interest“, die Kandidaten des NASA-Satelliten TESS. TRAPPIST ist ein kleines Teleskop in Chile: Es gab dem System TRAPPIST-1 seinen Namen.",
+        ],
+        task: "Sieh dir TRAPPIST-1 an, benannt nach einem Teleskop.",
+        remember: [
+          "Vorne im Namen steht meist ein Katalog, ein Teleskop oder eine Durchmusterung.",
+          "HD ist der Henry-Draper-Katalog, GJ der Katalog naher Sterne von Gliese und Jahreiß.",
+          "TOI sind die Kandidaten des Satelliten TESS, TRAPPIST ist ein Teleskop in Chile.",
+        ],
+        cat: {
+          HD: "HD steht für den Henry-Draper-Katalog.", GJ: "GJ (oder Gl, Gliese) steht für den Katalog naher Sterne von Gliese und Jahreiß.",
+          HIP: "HIP steht für den Katalog des Satelliten Hipparcos.", TOI: "TOI steht für die Kandidaten des Satelliten TESS.",
+          Kepler: "Kepler steht für das Weltraumteleskop Kepler.", TRAPPIST: "TRAPPIST ist ein Teleskop in Chile.",
+          other: "Sein Name kommt aus einem anderen Katalog, oder es ist ein eigener Name.",
+        },
+        you: (star, what) => `Dein Stern heißt ${star}. ${what}`,
+        ref: (star, what) => `Ein Beispiel: ${star}. ${what}`,
+      },
+      nameStories: {
+        title: "Namen mit Geschichte", goal: "Du weißt, woher Eigennamen im All kommen und wer sie vergibt.",
+        text: [
+          "Die Planeten unseres Sonnensystems tragen alte Namen. Laut NASA ist jeder Planet außer der Erde nach einem römischen Gott oder einer römischen Göttin benannt. Mars zum Beispiel ist der römische Kriegsgott.",
+          "Auch Exoplaneten können eigene Namen bekommen. In einem öffentlichen Wettbewerb der IAU bekam 51 Pegasi b, der erste Riesenplanet um einen sonnenähnlichen Stern (1995), den Namen Dimidium, sein Stern den Namen Helvetios. Solche Namen ersetzen die wissenschaftlichen Bezeichnungen nicht. Und Sternnamen kann man nicht kaufen: Die IAU verkauft keine Namen und distanziert sich von solchen Angeboten.",
+        ],
+        task: "Sieh dir 51 Pegasi b an, den Planeten mit dem Namen Dimidium.",
+        remember: [
+          "Laut NASA ist jeder Planet außer der Erde nach einem römischen Gott oder einer Göttin benannt.",
+          "51 Pegasi b heißt auch Dimidium, sein Stern Helvetios.",
+          "Die IAU verkauft keine Sternnamen.",
+        ],
+        you: (before, at) => (before != null ? `51 Pegasi b wurde 1995 gefunden, ${before} Jahre vor deiner Geburt.` : at === "0" ? "51 Pegasi b wurde 1995 gefunden, im Jahr deiner Geburt." : `51 Pegasi b wurde 1995 gefunden, als du ${at} Jahre alt warst.`),
+        ref: (ago) => `51 Pegasi b wurde 1995 gefunden, vor ${ago} Jahren.`,
+      },
       zodWhat: {
         title: "Was ist ein Sternbild?", goal: "Du weißt, was ein Sternbild ist und warum seine Sterne nicht zusammengehören.",
         text: [
@@ -1597,6 +1843,23 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
       kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
       rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
+      firstLetter: { q: "Wie heißt der erste gefundene Planet eines Sterns?", o: ["Name des Sterns mit b", "Name des Sterns mit a", "Name des Sterns mit 1"], e: "b: Der Stern selbst ist das ungenannte A." },
+      sameTime: { q: "Mehrere Planeten eines Sterns werden zur gleichen Zeit gefunden. Welcher bekommt das b?", o: ["Der dem Stern am nächsten ist", "Der größte", "Der äußerste"], e: "Der Planet, der dem Stern am nächsten ist." },
+      letterOrder: { q: "Wonach richten sich die Buchstaben b, c, d?", o: ["Nach der Reihenfolge der Entdeckung", "Nach der Größe der Planeten", "Nach ihrer Farbe"], e: "Nach der Reihenfolge der Entdeckung: Proxima d kreist näher als b, wurde aber später gefunden." },
+      capitals: { q: "Was bekommt ein Stern in einem System mit mehreren Sternen?", o: ["Einen großen Buchstaben: A, B, C", "Einen kleinen Buchstaben: b, c, d", "Eine Farbe"], e: "Einen großen Buchstaben; Planeten bekommen kleine." },
+      hostA: { q: "Welcher Buchstabe ist meist der Stern mit den Planeten, auch wenn er nicht dasteht?", o: ["A", "B", "Z"], e: "A: das ungenannte A des Systems." },
+      starOrPlanet: { q: "Was ist Proxima Cen b?", o: ["Ein Planet", "Ein Stern", "Ein Sternbild"], e: "Ein Planet: Der kleine Buchstabe zeigt es." },
+      alphaAries: { q: "Was bedeutet Alpha Arietis?", o: ["Das Alpha des Widders", "Der Widder des Alpha", "Der hellste Planet"], e: "Das Alpha des Widders; das Beispiel der IAU ist Hamal." },
+      alphaCen: { q: "Zu welchem Sternbild gehört Alpha Centauri?", o: ["Zum Zentaur", "Zum Widder", "Zum Großen Bären"], e: "Zum Zentaur: Alpha Centauri ist das Alpha des Zentauren." },
+      iau1922: { q: "Wann hat sich die IAU auf die Liste der 88 Sternbilder geeinigt?", o: ["1922", "1610", "1995"], e: "1922; ihre Grenzen folgten 1928." },
+      hdMeaning: { q: "Wofür steht HD in einem Sternnamen?", o: ["Für den Henry-Draper-Katalog", "Für „High Definition“", "Für einen hellen Doppelstern"], e: "Für den Henry-Draper-Katalog." },
+      toiMeaning: { q: "Wofür steht TOI?", o: ["TESS Objects of Interest, Kandidaten des Satelliten TESS", "Ein Sternbild", "Eine Sonde zum Mond"], e: "TESS Objects of Interest: Kandidaten des NASA-Satelliten TESS." },
+      trappistWhat: { q: "Was ist TRAPPIST?", o: ["Ein kleines Teleskop in Chile", "Ein Stern im Zentaur", "Ein Planet des Sonnensystems"], e: "Ein kleines Teleskop in Chile; es gab TRAPPIST-1 seinen Namen." },
+      gjMeaning: { q: "Was ist der GJ-Katalog?", o: ["Ein Katalog naher Sterne von Gliese und Jahreiß", "Ein Katalog von Galaxien", "Eine Liste der Jupitermonde"], e: "Ein Katalog naher Sterne von Wilhelm Gliese und Hartmut Jahreiß." },
+      romanGods: { q: "Wonach ist laut NASA jeder Planet außer der Erde benannt?", o: ["Nach einem römischen Gott oder einer Göttin", "Nach seinem Entdecker", "Nach einem Sternbild"], e: "Nach einem römischen Gott oder einer Göttin; Mars ist der Kriegsgott." },
+      dimidium: { q: "Welchen eigenen Namen hat 51 Pegasi b?", o: ["Dimidium", "Helvetios", "Proxima"], e: "Dimidium; sein Stern heißt Helvetios." },
+      buyStar: { q: "Kann man bei der IAU einen Sternnamen kaufen?", o: ["Nein, die IAU verkauft keine Namen", "Ja, für jeden Stern", "Ja, aber nur für helle Sterne"], e: "Nein: Die IAU verkauft keine Namen und distanziert sich von solchen Angeboten." },
+      notReplace: { q: "Ersetzt ein Name wie Dimidium die wissenschaftliche Bezeichnung?", o: ["Nein, beide gelten nebeneinander", "Ja, die alte wird gelöscht", "Nur in Europa"], e: "Nein: Solche Namen ersetzen die wissenschaftlichen Bezeichnungen nicht." },
       constCount: { q: "Wie viele offiziell anerkannte Sternbilder gibt es laut NASA?", o: ["88", "12", "1.000"], e: "88." },
       notConnected: { q: "Hängen die Sterne eines Sternbilds zusammen?", o: ["Nein, manche sind nah, andere sehr weit weg", "Ja, sie sind aneinander gebunden", "Ja, sie sind alle gleich weit weg"], e: "Nein: Sie sind nicht miteinander verbunden; manche sind nah, andere sehr weit weg." },
       constShape: { q: "Was ist ein Sternbild?", o: ["Eine Gruppe von Sternen, die eine Form zu zeigen scheint und einen Namen hat", "Ein Haufen von Sternen, die einander umkreisen", "Eine Galaxie"], e: "Eine Gruppe von Sternen, die am Himmel eine Form zu zeigen scheint und einen Namen bekommen hat." },
@@ -1627,6 +1890,7 @@ export const LEARN_TEXT = {
       exo: { title: "系外惑星：太陽系の外の世界", goal: "系外惑星とは何か、どのように見つけるのか、そしてどれほど多様なのかがわかります。" },
       hab: { title: "住める世界をさがして", goal: "惑星が住める可能性をもつ条件と、ハビタブルゾーンにあるだけでは生命を意味しない理由がわかります。" },
       zod: { title: "星座と黄道十二宮", goal: "星座とは何か、星占いの星座と実際の空がなぜずれるのか、そしてあなたの星座の光が何を語るのかを説明できます。" },
+      names: { title: "宇宙の名前", goal: "惑星や恒星の名前が読めます。アルファベット、ギリシャ文字、カタログ、そして物語のある名前です。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -1914,6 +2178,87 @@ export const LEARN_TEXT = {
         you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
         ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
       },
+      nameLetters: {
+        title: "惑星にはアルファベット", goal: "系外惑星の名前が読めます。恒星の名前とアルファベットです。",
+        text: [
+          "系外惑星はふつう、その恒星の名前に小文字のアルファベットをつけて呼ばれます。NASAによると、最初に見つかった惑星はかならずb、次はc、d、eと続きます。恒星そのものは、書かれない「A」です。",
+          "ひとつの恒星の惑星がいくつか同時に見つかると、恒星にいちばん近い惑星がbになります。TRAPPIST-1の7つの惑星は、内側から外側へbからhです。つまり文字は見つかった順番で、距離ではありません。プロキシマ・ケンタウリには、この地図のNASAの表でbとdがあり、dはbより恒星の近くを回っていますが、あとから見つかりました。",
+        ],
+        task: "プロキシマ・ケンタウリと、その惑星bとdを見てみましょう。",
+        remember: [
+          "系外惑星は、恒星の名前に小文字をつけて呼ばれます。",
+          "最初に見つかった惑星はb、次はc、d、eです。",
+          "いくつか同時に見つかると、恒星にいちばん近い惑星がbになります。",
+        ],
+        you: (star, list, n) => (n ? `あなたの星は${star}です。NASAの表には、そのまわりに${n}個の惑星があります：${list}。` : `あなたの星は${star}です。その惑星は、見つかった順に${star} b、${star} cと呼ばれます。`),
+        ref: () => "プロキシマ・ケンタウリの惑星はProxima Cen bとProxima Cen dです。恒星がProxima Cenで、文字が惑星を数えています。",
+      },
+      nameStars: {
+        title: "恒星には大文字", goal: "いくつかの恒星でできた系の、恒星の呼び方を知っています。",
+        text: [
+          "多くの恒星には仲間がいます。2つ、3つ、またはもっと多くの恒星がいっしょになっています。NASAによると、恒星には大文字、惑星には小文字がつきます。惑星をもつ恒星はふつう書かれない「A」で、ほかの恒星はB、Cと呼ばれることがあります。",
+          "いちばん近い隣人がその例です。アルファ・ケンタウリAとアルファ・ケンタウリBはおたがいのまわりを回り、プロキシマ・ケンタウリは3つめの恒星として同じ系に入っています。大文字と小文字で恒星と惑星を区別できます。アルファ・ケンタウリBは恒星、Proxima Cen bは惑星です。",
+        ],
+        task: "アルファ・ケンタウリAを見てみましょう。となりにB、近くにプロキシマの印があります。",
+        remember: [
+          "恒星には大文字、惑星には小文字がつきます。",
+          "惑星をもつ恒星は、ふつう書かれない「A」です。",
+          "アルファ・ケンタウリAとBは2つの恒星、Proxima Cen bは惑星です。",
+        ],
+        you: (left) => (left == null ? "今日とどくアルファ・ケンタウリAとBの光は4.37年かけて来ました。あなたが生まれる前に出発した光です。" : `今日とどくアルファ・ケンタウリAとBの光は4.37年かけて来ました。あなたが${left}歳のときに出発した光です。`),
+        ref: (left) => `アルファ・ケンタウリAとBの光は、4.37年かけて私たちにとどきます。いま30歳の人は、光が出発したとき${left}歳でした。`,
+      },
+      nameGreek: {
+        title: "ギリシャ文字と星座", goal: "アルファ・ケンタウリのような星の名前が読めます。",
+        text: [
+          "明るい星の多くは、ギリシャ文字と、星座のラテン語の名前を「〜の」の形でもっています。IAUは、おひつじ座でいちばん明るい星ハマルを例にあげています。この星はアルファ・アリエティス（Alpha Arietis）、つまり「おひつじ座のアルファ」とも呼ばれます。",
+          "アルファ・ケンタウリも同じように読めます。ケンタウルス座のアルファです。こうした名前のもとになる88星座のリストは、IAUが1922年に決め、その境界は1928年に決めました。",
+        ],
+        task: "アルファ・ケンタウリのふるさと、ケンタウルス座を見てみましょう。",
+        remember: [
+          "Alpha Arietisのような名前は「おひつじ座のアルファ」という意味です。",
+          "ギリシャ文字のあとに、星座のラテン語の「〜の」の形が来ます。",
+          "IAUは1922年に88星座を決めました。",
+        ],
+        you: (name, gen) => `あなたが生まれたとき、太陽は${name}にありました。その星はラテン語でAlpha ${gen}、Beta ${gen}のように呼ばれます。`,
+        ref: (name, gen) => `4月1日、太陽は${name}にあります。その星はラテン語でAlpha ${gen}、Beta ${gen}のように呼ばれます。`,
+      },
+      nameCatalog: {
+        title: "カタログと望遠鏡", goal: "名前の中のHD、GJ、HIP、TOI、Kepler、TRAPPISTの意味を知っています。",
+        text: [
+          "ほとんどの恒星には固有の名前がなく、カタログの番号があります。NASAによると、惑星の名前の最初の部分はふつう、それを見つけた望遠鏡や観測計画、またはその恒星のカタログです。HDはヘンリー・ドレイパー星表、GJはヴィルヘルム・グリーゼとハルトムート・ヤーライスの近くの星のカタログ、HIPはESAの衛星ヒッパルコスのカタログです。",
+          "KeplerはNASAのケプラー宇宙望遠鏡（2009年〜2018年）、TOIは「TESS Objects of Interest」、つまりNASAの衛星TESSの候補です。TRAPPISTはチリにある小さな望遠鏡で、TRAPPIST-1という系の名前のもとになりました。",
+        ],
+        task: "望遠鏡から名前がついたTRAPPIST-1を見てみましょう。",
+        remember: [
+          "名前の最初には、ふつうカタログ、望遠鏡、観測計画の名前があります。",
+          "HDはヘンリー・ドレイパー星表、GJはグリーゼとヤーライスの近くの星のカタログです。",
+          "TOIは衛星TESSの候補、TRAPPISTはチリの望遠鏡です。",
+        ],
+        cat: {
+          HD: "HDはヘンリー・ドレイパー星表です。", GJ: "GJ（またはGl、Gliese）は、グリーゼとヤーライスの近くの星のカタログです。",
+          HIP: "HIPは衛星ヒッパルコスのカタログです。", TOI: "TOIは衛星TESSの候補です。",
+          Kepler: "Keplerはケプラー宇宙望遠鏡です。", TRAPPIST: "TRAPPISTはチリの望遠鏡です。",
+          other: "その名前は別のカタログから来ているか、固有の名前です。",
+        },
+        you: (star, what) => `あなたの星は${star}です。${what}`,
+        ref: (star, what) => `たとえば${star}。${what}`,
+      },
+      nameStories: {
+        title: "物語のある名前", goal: "宇宙の固有の名前がどこから来て、だれがつけるのかを知っています。",
+        text: [
+          "太陽系の惑星には古い名前があります。NASAによると、地球以外のすべての惑星は、ローマの神または女神から名前がつけられました。たとえば火星（マーズ）はローマの戦いの神です。",
+          "系外惑星も固有の名前をもらえます。IAUの公開コンテストで、太陽に似た恒星のまわりで最初に見つかった巨大惑星ペガスス座51番星b（1995年）はディミディウム、その恒星はヘルヴェティオスと名づけられました。こうした名前は科学的な符号にとってかわるものではありません。そして星の名前は買えません。IAUは名前を売らず、そうした商売とは関係ないとしています。",
+        ],
+        task: "ディミディウムと呼ばれる惑星、ペガスス座51番星bを見てみましょう。",
+        remember: [
+          "NASAによると、地球以外のすべての惑星はローマの神または女神の名前です。",
+          "ペガスス座51番星bはディミディウム、その恒星はヘルヴェティオスとも呼ばれます。",
+          "IAUは星の名前を売りません。",
+        ],
+        you: (before, at) => (before != null ? `ペガスス座51番星bは1995年、あなたが生まれる${before}年前に見つかりました。` : at === "0" ? "ペガスス座51番星bは1995年、あなたが生まれた年に見つかりました。" : `ペガスス座51番星bは1995年、あなたが${at}歳のときに見つかりました。`),
+        ref: (ago) => `ペガスス座51番星bは1995年、いまから${ago}年前に見つかりました。`,
+      },
       zodWhat: {
         title: "星座とは？", goal: "星座とは何か、そしてその星たちがなぜ仲間ではないのかを知っています。",
         text: [
@@ -2184,6 +2529,23 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
       kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
       rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
+      firstLetter: { q: "ある恒星のまわりで最初に見つかった惑星は、何と呼ばれますか？", o: ["恒星の名前＋b", "恒星の名前＋a", "恒星の名前＋1"], e: "bです。恒星そのものが書かれないAです。" },
+      sameTime: { q: "ひとつの恒星の惑星がいくつか同時に見つかりました。bになるのはどれですか？", o: ["恒星にいちばん近い惑星", "いちばん大きい惑星", "いちばん外側の惑星"], e: "恒星にいちばん近い惑星です。" },
+      letterOrder: { q: "b、c、dの文字は何の順番ですか？", o: ["見つかった順番", "惑星の大きさの順番", "色の順番"], e: "見つかった順番です。プロキシマdはbより近くを回っていますが、あとから見つかりました。" },
+      capitals: { q: "いくつかの恒星でできた系の恒星には、何がつきますか？", o: ["大文字：A、B、C", "小文字：b、c、d", "色"], e: "大文字です。惑星には小文字がつきます。" },
+      hostA: { q: "書かれていなくても、惑星をもつ恒星はふつうどの文字ですか？", o: ["A", "B", "Z"], e: "Aです。系の書かれないAです。" },
+      starOrPlanet: { q: "Proxima Cen bは何ですか？", o: ["惑星", "恒星", "星座"], e: "惑星です。小文字がそれを示しています。" },
+      alphaAries: { q: "Alpha Arietisはどういう意味ですか？", o: ["おひつじ座のアルファ", "アルファのおひつじ座", "いちばん明るい惑星"], e: "おひつじ座のアルファです。IAUの例はハマルです。" },
+      alphaCen: { q: "アルファ・ケンタウリはどの星座の星ですか？", o: ["ケンタウルス座", "おひつじ座", "おおぐま座"], e: "ケンタウルス座です。アルファ・ケンタウリはケンタウルス座のアルファです。" },
+      iau1922: { q: "IAUが88星座のリストを決めたのはいつですか？", o: ["1922年", "1610年", "1995年"], e: "1922年です。境界は1928年に決まりました。" },
+      hdMeaning: { q: "星の名前のHDは何を表しますか？", o: ["ヘンリー・ドレイパー星表", "ハイビジョン", "明るい二重星"], e: "ヘンリー・ドレイパー星表です。" },
+      toiMeaning: { q: "TOIは何を表しますか？", o: ["TESS Objects of Interest、衛星TESSの候補", "星座", "月への探査機"], e: "TESS Objects of Interest、NASAの衛星TESSの候補です。" },
+      trappistWhat: { q: "TRAPPISTとは何ですか？", o: ["チリにある小さな望遠鏡", "ケンタウルス座の恒星", "太陽系の惑星"], e: "チリにある小さな望遠鏡で、TRAPPIST-1の名前のもとです。" },
+      gjMeaning: { q: "GJカタログとは何ですか？", o: ["グリーゼとヤーライスの近くの星のカタログ", "銀河のカタログ", "木星の衛星のリスト"], e: "ヴィルヘルム・グリーゼとハルトムート・ヤーライスの近くの星のカタログです。" },
+      romanGods: { q: "NASAによると、地球以外のすべての惑星は何から名前がつけられましたか？", o: ["ローマの神または女神", "見つけた人", "星座"], e: "ローマの神または女神です。火星（マーズ）は戦いの神です。" },
+      dimidium: { q: "ペガスス座51番星bの固有の名前は何ですか？", o: ["ディミディウム", "ヘルヴェティオス", "プロキシマ"], e: "ディミディウムです。恒星はヘルヴェティオスです。" },
+      buyStar: { q: "IAUから星の名前を買えますか？", o: ["いいえ、IAUは名前を売りません", "はい、どの星でも", "はい、明るい星だけ"], e: "いいえ。IAUは名前を売らず、そうした商売とは関係ないとしています。" },
+      notReplace: { q: "ディミディウムのような名前は、科学的な符号にとってかわりますか？", o: ["いいえ、両方がならんで使われます", "はい、古い符号は消されます", "ヨーロッパでだけ"], e: "いいえ。こうした名前は科学的な符号にとってかわりません。" },
       constCount: { q: "NASAによると、公式に認められた星座はいくつありますか？", o: ["88", "12", "1,000"], e: "88です。" },
       notConnected: { q: "星座の星どうしはつながっていますか？", o: ["いいえ。近い星も、とても遠い星もある", "はい、たがいに結びついている", "はい、みんな同じ距離にある"], e: "いいえ。つながってはいません。近い星も、とても遠い星もあります。" },
       constShape: { q: "星座とは何ですか？", o: ["形をつくっているように見え、名前のある星のグループ", "たがいにまわりあう星の集まり", "銀河"], e: "空で形をつくっているように見え、名前がつけられた星のグループです。" },
@@ -2214,6 +2576,7 @@ export const LEARN_TEXT = {
       exo: { title: "Екзопланети: светове отвъд Слънчевата система", goal: "Знаеш какво са екзопланетите, как се откриват и колко различни могат да бъдат." },
       hab: { title: "Търсенето на обитаеми светове", goal: "Знаеш какво прави една планета вероятно обитаема и защо самата обитаема зона още не означава живот." },
       zod: { title: "Съзвездия и зодии", goal: "Можеш да обясниш какво е съзвездие, защо зодията ти и небето не съвпадат и какво ти разказва светлината на твоето съзвездие." },
+      names: { title: "Имена в космоса", goal: "Можеш да четеш имената на планети и звезди: буквите, гръцките букви, каталозите и имената с история." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -2501,6 +2864,87 @@ export const LEARN_TEXT = {
         you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
       },
+      nameLetters: {
+        title: "Планетите получават букви", goal: "Можеш да прочетеш името на екзопланета: звездата и една буква.",
+        text: [
+          "Една екзопланета обикновено носи името на звездата си, с малка буква след него. Според НАСА първата открита планета винаги се казва b, следващите c, d, e и така нататък. Самата звезда е неизписаното „A“.",
+          "Ако няколко планети на една звезда бъдат открити едновременно, b получава най-близката до звездата. При TRAPPIST-1 седемте планети се казват от b до h, отвътре навън. Значи буквата казва реда на откриване, а не разстоянието: при Проксима Кентавър таблицата на НАСА в тази карта има b и d, а d обикаля по-близо до звездата от b, но е открита по-късно.",
+        ],
+        task: "Разгледай Проксима Кентавър с нейните планети b и d.",
+        remember: [
+          "Екзопланетата носи името на звездата си, с малка буква.",
+          "Първата открита планета е b, следващите c, d, e.",
+          "Ако няколко бъдат открити наведнъж, b получава най-близката до звездата.",
+        ],
+        you: (star, list, n) => (n ? `Твоята звезда се казва ${star}. Таблицата на НАСА познава ${n === 1 ? "една планета" : `${n} планети`} около нея: ${list}.` : `Твоята звезда се казва ${star}. Планетите ѝ се казват ${star} b, ${star} c и така нататък, по реда на откриването им.`),
+        ref: () => "При Проксима Кентавър планетите се казват Proxima Cen b и Proxima Cen d: звездата е Proxima Cen, буквите броят планетите ѝ.",
+      },
+      nameStars: {
+        title: "Звездите получават главни букви", goal: "Знаеш как се казват звездите в система с няколко звезди.",
+        text: [
+          "Много звезди имат спътници: две, три или повече звезди, които са заедно. Според НАСА звездите получават главни букви, а планетите малки. Звездата с планетите обикновено е неизписаното A, другите звезди може да се казват B, C.",
+          "Най-близките ни съседи го показват: Алфа Кентавър A и Алфа Кентавър B обикалят една около друга, а Проксима Кентавър е трета звезда в същата система. Главните и малките букви разделят звездите от планетите: Алфа Кентавър B е звезда, Proxima Cen b е планета.",
+        ],
+        task: "Разгледай Алфа Кентавър A, с B до нея и отбелязаната наблизо Проксима.",
+        remember: [
+          "Звездите получават главни букви, планетите малки.",
+          "Звездата с планетите обикновено е неизписаното A.",
+          "Алфа Кентавър A и B са две звезди, Proxima Cen b е планета.",
+        ],
+        you: (left) => (left == null ? "Светлината на Алфа Кентавър A и B, която пристига днес, пътува 4,37 години: тръгнала е преди раждането ти." : `Светлината на Алфа Кентавър A и B, която пристига днес, пътува 4,37 години: тръгнала е на твоите ${left} години.`),
+        ref: (left) => `Светлината на Алфа Кентавър A и B пътува до нас 4,37 години. Който днес е на 30, е бил на ${left}, когато е тръгнала.`,
+      },
+      nameGreek: {
+        title: "Гръцки букви и съзвездия", goal: "Можеш да прочетеш име на звезда като Алфа Кентавър.",
+        text: [
+          "Много ярки звезди носят гръцка буква и латинското име на съзвездието си във формата „на …“. МАС дава за пример Хамал, най-ярката звезда в Овен: тя се казва и Alpha Arietis, „алфата на Овен“.",
+          "Така се чете и Алфа Кентавър: алфата на Кентавър. За списъка на 88-те съзвездия, които дават тези имена, МАС се е договорил през 1922 г., а за границите им през 1928 г.",
+        ],
+        task: "Разгледай съзвездието Кентавър, дома на Алфа Кентавър.",
+        remember: [
+          "Име като Alpha Arietis означава: алфата на Овен.",
+          "След гръцката буква идва съзвездието в латинската форма „на …“.",
+          "МАС се е договорил за 88-те съзвездия през 1922 г.",
+        ],
+        you: (name, gen) => `При раждането ти Слънцето е било в съзвездието ${name}. На латински звездите му се казват Alpha ${gen}, Beta ${gen} и така нататък.`,
+        ref: (name, gen) => `На 1 април Слънцето е в съзвездието ${name}. На латински звездите му се казват Alpha ${gen}, Beta ${gen} и така нататък.`,
+      },
+      nameCatalog: {
+        title: "Каталози и телескопи", goal: "Знаеш какво означават HD, GJ, HIP, TOI, Kepler и TRAPPIST в едно име.",
+        text: [
+          "Повечето звезди нямат собствено име, а номер в каталог. Според НАСА първата част от името на една планета обикновено е телескопът или обзорът, който я е открил, или каталогът на звездата ѝ. HD означава каталога на Хенри Дрейпър, GJ каталога на близките звезди на Вилхелм Глизе и Хартмут Ярайс, HIP каталога на спътника Хипаркос на ЕКА.",
+          "Kepler означава космическия телескоп „Кеплер“ на НАСА (2009 до 2018 г.), TOI означава „TESS Objects of Interest“, кандидатите на спътника TESS на НАСА. TRAPPIST е малък телескоп в Чили: той е дал името на системата TRAPPIST-1.",
+        ],
+        task: "Разгледай TRAPPIST-1, наречена на един телескоп.",
+        remember: [
+          "В началото на името обикновено стои каталог, телескоп или обзор.",
+          "HD е каталогът на Хенри Дрейпър, GJ каталогът на близките звезди на Глизе и Ярайс.",
+          "TOI са кандидатите на спътника TESS, TRAPPIST е телескоп в Чили.",
+        ],
+        cat: {
+          HD: "HD означава каталога на Хенри Дрейпър.", GJ: "GJ (или Gl, Gliese) означава каталога на близките звезди на Глизе и Ярайс.",
+          HIP: "HIP означава каталога на спътника Хипаркос.", TOI: "TOI означава кандидатите на спътника TESS.",
+          Kepler: "Kepler означава космическия телескоп „Кеплер“.", TRAPPIST: "TRAPPIST е телескоп в Чили.",
+          other: "Името ѝ идва от друг каталог или е собствено име.",
+        },
+        you: (star, what) => `Твоята звезда се казва ${star}. ${what}`,
+        ref: (star, what) => `Пример: ${star}. ${what}`,
+      },
+      nameStories: {
+        title: "Имена с история", goal: "Знаеш откъде идват собствените имена в космоса и кой ги дава.",
+        text: [
+          "Планетите на Слънчевата система носят стари имена. Според НАСА всяка планета освен Земята е наречена на римски бог или богиня. Марс например е римският бог на войната.",
+          "И екзопланетите могат да получат собствени имена. В публичен конкурс на МАС 51 Пегас b, първата гигантска планета около звезда като Слънцето (1995 г.), получава името Димидиум, а звездата ѝ името Хелветиос. Такива имена не заменят научните обозначения. А имена на звезди не могат да се купят: МАС не продава имена и се разграничава от такива предложения.",
+        ],
+        task: "Разгледай 51 Пегас b, планетата с името Димидиум.",
+        remember: [
+          "Според НАСА всяка планета освен Земята е наречена на римски бог или богиня.",
+          "51 Пегас b се казва и Димидиум, звездата ѝ Хелветиос.",
+          "МАС не продава имена на звезди.",
+        ],
+        you: (before, at) => (before != null ? `51 Пегас b е открита през 1995 г., ${before} години преди раждането ти.` : at === "0" ? "51 Пегас b е открита през 1995 г., в годината на раждането ти." : `51 Пегас b е открита през 1995 г., на твоите ${at} години.`),
+        ref: (ago) => `51 Пегас b е открита през 1995 г., преди ${ago} години.`,
+      },
       zodWhat: {
         title: "Какво е съзвездие?", goal: "Знаеш какво е съзвездие и защо звездите му не са свързани.",
         text: [
@@ -2771,6 +3215,23 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
       kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
       rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
+      firstLetter: { q: "Как се казва първата открита планета около една звезда?", o: ["Името на звездата с b", "Името на звездата с a", "Името на звездата с 1"], e: "b: самата звезда е неизписаното A." },
+      sameTime: { q: "Няколко планети на една звезда са открити едновременно. Коя получава b?", o: ["Най-близката до звездата", "Най-голямата", "Най-външната"], e: "Най-близката до звездата." },
+      letterOrder: { q: "По какво се подреждат буквите b, c, d?", o: ["По реда на откриване", "По големината на планетите", "По цвета им"], e: "По реда на откриване: Проксима d обикаля по-близо от b, но е открита по-късно." },
+      capitals: { q: "Какво получава звезда в система с няколко звезди?", o: ["Главна буква: A, B, C", "Малка буква: b, c, d", "Цвят"], e: "Главна буква; планетите получават малки." },
+      hostA: { q: "Коя буква обикновено е звездата с планетите, дори да не е изписана?", o: ["A", "B", "Z"], e: "A: неизписаното A на системата." },
+      starOrPlanet: { q: "Какво е Proxima Cen b?", o: ["Планета", "Звезда", "Съзвездие"], e: "Планета: малката буква го показва." },
+      alphaAries: { q: "Какво означава Alpha Arietis?", o: ["Алфата на Овен", "Овенът на алфата", "Най-ярката планета"], e: "Алфата на Овен; примерът на МАС е Хамал." },
+      alphaCen: { q: "Към кое съзвездие принадлежи Алфа Кентавър?", o: ["Кентавър", "Овен", "Голямата мечка"], e: "Кентавър: Алфа Кентавър е алфата на Кентавър." },
+      iau1922: { q: "Кога МАС се е договорил за списъка на 88-те съзвездия?", o: ["1922 г.", "1610 г.", "1995 г."], e: "През 1922 г.; границите им следват през 1928 г." },
+      hdMeaning: { q: "Какво означава HD в името на звезда?", o: ["Каталога на Хенри Дрейпър", "„High Definition“", "Ярка двойна звезда"], e: "Каталога на Хенри Дрейпър." },
+      toiMeaning: { q: "Какво означава TOI?", o: ["TESS Objects of Interest, кандидати на спътника TESS", "Съзвездие", "Сонда до Луната"], e: "TESS Objects of Interest: кандидатите на спътника TESS на НАСА." },
+      trappistWhat: { q: "Какво е TRAPPIST?", o: ["Малък телескоп в Чили", "Звезда в Кентавър", "Планета от Слънчевата система"], e: "Малък телескоп в Чили; той е дал името на TRAPPIST-1." },
+      gjMeaning: { q: "Какво е каталогът GJ?", o: ["Каталог на близките звезди на Глизе и Ярайс", "Каталог на галактики", "Списък на спътниците на Юпитер"], e: "Каталог на близките звезди на Вилхелм Глизе и Хартмут Ярайс." },
+      romanGods: { q: "Според НАСА на какво е наречена всяка планета освен Земята?", o: ["На римски бог или богиня", "На откривателя си", "На съзвездие"], e: "На римски бог или богиня; Марс е богът на войната." },
+      dimidium: { q: "Какво е собственото име на 51 Пегас b?", o: ["Димидиум", "Хелветиос", "Проксима"], e: "Димидиум; звездата ѝ се казва Хелветиос." },
+      buyStar: { q: "Може ли да се купи име на звезда от МАС?", o: ["Не, МАС не продава имена", "Да, за всяка звезда", "Да, но само за ярки звезди"], e: "Не: МАС не продава имена и се разграничава от такива предложения." },
+      notReplace: { q: "Заменя ли име като Димидиум научното обозначение?", o: ["Не, двете се използват едно до друго", "Да, старото се изтрива", "Само в Европа"], e: "Не: такива имена не заменят научните обозначения." },
       constCount: { q: "Колко официално признати съзвездия има според НАСА?", o: ["88", "12", "1000"], e: "88." },
       notConnected: { q: "Свързани ли са звездите на едно съзвездие?", o: ["Не, някои са близо, други много далеч", "Да, свързани са помежду си", "Да, всички са на еднакво разстояние"], e: "Не: те не са свързани; някои са близо, други много далеч." },
       constShape: { q: "Какво е съзвездие?", o: ["Група звезди, която сякаш образува фигура и има име", "Купчина звезди, които се обикалят", "Галактика"], e: "Група звезди, която на небето сякаш образува фигура и е получила име." },
@@ -2806,6 +3267,18 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  if (PATHS.names.steps.includes(step)) {
+    if (step === "nameLetters") {
+      const list = nums.namePlanets.join(", ");
+      return nums.nameStar ? s.you(nums.nameStar, list, nums.namePlanets.length) : s.ref();
+    }
+    if (step === "nameStars") return nums.you ? s.you(nums.alphaLeft == null ? null : fmt(nums.alphaLeft)) : s.ref(fmt(REFERENCE_AGE - Math.ceil(ALPHA_CEN_LY)));
+    if (step === "nameGreek") return (nums.zodYou ? s.you : s.ref)(zodName(nums.zodReal, lang), GENITIVE[nums.zodReal]);
+    if (step === "nameCatalog") return nums.nameStar ? s.you(nums.nameStar, s.cat[catalogOf(nums.nameStar) ?? "other"]) : s.ref("HD 209458", s.cat.HD);
+    // 51 Pegasi b: found before the birth, in its year, or at an age
+    if (nums.pegBefore == null) return s.ref(fmt(nums.pegAgo));
+    return s.you(nums.pegBefore > 0 ? fmt(nums.pegBefore) : null, nums.pegBefore <= 0 ? fmt(Math.abs(nums.pegBefore)) : null);
+  }
   if (PATHS.zod.steps.includes(step)) {
     const f = nums.zodYou ? s.you : s.ref;
     const name = (id) => zodName(id, lang);
@@ -2877,9 +3350,11 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
+  const NAME_PICTURE = { nameLetters: 3050, nameStars: 5790, nameGreek: 9600, nameCatalog: 2566, nameStories: 5770 }; // the temperatures of the stars drawn
   const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
-    ZOD_PICTURE[step] ? starCanvas(ZOD_PICTURE[step], "uni-orb small star", 28)
+    NAME_PICTURE[step] ? starCanvas(NAME_PICTURE[step], "uni-orb small star", 28)
+    : ZOD_PICTURE[step] ? starCanvas(ZOD_PICTURE[step], "uni-orb small star", 28)
     : ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
     : step === "proximaB" ? planetCanvas({ temp: 218 }, "uni-orb small", 28)
     : EXO_PICTURE[step] ? planetCanvas({ temp: EXO_PICTURE[step] }, "uni-orb small", 28)
@@ -2962,6 +3437,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const pathPicture = (path, cls, size) =>
     path === "alpha" ? starCanvas(5790, `${cls} star`, size)
     : path === "zod" ? starCanvas(9600, `${cls} star`, size)
+    : path === "names" ? starCanvas(3050, `${cls} star`, size)
     : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);

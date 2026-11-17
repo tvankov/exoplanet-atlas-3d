@@ -5832,6 +5832,8 @@ const learn = initLearn({
     years: Object.fromEntries(PLANETS.map((p) => [p.name, p.years])),
     star: myStar?.current() ?? null,
     birthYear: myStar?.current()?.year ?? null,
+    // the path of the names: the planets round the visitor's star (or round Proxima), as the NASA table names them
+    planetsOf: (host) => stars.find((s) => s.hostname === host)?.planets.map((p) => p.pl_name) ?? [],
     birthDate: storedBirthDate(), // the path of the constellations: the sign and the constellation of the Sun at the birth (only in this browser)
     figureInfo: (id) => {
       // the nearest and the farthest star of a figure, in light years (constellations.js)

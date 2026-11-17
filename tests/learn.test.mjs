@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES } from "../web/learn.js";
+import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES, GENITIVE, catalogOf } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -119,7 +119,7 @@ test("every step has 3 to 5 facts to remember in every language, and its sources
       assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
     }
     assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
-    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu)\//, `${step}: ${src.url}`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu|www\.iau\.org|heasarc\.gsfc\.nasa\.gov|starchild\.gsfc\.nasa\.gov|www\.jpl\.nasa\.gov|www\.cosmos\.esa\.int)\//, `${step}: ${src.url}`);
   }
 });
 
@@ -298,5 +298,32 @@ test("constellations and zodiac signs: the sign and the constellation of the Sun
   for (const id of Object.keys(ZOD_NAMES)) assert.equal(ZOD_NAMES[id].length, 4, id);
   assert.equal(PATHS.zod.steps.length, 5);
   const t = testQuestions("zod", you, "ja", 0);
+  assert.equal(new Set(t.map((q) => q.id)).size, 10);
+});
+
+test("names in space: the visitor's star and its planets, the catalogue of its name, the genitive of the constellation, and 51 Pegasi b", () => {
+  const ctx = { age: 31.4, years: YEARS, star: { name: "GJ 667 C", dist: 23.6, year: 1995 }, birthYear: 1995, birthDate: { year: 1995, month: 6, day: 14 } };
+  const n = personalNumbers({ ...ctx, planetsOf: (h) => (h === "GJ 667 C" ? ["GJ 667 C c", "GJ 667 C b"] : []) });
+  assert.ok(personalLine("nameLetters", n, "de").includes("2 Planeten: GJ 667 C b, GJ 667 C c"));
+  assert.ok(personalLine("nameCatalog", n, "de").includes("Gliese und Jahreiß"));
+  // 14 June: the Sun in Taurus, Alpha Tauri
+  assert.equal(GENITIVE[n.zodReal], "Tauri");
+  assert.ok(personalLine("nameGreek", n, "en").includes("Alpha Tauri"));
+  // 51 Pegasi b: found in the year of the birth, before it, or at an age (never "-0")
+  const born = (y) => personalLine("nameStories", personalNumbers({ ...ctx, age: 2026 - y, birthYear: y }), "de");
+  assert.ok(born(1995).includes("im Jahr deiner Geburt"));
+  assert.ok(born(1990).includes("als du 5 Jahre alt warst"));
+  assert.ok(born(2000).includes("5 Jahre vor deiner Geburt"));
+  // without a year of birth: Proxima and the example HD 209458
+  assert.ok(personalLine("nameLetters", nobody, "de").includes("Proxima Cen d"));
+  assert.ok(personalLine("nameCatalog", nobody, "en").includes("Henry Draper"));
+  assert.deepEqual(["HD 3651", "Gl 581", "HIP 65426", "TOI-700", "Kepler-22", "TRAPPIST-1", "Proxima Cen"].map(catalogOf), ["HD", "GJ", "HIP", "TOI", "Kepler", "TRAPPIST", null]);
+  for (const id of Object.keys(ZOD_NAMES)) assert.ok(GENITIVE[id], id);
+  for (const lang of LANGS) for (const step of PATHS.names.steps) for (const nums of [you, nobody, n]) {
+    const line = personalLine(step, nums, lang);
+    assert.ok(line && !line.includes("undefined") && !line.includes("null") && !line.includes("-0"), `${lang} ${step}: ${line}`);
+  }
+  assert.equal(TASKS.nameGreek, "figure:Cen");
+  const t = testQuestions("names", you, "bg", 0);
   assert.equal(new Set(t.map((q) => q.id)).size, 10);
 });

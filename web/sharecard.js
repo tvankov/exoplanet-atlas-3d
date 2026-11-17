@@ -465,6 +465,17 @@ const EMBLEM = {
     g.stroke();
     for (const [i, [x, y]] of stars.entries()) drawStar(g, r * x, r * y, r * (i === 2 ? 0.16 : 0.1), starColor(i === 2 ? 4000 : 9600));
   },
+  // names in space: a star with its capital A and a planet with its small b
+  "names-scholar": async (g, r) => {
+    drawStar(g, r * 0.72, r * 0.95, r * 0.36, starColor(5772));
+    await drawPlanet(g, "Neptune", r * 1.42, r * 1.18, r * 0.2);
+    g.fillStyle = "#7cffb2";
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.font = `700 ${Math.round(r * 0.34)}px system-ui, 'Segoe UI', sans-serif`;
+    g.fillText("A", r * 0.72, r * 1.52);
+    g.fillText("b", r * 1.42, r * 0.78);
+  },
   // the foundations: the Sun with the four worlds of the four paths round it (Earth, Proxima b, a hot Jupiter, a temperate world)
   foundations: async (g, r) => {
     drawStar(g, r, r, r * 0.42, starColor(5772));
