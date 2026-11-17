@@ -465,6 +465,22 @@ const EMBLEM = {
     g.stroke();
     for (const [i, [x, y]] of stars.entries()) drawStar(g, r * x, r * y, r * (i === 2 ? 0.16 : 0.1), starColor(i === 2 ? 4000 : 9600));
   },
+  // the birth of stars: a young star in its disk of gas and dust, with a small planet growing in it
+  "birth-scholar": async (g, r) => {
+    g.save();
+    g.translate(r, r);
+    g.scale(1, 0.32);
+    const disk = g.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 0.8);
+    disk.addColorStop(0, "rgba(255,190,120,0.75)");
+    disk.addColorStop(1, "rgba(255,150,90,0)");
+    g.fillStyle = disk;
+    g.beginPath();
+    g.arc(0, 0, r * 0.8, 0, Math.PI * 2);
+    g.fill();
+    g.restore();
+    drawStar(g, r, r, r * 0.28, starColor(4100));
+    await drawPlanet(g, "Mars", r * 1.55, r * 1.05, r * 0.08);
+  },
   // understanding stars: the seven classes in a row, from a hot blue O star to a cool red M star
   "stars-scholar": (g, r) => {
     const temps = [30000, 15000, 9000, 6800, 5700, 4400, 3000];

@@ -350,3 +350,21 @@ test("understanding stars: the temperature, size and class of the visitor's star
   const t = testQuestions("stars", you, "ja", 0);
   assert.equal(new Set(t.map((q) => q.id)).size, 10);
 });
+
+test("the birth of stars: the light of the Orion Nebula and the Pleiades, AU Mic, PDS 70 and the Sun's age as one day", () => {
+  const at = (y) => personalNumbers({ age: 2026 - y, years: YEARS, star: null, birthYear: y, thisYear: 2026 });
+  const n = at(1995);
+  assert.ok(personalLine("birthCloud", n, "de").includes("rund 1.469 Jahre vor deiner Geburt"));
+  assert.ok(personalLine("birthProto", n, "de").includes("etwa 810.000-mal so alt wie du"));
+  assert.ok(personalLine("birthDisk", n, "de").includes("23 Jahre alt"));
+  assert.ok(personalLine("birthDisk", at(2018), "de").includes("im Jahr deiner Geburt"));
+  assert.ok(personalLine("birthDisk", at(2020), "de").includes("2 Jahre vor deiner Geburt"));
+  assert.ok(personalLine("birthCluster", n, "de").includes("um das Jahr 1581 los, etwa 414 Jahre vor deiner Geburt"));
+  assert.ok(personalLine("birthSun", n, "de").includes("etwa 0,58 Tausendstelsekunden"));
+  for (const lang of LANGS) for (const step of PATHS.birth.steps) for (const nums of [you, nobody, n, at(2018)]) {
+    const line = personalLine(step, nums, lang);
+    assert.ok(line && !/undefined|null|NaN|-0/.test(line), `${lang} ${step}: ${line}`);
+  }
+  const t = testQuestions("birth", you, "en", 0);
+  assert.equal(new Set(t.map((q) => q.id)).size, 10);
+});

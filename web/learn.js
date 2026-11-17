@@ -22,6 +22,7 @@ export const PATHS = {
   zod: { steps: ["zodWhat", "zodPath", "zodShift", "zodScience", "zodLight"], minutes: 25, testSize: 10, pass: 0.7 },
   names: { steps: ["nameLetters", "nameStars", "nameGreek", "nameCatalog", "nameStories"], minutes: 25, testSize: 10, pass: 0.7 },
   stars: { steps: ["starWhat", "starColor", "starClass", "starSize", "starHosts"], minutes: 25, testSize: 10, pass: 0.7 },
+  birth: { steps: ["birthCloud", "birthProto", "birthDisk", "birthCluster", "birthSun"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -33,6 +34,7 @@ export const TASKS = {
   zodWhat: "figure:birth", zodPath: "figure:Oph", zodShift: "figure:birthSign", zodScience: null, zodLight: "figure:birth",
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "figure:Cen", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
   starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
+  birthCloud: "figure:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "figure:Tau", birthSun: "Sun",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -45,8 +47,9 @@ export const VIEWS = {
   zodWhat: "Earth", zodPath: "Sun", zodShift: "Sun", zodScience: "Earth", zodLight: "Earth",
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "Earth", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
   starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
+  birthCloud: "Earth", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "Earth", birthSun: "Sun",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -225,6 +228,27 @@ export const SOURCES = {
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
   ],
+  birthCloud: [
+    { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
+    { label: "NASA Science: Hubble Messier Catalog, Messier 42 (Orion Nebula)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-42/" },
+  ],
+  birthProto: [
+    { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
+    { label: "NASA: TESS, Spitzer Missions Discover a World Orbiting a Unique Young Star (AU Mic, 2020)", url: "https://www.nasa.gov/universe/nasas-tess-spitzer-missions-discover-a-world-orbiting-a-unique-young-star/" },
+  ],
+  birthDisk: [
+    { label: "NASA: TESS, Spitzer Missions Discover a World Orbiting a Unique Young Star (AU Mic, 2020)", url: "https://www.nasa.gov/universe/nasas-tess-spitzer-missions-discover-a-world-orbiting-a-unique-young-star/" },
+    { label: "NASA Science: Planetary Systems", url: "https://science.nasa.gov/universe/stars/planetary-system/" },
+    { label: "ESO: First Confirmed Image of Newborn Planet Caught with ESO's VLT (2018)", url: "https://www.eso.org/public/news/eso1821/" },
+    { label: "ESO: Astronomers make first clear detection of a moon-forming disc around an exoplanet (2021)", url: "https://www.eso.org/public/news/eso2111/" },
+  ],
+  birthCluster: [
+    { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
+    { label: "NASA Science: Hubble Messier Catalog, Messier 45 (Pleiades)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-45/" },
+  ],
+  birthSun: [
+    { label: "NASA Science: Sun Facts", url: "https://science.nasa.gov/sun/facts/" },
+  ],
   starWhat: [
     { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
     { label: "NASA Imagine the Universe: Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/stars1.html" },
@@ -356,6 +380,33 @@ export function personalNumbers(ctx) {
     ...zodNumbers(ctx),
     ...nameNumbers(ctx, age),
     ...starNumbers(ctx),
+    ...birthNumbers(ctx, age),
+  };
+}
+// The birth of stars: the light of the Orion Nebula (about 1,500 light years, NASA) and of the Pleiades (roughly 445, NASA) against the
+// visitor's life, the age of AU Mic (20 to 30 million years, NASA: its middle, 25) as a multiple of the visitor's age, the year PDS 70 b
+// was photographed (2018, ESO), and the age of the Sun (4.6 billion years, NASA) as one day.
+const ORION_LY = 1500;
+const PLEIADES_LY = 445;
+const AU_MIC_YEARS = 25e6;
+const PDS_SEEN = 2018;
+const SUN_YEARS = 4.6e9;
+// a big number rounded to its first two digits (806,452 to 810,000)
+const twoDigits = (x) => {
+  const p = 10 ** Math.max(0, Math.floor(Math.log10(x)) - 1);
+  return Math.round(x / p) * p;
+};
+function birthNumbers(ctx, age) {
+  const thisYear = ctx.thisYear ?? new Date().getFullYear();
+  const born = ctx.age != null ? ctx.birthYear ?? thisYear - Math.floor(age) : null;
+  return {
+    orionBefore: Math.round(ORION_LY - age),
+    auMicTimes: twoDigits(AU_MIC_YEARS / Math.max(age, 1)),
+    pdsBefore: born != null ? born - PDS_SEEN : null, // years the planet was photographed before the birth (below 0: at that age)
+    pdsAgo: thisYear - PDS_SEEN,
+    pleiadesYear: thisYear - PLEIADES_LY,
+    pleiadesBefore: born != null ? born - (thisYear - PLEIADES_LY) : null,
+    sunDayMs: (age / SUN_YEARS) * 86400 * 1000,
   };
 }
 // Understanding stars: the temperature, the radius and the spectral type of the visitor's star, from the NASA table of the map
@@ -491,6 +542,12 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // The birth of stars
+  birthCloud: [{ id: "molecularCloud" }, { id: "clumpCollapse" }, { id: "orionNursery" }],
+  birthProto: [{ id: "protostar" }, { id: "protoHeat" }, { id: "auMicAge" }],
+  birthDisk: [{ id: "diskYoung" }, { id: "planetsMerge" }, { id: "pdsImage" }],
+  birthCluster: [{ id: "clusters" }, { id: "pleiades" }, { id: "pleiadesDist" }],
+  birthSun: [{ id: "sunAge" }, { id: "solarNebula" }, { id: "planetsLeft" }],
   // Understanding stars
   starWhat: [{ id: "starGas" }, { id: "starFusion" }, { id: "starGravity" }],
   starColor: [{ id: "colorTemp" }, { id: "blueHot" }, { id: "sunTemp" }],
@@ -561,6 +618,7 @@ export const LEARN_TEXT = {
       zod: { title: "Constellations and zodiac signs", goal: "You can explain what a constellation is, why your zodiac sign and the sky disagree, and what the light of your constellation tells you." },
       names: { title: "Names in space", goal: "You can read the names of planets and stars: the letters, the Greek letters, the catalogues and the names with a story." },
       stars: { title: "Understanding stars", goal: "You can explain what a star is, what its colour says, how stars are sorted, and which stars are good homes for planets." },
+      birth: { title: "The birth of stars", goal: "You can explain how a star is born from a cloud of gas and dust, how planets form round it, and how the Sun was born." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -849,6 +907,81 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
         ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
+      },
+      birthCloud: {
+        title: "Clouds of gas and dust", goal: "You know where stars are born.",
+        text: [
+          "According to NASA stars form in large clouds of gas and dust called molecular clouds. They are cold, so the gas clumps into pockets of high density. Eventually gravity makes some of these clumps collapse.",
+          "The Orion Nebula is such a stellar nursery: according to NASA the closest large star-forming region to the Earth, about 1,500 light years away, just below the belt of Orion.",
+        ],
+        task: "Look at the constellation Orion: the Orion Nebula lies just below its belt.",
+        remember: [
+          "Stars form in cold clouds of gas and dust, the molecular clouds.",
+          "Gravity makes clumps in these clouds collapse.",
+          "The Orion Nebula is the closest large star-forming region, about 1,500 light years away.",
+        ],
+        you: (before) => `The light of the Orion Nebula that arrives today is about 1,500 years on its way: it set off about ${before} years before you were born.`,
+        ref: () => "The light of the Orion Nebula that arrives today is about 1,500 years on its way.",
+      },
+      birthProto: {
+        title: "From a clump to a protostar", goal: "You know how a collapsing clump becomes a star.",
+        text: [
+          "When a clump collapses, friction heats the material up, and a protostar forms: according to NASA a baby star. After millions of years the temperatures in its core squeeze hydrogen nuclei together: the fusion begins, the star shines.",
+          "AU Mic, about 32 light years away, is such a young star. NASA gives it an age of 20 to 30 million years: a stellar infant, the Sun is at least 150 times older.",
+        ],
+        task: "Look at AU Mic, a young star with planets.",
+        remember: [
+          "A collapsing clump heats up and becomes a protostar, a baby star.",
+          "After millions of years the fusion of hydrogen begins in its core.",
+          "AU Mic is only 20 to 30 million years old; the Sun is at least 150 times older.",
+        ],
+        you: (x) => `AU Mic is 20 to 30 million years old: counted from the middle, about ${x} times as old as you. For a star that is a baby.`,
+        ref: (x) => `AU Mic is 20 to 30 million years old: counted from the middle, about ${x} times as old as a person of 30. For a star that is a baby.`,
+      },
+      birthDisk: {
+        title: "The disk and the planets", goal: "You know how planets grow round a young star.",
+        text: [
+          "A young star is still surrounded by a disk of gas and dust left over from its birth; according to NASA AU Mic has one too. In such a disk solid particles of rock and ice collide and merge: so planets grow.",
+          "In 2018 ESO showed the first confirmed image of a planet caught in the act of forming in such a disk: PDS 70 b, round a star ESO puts nearly 400 light years away (the NASA table of this map gives 369). In 2021 ALMA found a disk round its sibling PDS 70 c in which moons may form.",
+        ],
+        task: "Look at PDS 70 with its two young planets.",
+        remember: [
+          "A young star is surrounded by a disk of gas and dust.",
+          "In the disk particles of rock and ice collide and merge into planets.",
+          "PDS 70 b was the first confirmed image of a planet still forming (2018).",
+        ],
+        you: (before, at) => (before != null ? `PDS 70 b was photographed in 2018, ${before} years before you were born.` : at === "0" ? "PDS 70 b was photographed in 2018, the year you were born." : `PDS 70 b was photographed in 2018, when you were ${at}.`),
+        ref: (ago) => `PDS 70 b was photographed in 2018, ${ago} years ago.`,
+      },
+      birthCluster: {
+        title: "Stars are born in groups", goal: "You know that stars are often born together, in clusters.",
+        text: [
+          "According to NASA stars often form in groups; such groups are called stellar clusters.",
+          "The best known is the Pleiades, an open star cluster in Taurus. NASA gives its distance as roughly 445 light years and adds that this number is not universally agreed upon.",
+        ],
+        task: "Look at the constellation Taurus: the Pleiades are in it.",
+        remember: [
+          "Stars are often born in groups, the stellar clusters.",
+          "The Pleiades are an open star cluster in Taurus.",
+          "They are roughly 445 light years away; the number is not agreed upon by all.",
+        ],
+        you: (year, before) => `The light of the Pleiades that arrives today set off around the year ${year}, about ${before} years before you were born.`,
+        ref: (year) => `The light of the Pleiades that arrives today set off around the year ${year}.`,
+      },
+      birthSun: {
+        title: "The birth of the Sun", goal: "You know how and when the Sun and its planets were born.",
+        text: [
+          "According to NASA the Sun formed about 4.6 billion years ago in a giant, spinning cloud of gas and dust, the solar nebula. Much of the remaining material formed the planets and the other bodies of the Solar System, the Earth too.",
+          "The same NASA page calls the Sun 4.5 billion years old in its introduction: the two numbers are rounded differently, both mean about four and a half billion years.",
+        ],
+        task: "Look at the Sun, born 4.6 billion years ago.",
+        remember: [
+          "The Sun formed about 4.6 billion years ago.",
+          "It was born in a spinning cloud of gas and dust, the solar nebula.",
+          "Much of the remaining material formed the planets, the Earth too.",
+        ],
+        you: (ms) => `If the Sun's life so far were a single day, your life so far would have lasted about ${ms} thousandths of a second. (Worked out from 4.6 billion years.)`,
+        ref: (ms) => `If the Sun's life so far were a single day, a life of 30 years would have lasted about ${ms} thousandths of a second. (Worked out from 4.6 billion years.)`,
       },
       starWhat: {
         title: "What is a star?", goal: "You know what a star is and where its light comes from.",
@@ -1282,6 +1415,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
       kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
       rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
+      molecularCloud: { q: "Where do stars form, according to NASA?", o: ["In large clouds of gas and dust, the molecular clouds", "Inside planets", "In the rings of Saturn"], e: "In large cold clouds of gas and dust, the molecular clouds." },
+      clumpCollapse: { q: "What makes clumps in a molecular cloud collapse?", o: ["Gravity", "Wind from the Earth", "Light from the Moon"], e: "Gravity." },
+      orionNursery: { q: "What is the Orion Nebula?", o: ["The closest large star-forming region, about 1,500 light years away", "A planet of the Solar System", "A black hole"], e: "The closest large star-forming region to the Earth, about 1,500 light years away." },
+      protostar: { q: "What is a protostar?", o: ["A baby star", "A dead star", "A planet without a star"], e: "A baby star, before the fusion in its core begins." },
+      protoHeat: { q: "Why does a collapsing clump heat up?", o: ["Friction heats the material", "The Sun shines on it", "It burns like wood"], e: "Friction heats the material up." },
+      auMicAge: { q: "How old is AU Mic, according to NASA?", o: ["20 to 30 million years", "4.6 billion years", "300 years"], e: "20 to 30 million years: the Sun is at least 150 times older." },
+      diskYoung: { q: "What surrounds a young star?", o: ["A disk of gas and dust", "A hard shell of ice", "Nothing"], e: "A disk of gas and dust left over from its birth." },
+      planetsMerge: { q: "How do planets grow in such a disk?", o: ["Particles of rock and ice collide and merge", "The star spits them out", "They come from other galaxies"], e: "Solid particles of rock and ice collide and merge." },
+      pdsImage: { q: "What did ESO show in 2018 at PDS 70?", o: ["The first confirmed image of a planet still forming", "A new star in the Solar System", "A black hole"], e: "The first confirmed image of a planet caught forming in the disk: PDS 70 b." },
+      clusters: { q: "How are stars often born, according to NASA?", o: ["In groups, the stellar clusters", "Always alone", "Inside planets"], e: "In groups: stellar clusters." },
+      pleiades: { q: "What are the Pleiades?", o: ["An open star cluster in Taurus", "A planet", "A galaxy far away"], e: "An open star cluster in Taurus." },
+      pleiadesDist: { q: "How far are the Pleiades, according to NASA?", o: ["Roughly 445 light years", "Roughly 4 light years", "Roughly 4 million light years"], e: "Roughly 445 light years; the number is not universally agreed upon." },
+      sunAge: { q: "When did the Sun form, according to NASA?", o: ["About 4.6 billion years ago", "About 4,600 years ago", "About 46 million years ago"], e: "About 4.6 billion years ago." },
+      solarNebula: { q: "What is the cloud called in which the Sun formed?", o: ["The solar nebula", "The Orion Nebula", "The Milky Way"], e: "The solar nebula, a giant spinning cloud of gas and dust." },
+      planetsLeft: { q: "What did the planets form from?", o: ["Much of the material left over from the Sun's birth", "Pieces of the Moon", "Other stars"], e: "Much of the remaining material formed the planets, the Earth too." },
       starGas: { q: "What is a star, according to NASA?", o: ["A giant ball of hot gas", "A big rock that shines", "A hole in the sky"], e: "A giant ball of hot gas, held together by its own gravity." },
       starFusion: { q: "What happens in the core of a star?", o: ["Hydrogen is fused into helium", "Iron burns like coal", "Nothing, the light comes from the surface"], e: "Hydrogen nuclei are squeezed together into helium; that releases the energy of its light." },
       starGravity: { q: "What holds a star together?", o: ["Its own gravity", "A hard shell", "The magnetic field of the Earth"], e: "Its own gravity." },
@@ -1346,6 +1494,7 @@ export const LEARN_TEXT = {
       zod: { title: "Sternbilder und Sternzeichen", goal: "Du kannst erklären, was ein Sternbild ist, warum dein Sternzeichen und der Himmel nicht übereinstimmen und was dir das Licht deines Sternbilds erzählt." },
       names: { title: "Namen im All", goal: "Du kannst die Namen von Planeten und Sternen lesen: die Buchstaben, die griechischen Buchstaben, die Kataloge und die Namen mit Geschichte." },
       stars: { title: "Sterne verstehen", goal: "Du kannst erklären, was ein Stern ist, was seine Farbe verrät, wie man Sterne ordnet und welche Sterne gute Heimaten für Planeten sind." },
+      birth: { title: "Die Geburt der Sterne", goal: "Du kannst erklären, wie ein Stern aus einer Wolke aus Gas und Staub entsteht, wie um ihn Planeten wachsen und wie die Sonne entstand." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -1632,6 +1781,81 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
         ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
+      },
+      birthCloud: {
+        title: "Wolken aus Gas und Staub", goal: "Du weißt, wo Sterne geboren werden.",
+        text: [
+          "Laut NASA entstehen Sterne in großen Wolken aus Gas und Staub, den Molekülwolken. Sie sind kalt, darum ballt sich das Gas zu dichten Klumpen. Irgendwann bringt die Schwerkraft manche dieser Klumpen zum Einstürzen.",
+          "Der Orionnebel ist so eine Kinderstube der Sterne: laut NASA das nächste große Sternentstehungsgebiet bei der Erde, etwa 1.500 Lichtjahre entfernt, knapp unter dem Gürtel des Orion.",
+        ],
+        task: "Sieh dir das Sternbild Orion an: Der Orionnebel liegt knapp unter seinem Gürtel.",
+        remember: [
+          "Sterne entstehen in kalten Wolken aus Gas und Staub, den Molekülwolken.",
+          "Die Schwerkraft bringt Klumpen in diesen Wolken zum Einstürzen.",
+          "Der Orionnebel ist das nächste große Sternentstehungsgebiet, etwa 1.500 Lichtjahre entfernt.",
+        ],
+        you: (before) => `Das Licht des Orionnebels, das heute ankommt, ist etwa 1.500 Jahre unterwegs: Es flog rund ${before} Jahre vor deiner Geburt los.`,
+        ref: () => "Das Licht des Orionnebels, das heute ankommt, ist etwa 1.500 Jahre unterwegs.",
+      },
+      birthProto: {
+        title: "Vom Klumpen zum Protostern", goal: "Du weißt, wie aus einem einstürzenden Klumpen ein Stern wird.",
+        text: [
+          "Stürzt ein Klumpen ein, heizt die Reibung das Material auf, und es entsteht ein Protostern: laut NASA ein Sternenbaby. Nach Millionen Jahren pressen die Temperaturen in seinem Kern Wasserstoffkerne zusammen: Die Kernfusion beginnt, der Stern leuchtet.",
+          "AU Mic, etwa 32 Lichtjahre entfernt, ist so ein junger Stern. Die NASA gibt sein Alter mit 20 bis 30 Millionen Jahren an: ein Sternenkind, die Sonne ist mindestens 150-mal älter.",
+        ],
+        task: "Sieh dir AU Mic an, einen jungen Stern mit Planeten.",
+        remember: [
+          "Ein einstürzender Klumpen heizt sich auf und wird ein Protostern, ein Sternenbaby.",
+          "Nach Millionen Jahren beginnt in seinem Kern die Kernfusion von Wasserstoff.",
+          "AU Mic ist erst 20 bis 30 Millionen Jahre alt; die Sonne ist mindestens 150-mal älter.",
+        ],
+        you: (x) => `AU Mic ist 20 bis 30 Millionen Jahre alt: von der Mitte gerechnet etwa ${x}-mal so alt wie du. Für einen Stern ist das ein Baby.`,
+        ref: (x) => `AU Mic ist 20 bis 30 Millionen Jahre alt: von der Mitte gerechnet etwa ${x}-mal so alt wie ein Mensch von 30. Für einen Stern ist das ein Baby.`,
+      },
+      birthDisk: {
+        title: "Die Scheibe und die Planeten", goal: "Du weißt, wie um einen jungen Stern Planeten wachsen.",
+        text: [
+          "Ein junger Stern ist noch von einer Scheibe aus Gas und Staub umgeben, die von seiner Geburt übrig ist; laut NASA hat auch AU Mic eine. In so einer Scheibe stoßen feste Teilchen aus Gestein und Eis zusammen und verschmelzen: So wachsen Planeten.",
+          "2018 zeigte die ESO das erste bestätigte Bild eines Planeten, der gerade in so einer Scheibe entsteht: PDS 70 b, um einen Stern, den die ESO fast 400 Lichtjahre entfernt sieht (die NASA-Tabelle dieser Karte nennt 369). 2021 fand ALMA um seinen Geschwisterplaneten PDS 70 c eine Scheibe, in der Monde entstehen könnten.",
+        ],
+        task: "Sieh dir PDS 70 mit seinen zwei jungen Planeten an.",
+        remember: [
+          "Ein junger Stern ist von einer Scheibe aus Gas und Staub umgeben.",
+          "In der Scheibe stoßen Teilchen aus Gestein und Eis zusammen und wachsen zu Planeten.",
+          "PDS 70 b war das erste bestätigte Bild eines Planeten im Entstehen (2018).",
+        ],
+        you: (before, at) => (before != null ? `PDS 70 b wurde 2018 fotografiert, ${before} Jahre vor deiner Geburt.` : at === "0" ? "PDS 70 b wurde 2018 fotografiert, im Jahr deiner Geburt." : `PDS 70 b wurde 2018 fotografiert, als du ${at} Jahre alt warst.`),
+        ref: (ago) => `PDS 70 b wurde 2018 fotografiert, vor ${ago} Jahren.`,
+      },
+      birthCluster: {
+        title: "Sterne werden in Gruppen geboren", goal: "Du weißt, dass Sterne oft gemeinsam entstehen, in Sternhaufen.",
+        text: [
+          "Laut NASA entstehen Sterne oft in Gruppen; solche Gruppen heißen Sternhaufen.",
+          "Der bekannteste sind die Plejaden, ein offener Sternhaufen im Stier. Die NASA gibt ihre Entfernung mit rund 445 Lichtjahren an und fügt hinzu, dass diese Zahl nicht allgemein anerkannt ist.",
+        ],
+        task: "Sieh dir das Sternbild Stier an: Die Plejaden liegen darin.",
+        remember: [
+          "Sterne entstehen oft in Gruppen, den Sternhaufen.",
+          "Die Plejaden sind ein offener Sternhaufen im Stier.",
+          "Sie sind rund 445 Lichtjahre entfernt; die Zahl ist nicht allgemein anerkannt.",
+        ],
+        you: (year, before) => `Das Licht der Plejaden, das heute ankommt, flog um das Jahr ${year} los, etwa ${before} Jahre vor deiner Geburt.`,
+        ref: (year) => `Das Licht der Plejaden, das heute ankommt, flog um das Jahr ${year} los.`,
+      },
+      birthSun: {
+        title: "Die Geburt der Sonne", goal: "Du weißt, wie und wann die Sonne und ihre Planeten entstanden.",
+        text: [
+          "Laut NASA entstand die Sonne vor etwa 4,6 Milliarden Jahren in einer riesigen, sich drehenden Wolke aus Gas und Staub, dem Sonnennebel. Aus einem Großteil des übrigen Materials entstanden die Planeten und die anderen Körper des Sonnensystems, auch die Erde.",
+          "Dieselbe NASA-Seite nennt die Sonne in ihrer Einleitung 4,5 Milliarden Jahre alt: Die beiden Zahlen sind verschieden gerundet, beide meinen etwa viereinhalb Milliarden Jahre.",
+        ],
+        task: "Sieh dir die Sonne an, geboren vor 4,6 Milliarden Jahren.",
+        remember: [
+          "Die Sonne entstand vor etwa 4,6 Milliarden Jahren.",
+          "Sie wurde in einer sich drehenden Wolke aus Gas und Staub geboren, dem Sonnennebel.",
+          "Aus einem Großteil des übrigen Materials entstanden die Planeten, auch die Erde.",
+        ],
+        you: (ms) => `Wäre das bisherige Leben der Sonne ein einziger Tag, dann hätte dein Leben bisher etwa ${ms} Tausendstelsekunden gedauert. (Gerechnet mit 4,6 Milliarden Jahren.)`,
+        ref: (ms) => `Wäre das bisherige Leben der Sonne ein einziger Tag, dann hätte ein Leben von 30 Jahren etwa ${ms} Tausendstelsekunden gedauert. (Gerechnet mit 4,6 Milliarden Jahren.)`,
       },
       starWhat: {
         title: "Was ist ein Stern?", goal: "Du weißt, was ein Stern ist und woher sein Licht kommt.",
@@ -2065,6 +2289,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
       kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
       rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
+      molecularCloud: { q: "Wo entstehen Sterne laut NASA?", o: ["In großen Wolken aus Gas und Staub, den Molekülwolken", "Im Inneren von Planeten", "In den Ringen des Saturn"], e: "In großen, kalten Wolken aus Gas und Staub, den Molekülwolken." },
+      clumpCollapse: { q: "Was bringt Klumpen in einer Molekülwolke zum Einstürzen?", o: ["Die Schwerkraft", "Wind von der Erde", "Licht vom Mond"], e: "Die Schwerkraft." },
+      orionNursery: { q: "Was ist der Orionnebel?", o: ["Das nächste große Sternentstehungsgebiet, etwa 1.500 Lichtjahre entfernt", "Ein Planet des Sonnensystems", "Ein Schwarzes Loch"], e: "Das nächste große Sternentstehungsgebiet bei der Erde, etwa 1.500 Lichtjahre entfernt." },
+      protostar: { q: "Was ist ein Protostern?", o: ["Ein Sternenbaby", "Ein toter Stern", "Ein Planet ohne Stern"], e: "Ein Sternenbaby, bevor in seinem Kern die Kernfusion beginnt." },
+      protoHeat: { q: "Warum heizt sich ein einstürzender Klumpen auf?", o: ["Reibung heizt das Material auf", "Die Sonne scheint darauf", "Er brennt wie Holz"], e: "Reibung heizt das Material auf." },
+      auMicAge: { q: "Wie alt ist AU Mic laut NASA?", o: ["20 bis 30 Millionen Jahre", "4,6 Milliarden Jahre", "300 Jahre"], e: "20 bis 30 Millionen Jahre: Die Sonne ist mindestens 150-mal älter." },
+      diskYoung: { q: "Was umgibt einen jungen Stern?", o: ["Eine Scheibe aus Gas und Staub", "Eine harte Eisschale", "Nichts"], e: "Eine Scheibe aus Gas und Staub, die von seiner Geburt übrig ist." },
+      planetsMerge: { q: "Wie wachsen Planeten in so einer Scheibe?", o: ["Teilchen aus Gestein und Eis stoßen zusammen und verschmelzen", "Der Stern spuckt sie aus", "Sie kommen aus anderen Galaxien"], e: "Feste Teilchen aus Gestein und Eis stoßen zusammen und verschmelzen." },
+      pdsImage: { q: "Was zeigte die ESO 2018 bei PDS 70?", o: ["Das erste bestätigte Bild eines Planeten im Entstehen", "Einen neuen Stern im Sonnensystem", "Ein Schwarzes Loch"], e: "Das erste bestätigte Bild eines Planeten, der gerade in der Scheibe entsteht: PDS 70 b." },
+      clusters: { q: "Wie werden Sterne laut NASA oft geboren?", o: ["In Gruppen, den Sternhaufen", "Immer allein", "In Planeten"], e: "In Gruppen: in Sternhaufen." },
+      pleiades: { q: "Was sind die Plejaden?", o: ["Ein offener Sternhaufen im Stier", "Ein Planet", "Eine ferne Galaxie"], e: "Ein offener Sternhaufen im Stier." },
+      pleiadesDist: { q: "Wie weit sind die Plejaden laut NASA entfernt?", o: ["Rund 445 Lichtjahre", "Rund 4 Lichtjahre", "Rund 4 Millionen Lichtjahre"], e: "Rund 445 Lichtjahre; die Zahl ist nicht allgemein anerkannt." },
+      sunAge: { q: "Wann entstand die Sonne laut NASA?", o: ["Vor etwa 4,6 Milliarden Jahren", "Vor etwa 4.600 Jahren", "Vor etwa 46 Millionen Jahren"], e: "Vor etwa 4,6 Milliarden Jahren." },
+      solarNebula: { q: "Wie heißt die Wolke, in der die Sonne entstand?", o: ["Der Sonnennebel", "Der Orionnebel", "Die Milchstraße"], e: "Der Sonnennebel, eine riesige, sich drehende Wolke aus Gas und Staub." },
+      planetsLeft: { q: "Woraus entstanden die Planeten?", o: ["Aus einem Großteil des Materials, das von der Geburt der Sonne übrig war", "Aus Stücken des Mondes", "Aus anderen Sternen"], e: "Aus einem Großteil des übrigen Materials entstanden die Planeten, auch die Erde." },
       starGas: { q: "Was ist ein Stern laut NASA?", o: ["Eine riesige Kugel aus heißem Gas", "Ein großer leuchtender Felsen", "Ein Loch im Himmel"], e: "Eine riesige Kugel aus heißem Gas, von ihrer eigenen Schwerkraft zusammengehalten." },
       starFusion: { q: "Was passiert im Kern eines Sterns?", o: ["Wasserstoff verschmilzt zu Helium", "Eisen brennt wie Kohle", "Nichts, das Licht kommt von der Oberfläche"], e: "Wasserstoffkerne werden zu Helium zusammengepresst; das setzt die Energie seines Lichts frei." },
       starGravity: { q: "Was hält einen Stern zusammen?", o: ["Seine eigene Schwerkraft", "Eine harte Schale", "Das Magnetfeld der Erde"], e: "Seine eigene Schwerkraft." },
@@ -2129,6 +2368,7 @@ export const LEARN_TEXT = {
       zod: { title: "星座と黄道十二宮", goal: "星座とは何か、星占いの星座と実際の空がなぜずれるのか、そしてあなたの星座の光が何を語るのかを説明できます。" },
       names: { title: "宇宙の名前", goal: "惑星や恒星の名前が読めます。アルファベット、ギリシャ文字、カタログ、そして物語のある名前です。" },
       stars: { title: "恒星を知る", goal: "恒星とは何か、色が何を語るか、恒星をどう分けるか、そしてどの恒星が惑星にとってよい家なのかを説明できます。" },
+      birth: { title: "星の誕生", goal: "ガスとちりの雲から恒星がどう生まれ、そのまわりで惑星がどう育ち、太陽がどう生まれたのかを説明できます。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -2415,6 +2655,81 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
         ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
+      },
+      birthCloud: {
+        title: "ガスとちりの雲", goal: "恒星がどこで生まれるかを知っています。",
+        text: [
+          "NASAによると、恒星は分子雲とよばれる、ガスとちりの大きな雲の中で生まれます。分子雲は冷たいので、ガスは密度の高いかたまりになります。やがて重力によって、そのかたまりのいくつかがつぶれます。",
+          "オリオン大星雲はそのような星のゆりかごです。NASAによると、地球にいちばん近い大きな星形成領域で、約1,500光年はなれ、オリオンのベルトのすぐ下にあります。",
+        ],
+        task: "オリオン座を見てみましょう。オリオン大星雲はベルトのすぐ下にあります。",
+        remember: [
+          "恒星は、ガスとちりの冷たい雲、分子雲の中で生まれます。",
+          "重力によって、雲の中のかたまりがつぶれます。",
+          "オリオン大星雲はいちばん近い大きな星形成領域で、約1,500光年はなれています。",
+        ],
+        you: (before) => `今日とどくオリオン大星雲の光は、約1,500年かけて来ました。あなたが生まれる約${before}年前に出発した光です。`,
+        ref: () => "今日とどくオリオン大星雲の光は、約1,500年かけて来ました。",
+      },
+      birthProto: {
+        title: "かたまりから原始星へ", goal: "つぶれるかたまりが、どうやって恒星になるのかを知っています。",
+        text: [
+          "かたまりがつぶれると、摩擦で物質が熱くなり、原始星ができます。NASAによると、恒星の赤ちゃんです。数百万年たつと、中心の温度で水素の原子核がおしつけられ、核融合が始まって、恒星が輝きます。",
+          "約32光年はなれたAU Micは、そんな若い恒星です。NASAによると年齢は2000万〜3000万年で、恒星の赤ちゃんです。太陽は少なくとも150倍も年上です。",
+        ],
+        task: "惑星をもつ若い恒星、AU Micを見てみましょう。",
+        remember: [
+          "つぶれるかたまりは熱くなり、恒星の赤ちゃん、原始星になります。",
+          "数百万年たつと、中心で水素の核融合が始まります。",
+          "AU Micはまだ2000万〜3000万歳で、太陽は少なくとも150倍年上です。",
+        ],
+        you: (x) => `AU Micは2000万〜3000万歳です。まんなかで数えると、あなたの約${x}倍の年齢です。恒星としては赤ちゃんです。`,
+        ref: (x) => `AU Micは2000万〜3000万歳です。まんなかで数えると、30歳の人の約${x}倍の年齢です。恒星としては赤ちゃんです。`,
+      },
+      birthDisk: {
+        title: "円盤と惑星", goal: "若い恒星のまわりで惑星がどう育つのかを知っています。",
+        text: [
+          "若い恒星のまわりには、誕生のときに残ったガスとちりの円盤があります。NASAによると、AU Micにもあります。そうした円盤の中で、岩や氷のつぶがぶつかって合体し、惑星が育ちます。",
+          "2018年、ESOは、そうした円盤の中で生まれつつある惑星の、はじめて確認された画像を発表しました。ESOが約400光年はなれているとする恒星をまわるPDS 70 bです（この地図のNASAの表では369光年）。2021年にはALMAが、兄弟惑星PDS 70 cのまわりに、衛星が生まれるかもしれない円盤を見つけました。",
+        ],
+        task: "2つの若い惑星をもつPDS 70を見てみましょう。",
+        remember: [
+          "若い恒星は、ガスとちりの円盤にかこまれています。",
+          "円盤の中で岩や氷のつぶがぶつかって合体し、惑星になります。",
+          "PDS 70 bは、生まれつつある惑星のはじめて確認された画像です（2018年）。",
+        ],
+        you: (before, at) => (before != null ? `PDS 70 bは2018年、あなたが生まれる${before}年前に撮影されました。` : at === "0" ? "PDS 70 bは2018年、あなたが生まれた年に撮影されました。" : `PDS 70 bは2018年、あなたが${at}歳のときに撮影されました。`),
+        ref: (ago) => `PDS 70 bは2018年、いまから${ago}年前に撮影されました。`,
+      },
+      birthCluster: {
+        title: "恒星はグループで生まれる", goal: "恒星がよくいっしょに、星団で生まれることを知っています。",
+        text: [
+          "NASAによると、恒星はよくグループで生まれます。そうしたグループを星団とよびます。",
+          "いちばん有名なのは、おうし座の散開星団プレアデス星団（すばる）です。NASAはその距離を約445光年とし、この数字はみんなが認めているわけではないとそえています。",
+        ],
+        task: "おうし座を見てみましょう。プレアデス星団はその中にあります。",
+        remember: [
+          "恒星はよくグループ、つまり星団で生まれます。",
+          "プレアデス星団は、おうし座の散開星団です。",
+          "約445光年はなれていますが、この数字はみんなが認めているわけではありません。",
+        ],
+        you: (year, before) => `今日とどくプレアデス星団の光は、${year}年ごろ、あなたが生まれる約${before}年前に出発しました。`,
+        ref: (year) => `今日とどくプレアデス星団の光は、${year}年ごろに出発しました。`,
+      },
+      birthSun: {
+        title: "太陽の誕生", goal: "太陽とその惑星が、いつ、どうやって生まれたのかを知っています。",
+        text: [
+          "NASAによると、太陽は約46億年前、回転するガスとちりの巨大な雲、原始太陽系星雲の中で生まれました。残った物質の多くから、地球をふくむ惑星や太陽系のほかの天体ができました。",
+          "同じNASAのページは、はじめの部分で太陽を45億歳としています。2つの数字はまるめ方がちがうだけで、どちらも約45億〜46億年という意味です。",
+        ],
+        task: "46億年前に生まれた太陽を見てみましょう。",
+        remember: [
+          "太陽は約46億年前に生まれました。",
+          "回転するガスとちりの雲、原始太陽系星雲の中で生まれました。",
+          "残った物質の多くから、地球をふくむ惑星ができました。",
+        ],
+        you: (ms) => `太陽のこれまでの一生を1日とすると、あなたのこれまでの人生は約${ms}ミリ秒です。（46億年で計算）`,
+        ref: (ms) => `太陽のこれまでの一生を1日とすると、30年の人生は約${ms}ミリ秒です。（46億年で計算）`,
       },
       starWhat: {
         title: "恒星とは？", goal: "恒星とは何か、その光がどこから来るのかを知っています。",
@@ -2848,6 +3163,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
       kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
       rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
+      molecularCloud: { q: "NASAによると、恒星はどこで生まれますか？", o: ["ガスとちりの大きな雲、分子雲の中", "惑星の内部", "土星の環の中"], e: "ガスとちりの冷たい大きな雲、分子雲の中です。" },
+      clumpCollapse: { q: "分子雲の中のかたまりをつぶすのは何ですか？", o: ["重力", "地球からの風", "月の光"], e: "重力です。" },
+      orionNursery: { q: "オリオン大星雲とは何ですか？", o: ["いちばん近い大きな星形成領域、約1,500光年", "太陽系の惑星", "ブラックホール"], e: "地球にいちばん近い大きな星形成領域で、約1,500光年はなれています。" },
+      protostar: { q: "原始星とは何ですか？", o: ["恒星の赤ちゃん", "死んだ恒星", "恒星のない惑星"], e: "中心で核融合が始まる前の、恒星の赤ちゃんです。" },
+      protoHeat: { q: "つぶれるかたまりが熱くなるのはなぜですか？", o: ["摩擦で物質が熱くなるから", "太陽に照らされるから", "木のように燃えるから"], e: "摩擦で物質が熱くなるからです。" },
+      auMicAge: { q: "NASAによると、AU Micは何歳ですか？", o: ["2000万〜3000万歳", "46億歳", "300歳"], e: "2000万〜3000万歳です。太陽は少なくとも150倍年上です。" },
+      diskYoung: { q: "若い恒星のまわりには何がありますか？", o: ["ガスとちりの円盤", "かたい氷の殻", "何もない"], e: "誕生のときに残ったガスとちりの円盤です。" },
+      planetsMerge: { q: "そうした円盤の中で、惑星はどう育ちますか？", o: ["岩や氷のつぶがぶつかって合体する", "恒星がはき出す", "ほかの銀河から来る"], e: "岩や氷の固いつぶがぶつかって合体します。" },
+      pdsImage: { q: "2018年、ESOはPDS 70で何を発表しましたか？", o: ["生まれつつある惑星のはじめて確認された画像", "太陽系の新しい恒星", "ブラックホール"], e: "円盤の中で生まれつつある惑星、PDS 70 bのはじめて確認された画像です。" },
+      clusters: { q: "NASAによると、恒星はよくどう生まれますか？", o: ["グループ、つまり星団で", "いつもひとりで", "惑星の中で"], e: "グループ、つまり星団で生まれます。" },
+      pleiades: { q: "プレアデス星団とは何ですか？", o: ["おうし座の散開星団", "惑星", "遠い銀河"], e: "おうし座の散開星団です。" },
+      pleiadesDist: { q: "NASAによると、プレアデス星団までの距離は？", o: ["約445光年", "約4光年", "約400万光年"], e: "約445光年です。この数字はみんなが認めているわけではありません。" },
+      sunAge: { q: "NASAによると、太陽はいつ生まれましたか？", o: ["約46億年前", "約4,600年前", "約4600万年前"], e: "約46億年前です。" },
+      solarNebula: { q: "太陽が生まれた雲は何とよばれますか？", o: ["原始太陽系星雲", "オリオン大星雲", "天の川"], e: "原始太陽系星雲、回転するガスとちりの巨大な雲です。" },
+      planetsLeft: { q: "惑星は何からできましたか？", o: ["太陽の誕生で残った物質の多くから", "月のかけらから", "ほかの恒星から"], e: "残った物質の多くから、地球をふくむ惑星ができました。" },
       starGas: { q: "NASAによると、恒星とは何ですか？", o: ["熱いガスの巨大な球", "光る大きな岩", "空の穴"], e: "熱いガスの巨大な球で、自分の重力でまとまっています。" },
       starFusion: { q: "恒星の中心では何が起きていますか？", o: ["水素がヘリウムに融合している", "鉄が石炭のように燃えている", "何も起きず、光は表面から来る"], e: "水素の原子核がおしつけられてヘリウムになり、光のエネルギーが出ます。" },
       starGravity: { q: "恒星をまとめているものは何ですか？", o: ["自分の重力", "かたい殻", "地球の磁場"], e: "自分の重力です。" },
@@ -2912,6 +3242,7 @@ export const LEARN_TEXT = {
       zod: { title: "Съзвездия и зодии", goal: "Можеш да обясниш какво е съзвездие, защо зодията ти и небето не съвпадат и какво ти разказва светлината на твоето съзвездие." },
       names: { title: "Имена в космоса", goal: "Можеш да четеш имената на планети и звезди: буквите, гръцките букви, каталозите и имената с история." },
       stars: { title: "Да разберем звездите", goal: "Можеш да обясниш какво е звезда, какво казва цветът ѝ, как се подреждат звездите и кои звезди са добър дом за планети." },
+      birth: { title: "Раждането на звездите", goal: "Можеш да обясниш как от облак газ и прах се ражда звезда, как около нея растат планети и как се е родило Слънцето." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -3198,6 +3529,81 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
+      },
+      birthCloud: {
+        title: "Облаци от газ и прах", goal: "Знаеш къде се раждат звездите.",
+        text: [
+          "Според НАСА звездите се образуват в големи облаци от газ и прах, наречени молекулярни облаци. Те са студени, затова газът се събира на плътни бучки. В един момент гравитацията кара някои от тези бучки да се свият.",
+          "Мъглявината Орион е такава звездна детска градина: според НАСА най-близката до Земята голяма област на звездообразуване, на около 1500 светлинни години, точно под пояса на Орион.",
+        ],
+        task: "Разгледай съзвездието Орион: мъглявината Орион е точно под пояса му.",
+        remember: [
+          "Звездите се раждат в студени облаци от газ и прах, молекулярните облаци.",
+          "Гравитацията кара бучките в тези облаци да се свиват.",
+          "Мъглявината Орион е най-близката голяма област на звездообразуване, на около 1500 светлинни години.",
+        ],
+        you: (before) => `Светлината на мъглявината Орион, която пристига днес, пътува около 1500 години: тръгнала е около ${before} години преди раждането ти.`,
+        ref: () => "Светлината на мъглявината Орион, която пристига днес, пътува около 1500 години.",
+      },
+      birthProto: {
+        title: "От бучка до протозвезда", goal: "Знаеш как свиваща се бучка става звезда.",
+        text: [
+          "Когато една бучка се свие, триенето нагрява материала и се образува протозвезда: според НАСА бебе звезда. След милиони години температурите в ядрото ѝ притискат водородните ядра: започва ядреният синтез, звездата свети.",
+          "AU Mic, на около 32 светлинни години, е такава млада звезда. НАСА ѝ дава възраст от 20 до 30 милиона години: звездно бебе, Слънцето е поне 150 пъти по-старо.",
+        ],
+        task: "Разгледай AU Mic, млада звезда с планети.",
+        remember: [
+          "Свиващата се бучка се нагрява и става протозвезда, бебе звезда.",
+          "След милиони години в ядрото ѝ започва синтезът на водород.",
+          "AU Mic е само на 20 до 30 милиона години; Слънцето е поне 150 пъти по-старо.",
+        ],
+        you: (x) => `AU Mic е на 20 до 30 милиона години: смятано от средата, около ${x} пъти колкото теб. За звезда това е бебе.`,
+        ref: (x) => `AU Mic е на 20 до 30 милиона години: смятано от средата, около ${x} пъти колкото човек на 30. За звезда това е бебе.`,
+      },
+      birthDisk: {
+        title: "Дискът и планетите", goal: "Знаеш как около млада звезда растат планети.",
+        text: [
+          "Младата звезда още е заобиколена от диск от газ и прах, останал от раждането ѝ; според НАСА и AU Mic има такъв. В такъв диск твърди частици от скали и лед се сблъскват и сливат: така растат планетите.",
+          "През 2018 г. ЕЮО показва първото потвърдено изображение на планета, която тъкмо се образува в такъв диск: PDS 70 b, около звезда, която ЕЮО поставя на почти 400 светлинни години (таблицата на НАСА в тази карта дава 369). През 2021 г. ALMA открива около сестринската ѝ планета PDS 70 c диск, в който може да се образуват луни.",
+        ],
+        task: "Разгледай PDS 70 с двете ѝ млади планети.",
+        remember: [
+          "Младата звезда е заобиколена от диск от газ и прах.",
+          "В диска частици от скали и лед се сблъскват и растат в планети.",
+          "PDS 70 b е първото потвърдено изображение на планета в процес на образуване (2018 г.).",
+        ],
+        you: (before, at) => (before != null ? `PDS 70 b е снимана през 2018 г., ${before} години преди раждането ти.` : at === "0" ? "PDS 70 b е снимана през 2018 г., в годината на раждането ти." : `PDS 70 b е снимана през 2018 г., на твоите ${at} години.`),
+        ref: (ago) => `PDS 70 b е снимана през 2018 г., преди ${ago} години.`,
+      },
+      birthCluster: {
+        title: "Звездите се раждат на групи", goal: "Знаеш, че звездите често се раждат заедно, в звездни купове.",
+        text: [
+          "Според НАСА звездите често се образуват на групи; такива групи се наричат звездни купове.",
+          "Най-известният са Плеядите, разсеян звезден куп в Телец. НАСА дава разстоянието им около 445 светлинни години и добавя, че това число не е общоприето.",
+        ],
+        task: "Разгледай съзвездието Телец: Плеядите са в него.",
+        remember: [
+          "Звездите често се раждат на групи, звездните купове.",
+          "Плеядите са разсеян звезден куп в Телец.",
+          "Те са на около 445 светлинни години; числото не е общоприето.",
+        ],
+        you: (year, before) => `Светлината на Плеядите, която пристига днес, е тръгнала около ${year} г., около ${before} години преди раждането ти.`,
+        ref: (year) => `Светлината на Плеядите, която пристига днес, е тръгнала около ${year} г.`,
+      },
+      birthSun: {
+        title: "Раждането на Слънцето", goal: "Знаеш как и кога са се родили Слънцето и планетите му.",
+        text: [
+          "Според НАСА Слънцето се е образувало преди около 4,6 милиарда години в огромен въртящ се облак от газ и прах, слънчевата мъглявина. От голяма част от останалия материал са се образували планетите и другите тела на Слънчевата система, и Земята.",
+          "Същата страница на НАСА в увода си нарича Слънцето на 4,5 милиарда години: двете числа са закръглени различно, и двете означават около четири милиарда и половина години.",
+        ],
+        task: "Разгледай Слънцето, родено преди 4,6 милиарда години.",
+        remember: [
+          "Слънцето се е образувало преди около 4,6 милиарда години.",
+          "То се е родило във въртящ се облак от газ и прах, слънчевата мъглявина.",
+          "От голяма част от останалия материал са се образували планетите, и Земята.",
+        ],
+        you: (ms) => `Ако досегашният живот на Слънцето беше един ден, досегашният ти живот щеше да е траял около ${ms} хилядни от секундата. (Смятано с 4,6 милиарда години.)`,
+        ref: (ms) => `Ако досегашният живот на Слънцето беше един ден, един живот от 30 години щеше да е траял около ${ms} хилядни от секундата. (Смятано с 4,6 милиарда години.)`,
       },
       starWhat: {
         title: "Какво е звезда?", goal: "Знаеш какво е звезда и откъде идва светлината ѝ.",
@@ -3631,6 +4037,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
       kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
       rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
+      molecularCloud: { q: "Къде се образуват звездите според НАСА?", o: ["В големи облаци от газ и прах, молекулярните облаци", "Във вътрешността на планети", "В пръстените на Сатурн"], e: "В големи студени облаци от газ и прах, молекулярните облаци." },
+      clumpCollapse: { q: "Какво кара бучките в молекулярния облак да се свиват?", o: ["Гравитацията", "Вятър от Земята", "Светлина от Луната"], e: "Гравитацията." },
+      orionNursery: { q: "Какво е мъглявината Орион?", o: ["Най-близката голяма област на звездообразуване, на около 1500 светлинни години", "Планета от Слънчевата система", "Черна дупка"], e: "Най-близката до Земята голяма област на звездообразуване, на около 1500 светлинни години." },
+      protostar: { q: "Какво е протозвезда?", o: ["Бебе звезда", "Мъртва звезда", "Планета без звезда"], e: "Бебе звезда, преди в ядрото ѝ да започне синтезът." },
+      protoHeat: { q: "Защо свиващата се бучка се нагрява?", o: ["Триенето нагрява материала", "Слънцето я огрява", "Гори като дърво"], e: "Триенето нагрява материала." },
+      auMicAge: { q: "На колко години е AU Mic според НАСА?", o: ["На 20 до 30 милиона години", "На 4,6 милиарда години", "На 300 години"], e: "На 20 до 30 милиона години: Слънцето е поне 150 пъти по-старо." },
+      diskYoung: { q: "Какво заобикаля младата звезда?", o: ["Диск от газ и прах", "Твърда ледена обвивка", "Нищо"], e: "Диск от газ и прах, останал от раждането ѝ." },
+      planetsMerge: { q: "Как растат планетите в такъв диск?", o: ["Частици от скали и лед се сблъскват и сливат", "Звездата ги изплюва", "Идват от други галактики"], e: "Твърди частици от скали и лед се сблъскват и сливат." },
+      pdsImage: { q: "Какво показва ЕЮО през 2018 г. при PDS 70?", o: ["Първото потвърдено изображение на планета в процес на образуване", "Нова звезда в Слънчевата система", "Черна дупка"], e: "Първото потвърдено изображение на планета, която се образува в диска: PDS 70 b." },
+      clusters: { q: "Как често се раждат звездите според НАСА?", o: ["На групи, звездните купове", "Винаги сами", "В планети"], e: "На групи: в звездни купове." },
+      pleiades: { q: "Какво са Плеядите?", o: ["Разсеян звезден куп в Телец", "Планета", "Далечна галактика"], e: "Разсеян звезден куп в Телец." },
+      pleiadesDist: { q: "Колко далеч са Плеядите според НАСА?", o: ["Около 445 светлинни години", "Около 4 светлинни години", "Около 4 милиона светлинни години"], e: "Около 445 светлинни години; числото не е общоприето." },
+      sunAge: { q: "Кога се е образувало Слънцето според НАСА?", o: ["Преди около 4,6 милиарда години", "Преди около 4600 години", "Преди около 46 милиона години"], e: "Преди около 4,6 милиарда години." },
+      solarNebula: { q: "Как се нарича облакът, в който се е образувало Слънцето?", o: ["Слънчевата мъглявина", "Мъглявината Орион", "Млечният път"], e: "Слънчевата мъглявина, огромен въртящ се облак от газ и прах." },
+      planetsLeft: { q: "От какво са се образували планетите?", o: ["От голяма част от материала, останал от раждането на Слънцето", "От парчета от Луната", "От други звезди"], e: "От голяма част от останалия материал са се образували планетите, и Земята." },
       starGas: { q: "Какво е звезда според НАСА?", o: ["Огромно кълбо от горещ газ", "Голяма светеща скала", "Дупка в небето"], e: "Огромно кълбо от горещ газ, държано заедно от собствената си гравитация." },
       starFusion: { q: "Какво става в ядрото на една звезда?", o: ["Водородът се слива в хелий", "Желязото гори като въглища", "Нищо, светлината идва от повърхността"], e: "Водородните ядра се притискат в хелий; това освобождава енергията на светлината ѝ." },
       starGravity: { q: "Какво държи звездата заедно?", o: ["Собствената ѝ гравитация", "Твърда обвивка", "Магнитното поле на Земята"], e: "Собствената ѝ гравитация." },
@@ -3698,6 +4119,17 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  if (PATHS.birth.steps.includes(step)) {
+    const f = nums.you ? s.you : s.ref;
+    if (step === "birthCloud") return f(fmt(nums.orionBefore));
+    if (step === "birthProto") return f(fmt(nums.auMicTimes));
+    if (step === "birthDisk") {
+      if (nums.pdsBefore == null) return s.ref(fmt(nums.pdsAgo));
+      return s.you(nums.pdsBefore > 0 ? fmt(nums.pdsBefore) : null, nums.pdsBefore <= 0 ? fmt(Math.abs(nums.pdsBefore)) : null);
+    }
+    if (step === "birthCluster") return nums.pleiadesBefore != null ? s.you(String(nums.pleiadesYear), fmt(nums.pleiadesBefore)) : s.ref(String(nums.pleiadesYear));
+    return f(fmt(nums.sunDayMs, 2));
+  }
   if (PATHS.stars.steps.includes(step)) {
     if (step === "starWhat") return (nums.you ? s.you : s.ref)(fmt(nums.orbits));
     // the visitor's star with its value from the table, or Proxima Centauri
@@ -3801,11 +4233,13 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
+  const BIRTH_PICTURE = { birthCloud: 20000, birthProto: 3540, birthDisk: 4109, birthCluster: 12000, birthSun: 5772 }; // the temperatures of the stars drawn
   const STAR_PICTURE = { starWhat: 5772, starColor: 2566, starClass: 5761, starSize: 2900, starHosts: 3459 }; // the temperatures of the stars drawn
   const NAME_PICTURE = { nameLetters: 3050, nameStars: 5790, nameGreek: 9600, nameCatalog: 2566, nameStories: 5770 }; // the temperatures of the stars drawn
   const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
-    STAR_PICTURE[step] ? starCanvas(STAR_PICTURE[step], "uni-orb small star", 28)
+    BIRTH_PICTURE[step] ? starCanvas(BIRTH_PICTURE[step], "uni-orb small star", 28)
+    : STAR_PICTURE[step] ? starCanvas(STAR_PICTURE[step], "uni-orb small star", 28)
     : NAME_PICTURE[step] ? starCanvas(NAME_PICTURE[step], "uni-orb small star", 28)
     : ZOD_PICTURE[step] ? starCanvas(ZOD_PICTURE[step], "uni-orb small star", 28)
     : ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
@@ -3892,6 +4326,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     : path === "zod" ? starCanvas(9600, `${cls} star`, size)
     : path === "names" ? starCanvas(3050, `${cls} star`, size)
     : path === "stars" ? starCanvas(9000, `${cls} star`, size)
+    : path === "birth" ? starCanvas(4109, `${cls} star`, size)
     : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);
