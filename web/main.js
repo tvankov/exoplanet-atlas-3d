@@ -184,8 +184,9 @@ const material = new THREE.ShaderMaterial({
       vGlow = glow;
       vec4 mv = modelViewMatrix * vec4(position, 1.0);
       // A glowing star gets a larger sprite, because the halo needs room to fade out.
-      // Every other star stays a small plain dot.
-      float body = glow > 0.5 ? max(8.0, size * 260.0 / -mv.z) : max(mix(1.6, 2.5, fade), size * 100.0 / -mv.z);
+      // Every other star stays a small plain dot. Both are capped: from a system the stars close by on the map (from Proxima: Alpha
+      // Centauri A and B) grew into big white discs; up close a star is drawn by its system anyway.
+      float body = glow > 0.5 ? clamp(size * 260.0 / -mv.z, 8.0, 64.0) : clamp(size * 100.0 / -mv.z, mix(1.6, 2.5, fade), 16.0);
       // Diffraction spikes: a telescope shows a cross on bright stars (from the struts that hold its mirror). The
       // cross is an effect of the optics, not a part of the star. It starts on the stars that look about 5 magnitudes
       // brighter than the faintest ones shown and is full from 8.5 magnitudes brighter, so only the clear points get one.
@@ -2670,7 +2671,7 @@ function exoSystem(star) {
   }
   if (star.companion && !real) {
     const c = star.companion;
-    const r = drawnStarRadius(c.st_rad);
+    const r = (drawnStarRadius(star.st_rad) * c.st_rad) / star.st_rad; // the real ratio of the two radii
     const body = starBody(c.color, c.hostname, r);
     body.position.set(COMPANION_PLACE, 0, 0);
     body.add(starGlow(c.color, r * 7));
@@ -2678,6 +2679,7 @@ function exoSystem(star) {
     body.add(label);
     system.group.add(body);
     system.companion = body;
+    system.viewDistance = Math.max(system.viewDistance, 1.8 * COMPANION_PLACE); // both in the picture
   }
   system.star = star; // a click on one of its planets needs the star data for the story
   return system;
@@ -5388,8 +5390,9 @@ const ALPHA_CEN = [
 ALPHA_CEN[0].companion = ALPHA_CEN[1];
 ALPHA_CEN[1].companion = ALPHA_CEN[0];
 // Where the companion is drawn beside its star (map units): a picture place, not the distance. In reality the two are 11 to 35 times as far
-// apart as the Earth and the Sun, and they go round each other in about 80 years.
-const COMPANION_PLACE = 0.15;
+// apart as the Earth and the Sun, and they go round each other in about 80 years. The two sizes are in the real ratio (B has 71 % of the
+// radius of A); the gap is far too small against them, as every distance of the explanation mode.
+const COMPANION_PLACE = 0.6;
 const MEASURE_COLOR = 0xffd166;
 const measureLine = new THREE.Line(
   new THREE.BufferGeometry(),
