@@ -8203,6 +8203,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   function taskBlock(step, s, questions, close, onChange) {
     const tx = t();
     const task = el("div", `learn-task${taskDone(step) ? " done" : ""}`);
+    if (TASKS[step] === "realScale") task.dataset.realScale = "1"; // main.js shows the bar of the planets while this step is open
     const tt = el("div", "");
     tt.append(el("small", "", tx.taskLabel), el("p", "", s.task));
     const buttons = el("div", "learn-task-buttons");
@@ -8280,7 +8281,8 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     parts.push(remember);
     // the task in the 3D view (a step without one says so)
     if (!TASKS[step]) parts.push(el("p", "hint", s.task));
-    const task = taskBlock(step, s, questions, true, onChange);
+    // the real scale step keeps the panel open: its bar of planets belongs to the open step (main.js, buildBodyBar)
+    const task = taskBlock(step, s, questions, TASKS[step] !== "realScale", onChange);
     if (TASKS[step]) parts.push(task);
     // the questions: an answer can be changed until it is right; the explanation comes with every answer
     parts.push(el("h3", "learn-check", tx.check));

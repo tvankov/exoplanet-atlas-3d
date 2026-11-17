@@ -3564,10 +3564,18 @@ function buildSolarMenu() {
 // The real scale makes the planets tiny dots far apart (path 1, "Small bodies, scale and distances"): a bar with the Sun and every body
 // of the Solar System. A click flies to it; the camera stands outside its orbit, a little to the side, and looks in at it with the Sun
 // behind, so that the distance to the Sun can be seen. The Sun itself is shown from close by.
+// The bar is there while the real scale is on and its learning step is open in My Universe: it goes when the panel is closed or the
+// step is left.
+const bodyBarWanted = () =>
+  realScale && !document.getElementById("profile-panel").hidden && !!document.querySelector("#universe-body .learn-task[data-real-scale]");
+function syncBodyBar() {
+  if (bodyBarWanted() === document.getElementById("body-bar").hidden) buildBodyBar();
+}
+new MutationObserver(syncBodyBar).observe(document.getElementById("universe-body"), { childList: true, subtree: true });
 function buildBodyBar() {
   const bar = document.getElementById("body-bar");
-  bar.hidden = !realScale;
-  if (!realScale) return;
+  bar.hidden = !bodyBarWanted();
+  if (bar.hidden) return;
   bar.replaceChildren();
   for (const name of ["Sun", ...SOLAR_BODIES.map((p) => p.name)]) {
     const b = document.createElement("button");
@@ -6091,6 +6099,7 @@ for (const id of ["atlas-panel", "zone-panel", "profile-panel"]) {
   panel.addEventListener("transitionend", (e) => e.target === panel && layoutView());
   new MutationObserver(() => {
     layoutView(); // the picture makes room for the panel, or takes the room back
+    syncBodyBar();
     if (panel.hidden) return panel.id === "profile-panel" && (learn?.stop(), showNeighborhood(false), clearLearnFigure()); // closed: a step read aloud stops too, the lines and the figure go
     panel.classList.remove("sheet-down");
     handle.setAttribute("aria-expanded", "true");
