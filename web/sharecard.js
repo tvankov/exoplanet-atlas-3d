@@ -453,6 +453,18 @@ const EMBLEM = {
     g.stroke();
     await drawPlanet(g, "Earth", r, r, r * 0.36);
   },
+  // constellations and zodiac signs: a small figure, five stars joined by lines
+  "zod-scholar": (g, r) => {
+    const stars = [[0.5, 1.3], [0.85, 0.85], [1.2, 1.0], [1.45, 0.6], [1.15, 1.45]];
+    g.strokeStyle = "rgba(124,255,178,0.6)";
+    g.lineWidth = r * 0.04;
+    g.beginPath();
+    for (const [i, [x, y]] of stars.slice(0, 4).entries()) (i ? g.lineTo : g.moveTo).call(g, r * x, r * y);
+    g.moveTo(r * 1.2, r * 1.0);
+    g.lineTo(r * 1.15, r * 1.45);
+    g.stroke();
+    for (const [i, [x, y]] of stars.entries()) drawStar(g, r * x, r * y, r * (i === 2 ? 0.16 : 0.1), starColor(i === 2 ? 4000 : 9600));
+  },
   // the foundations: the Sun with the four worlds of the four paths round it (Earth, Proxima b, a hot Jupiter, a temperate world)
   foundations: async (g, r) => {
     drawStar(g, r, r, r * 0.42, starColor(5772));

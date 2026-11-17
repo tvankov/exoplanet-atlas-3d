@@ -8,7 +8,7 @@ import { initEvents } from "./events.js";
 import { initUniverse } from "./universe.js";
 import { initJournal } from "./journal.js";
 import { initMyStar } from "./mystar.js";
-import { initBirthSky, sunConstellation } from "./birthsky.js";
+import { initBirthSky, sunConstellation, storedBirthDate } from "./birthsky.js";
 import { drawDock, drawLevel } from "./dockart.js";
 import { MOONS, moonScale, moonName, facingRotation } from "./moons.js";
 import { initLearn } from "./learn.js";
@@ -5832,6 +5832,12 @@ const learn = initLearn({
     years: Object.fromEntries(PLANETS.map((p) => [p.name, p.years])),
     star: myStar?.current() ?? null,
     birthYear: myStar?.current()?.year ?? null,
+    birthDate: storedBirthDate(), // the path of the constellations: the sign and the constellation of the Sun at the birth (only in this browser)
+    figureInfo: (id) => {
+      // the nearest and the farthest star of a figure, in light years (constellations.js)
+      const info = sky?.data.info(id);
+      return info?.nearest ? { near: info.nearest.dist, far: info.farthest.dist } : null;
+    },
     discoveries: (discoveries ??= stars.flatMap((s) => s.planets.map((p) => [p.disc_year, p.discoverymethod, !!p.habitable]))), // year, method, candidate
   }),
   act: (task) => {

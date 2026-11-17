@@ -12,12 +12,14 @@ import { track } from "./stats.js";
 import { MOONS } from "./moons.js";
 import { XP_LEARN } from "./explorer.js";
 import { planetCanvas, starCanvas } from "./sharecard.js";
+import { sunLongitude, tropicalSign, sunConstellation } from "./birthsky.js";
 
 export const PATHS = {
   solar: { steps: ["sun", "inner", "outer", "moons", "scale"], minutes: 30, testSize: 10, pass: 0.7 },
   alpha: { steps: ["neighbors", "pair", "proxima", "proximaB", "travel"], minutes: 25, testSize: 10, pass: 0.7 },
   exo: { steps: ["exoWhat", "exoHow", "exoRocky", "exoGiants", "exoStrange", "exoSystems", "exoFamous"], minutes: 35, testSize: 10, pass: 0.7 },
   hab: { steps: ["habWhat", "habZone", "habWater", "habAtmos", "habIngredients", "habExtreme", "habLife"], minutes: 35, testSize: 10, pass: 0.7 },
+  zod: { steps: ["zodWhat", "zodPath", "zodShift", "zodScience", "zodLight"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -26,6 +28,7 @@ export const TASKS = {
   neighbors: "figure:Cen", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
+  zodWhat: "figure:birth", zodPath: "figure:Oph", zodShift: "figure:birthSign", zodScience: null, zodLight: "figure:birth",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -35,8 +38,9 @@ export const VIEWS = {
   neighbors: "view:neighborhood", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
+  zodWhat: "Earth", zodPath: "Sun", zodShift: "Sun", zodScience: "Earth", zodLight: "Earth",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -215,6 +219,21 @@ export const SOURCES = {
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
   ],
+  zodWhat: [
+    { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
+  ],
+  zodPath: [
+    { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
+  ],
+  zodShift: [
+    { label: "NASA Science: Milankovitch (Orbital) Cycles and Their Role in Earth's Climate", url: "https://science.nasa.gov/science-research/earth-science/climate-science/milankovitch-orbital-cycles-and-their-role-in-earths-climate/" },
+  ],
+  zodScience: [
+    { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
+  ],
+  zodLight: [
+    { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
+  ],
   exoSystems: [
     { label: "NASA Science: TRAPPIST-1", url: "https://science.nasa.gov/exoplanets/trappist1/" },
     { label: "NASA: Artificial Intelligence, NASA Data Used to Discover Eighth Planet Circling Distant Star (2017)", url: "https://www.nasa.gov/news-release/artificial-intelligence-nasa-data-used-to-discover-eighth-planet-circling-distant-star/" },
@@ -287,8 +306,31 @@ export function personalNumbers(ctx) {
     lifetimes: Math.round(TRAVEL_YEARS / Math.max(age, 1)), // the trip at the speed of Voyager 1, in lives so far
     // Exoplanets: what the catalogue knew in the year of the birth (or 30 years ago), and the age on three of its planets
     ...exoNumbers(ctx, age),
+    ...zodNumbers(ctx),
   };
 }
+// Constellations and zodiac signs: from the date of birth (ctx.birthDate { year, month, day }, kept in this browser) the constellation the Sun
+// stood in and the sign of astrology; without a date an example, the 1st of April (sign Aries, the Sun in Pisces). ctx.figureInfo(id): the
+// nearest and the farthest star of the figure in light years, from the map (main.js); a distance above 10,000 light years is only the floor
+// of a tiny parallax (src/build_constellation_stars.py) and is not shown.
+function zodNumbers(ctx) {
+  const b = ctx.birthDate ?? null;
+  const month = b?.month ?? 4;
+  const day = b?.day ?? 1;
+  const real = sunConstellation(month, day);
+  const sign = tropicalSign(sunLongitude(new Date(Date.UTC(b?.year ?? 2000, month - 1, day, 12)))).id;
+  const info = ctx.figureInfo?.(real) ?? null;
+  return { zodYou: !!b, zodReal: real, zodSign: sign, zodNear: info?.near ?? null, zodFar: info?.far != null && info.far < 10000 ? info.far : null };
+}
+// The names of the constellations of the Sun's path (the 12 of the zodiac and Ophiuchus), as the map shows them: English and Bulgarian in Latin
+export const ZOD_NAMES = {
+  Ari: ["Aries", "Widder", "おひつじ座", "Aries"], Tau: ["Taurus", "Stier", "おうし座", "Taurus"], Gem: ["Gemini", "Zwillinge", "ふたご座", "Gemini"],
+  Cnc: ["Cancer", "Krebs", "かに座", "Cancer"], Leo: ["Leo", "Löwe", "しし座", "Leo"], Vir: ["Virgo", "Jungfrau", "おとめ座", "Virgo"],
+  Lib: ["Libra", "Waage", "てんびん座", "Libra"], Sco: ["Scorpius", "Skorpion", "さそり座", "Scorpius"], Oph: ["Ophiuchus", "Schlangenträger", "へびつかい座", "Ophiuchus"],
+  Sgr: ["Sagittarius", "Schütze", "いて座", "Sagittarius"], Cap: ["Capricornus", "Steinbock", "やぎ座", "Capricornus"], Aqr: ["Aquarius", "Wassermann", "みずがめ座", "Aquarius"],
+  Psc: ["Pisces", "Fische", "うお座", "Pisces"],
+};
+const zodName = (id, lang) => ZOD_NAMES[id]?.[Math.max(0, ["en", "de", "ja", "bg"].indexOf(lang))] ?? id;
 function exoNumbers(ctx, age) {
   const thisYear = ctx.thisYear ?? new Date().getFullYear();
   const born = ctx.age != null ? ctx.birthYear ?? thisYear - Math.floor(age) : thisYear - REFERENCE_AGE;
@@ -353,6 +395,12 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // Constellations and zodiac signs
+  zodWhat: [{ id: "constCount" }, { id: "notConnected" }, { id: "constShape" }],
+  zodPath: [{ id: "thirteen" }, { id: "ophName" }, { id: "ophDates" }, { id: "ophPasses", number: "orbits" }],
+  zodShift: [{ id: "wobble" }, { id: "wobbleTime" }, { id: "signSize" }],
+  zodScience: [{ id: "astronomyMethod" }, { id: "astroEvidence" }, { id: "astroBelief" }],
+  zodLight: [{ id: "lightTravel" }, { id: "starsSpread" }, { id: "nightSky" }],
   exoSystems: [{ id: "trappistFit" }, { id: "kepler90Eight" }, { id: "kepler90AI" }, { id: "trappistBLaps", number: "trappistBLaps" }],
   exoFamous: [{ id: "hdBlue" }, { id: "kepler16Suns" }, { id: "kepler16Saturn" }, { id: "kepler16Age", number: "kepler16Age" }],
   // the search for habitable worlds
@@ -402,6 +450,7 @@ export const LEARN_TEXT = {
       alpha: { title: "Our nearest stars: Alpha Centauri", goal: "You can describe the star system closest to us, its planet Proxima b, and how far away it really is." },
       exo: { title: "Exoplanets: worlds beyond the Solar System", goal: "You know what exoplanets are, how they are found and how different they can be." },
       hab: { title: "The search for habitable worlds", goal: "You know what makes a planet possibly habitable, and why the habitable zone alone does not mean life." },
+      zod: { title: "Constellations and zodiac signs", goal: "You can explain what a constellation is, why your zodiac sign and the sky disagree, and what the light of your constellation tells you." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -691,6 +740,81 @@ export const LEARN_TEXT = {
         you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
         ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
       },
+      zodWhat: {
+        title: "What is a constellation?", goal: "You know what a constellation is and why its stars do not belong together.",
+        text: [
+          "A constellation is a group of stars that seems to show a shape in the sky and has been given a name. According to NASA there are 88 officially recognised constellations today.",
+          "The stars of a constellation are not connected: some are close, others very far away. In Taurus, for example, the stars of the figure lie between 46 and 484 light years from us, by the Hipparcos data of this map. Only from the Earth do they look like a picture.",
+        ],
+        task: "Look at your constellation (without a date of birth an example) and turn it to the side: then the figure falls apart.",
+        remember: [
+          "A constellation is a group of stars with a shape and a name.",
+          "There are 88 officially recognised constellations.",
+          "The stars of a constellation are at different distances and do not belong together.",
+        ],
+        you: (name, near, far) => (near == null ? `At your birth the Sun stood in ${name}.` : `At your birth the Sun stood in ${name}. Its stars look close together, but the nearest is ${near} light years away${far ? `, the farthest ${far}` : ""}.`),
+        ref: (name, near, far) => (near == null ? `On the 1st of April the Sun stands in ${name}.` : `On the 1st of April the Sun stands in ${name}. Its stars look close together, but the nearest is ${near} light years away${far ? `, the farthest ${far}` : ""}.`),
+      },
+      zodPath: {
+        title: "The path of the Sun", goal: "You know which constellations the Sun passes in a year, and you know the thirteenth.",
+        text: [
+          "The Earth goes round the Sun once a year. From here it looks as if the Sun travelled in front of the stars, through the constellations of the zodiac. That is why the constellations of the night change with the seasons: what stands behind the Sun cannot be seen.",
+          "By the boundaries of the International Astronomical Union (IAU), which this map uses too, the Sun passes 13 constellations, not 12. The thirteenth is Ophiuchus, the Serpent Bearer: the Sun stands in front of its stars from about the 30th of November to the 17th of December. Astrology does not have it.",
+        ],
+        task: "Look at Ophiuchus, the thirteenth constellation on the path of the Sun.",
+        remember: [
+          "In a year the Sun passes in front of 13 constellations, not 12.",
+          "The thirteenth is Ophiuchus, from about the 30th of November to the 17th of December.",
+          "Which constellations we see at night depends on the season.",
+        ],
+        you: (n) => `Since you were born, the Sun has passed through Ophiuchus about ${n} times, once every year.`,
+        ref: (n) => `In 30 years the Sun passes through Ophiuchus ${n} times, once every year.`,
+      },
+      zodShift: {
+        title: "Zodiac sign and constellation", goal: "You know why your zodiac sign and the constellation behind the Sun usually disagree.",
+        text: [
+          "The signs of astrology are not constellations: they cut the path of the Sun into twelve equal parts of 30 degrees each, counted from the start of spring. The constellations are of different sizes.",
+          "And the Earth's axis wobbles slowly, like a spinning top. According to NASA one wobble takes about 25,800 years. With the axis the start of spring moves along the stars, and the signs move with it. So on your birthday the Sun usually stands in front of another constellation than your sign is called.",
+        ],
+        task: "Look at the constellation that has the name of your sign, and compare it with the one the Sun really stood in.",
+        remember: [
+          "A sign is exactly 30 degrees long, a constellation of any size.",
+          "The Earth's axis wobbles; one wobble takes about 25,800 years.",
+          "That is why sign and constellation usually disagree.",
+        ],
+        you: (sign, real, same) => (same ? `For you they agree: your sign is ${sign}, and at your birth the Sun stood in ${real} too.` : `Your sign is ${sign}. But at your birth the Sun stood in front of the stars of ${real}.`),
+        ref: (sign, real) => `Someone born on the 1st of April has the sign ${sign}. But on that day the Sun stands in ${real}.`,
+      },
+      zodScience: {
+        title: "Astronomy and astrology", goal: "You can tell astronomy and astrology apart.",
+        text: [
+          "Astronomy is the science of everything in space. It follows the scientific method: evidence and data decide, and every claim can be tested.",
+          "Astrology is something else. It rests on the belief that the positions of stars and planets can foretell the future or describe a person. It matters to some cultural traditions, but according to NASA its claims are not based on scientific evidence.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "Astronomy is a science: evidence and data decide.",
+          "Astrology is a belief; its claims are not based on scientific evidence.",
+          "That a sign says something about a person has not been shown by science.",
+        ],
+        you: (sign) => `That your sign, ${sign}, says something about you has not been shown by science. What it really is: a stretch of 30 degrees on the path of the Sun.`,
+        ref: (sign) => `That a sign like ${sign} says something about a person has not been shown by science. What it really is: a stretch of 30 degrees on the path of the Sun.`,
+      },
+      zodLight: {
+        title: "The light of your constellation", goal: "You know that you see the stars as they were many years ago.",
+        text: [
+          "A light year is the distance light travels in a year. If a star is 46 light years away, its light has been on its way to us for 46 years: we see the star as it was 46 years ago.",
+          "Within a constellation this light has different ages. In Taurus the light of the nearest star of the figure arrives after 46 years, that of the farthest after almost 500 years. A look at a constellation is a look into many different times.",
+        ],
+        task: "Look at your constellation from the side: every star in it shows you another time.",
+        remember: [
+          "A light year is a distance: how far light travels in a year.",
+          "We see a star as it was when its light set off.",
+          "The light of the stars of a constellation has different ages.",
+        ],
+        you: (name, ly, before, at) => (ly == null ? `The light of the stars of ${name}, where the Sun stood at your birth, has different ages.` : before != null ? `The light of the nearest star of ${name} has been travelling for ${ly} years: it set off ${before} years before you were born.` : at === "0" ? `The light of the nearest star of ${name} has been travelling for ${ly} years: it set off in the year you were born.` : `The light of the nearest star of ${name} has been travelling for ${ly} years: it set off when you were ${at}.`),
+        ref: (name, ly) => (ly == null ? `On the 1st of April the Sun stands in ${name}; the light of its stars has different ages.` : `On the 1st of April the Sun stands in ${name}. The light of its nearest star has been travelling to us for ${ly} years.`),
+      },
       habWhat: {
         title: "What does habitable mean?", goal: "You can explain the habitable zone and why liquid water matters.",
         text: [
@@ -886,6 +1010,22 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
       kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
       rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
+      constCount: { q: "How many officially recognised constellations are there, according to NASA?", o: ["88", "12", "1,000"], e: "88." },
+      notConnected: { q: "Are the stars of a constellation connected?", o: ["No, some are close, others very far away", "Yes, they are bound together", "Yes, they are all equally far away"], e: "No: they are not connected; some are close, others very far away." },
+      constShape: { q: "What is a constellation?", o: ["A group of stars that seems to show a shape and has a name", "A cluster of stars that go round each other", "A galaxy"], e: "A group of stars that seems to show a shape in the sky and has been given a name." },
+      thirteen: { q: "Through how many constellations does the Sun pass in a year, by the boundaries of the IAU?", o: ["13", "12", "88"], e: "13: the twelve of the zodiac and Ophiuchus." },
+      ophName: { q: "Which constellation does the Sun pass although it is no sign of astrology?", o: ["Ophiuchus", "Ursa Major", "Orion"], e: "Ophiuchus, the Serpent Bearer, from the end of November to the middle of December." },
+      ophDates: { q: "When does the Sun stand in Ophiuchus, about?", o: ["End of November to the middle of December", "In July", "In March"], e: "From about the 30th of November to the 17th of December." },
+      ophPasses: { you: "How often has the Sun passed through Ophiuchus since you were born?", ref: "How often does the Sun pass through Ophiuchus in 30 years?", e: (n) => `About ${n} times: once every year.` },
+      wobble: { q: "What is precession?", o: ["The slow wobble of the Earth's axis", "The orbit of the Moon", "A constellation"], e: "The slow wobble of the Earth's axis, like a spinning top." },
+      wobbleTime: { q: "How long does one wobble of the Earth's axis take, according to NASA?", o: ["About 25,800 years", "About 26 years", "About 2.6 million years"], e: "About 25,800 years." },
+      signSize: { q: "How big is each sign of astrology?", o: ["A twelfth of the Sun's path: 30 degrees", "As big as its constellation", "Each of a different size, like the constellations"], e: "Each sign is exactly 30 degrees; the constellations are of different sizes." },
+      astronomyMethod: { q: "How does astronomy work?", o: ["By the scientific method, with evidence and data", "With predictions from the hour of birth", "By luck"], e: "By the scientific method, with evidence and data." },
+      astroEvidence: { q: "Are the claims of astrology based on scientific evidence?", o: ["No", "Yes", "Only for summer signs"], e: "No. It matters to some cultural traditions, but its claims are not based on scientific evidence." },
+      astroBelief: { q: "What does astrology rest on?", o: ["The belief that stars and planets show the future or a person's character", "Measurements with telescopes", "The boundaries of the IAU"], e: "On the belief that the positions of stars and planets can foretell the future or describe a person." },
+      lightTravel: { q: "A star is 46 light years away. How long has its light been on its way to us?", o: ["46 years", "46 days", "46 minutes"], e: "46 years: a light year is the distance light travels in a year." },
+      starsSpread: { q: "How far are the stars of Taurus from us, by the data of this map?", o: ["Between 46 and 484 light years", "All exactly 100 light years", "Less than one light year"], e: "Between 46 and 484 light years: seen from the side the figure falls apart." },
+      nightSky: { q: "Why do we see other constellations in summer than in winter?", o: ["Because the Earth goes round the Sun in a year", "Because the stars move", "Because the constellations sleep in summer"], e: "Because the Earth goes round the Sun once a year: what stands behind the Sun cannot be seen at night." },
       habOrbits: { you: "How many times has the Earth carried you round the Sun inside its habitable zone?", ref: "How many times does the Earth carry a person round the Sun in 30 years?", e: (n) => `${n} times: once a year, always inside the habitable zone of the Sun.` },
       toiAge: { you: "How old would you be on TOI-700 d?", ref: "How old would a person of 30 be on TOI-700 d?", e: (n) => `${n}: a year on TOI-700 d lasts 37.4 days.` },
       europaLaps: { you: "How many times has Europa gone round Jupiter since you were born?", ref: "How many times does Europa go round Jupiter in 30 years?", e: (n) => `${n} times: one orbit takes 3.55 days.` },
@@ -899,6 +1039,7 @@ export const LEARN_TEXT = {
       alpha: { title: "Unsere nächsten Sterne: Alpha Centauri", goal: "Du kannst das Sternsystem beschreiben, das uns am nächsten ist, seinen Planeten Proxima b und wie weit weg es wirklich ist." },
       exo: { title: "Exoplaneten: Welten jenseits des Sonnensystems", goal: "Du weißt, was Exoplaneten sind, wie man sie findet und wie verschieden sie sein können." },
       hab: { title: "Die Suche nach bewohnbaren Welten", goal: "Du weißt, was einen Planeten möglicherweise bewohnbar macht und warum die bewohnbare Zone allein noch kein Leben bedeutet." },
+      zod: { title: "Sternbilder und Sternzeichen", goal: "Du kannst erklären, was ein Sternbild ist, warum dein Sternzeichen und der Himmel nicht übereinstimmen und was dir das Licht deines Sternbilds erzählt." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -1186,6 +1327,81 @@ export const LEARN_TEXT = {
         you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
         ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
       },
+      zodWhat: {
+        title: "Was ist ein Sternbild?", goal: "Du weißt, was ein Sternbild ist und warum seine Sterne nicht zusammengehören.",
+        text: [
+          "Ein Sternbild ist eine Gruppe von Sternen, die am Himmel eine Form zu zeigen scheint und einen Namen bekommen hat. Laut NASA gibt es heute 88 offiziell anerkannte Sternbilder.",
+          "Die Sterne eines Sternbilds hängen nicht zusammen: Manche sind nah, andere sehr weit weg. Im Stier zum Beispiel liegen die Sterne der Figur laut den Hipparcos-Daten dieser Karte zwischen 46 und 484 Lichtjahren von uns entfernt. Nur von der Erde aus sehen sie aus wie ein Bild.",
+        ],
+        task: "Sieh dir dein Sternbild an (ohne Geburtsdatum ein Beispiel) und dreh es zur Seite: Dann fällt die Figur auseinander.",
+        remember: [
+          "Ein Sternbild ist eine Gruppe von Sternen mit einer Form und einem Namen.",
+          "Es gibt 88 offiziell anerkannte Sternbilder.",
+          "Die Sterne eines Sternbilds sind verschieden weit weg und gehören nicht zusammen.",
+        ],
+        you: (name, near, far) => (near == null ? `Bei deiner Geburt stand die Sonne im Sternbild ${name}.` : `Bei deiner Geburt stand die Sonne im Sternbild ${name}. Seine Sterne sehen nah beieinander aus, aber der nächste ist ${near} Lichtjahre entfernt${far ? `, der fernste ${far}` : ""}.`),
+        ref: (name, near, far) => (near == null ? `Am 1. April steht die Sonne im Sternbild ${name}.` : `Am 1. April steht die Sonne im Sternbild ${name}. Seine Sterne sehen nah beieinander aus, aber der nächste ist ${near} Lichtjahre entfernt${far ? `, der fernste ${far}` : ""}.`),
+      },
+      zodPath: {
+        title: "Der Weg der Sonne", goal: "Du weißt, durch welche Sternbilder die Sonne im Jahr zieht, und kennst das dreizehnte.",
+        text: [
+          "Die Erde läuft in einem Jahr einmal um die Sonne. Von hier aus sieht es so aus, als wandere die Sonne vor den Sternen entlang, durch die Sternbilder des Tierkreises. Darum sieht man nachts je nach Jahreszeit andere Sternbilder: Was gerade hinter der Sonne steht, bleibt unsichtbar.",
+          "Nach den Grenzen der Internationalen Astronomischen Union (IAU), die auch diese Karte verwendet, zieht die Sonne durch 13 Sternbilder, nicht durch 12. Das dreizehnte ist der Schlangenträger: Die Sonne steht etwa vom 30. November bis zum 17. Dezember vor seinen Sternen. Die Astrologie hat ihn nicht.",
+        ],
+        task: "Sieh dir den Schlangenträger an, das dreizehnte Sternbild auf dem Weg der Sonne.",
+        remember: [
+          "Die Sonne zieht im Jahr vor 13 Sternbildern entlang, nicht vor 12.",
+          "Das dreizehnte ist der Schlangenträger, etwa vom 30. November bis zum 17. Dezember.",
+          "Welche Sternbilder man nachts sieht, hängt von der Jahreszeit ab.",
+        ],
+        you: (n) => `Seit deiner Geburt ist die Sonne etwa ${n}-mal durch den Schlangenträger gezogen, einmal in jedem Jahr.`,
+        ref: (n) => `In 30 Jahren zieht die Sonne ${n}-mal durch den Schlangenträger, einmal in jedem Jahr.`,
+      },
+      zodShift: {
+        title: "Sternzeichen und Sternbild", goal: "Du weißt, warum dein Sternzeichen und das Sternbild hinter der Sonne meist nicht übereinstimmen.",
+        text: [
+          "Die Sternzeichen der Astrologie sind keine Sternbilder: Sie teilen den Weg der Sonne in zwölf gleich große Stücke von je 30 Grad, gezählt vom Frühlingsanfang. Die Sternbilder dagegen sind verschieden groß.",
+          "Dazu taumelt die Erdachse langsam wie ein Kreisel. Ein Taumeln dauert laut NASA etwa 25.800 Jahre. Mit der Achse wandert der Frühlingsanfang an den Sternen entlang, und mit ihm wandern die Sternzeichen. Darum steht die Sonne an deinem Geburtstag meist vor einem anderen Sternbild, als dein Sternzeichen heißt.",
+        ],
+        task: "Sieh dir das Sternbild an, das so heißt wie dein Sternzeichen, und vergleiche es mit dem, in dem die Sonne wirklich stand.",
+        remember: [
+          "Ein Sternzeichen ist genau 30 Grad groß, ein Sternbild verschieden groß.",
+          "Die Erdachse taumelt; ein Taumeln dauert etwa 25.800 Jahre.",
+          "Darum stimmen Sternzeichen und Sternbild meist nicht überein.",
+        ],
+        you: (sign, real, same) => (same ? `Bei dir stimmen sie überein: Dein Sternzeichen ist ${sign}, und die Sonne stand bei deiner Geburt auch im Sternbild ${real}.` : `Dein Sternzeichen ist ${sign}. Bei deiner Geburt stand die Sonne aber vor den Sternen des Sternbilds ${real}.`),
+        ref: (sign, real) => `Wer am 1. April geboren ist, hat das Sternzeichen ${sign}. Die Sonne steht an diesem Tag aber im Sternbild ${real}.`,
+      },
+      zodScience: {
+        title: "Astronomie und Astrologie", goal: "Du kannst Astronomie und Astrologie auseinanderhalten.",
+        text: [
+          "Die Astronomie ist die Wissenschaft von allem im Weltraum. Sie folgt der wissenschaftlichen Methode: Belege und Daten entscheiden, und jede Aussage lässt sich prüfen.",
+          "Die Astrologie ist etwas anderes. Sie beruht auf dem Glauben, dass die Stellung von Sternen und Planeten die Zukunft vorhersagen oder einen Menschen beschreiben kann. Für manche kulturelle Traditionen ist sie wichtig, aber ihre Aussagen beruhen laut NASA nicht auf wissenschaftlichen Belegen.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Astronomie ist eine Wissenschaft: Belege und Daten entscheiden.",
+          "Astrologie ist ein Glaube; ihre Aussagen beruhen nicht auf wissenschaftlichen Belegen.",
+          "Dass ein Sternzeichen etwas über einen Menschen sagt, ist wissenschaftlich nicht belegt.",
+        ],
+        you: (sign) => `Dass dein Sternzeichen ${sign} etwas über dich sagt, ist wissenschaftlich nicht belegt. Was es wirklich ist: ein Stück von 30 Grad auf dem Weg der Sonne.`,
+        ref: (sign) => `Dass ein Sternzeichen wie ${sign} etwas über einen Menschen sagt, ist wissenschaftlich nicht belegt. Was es wirklich ist: ein Stück von 30 Grad auf dem Weg der Sonne.`,
+      },
+      zodLight: {
+        title: "Das Licht deines Sternbilds", goal: "Du weißt, dass du die Sterne so siehst, wie sie vor vielen Jahren waren.",
+        text: [
+          "Ein Lichtjahr ist die Strecke, die das Licht in einem Jahr zurücklegt. Ist ein Stern 46 Lichtjahre entfernt, war sein Licht 46 Jahre zu uns unterwegs: Wir sehen ihn, wie er vor 46 Jahren war.",
+          "In einem Sternbild ist dieses Licht verschieden alt. Im Stier kommt das Licht des nächsten Sterns der Figur nach 46 Jahren an, das des fernsten nach fast 500 Jahren. Ein Blick auf ein Sternbild ist ein Blick in viele verschiedene Zeiten.",
+        ],
+        task: "Sieh dir dein Sternbild von der Seite an: Jeder Stern darin zeigt dir eine andere Zeit.",
+        remember: [
+          "Ein Lichtjahr ist eine Strecke: wie weit das Licht in einem Jahr kommt.",
+          "Wir sehen einen Stern so, wie er war, als sein Licht losflog.",
+          "Das Licht der Sterne eines Sternbilds ist verschieden alt.",
+        ],
+        you: (name, ly, before, at) => (ly == null ? `Das Licht der Sterne im Sternbild ${name}, in dem die Sonne bei deiner Geburt stand, ist verschieden alt.` : before != null ? `Das Licht des nächsten Sterns im Sternbild ${name} ist ${ly} Jahre unterwegs: Es flog ${before} Jahre vor deiner Geburt los.` : at === "0" ? `Das Licht des nächsten Sterns im Sternbild ${name} ist ${ly} Jahre unterwegs: Es flog im Jahr deiner Geburt los.` : `Das Licht des nächsten Sterns im Sternbild ${name} ist ${ly} Jahre unterwegs: Es flog los, als du ${at} Jahre alt warst.`),
+        ref: (name, ly) => (ly == null ? `Am 1. April steht die Sonne im Sternbild ${name}; das Licht seiner Sterne ist verschieden alt.` : `Am 1. April steht die Sonne im Sternbild ${name}. Das Licht seines nächsten Sterns ist ${ly} Jahre zu uns unterwegs.`),
+      },
       habWhat: {
         title: "Was heißt bewohnbar?", goal: "Du kannst die bewohnbare Zone erklären und warum flüssiges Wasser so wichtig ist.",
         text: [
@@ -1381,6 +1597,22 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
       kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
       rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
+      constCount: { q: "Wie viele offiziell anerkannte Sternbilder gibt es laut NASA?", o: ["88", "12", "1.000"], e: "88." },
+      notConnected: { q: "Hängen die Sterne eines Sternbilds zusammen?", o: ["Nein, manche sind nah, andere sehr weit weg", "Ja, sie sind aneinander gebunden", "Ja, sie sind alle gleich weit weg"], e: "Nein: Sie sind nicht miteinander verbunden; manche sind nah, andere sehr weit weg." },
+      constShape: { q: "Was ist ein Sternbild?", o: ["Eine Gruppe von Sternen, die eine Form zu zeigen scheint und einen Namen hat", "Ein Haufen von Sternen, die einander umkreisen", "Eine Galaxie"], e: "Eine Gruppe von Sternen, die am Himmel eine Form zu zeigen scheint und einen Namen bekommen hat." },
+      thirteen: { q: "Durch wie viele Sternbilder zieht die Sonne im Jahr, nach den Grenzen der IAU?", o: ["13", "12", "88"], e: "13: die zwölf des Tierkreises und der Schlangenträger." },
+      ophName: { q: "Durch welches Sternbild zieht die Sonne, obwohl es kein Sternzeichen ist?", o: ["Den Schlangenträger", "Den Großen Bären", "Den Orion"], e: "Den Schlangenträger, Ende November bis Mitte Dezember." },
+      ophDates: { q: "Wann steht die Sonne etwa im Schlangenträger?", o: ["Ende November bis Mitte Dezember", "Im Juli", "Im März"], e: "Etwa vom 30. November bis zum 17. Dezember." },
+      ophPasses: { you: "Wie oft ist die Sonne seit deiner Geburt durch den Schlangenträger gezogen?", ref: "Wie oft zieht die Sonne in 30 Jahren durch den Schlangenträger?", e: (n) => `Etwa ${n}-mal: einmal in jedem Jahr.` },
+      wobble: { q: "Was ist die Präzession?", o: ["Das langsame Taumeln der Erdachse", "Der Umlauf des Mondes", "Ein Sternbild"], e: "Das langsame Taumeln der Erdachse, wie bei einem Kreisel." },
+      wobbleTime: { q: "Wie lange dauert ein Taumeln der Erdachse laut NASA?", o: ["Etwa 25.800 Jahre", "Etwa 26 Jahre", "Etwa 2,6 Millionen Jahre"], e: "Etwa 25.800 Jahre." },
+      signSize: { q: "Wie groß ist jedes Sternzeichen?", o: ["Ein Zwölftel des Weges der Sonne: 30 Grad", "So groß wie sein Sternbild", "Jedes verschieden groß, wie die Sternbilder"], e: "Jedes Sternzeichen ist genau 30 Grad groß; die Sternbilder sind verschieden groß." },
+      astronomyMethod: { q: "Wie arbeitet die Astronomie?", o: ["Nach der wissenschaftlichen Methode, mit Belegen und Daten", "Mit Vorhersagen aus der Geburtsstunde", "Mit Glück"], e: "Nach der wissenschaftlichen Methode, mit Belegen und Daten." },
+      astroEvidence: { q: "Beruhen die Aussagen der Astrologie auf wissenschaftlichen Belegen?", o: ["Nein", "Ja", "Nur bei den Sommerzeichen"], e: "Nein. Für manche kulturelle Traditionen ist sie wichtig, aber ihre Aussagen beruhen nicht auf wissenschaftlichen Belegen." },
+      astroBelief: { q: "Worauf beruht die Astrologie?", o: ["Auf dem Glauben, dass Sterne und Planeten die Zukunft oder den Charakter zeigen", "Auf Messungen mit Teleskopen", "Auf den Grenzen der IAU"], e: "Auf dem Glauben, dass die Stellung von Sternen und Planeten die Zukunft vorhersagen oder einen Menschen beschreiben kann." },
+      lightTravel: { q: "Ein Stern ist 46 Lichtjahre entfernt. Wie lange war sein Licht zu uns unterwegs?", o: ["46 Jahre", "46 Tage", "46 Minuten"], e: "46 Jahre: Ein Lichtjahr ist die Strecke, die das Licht in einem Jahr zurücklegt." },
+      starsSpread: { q: "Wie weit sind die Sterne des Stiers laut dieser Karte von uns entfernt?", o: ["Zwischen 46 und 484 Lichtjahren", "Alle genau 100 Lichtjahre", "Weniger als ein Lichtjahr"], e: "Zwischen 46 und 484 Lichtjahren: Von der Seite gesehen fällt die Figur auseinander." },
+      nightSky: { q: "Warum sieht man im Sommer andere Sternbilder als im Winter?", o: ["Weil die Erde in einem Jahr um die Sonne läuft", "Weil die Sterne wandern", "Weil die Sternbilder im Sommer schlafen"], e: "Weil die Erde einmal im Jahr um die Sonne läuft: Was hinter der Sonne steht, sieht man nachts nicht." },
       habOrbits: { you: "Wie oft hat dich die Erde innerhalb ihrer bewohnbaren Zone um die Sonne getragen?", ref: "Wie oft trägt die Erde einen Menschen in 30 Jahren um die Sonne?", e: (n) => `${n}-mal: einmal im Jahr, immer innerhalb der bewohnbaren Zone der Sonne.` },
       toiAge: { you: "Wie alt wärst du auf TOI-700 d?", ref: "Wie alt wäre ein 30-jähriger Mensch auf TOI-700 d?", e: (n) => `${n}: Ein Jahr auf TOI-700 d dauert 37,4 Tage.` },
       europaLaps: { you: "Wie oft ist Europa seit deiner Geburt um Jupiter gelaufen?", ref: "Wie oft läuft Europa in 30 Jahren um Jupiter?", e: (n) => `${n}-mal: Ein Umlauf dauert 3,55 Tage.` },
@@ -1394,6 +1626,7 @@ export const LEARN_TEXT = {
       alpha: { title: "いちばん近い星たち：ケンタウルス座アルファ星", goal: "私たちにいちばん近い恒星系、その惑星プロキシマb、そしてそれが実際にどれほど遠いかを説明できます。" },
       exo: { title: "系外惑星：太陽系の外の世界", goal: "系外惑星とは何か、どのように見つけるのか、そしてどれほど多様なのかがわかります。" },
       hab: { title: "住める世界をさがして", goal: "惑星が住める可能性をもつ条件と、ハビタブルゾーンにあるだけでは生命を意味しない理由がわかります。" },
+      zod: { title: "星座と黄道十二宮", goal: "星座とは何か、星占いの星座と実際の空がなぜずれるのか、そしてあなたの星座の光が何を語るのかを説明できます。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -1681,6 +1914,81 @@ export const LEARN_TEXT = {
         you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
         ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
       },
+      zodWhat: {
+        title: "星座とは？", goal: "星座とは何か、そしてその星たちがなぜ仲間ではないのかを知っています。",
+        text: [
+          "星座とは、空で形をつくっているように見え、名前がつけられた星のグループです。NASAによると、いま公式に認められている星座は88あります。",
+          "星座の星どうしはつながっていません。近い星もあれば、とても遠い星もあります。たとえばおうし座の星は、この地図のヒッパルコスのデータによると、私たちから46光年から484光年のところにあります。地球から見たときだけ、絵のように見えるのです。",
+        ],
+        task: "あなたの星座（誕生日がなければ例）を見て、横から見てみましょう。すると形がばらばらになります。",
+        remember: [
+          "星座とは、形と名前のある星のグループです。",
+          "公式に認められた星座は88あります。",
+          "星座の星はそれぞれちがう距離にあり、仲間ではありません。",
+        ],
+        you: (name, near, far) => (near == null ? `あなたが生まれたとき、太陽は${name}にありました。` : `あなたが生まれたとき、太陽は${name}にありました。その星たちは近くに見えますが、いちばん近い星は${near}光年${far ? `、いちばん遠い星は${far}光年` : ""}はなれています。`),
+        ref: (name, near, far) => (near == null ? `4月1日、太陽は${name}にあります。` : `4月1日、太陽は${name}にあります。その星たちは近くに見えますが、いちばん近い星は${near}光年${far ? `、いちばん遠い星は${far}光年` : ""}はなれています。`),
+      },
+      zodPath: {
+        title: "太陽の通り道", goal: "太陽が1年に通る星座と、13番めの星座を知っています。",
+        text: [
+          "地球は1年で太陽のまわりを1周します。地球から見ると、太陽が星の前を動いて、黄道の星座を通っていくように見えます。だから夜に見える星座は季節によって変わります。太陽のうしろにある星座は見えません。",
+          "国際天文学連合（IAU）の境界によると（この地図も使っています）、太陽が通る星座は12ではなく13です。13番めはへびつかい座で、太陽は11月30日ごろから12月17日ごろまで、その星の前にあります。星占いにはこの星座がありません。",
+        ],
+        task: "太陽の通り道にある13番めの星座、へびつかい座を見てみましょう。",
+        remember: [
+          "太陽は1年で、12ではなく13の星座の前を通ります。",
+          "13番めはへびつかい座で、11月30日ごろから12月17日ごろまでです。",
+          "夜に見える星座は季節によって変わります。",
+        ],
+        you: (n) => `あなたが生まれてから、太陽はへびつかい座を約${n}回通りました。毎年1回です。`,
+        ref: (n) => `30年のあいだに、太陽はへびつかい座を${n}回通ります。毎年1回です。`,
+      },
+      zodShift: {
+        title: "星占いの星座と本当の星座", goal: "あなたの星占いの星座と、太陽のうしろの星座がたいていずれる理由を知っています。",
+        text: [
+          "星占いの星座（黄道十二宮）は本当の星座ではありません。太陽の通り道を、春分から数えて30度ずつ、12の同じ大きさに分けたものです。本当の星座は、大きさがまちまちです。",
+          "さらに地球の自転軸は、こまのようにゆっくりとみそすり運動をしています。NASAによると、1回の首振りには約25,800年かかります。軸といっしょに春分の位置が星の前を動き、星占いの星座もいっしょに動きます。そのため、あなたの誕生日に太陽が前にある星座は、たいてい星占いの星座とはちがいます。",
+        ],
+        task: "あなたの星占いの星座と同じ名前の星座を見て、太陽が本当にあった星座とくらべてみましょう。",
+        remember: [
+          "星占いの星座はちょうど30度、本当の星座は大きさがまちまちです。",
+          "地球の軸は首振り運動をし、1回に約25,800年かかります。",
+          "だから星占いの星座と本当の星座は、たいていずれます。",
+        ],
+        you: (sign, real, same) => (same ? `あなたの場合は一致しています。星占いの星座は${sign}で、生まれたとき太陽も${real}にありました。` : `あなたの星占いの星座は${sign}です。でも生まれたとき、太陽は${real}の星の前にありました。`),
+        ref: (sign, real) => `4月1日生まれの人の星占いの星座は${sign}です。でもその日、太陽は${real}にあります。`,
+      },
+      zodScience: {
+        title: "天文学と星占い", goal: "天文学と星占いを区別できます。",
+        text: [
+          "天文学は、宇宙にあるすべてのものを調べる科学です。科学の方法にしたがい、証拠とデータで決め、どの主張もたしかめることができます。",
+          "星占いは別のものです。星や惑星の位置が未来を予言したり、人がどんな人かを表したりできる、という信念にもとづいています。いくつかの文化の伝統では大切なものですが、NASAによると、その主張は科学的な証拠にもとづいていません。",
+        ],
+        task: "このステップには3D表示での課題がありません。問題に答えれば、ステップ完了です。",
+        remember: [
+          "天文学は科学で、証拠とデータで決めます。",
+          "星占いは信念で、その主張は科学的な証拠にもとづいていません。",
+          "星占いの星座が人について何かを語るということは、科学ではたしかめられていません。",
+        ],
+        you: (sign) => `あなたの星占いの星座${sign}があなたについて何かを語るということは、科学ではたしかめられていません。本当の姿は、太陽の通り道の30度ぶんの区間です。`,
+        ref: (sign) => `${sign}のような星占いの星座が人について何かを語るということは、科学ではたしかめられていません。本当の姿は、太陽の通り道の30度ぶんの区間です。`,
+      },
+      zodLight: {
+        title: "あなたの星座の光", goal: "星を、何年も前の姿で見ていることを知っています。",
+        text: [
+          "1光年は、光が1年で進む距離です。46光年はなれた星の光は、46年かけて私たちにとどきます。私たちはその星の46年前の姿を見ているのです。",
+          "1つの星座の中でも、光の年齢はちがいます。おうし座では、いちばん近い星の光は46年、いちばん遠い星の光は500年近くかけてとどきます。星座を見ることは、たくさんのちがう時代を見ることなのです。",
+        ],
+        task: "あなたの星座を横から見てみましょう。その中の星はそれぞれ、ちがう時代を見せてくれます。",
+        remember: [
+          "1光年は距離で、光が1年で進む長さです。",
+          "私たちは星を、その光が出発したときの姿で見ています。",
+          "1つの星座の星の光は、それぞれ年齢がちがいます。",
+        ],
+        you: (name, ly, before, at) => (ly == null ? `あなたが生まれたときに太陽があった${name}の星の光は、それぞれ年齢がちがいます。` : before != null ? `${name}でいちばん近い星の光は${ly}年かけてとどいています。あなたが生まれる${before}年前に出発しました。` : at === "0" ? `${name}でいちばん近い星の光は${ly}年かけてとどいています。あなたが生まれた年に出発しました。` : `${name}でいちばん近い星の光は${ly}年かけてとどいています。あなたが${at}歳のときに出発しました。`),
+        ref: (name, ly) => (ly == null ? `4月1日、太陽は${name}にあります。その星の光は、それぞれ年齢がちがいます。` : `4月1日、太陽は${name}にあります。そのいちばん近い星の光は、${ly}年かけて私たちにとどいています。`),
+      },
       habWhat: {
         title: "「住める」とはどういうこと？", goal: "ハビタブルゾーンと、液体の水が大切な理由を説明できます。",
         text: [
@@ -1876,6 +2184,22 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
       kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
       rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
+      constCount: { q: "NASAによると、公式に認められた星座はいくつありますか？", o: ["88", "12", "1,000"], e: "88です。" },
+      notConnected: { q: "星座の星どうしはつながっていますか？", o: ["いいえ。近い星も、とても遠い星もある", "はい、たがいに結びついている", "はい、みんな同じ距離にある"], e: "いいえ。つながってはいません。近い星も、とても遠い星もあります。" },
+      constShape: { q: "星座とは何ですか？", o: ["形をつくっているように見え、名前のある星のグループ", "たがいにまわりあう星の集まり", "銀河"], e: "空で形をつくっているように見え、名前がつけられた星のグループです。" },
+      thirteen: { q: "IAUの境界によると、太陽は1年にいくつの星座を通りますか？", o: ["13", "12", "88"], e: "13です。黄道の12星座とへびつかい座です。" },
+      ophName: { q: "星占いの星座ではないのに、太陽が通る星座はどれですか？", o: ["へびつかい座", "おおぐま座", "オリオン座"], e: "へびつかい座です。11月の終わりから12月の中ごろまでです。" },
+      ophDates: { q: "太陽がへびつかい座にあるのは、だいたいいつですか？", o: ["11月の終わりから12月の中ごろ", "7月", "3月"], e: "11月30日ごろから12月17日ごろまでです。" },
+      ophPasses: { you: "あなたが生まれてから、太陽はへびつかい座を何回通りましたか？", ref: "30年のあいだに、太陽はへびつかい座を何回通りますか？", e: (n) => `約${n}回です。毎年1回です。` },
+      wobble: { q: "歳差運動とは何ですか？", o: ["地球の軸のゆっくりとした首振り", "月の公転", "星座のひとつ"], e: "こまのような、地球の軸のゆっくりとした首振りです。" },
+      wobbleTime: { q: "NASAによると、地球の軸の首振り1回には、どのくらいかかりますか？", o: ["約25,800年", "約26年", "約260万年"], e: "約25,800年です。" },
+      signSize: { q: "星占いの星座は、それぞれどのくらいの大きさですか？", o: ["太陽の通り道の12分の1、30度", "その星座と同じ大きさ", "本当の星座のように、それぞれちがう"], e: "星占いの星座はどれもちょうど30度です。本当の星座は大きさがまちまちです。" },
+      astronomyMethod: { q: "天文学はどのように研究しますか？", o: ["科学の方法で、証拠とデータを使って", "生まれた時刻からの予言で", "運で"], e: "科学の方法で、証拠とデータを使います。" },
+      astroEvidence: { q: "星占いの主張は、科学的な証拠にもとづいていますか？", o: ["いいえ", "はい", "夏の星座だけ"], e: "いいえ。いくつかの文化の伝統では大切ですが、その主張は科学的な証拠にもとづいていません。" },
+      astroBelief: { q: "星占いは何にもとづいていますか？", o: ["星や惑星が未来や性格を示すという信念", "望遠鏡での測定", "IAUの境界"], e: "星や惑星の位置が未来を予言したり、人を表したりできるという信念です。" },
+      lightTravel: { q: "46光年はなれた星があります。その光は、どのくらいかけて私たちにとどいていますか？", o: ["46年", "46日", "46分"], e: "46年です。1光年は、光が1年で進む距離です。" },
+      starsSpread: { q: "この地図のデータで、おうし座の星は私たちからどのくらいはなれていますか？", o: ["46光年から484光年", "どれもちょうど100光年", "1光年より近い"], e: "46光年から484光年です。横から見ると形がばらばらになります。" },
+      nightSky: { q: "夏と冬で見える星座がちがうのはなぜですか？", o: ["地球が1年で太陽のまわりをまわるから", "星が動くから", "星座が夏に眠るから"], e: "地球が1年に1回太陽のまわりをまわるからです。太陽のうしろにあるものは、夜には見えません。" },
       habOrbits: { you: "地球はハビタブルゾーンの中で、あなたを太陽のまわりに何周運びましたか？", ref: "30年のあいだに、地球は人を太陽のまわりに何周運びますか？", e: (n) => `${n}周です。1年に1周、いつも太陽のハビタブルゾーンの中で。` },
       toiAge: { you: "TOI-700 dでは、あなたは何歳ですか？", ref: "30歳の人は、TOI-700 dでは何歳ですか？", e: (n) => `${n}歳です。TOI-700 dの1年は37.4日です。` },
       europaLaps: { you: "あなたが生まれてから、エウロパは木星のまわりを何周しましたか？", ref: "30年のあいだに、エウロパは木星のまわりを何周しますか？", e: (n) => `${n}周です。1周は3.55日です。` },
@@ -1889,6 +2213,7 @@ export const LEARN_TEXT = {
       alpha: { title: "Най-близките ни звезди: Алфа Кентавър", goal: "Можеш да опишеш най-близката до нас звездна система, нейната планета Проксима b и колко далеч е тя всъщност." },
       exo: { title: "Екзопланети: светове отвъд Слънчевата система", goal: "Знаеш какво са екзопланетите, как се откриват и колко различни могат да бъдат." },
       hab: { title: "Търсенето на обитаеми светове", goal: "Знаеш какво прави една планета вероятно обитаема и защо самата обитаема зона още не означава живот." },
+      zod: { title: "Съзвездия и зодии", goal: "Можеш да обясниш какво е съзвездие, защо зодията ти и небето не съвпадат и какво ти разказва светлината на твоето съзвездие." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -2176,6 +2501,81 @@ export const LEARN_TEXT = {
         you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
       },
+      zodWhat: {
+        title: "Какво е съзвездие?", goal: "Знаеш какво е съзвездие и защо звездите му не са свързани.",
+        text: [
+          "Съзвездието е група звезди, която на небето сякаш образува фигура и е получила име. Според НАСА днес има 88 официално признати съзвездия.",
+          "Звездите на едно съзвездие не са свързани: някои са близо, други много далеч. В Телец например звездите на фигурата са на 46 до 484 светлинни години от нас според данните на „Хипаркос“ в тази карта. Само от Земята изглеждат като картина.",
+        ],
+        task: "Разгледай своето съзвездие (без дата на раждане пример) и го завърти настрани: тогава фигурата се разпада.",
+        remember: [
+          "Съзвездието е група звезди с фигура и име.",
+          "Има 88 официално признати съзвездия.",
+          "Звездите на едно съзвездие са на различно разстояние и не са свързани.",
+        ],
+        you: (name, near, far) => (near == null ? `При раждането ти Слънцето е било в съзвездието ${name}.` : `При раждането ти Слънцето е било в съзвездието ${name}. Звездите му изглеждат близо една до друга, но най-близката е на ${near} светлинни години${far ? `, най-далечната на ${far}` : ""}.`),
+        ref: (name, near, far) => (near == null ? `На 1 април Слънцето е в съзвездието ${name}.` : `На 1 април Слънцето е в съзвездието ${name}. Звездите му изглеждат близо една до друга, но най-близката е на ${near} светлинни години${far ? `, най-далечната на ${far}` : ""}.`),
+      },
+      zodPath: {
+        title: "Пътят на Слънцето", goal: "Знаеш през кои съзвездия минава Слънцето за една година и познаваш тринадесетото.",
+        text: [
+          "Земята обикаля Слънцето веднъж годишно. Оттук изглежда, сякаш Слънцето се движи пред звездите, през съзвездията на зодиака. Затова нощем според сезона виждаме различни съзвездия: това, което е зад Слънцето, не се вижда.",
+          "Според границите на Международния астрономически съюз (МАС), които използва и тази карта, Слънцето минава през 13 съзвездия, не през 12. Тринадесетото е Змиеносец: Слънцето стои пред звездите му приблизително от 30 ноември до 17 декември. Астрологията го няма.",
+        ],
+        task: "Разгледай Змиеносец, тринадесетото съзвездие по пътя на Слънцето.",
+        remember: [
+          "За една година Слънцето минава пред 13 съзвездия, не пред 12.",
+          "Тринадесетото е Змиеносец, приблизително от 30 ноември до 17 декември.",
+          "Кои съзвездия виждаме нощем, зависи от сезона.",
+        ],
+        you: (n) => `От раждането ти Слънцето е минало през Змиеносец около ${n} пъти, веднъж всяка година.`,
+        ref: (n) => `За 30 години Слънцето минава през Змиеносец ${n} пъти, веднъж всяка година.`,
+      },
+      zodShift: {
+        title: "Зодия и съзвездие", goal: "Знаеш защо зодията ти и съзвездието зад Слънцето обикновено не съвпадат.",
+        text: [
+          "Зодиите на астрологията не са съзвездия: те делят пътя на Слънцето на дванадесет равни части от по 30 градуса, броени от началото на пролетта. Съзвездията пък са с различна големина.",
+          "Освен това земната ос бавно се люшка като пумпал. Според НАСА едно люшкане трае около 25 800 години. С оста началото на пролетта се движи покрай звездите, а с него и зодиите. Затова на рождения ти ден Слънцето обикновено стои пред друго съзвездие, а не пред това, на което е кръстена зодията ти.",
+        ],
+        task: "Разгледай съзвездието, което се казва като зодията ти, и го сравни с онова, в което Слънцето наистина е било.",
+        remember: [
+          "Зодията е точно 30 градуса, съзвездието е с различна големина.",
+          "Земната ос се люшка; едно люшкане трае около 25 800 години.",
+          "Затова зодия и съзвездие обикновено не съвпадат.",
+        ],
+        you: (sign, real, same) => (same ? `При теб съвпадат: зодията ти е ${sign}, и при раждането ти Слънцето също е било в съзвездието ${real}.` : `Зодията ти е ${sign}. Но при раждането ти Слънцето е стояло пред звездите на съзвездието ${real}.`),
+        ref: (sign, real) => `Роденият на 1 април е зодия ${sign}. Но на този ден Слънцето е в съзвездието ${real}.`,
+      },
+      zodScience: {
+        title: "Астрономия и астрология", goal: "Можеш да различаваш астрономия и астрология.",
+        text: [
+          "Астрономията е науката за всичко в космоса. Тя следва научния метод: решават доказателствата и данните, и всяко твърдение може да се провери.",
+          "Астрологията е нещо друго. Тя се основава на вярата, че положението на звездите и планетите може да предскаже бъдещето или да опише човека. За някои културни традиции е важна, но според НАСА твърденията ѝ не се основават на научни доказателства.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е готова.",
+        remember: [
+          "Астрономията е наука: решават доказателствата и данните.",
+          "Астрологията е вяра; твърденията ѝ не се основават на научни доказателства.",
+          "Че зодията казва нещо за човека, не е доказано от науката.",
+        ],
+        you: (sign) => `Че зодията ти ${sign} казва нещо за теб, не е доказано от науката. Какво е тя наистина: отрязък от 30 градуса от пътя на Слънцето.`,
+        ref: (sign) => `Че зодия като ${sign} казва нещо за човека, не е доказано от науката. Какво е тя наистина: отрязък от 30 градуса от пътя на Слънцето.`,
+      },
+      zodLight: {
+        title: "Светлината на твоето съзвездие", goal: "Знаеш, че виждаш звездите такива, каквито са били преди много години.",
+        text: [
+          "Светлинната година е разстоянието, което светлината изминава за една година. Ако една звезда е на 46 светлинни години, светлината ѝ е пътувала до нас 46 години: виждаме я такава, каквато е била преди 46 години.",
+          "В едно съзвездие тази светлина е на различна възраст. В Телец светлината на най-близката звезда от фигурата пристига след 46 години, а на най-далечната след почти 500 години. Поглед към съзвездие е поглед в много различни времена.",
+        ],
+        task: "Разгледай своето съзвездие отстрани: всяка звезда в него ти показва различно време.",
+        remember: [
+          "Светлинната година е разстояние: колко далеч стига светлината за една година.",
+          "Виждаме звездата такава, каквато е била, когато светлината ѝ е тръгнала.",
+          "Светлината на звездите в едно съзвездие е на различна възраст.",
+        ],
+        you: (name, ly, before, at) => (ly == null ? `Светлината на звездите в съзвездието ${name}, където е било Слънцето при раждането ти, е на различна възраст.` : before != null ? `Светлината на най-близката звезда в съзвездието ${name} пътува ${ly} години: тръгнала е ${before} години преди раждането ти.` : at === "0" ? `Светлината на най-близката звезда в съзвездието ${name} пътува ${ly} години: тръгнала е в годината на раждането ти.` : `Светлината на най-близката звезда в съзвездието ${name} пътува ${ly} години: тръгнала е, когато си бил на ${at} години.`),
+        ref: (name, ly) => (ly == null ? `На 1 април Слънцето е в съзвездието ${name}; светлината на звездите му е на различна възраст.` : `На 1 април Слънцето е в съзвездието ${name}. Светлината на най-близката му звезда пътува до нас ${ly} години.`),
+      },
       habWhat: {
         title: "Какво значи обитаемо?", goal: "Можеш да обясниш обитаемата зона и защо течната вода е толкова важна.",
         text: [
@@ -2371,6 +2771,22 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
       kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
       rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
+      constCount: { q: "Колко официално признати съзвездия има според НАСА?", o: ["88", "12", "1000"], e: "88." },
+      notConnected: { q: "Свързани ли са звездите на едно съзвездие?", o: ["Не, някои са близо, други много далеч", "Да, свързани са помежду си", "Да, всички са на еднакво разстояние"], e: "Не: те не са свързани; някои са близо, други много далеч." },
+      constShape: { q: "Какво е съзвездие?", o: ["Група звезди, която сякаш образува фигура и има име", "Купчина звезди, които се обикалят", "Галактика"], e: "Група звезди, която на небето сякаш образува фигура и е получила име." },
+      thirteen: { q: "През колко съзвездия минава Слънцето за една година според границите на МАС?", o: ["13", "12", "88"], e: "13: дванадесетте на зодиака и Змиеносец." },
+      ophName: { q: "През кое съзвездие минава Слънцето, макар че то не е зодия?", o: ["Змиеносец", "Голямата мечка", "Орион"], e: "Змиеносец, от края на ноември до средата на декември." },
+      ophDates: { q: "Кога приблизително Слънцето е в Змиеносец?", o: ["От края на ноември до средата на декември", "През юли", "През март"], e: "Приблизително от 30 ноември до 17 декември." },
+      ophPasses: { you: "Колко пъти е минало Слънцето през Змиеносец от раждането ти?", ref: "Колко пъти минава Слънцето през Змиеносец за 30 години?", e: (n) => `Около ${n} пъти: веднъж всяка година.` },
+      wobble: { q: "Какво е прецесията?", o: ["Бавното люшкане на земната ос", "Обиколката на Луната", "Едно съзвездие"], e: "Бавното люшкане на земната ос, като на пумпал." },
+      wobbleTime: { q: "Колко трае едно люшкане на земната ос според НАСА?", o: ["Около 25 800 години", "Около 26 години", "Около 2,6 милиона години"], e: "Около 25 800 години." },
+      signSize: { q: "Колко голяма е всяка зодия?", o: ["Една дванадесета от пътя на Слънцето: 30 градуса", "Колкото съзвездието ѝ", "Всяка с различна големина, като съзвездията"], e: "Всяка зодия е точно 30 градуса; съзвездията са с различна големина." },
+      astronomyMethod: { q: "Как работи астрономията?", o: ["По научния метод, с доказателства и данни", "С предсказания по часа на раждане", "С късмет"], e: "По научния метод, с доказателства и данни." },
+      astroEvidence: { q: "Основават ли се твърденията на астрологията на научни доказателства?", o: ["Не", "Да", "Само за летните зодии"], e: "Не. За някои културни традиции е важна, но твърденията ѝ не се основават на научни доказателства." },
+      astroBelief: { q: "На какво се основава астрологията?", o: ["На вярата, че звездите и планетите показват бъдещето или характера", "На измервания с телескопи", "На границите на МАС"], e: "На вярата, че положението на звездите и планетите може да предскаже бъдещето или да опише човека." },
+      lightTravel: { q: "Една звезда е на 46 светлинни години. Колко дълго е пътувала светлината ѝ до нас?", o: ["46 години", "46 дни", "46 минути"], e: "46 години: светлинната година е разстоянието, което светлината изминава за една година." },
+      starsSpread: { q: "Колко далеч са звездите на Телец от нас според данните на тази карта?", o: ["Между 46 и 484 светлинни години", "Всички точно на 100 светлинни години", "По-малко от една светлинна година"], e: "Между 46 и 484 светлинни години: погледната отстрани, фигурата се разпада." },
+      nightSky: { q: "Защо лятото виждаме други съзвездия, отколкото зимата?", o: ["Защото Земята обикаля Слънцето за една година", "Защото звездите се движат", "Защото съзвездията спят през лятото"], e: "Защото Земята обикаля Слънцето веднъж годишно: това, което е зад Слънцето, не се вижда нощем." },
       habOrbits: { you: "Колко пъти Земята те е пренесла около Слънцето в своята обитаема зона?", ref: "Колко пъти Земята пренася човек около Слънцето за 30 години?", e: (n) => `${n} пъти: веднъж годишно, винаги в обитаемата зона на Слънцето.` },
       toiAge: { you: "На колко години щеше да си на TOI-700 d?", ref: "На колко години щеше да е на TOI-700 d човек на 30?", e: (n) => `${n}: годината на TOI-700 d трае 37,4 дни.` },
       europaLaps: { you: "Колко пъти Европа е обиколила Юпитер от раждането ти?", ref: "Колко пъти Европа обикаля Юпитер за 30 години?", e: (n) => `${n} пъти: една обиколка трае 3,55 дни.` },
@@ -2390,6 +2806,20 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  if (PATHS.zod.steps.includes(step)) {
+    const f = nums.zodYou ? s.you : s.ref;
+    const name = (id) => zodName(id, lang);
+    const ly = (x) => (x == null ? null : fmt(Math.round(x)));
+    if (step === "zodWhat") return f(name(nums.zodReal), ly(nums.zodNear), ly(nums.zodFar));
+    if (step === "zodPath") return (nums.you ? s.you : s.ref)(fmt(nums.orbits));
+    if (step === "zodShift") return f(name(nums.zodSign), name(nums.zodReal), nums.zodSign === nums.zodReal);
+    if (step === "zodScience") return f(name(nums.zodSign));
+    // the light of the nearest star of the constellation: how long before the birth it set off, or at what age of the visitor
+    const near = nums.zodNear == null ? null : Math.round(nums.zodNear);
+    const before = near != null && nums.you && near > nums.orbits ? fmt(near - nums.orbits) : null;
+    const at = near != null && nums.you && near <= nums.orbits ? fmt(nums.orbits - near) : null;
+    return f(name(nums.zodReal), ly(near), before, at);
+  }
   if (step === "exoSystems") return (nums.you ? s.you : s.ref)(fmt(nums.trappistBLaps), fmt(nums.orbits));
   if (step === "habExtreme") return (nums.you ? s.you : s.ref)();
   const hab = { habWhat: "orbits", habZone: "toiAge", habWater: "europaLaps", habAtmos: "venusAge", habIngredients: "rockFactor" }[step];
@@ -2447,8 +2877,10 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
+  const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
-    ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
+    ZOD_PICTURE[step] ? starCanvas(ZOD_PICTURE[step], "uni-orb small star", 28)
+    : ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
     : step === "proximaB" ? planetCanvas({ temp: 218 }, "uni-orb small", 28)
     : EXO_PICTURE[step] ? planetCanvas({ temp: EXO_PICTURE[step] }, "uni-orb small", 28)
     : HAB_PICTURE[step] ? planetCanvas(HAB_PICTURE[step], "uni-orb small", 28)
@@ -2512,6 +2944,13 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     return i;
   };
 
+  // the task of a step, with "figure:birth" and "figure:birthSign" turned into the visitor's constellations (zodNumbers)
+  const taskOf = (step) => {
+    const task = TASKS[step];
+    if (task !== "figure:birth" && task !== "figure:birthSign") return task;
+    const n = personalNumbers(personal());
+    return `figure:${task === "figure:birth" ? n.zodReal : n.zodSign}`;
+  };
   // a step counts as done once: its task done and every question answered right
   function maybeFinish(step, questions) {
     if (stepDone(step) || (TASKS[step] && !taskDone(step))) return;
@@ -2522,6 +2961,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
 
   const pathPicture = (path, cls, size) =>
     path === "alpha" ? starCanvas(5790, `${cls} star`, size)
+    : path === "zod" ? starCanvas(9600, `${cls} star`, size)
     : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);
@@ -2697,7 +3137,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
         track(`learn-task-${step}`);
         stopSpeaking();
         closePanel?.();
-        act(TASKS[step]);
+        act(taskOf(step));
       })
     );
     // the real scale is switched back here too, not only in the menu

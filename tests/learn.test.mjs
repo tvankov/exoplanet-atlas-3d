@@ -3,11 +3,11 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS } from "../web/learn.js";
+import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
-const you = personalNumbers({ age: 36.4, years: YEARS, star: STAR });
+const you = personalNumbers({ age: 36.4, years: YEARS, star: STAR, birthDate: { year: 1990, month: 7, day: 2 } }); // a date for the path of the constellations
 const nobody = personalNumbers({ age: null, years: YEARS, star: null });
 const LANGS = ["en", "de", "ja", "bg"];
 
@@ -119,7 +119,7 @@ test("every step has 3 to 5 facts to remember in every language, and its sources
       assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
     }
     assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
-    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu)\//, `${step}: ${src.url}`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu)\//, `${step}: ${src.url}`);
   }
 });
 
@@ -275,4 +275,28 @@ test("paths 3 and 4 have the seven steps of the plan, the rule counts them, and 
   assert.ok(personalLine("exoFamous", you, "de").includes("Kepler-16 b"));
   assert.equal(TASKS.habExtreme, "moon:Europa");
   for (const lang of LANGS) for (const step of ["exoSystems", "exoFamous", "habIngredients", "habExtreme"]) assert.ok(!personalLine(step, you, lang).includes("undefined"), `${lang} ${step}`);
+});
+
+test("constellations and zodiac signs: the sign and the constellation of the Sun from the date of birth, and an example without one", () => {
+  const born = (month, day) => personalNumbers({ age: 30, years: YEARS, star: null, birthDate: { year: 1995, month, day } });
+  // 2 July 1995: sign Cancer (from about 21 June), the Sun in Gemini (until 20 July by the IAU boundaries)
+  assert.deepEqual([born(7, 2).zodSign, born(7, 2).zodReal], ["Cnc", "Gem"]);
+  // 5 December: the Sun in Ophiuchus, which astrology does not have (sign Sagittarius)
+  assert.deepEqual([born(12, 5).zodSign, born(12, 5).zodReal], ["Sgr", "Oph"]);
+  assert.ok(personalLine("zodShift", born(12, 5), "de").includes("Schlangenträger"));
+  // without a date: the example of the 1st of April (sign Aries, the Sun in Pisces), said as an example
+  const none = personalNumbers({ age: null, years: YEARS, star: null });
+  assert.deepEqual([none.zodYou, none.zodSign, none.zodReal], [false, "Ari", "Psc"]);
+  assert.ok(personalLine("zodShift", none, "de").startsWith("Wer am 1. April geboren ist"));
+  // the distances of the figure come from the map; a floor of 10,000 light years and more is not shown
+  const far = personalNumbers({ age: 30, years: YEARS, star: null, birthDate: { year: 1995, month: 12, day: 25 }, figureInfo: () => ({ near: 78, far: 10872 }) });
+  assert.equal(far.zodFar, null);
+  assert.ok(!personalLine("zodWhat", far, "de").includes("10"));
+  // the light of the nearest star: before the birth, or at an age
+  const near = personalNumbers({ age: 30, years: YEARS, star: null, birthDate: { year: 1995, month: 5, day: 20 }, figureInfo: () => ({ near: 46, far: 484 }) });
+  assert.ok(personalLine("zodLight", near, "de").includes("16 Jahre vor deiner Geburt"));
+  for (const id of Object.keys(ZOD_NAMES)) assert.equal(ZOD_NAMES[id].length, 4, id);
+  assert.equal(PATHS.zod.steps.length, 5);
+  const t = testQuestions("zod", you, "ja", 0);
+  assert.equal(new Set(t.map((q) => q.id)).size, 10);
 });
