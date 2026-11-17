@@ -384,6 +384,13 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     renderAll();
     track(`arrival-learn-${path}`);
   }
+  // from the info of a place: My Universe opens in Learn, on the step that fits the place
+  function openLearnStep(step) {
+    if (!learn?.openStep(step)) return;
+    area = "learn";
+    openPanel?.();
+    renderAll();
+  }
   // after the slogan: only for a visitor who has neither been through it nor skipped it
   function maybeOnboard() {
     const p = explorer.getProfile();
@@ -1015,5 +1022,5 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     else render();
   }
   let onChange = null;
-  return { render, buttonLabel, maybeOnboard, openLearnPath, title: () => t().title, setOnChange: (fn) => (onChange = fn) };
+  return { render, buttonLabel, maybeOnboard, openLearnPath, openLearnStep, title: () => t().title, setOnChange: (fn) => (onChange = fn) };
 }

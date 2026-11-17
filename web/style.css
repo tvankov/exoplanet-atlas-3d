@@ -4700,3 +4700,46 @@ input.uni-date {
   flex-basis: 100%;
   margin: 2px 0 0 40px;
 }
+
+/* the learning step that fits a place, under its story (main.js) */
+#story-learn {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 34px 10px 12px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: radial-gradient(circle at 0% 50%, rgba(124, 255, 178, 0.14), transparent 60%), rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(124, 255, 178, 0.3);
+  border-radius: 14px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+#story-learn:hover {
+  border-color: rgba(124, 255, 178, 0.6);
+}
+#story-learn small {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7cffb2;
+}
+#story-learn strong {
+  font-size: 14px;
+}
+#story-learn span {
+  font-size: 12px;
+  opacity: 0.72;
+}
+#story-learn i {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  font-size: 20px;
+  font-style: normal;
+  opacity: 0.6;
+  transform: translateY(-50%);
+}

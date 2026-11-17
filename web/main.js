@@ -3054,6 +3054,37 @@ function speakWithBrowser() {
 
 let hasClip = false; // only the candidates and Earth have a recording, the rest uses the browser voice
 
+// Under the story: the learning step that fits the place (learn.js), one click away in My Universe. Set once the learning paths are made.
+let learnForPlace = null;
+let lastStory = null;
+function showStoryLearn(star, planet) {
+  document.getElementById("story-learn")?.remove();
+  const fit = learnForPlace?.({
+    name: planet.pl_name,
+    host: star.hostname,
+    solar: !!star.solarSystem || !!planet.solarOther,
+    moon: !!planet.moon,
+    habitable: !!planet.habitable,
+    radius: planet.pl_rade ?? null,
+  });
+  if (!fit) return;
+  const b = document.createElement("button");
+  b.type = "button";
+  b.id = "story-learn";
+  const small = document.createElement("small");
+  small.textContent = fit.label;
+  const strong = document.createElement("strong");
+  strong.textContent = fit.title;
+  const line = document.createElement("span");
+  line.textContent = fit.line;
+  const arrow = document.createElement("i");
+  arrow.textContent = "›";
+  arrow.setAttribute("aria-hidden", "true");
+  b.append(small, strong, line, arrow);
+  b.addEventListener("click", () => universe?.openLearnStep(fit.step));
+  document.getElementById("story-text").after(b);
+}
+
 function showStory(star, planet, quiet = false) {
   stopSpeaking();
   storyId = slug(planet.pl_name);
@@ -3084,6 +3115,8 @@ function showStory(star, planet, quiet = false) {
       return p;
     })
   );
+  lastStory = { star, planet };
+  showStoryLearn(star, planet);
   hasStory = true;
   applyStoryVisibility();
   updateCloseupButton();
@@ -5666,6 +5699,8 @@ universe = initUniverse({
   closePanel: () => auth?.close(),
 });
 auth = initAuth({ getLang: () => lang, explorer, universe });
+learnForPlace = learn.forPlace;
+if (lastStory) showStoryLearn(lastStory.star, lastStory.planet); // a story shown before the learning paths were ready
 universe.setOnChange(() => auth.render());
 // the level ring on the card of the missions, drawn again when the XP change
 {

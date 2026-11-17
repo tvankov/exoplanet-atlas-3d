@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine } from "../web/learn.js";
+import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -188,4 +188,32 @@ test("The search for habitable worlds: the candidates of the map then and now, a
   assert.equal(mine.venusAge, Math.round(31.4 / 0.615));
   assert.ok(personalLine("habLife", mine, "de").includes("1995, im Jahr deiner Geburt, kannte diese Karte 0 Kandidaten"));
   assert.equal(new Set(testQuestions("hab", mine, "en", 0).map((q) => q.id)).size, 10);
+});
+
+test("from a place to its step: the Solar System by name, the places of the steps, Proxima by its star, the other exoplanets by their kind", () => {
+  const solar = (name) => stepsForPlace({ name, solar: true });
+  const exo = (o) => stepsForPlace({ solar: false, host: "Some star", ...o });
+  assert.deepEqual(solar("Sun"), ["sun"]);
+  assert.deepEqual(solar("Mars"), ["inner"]);
+  assert.deepEqual(solar("Jupiter"), ["outer", "moons", "habWater"]);
+  assert.deepEqual(solar("Pluto"), ["moons"]);
+  assert.deepEqual(stepsForPlace({ name: "Europa", solar: true, moon: true }), ["moons"]);
+  assert.deepEqual(solar("Voyager 1"), []); // a visitor of the Solar System has no step
+  assert.deepEqual(exo({ name: "Proxima Cen b", host: "Proxima Cen", habitable: true, radius: 1.1 }), ["proximaB", "habLife"]);
+  assert.deepEqual(exo({ name: "Proxima Cen d", host: "Proxima Cen", radius: 0.8 }), ["proxima", "neighbors"]);
+  assert.deepEqual(exo({ name: "55 Cnc e", radius: 1.9 }), ["exoStrange"]);
+  assert.deepEqual(exo({ name: "Kepler-442 b", habitable: true, radius: 1.3 }), ["habZone"]);
+  assert.deepEqual(exo({ name: "Kepler-10 b", radius: 1.5 }), ["exoRocky"]);
+  assert.deepEqual(exo({ name: "GJ 436 b", radius: 4.2 }), ["exoGiants"]);
+  assert.deepEqual(exo({ name: "Unknown b", radius: null }), ["exoWhat"]);
+  // every place of a step leads to at least one step, and every step named exists
+  for (const step of Object.keys(VIEWS)) {
+    const place = TASKS[step] && !String(TASKS[step]).includes(":") && TASKS[step] !== "realScale" ? TASKS[step] : VIEWS[step];
+    const isSolar = ["Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Ceres", "Pluto"].includes(place);
+    const host = place.startsWith("Proxima Cen") ? "Proxima Cen" : "x";
+    const steps = stepsForPlace({ name: place, host, solar: isSolar });
+    assert.ok(steps.length > 0, place);
+    for (const s of steps) assert.ok(Object.values(PATHS).some((p) => p.steps.includes(s)), s);
+  }
+  for (const lang of LANGS) assert.ok(LEARN_TEXT[lang].placeLabel, lang);
 });

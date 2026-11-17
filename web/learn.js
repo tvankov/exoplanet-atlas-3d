@@ -36,6 +36,29 @@ export const VIEWS = {
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
 };
 export const PATH_VIEWS = { solar: "Sun", alpha: "Proxima Cen", exo: "51 Peg b", hab: "TOI-700 d" };
+const pathOf = (step) => Object.keys(PATHS).find((p) => PATHS[p].steps.includes(step));
+
+// From a place of the map to the step that fits it (the info panel of a place shows it, main.js): the bodies of the Solar System by name,
+// the places of the steps (VIEWS and TASKS above), the other planets of Proxima Centauri by their star, and every other exoplanet by its kind:
+// a candidate of the zone to the habitable zone, a rocky world or a mini-Neptune to the rocky worlds, a Neptune or a giant to the giants.
+// The first step of the list that is not done yet wins; when all are done, the first.
+const SOLAR_STEPS = {
+  Sun: ["sun"], Mercury: ["inner"], Venus: ["inner", "habAtmos"], Earth: ["inner", "habWhat"], Mars: ["inner"],
+  Jupiter: ["outer", "moons", "habWater"], Saturn: ["outer"], Uranus: ["outer", "scale"], Neptune: ["outer", "scale"],
+  Ceres: ["moons"], Pluto: ["moons"],
+};
+const HOST_STEPS = { "Proxima Cen": ["proxima", "neighbors"] };
+export function stepsForPlace({ name, host, solar, moon, habitable, radius }) {
+  if (moon) return ["moons"];
+  if (SOLAR_STEPS[name]) return SOLAR_STEPS[name];
+  const own = Object.keys(VIEWS).filter((step) => (TASKS[step] === name || VIEWS[step] === name) && !solar);
+  if (own.length) return own;
+  if (solar) return [];
+  if (HOST_STEPS[host]) return HOST_STEPS[host];
+  if (habitable) return ["habZone"];
+  if (radius == null) return ["exoWhat"];
+  return radius <= 4 ? ["exoRocky"] : ["exoGiants"]; // the limits of planetType (story.js): up to 4 Earth radii rocky or a mini-Neptune
+}
 // The sources of each step, against which its texts, facts to remember and questions were checked (titles as on the pages).
 export const SOURCES = {
   sun: [
@@ -278,7 +301,7 @@ export const LEARN_TEXT = {
     },
     allPaths: "All learning paths",
     status: { done: "Done", next: "Next", open: "To do", locked: "All steps first" },
-    back: "All steps", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", speak: "Read aloud", speakStop: "Stop", speakTitle: "Read with a voice on your device; nothing is sent.", rememberLabel: "Remember", sourcesLabel: "Sources", forYou: "For you", example: "An example", exampleHint: "With your date of birth (in the overview of My Universe) this becomes your own number.",
+    back: "All steps", placeLabel: "Learn about it", stepOf: (n, all) => `Step ${n} of ${all}`, goalLabel: "Learning goal", speak: "Read aloud", speakStop: "Stop", speakTitle: "Read with a voice on your device; nothing is sent.", rememberLabel: "Remember", sourcesLabel: "Sources", forYou: "For you", example: "An example", exampleHint: "With your date of birth (in the overview of My Universe) this becomes your own number.",
     taskLabel: "In the 3D view", taskGo: "Show in 3D", scaleBack: "Back to the explanation scale", taskDone: "Done", check: "Check your understanding", right: "Right.", wrong: "Not quite.",
     stepDone: (xp) => `Step done · +${xp} XP`, nextStep: "Next step", toTest: "To the final test",
     needTask: "Do the task in the 3D view too, then the step is done.", progress: (d, all) => `${d} of ${all} steps`,
@@ -692,7 +715,7 @@ export const LEARN_TEXT = {
     },
     allPaths: "Alle Lernpfade",
     status: { done: "Erledigt", next: "Als Nächstes", open: "Offen", locked: "Erst alle Schritte" },
-    back: "Alle Schritte", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", speak: "Vorlesen", speakStop: "Stopp", speakTitle: "Mit einer Stimme auf deinem Gerät vorlesen; es wird nichts gesendet.", rememberLabel: "Merke", sourcesLabel: "Quellen", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
+    back: "Alle Schritte", placeLabel: "Dazu lernen", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", speak: "Vorlesen", speakStop: "Stopp", speakTitle: "Mit einer Stimme auf deinem Gerät vorlesen; es wird nichts gesendet.", rememberLabel: "Merke", sourcesLabel: "Quellen", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
     taskLabel: "In der 3D-Ansicht", taskGo: "In 3D zeigen", scaleBack: "Zurück zum Erklär-Maßstab", taskDone: "Erledigt", check: "Hast du es verstanden?", right: "Richtig.", wrong: "Nicht ganz.",
     stepDone: (xp) => `Schritt geschafft · +${xp} XP`, nextStep: "Nächster Schritt", toTest: "Zum Abschlusstest",
     needTask: "Mach noch die Aufgabe in der 3D-Ansicht, dann ist der Schritt geschafft.", progress: (d, all) => `${d} von ${all} Schritten`,
@@ -1106,7 +1129,7 @@ export const LEARN_TEXT = {
     },
     allPaths: "すべての学習パス",
     status: { done: "完了", next: "次はこれ", open: "未完了", locked: "先に全ステップを" },
-    back: "すべてのステップ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", speak: "読み上げ", speakStop: "停止", speakTitle: "端末内の音声で読み上げます。何も送信されません。", rememberLabel: "覚えておこう", sourcesLabel: "出典", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
+    back: "すべてのステップ", placeLabel: "これについて学ぶ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", speak: "読み上げ", speakStop: "停止", speakTitle: "端末内の音声で読み上げます。何も送信されません。", rememberLabel: "覚えておこう", sourcesLabel: "出典", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
     taskLabel: "3D表示で", taskGo: "3Dで見る", scaleBack: "説明用の縮尺に戻す", taskDone: "完了", check: "理解できたか確かめよう", right: "正解です。", wrong: "ちょっと違います。",
     stepDone: (xp) => `ステップ完了 · +${xp} XP`, nextStep: "次のステップ", toTest: "最終テストへ",
     needTask: "3D表示での課題もやってみましょう。それでステップ完了です。", progress: (d, all) => `${all}ステップ中${d}完了`,
@@ -1520,7 +1543,7 @@ export const LEARN_TEXT = {
     },
     allPaths: "Всички учебни пътеки",
     status: { done: "Готово", next: "Следва", open: "Предстои", locked: "Първо всички стъпки" },
-    back: "Всички стъпки", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", speak: "Прочети на глас", speakStop: "Спри", speakTitle: "Чете се с глас на устройството ти; нищо не се изпраща.", rememberLabel: "Запомни", sourcesLabel: "Източници", forYou: "За теб", example: "Пример", exampleHint: "С датата ти на раждане (в прегледа на „Моята вселена“) това става твоето собствено число.",
+    back: "Всички стъпки", placeLabel: "Научи повече", stepOf: (n, all) => `Стъпка ${n} от ${all}`, goalLabel: "Цел", speak: "Прочети на глас", speakStop: "Спри", speakTitle: "Чете се с глас на устройството ти; нищо не се изпраща.", rememberLabel: "Запомни", sourcesLabel: "Източници", forYou: "За теб", example: "Пример", exampleHint: "С датата ти на раждане (в прегледа на „Моята вселена“) това става твоето собствено число.",
     taskLabel: "В 3D изгледа", taskGo: "Покажи в 3D", scaleBack: "Обратно към обяснителния мащаб", taskDone: "Готово", check: "Провери какво разбра", right: "Вярно.", wrong: "Не съвсем.",
     stepDone: (xp) => `Стъпката е готова · +${xp} XP`, nextStep: "Следваща стъпка", toTest: "Към финалния тест",
     needTask: "Направи и задачата в 3D изгледа и стъпката е готова.", progress: (d, all) => `${d} от ${all} стъпки`,
@@ -2346,6 +2369,25 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
       passed: has("learnPaths", path),
       best: total()[`learnBest:${path}`] ?? 0,
     }));
+  // the step for a place, with what its button shows (main.js), or null
+  const forPlace = (place) => {
+    const list = stepsForPlace(place);
+    if (!list.length) return null;
+    const step = list.find((s) => !has("learnSteps", `${pathOf(s)}/${s}`)) ?? list[0];
+    const path = pathOf(step);
+    const tx = t();
+    const n = PATHS[path].steps.indexOf(step) + 1;
+    return { step, path, label: tx.placeLabel, title: tx.steps[step].title, line: `${tx.paths[path].title} · ${tx.stepOf(n, PATHS[path].steps.length)}` };
+  };
+  // open a step in the area Learn (from the info of a place): the view stays where it is, the visitor is already there
+  const openStep = (step) => {
+    const path = pathOf(step);
+    if (!path) return false;
+    choose(path);
+    view = step;
+    track(`learn-from-place-${step}`);
+    return true;
+  };
   // open a path in the area Learn (from the certificates)
   const open = (path) => {
     if (!PATHS[path]) return false;
@@ -2354,5 +2396,5 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     show?.(PATH_VIEWS[path]);
     return true;
   };
-  return { area, paths, open, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
+  return { area, paths, open, openStep, forPlace, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
 }
