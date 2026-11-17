@@ -5453,6 +5453,14 @@ function showNeighborhood(on) {
     neighborhood = null;
   }
   if (!on || realScale) return null;
+  // the view of the lines is the same however one comes to it: a system drawn before (Proxima, or A and B, from steps 2 and 3) goes
+  if (activeExo) {
+    disposeSystem(activeExo);
+    activeExo = null;
+  }
+  current = null;
+  hasStory = false;
+  applyStoryVisibility();
   const tx = learn.neighborhoodText();
   const proxima = stars.find((s) => s.hostname === "Proxima Cen");
   const sun = new THREE.Vector3();
