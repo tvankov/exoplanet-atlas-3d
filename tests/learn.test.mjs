@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace } from "../web/learn.js";
+import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -231,4 +231,25 @@ test("the Centaur of path 2 is drawn through Alpha Centauri A, the bright star o
   assert.ok(mag < 0.5, `bright: ${mag}`);
   assert.ok(dist > 4.2 && dist < 4.5, `about 4.3 light years: ${dist}`);
   assert.equal(names["71683"], "Alpha Centauri A");
+});
+
+test("the places in the texts of the steps: whole words, the first mention a link, our Sun only when it is meant, and every place on the map", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { MOONS } = await import("../web/moons.js");
+  const links = (text, lang) => placePieces(text, lang).filter((p) => p.place).map((p) => `${p.text}=${p.place}`);
+  assert.deepEqual(links("Merkur, Venus, Erde und Mars; dann wieder Mars.", "de"), ["Merkur=Mercury", "Venus=Venus", "Erde=Earth", "Mars=Mars"]);
+  assert.deepEqual(links("Das Sonnensystem hat 109 Erden, erdgroße Welten und Earth-sized ones.", "de"), []);
+  assert.deepEqual(links("manche wandern ohne Sonne durch die Galaxie, nicht wie die Sonne", "de"), ["Sonne=Sun"]);
+  assert.deepEqual(links("Proxima Centauri b, Proxima b and Proxima", "en"), ["Proxima Centauri b=Proxima Cen b", "Proxima=Proxima Cen"]);
+  assert.deepEqual(links("太陽系の外、太陽をもたず。太陽のような恒星", "ja"), ["太陽=Sun"]);
+  assert.deepEqual(links("Слънцето и Земята", "bg"), ["Слънцето=Sun", "Земята=Earth"]);
+  // the pieces put back together are the text
+  const text = "TRAPPIST-1 e läuft in 6,1 Tagen um TRAPPIST-1.";
+  assert.equal(placePieces(text, "de").map((p) => p.text).join(""), text);
+  // every place is one the map has: a body of the Solar System, a moon, a star or a planet of the NASA table, or Alpha Centauri A and B
+  const data = JSON.parse(readFileSync(new URL("../web/data/stars.json", import.meta.url), "utf-8"));
+  const known = new Set(["Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Ceres", "Pluto", "Alpha Centauri A", "Alpha Centauri B"]);
+  for (const s of data.stars) (known.add(s.hostname), s.planets.forEach((p) => known.add(p.pl_name)));
+  for (const list of Object.values(MOONS)) for (const m of list) known.add(`moon:${m.id}`);
+  for (const lang of LANGS) for (const [, place] of PLACE_WORDS[lang]) assert.ok(known.has(place), `${lang}: ${place}`);
 });

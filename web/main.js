@@ -2911,6 +2911,7 @@ function applyStoryVisibility() {
     const p = document.createElement("p");
     p.textContent = TRAVEL_UI[lang].infoEmpty;
     document.getElementById("story-text").replaceChildren(p);
+    document.getElementById("story-learn")?.remove(); // the learning step belonged to the story
     listenButton.hidden = true;
     closeupButton.hidden = true;
   } else {
@@ -5070,6 +5071,8 @@ function showLoneStar(star) {
   leaveCloseup();
   current = null;
   ring.visible = false;
+  hasStory = false; // the info says that no planet is chosen, instead of the story of the last one
+  applyStoryVisibility();
   updateCloseupButton();
   if (realScale) return setHome(star);
   if (activeExo?.star !== star) {
@@ -5717,6 +5720,15 @@ const learn = initLearn({
   },
   // the picture of an open path or step: the camera flies there, My Universe stays open beside it
   show: (where) => {
+    if (where.startsWith("moon:")) {
+      // a moon of the Solar System (a link in the text of a step)
+      const id = where.slice(5);
+      for (const body of solar.bodies) {
+        const moon = body.moons?.find((m) => m.id === id);
+        if (moon) return selectMoon(solar, body, moon);
+      }
+      return;
+    }
     const place = resolvePlace(where);
     if (place) showPlace(place);
   },

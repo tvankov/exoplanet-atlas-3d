@@ -4743,3 +4743,19 @@ input.uni-date {
   opacity: 0.6;
   transform: translateY(-50%);
 }
+
+/* a place of the map in the text of a learning step: a click flies there */
+#universe-body button.learn-place {
+  display: inline;
+  padding: 0;
+  font: inherit;
+  color: #7cffb2;
+  background: none;
+  border: 0;
+  border-bottom: 1px dashed rgba(124, 255, 178, 0.6);
+  border-radius: 0;
+  cursor: pointer;
+}
+#universe-body button.learn-place:hover {
+  border-bottom-style: solid;
+}

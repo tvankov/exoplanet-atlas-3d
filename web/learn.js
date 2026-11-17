@@ -36,6 +36,84 @@ export const VIEWS = {
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
 };
 export const PATH_VIEWS = { solar: "Sun", alpha: "Proxima Cen", exo: "51 Peg b", hab: "TOI-700 d" };
+// The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
+// language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
+// "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
+// and Japanese also the word for any moon, and 月 is also "month"), Io in Japanese (イオ is also in イオン, "ion"), and what the map does not
+// have (Enceladus, Charon, Voyager 1). "Without a sun" means any star, not ours, and is no link.
+const EXO_WORDS = [
+  ["Proxima Centauri b", "Proxima Cen b"],
+  ["Alpha Centauri A", "Alpha Centauri A"],
+  ["Alpha Centauri B", "Alpha Centauri B"],
+  ["TRAPPIST-1 ?e", "TRAPPIST-1 e"],
+  ["TRAPPIST-1", "TRAPPIST-1"],
+  ["HD 209458 b", "HD 209458 b"],
+  ["TOI-700 d", "TOI-700 d"],
+  ["Kepler-22 b", "Kepler-22 b"],
+];
+export const PLACE_WORDS = {
+  en: [
+    ...EXO_WORDS,
+    ["Proxima b", "Proxima Cen b"], ["Proxima Centauri", "Proxima Cen"], ["Proxima", "Proxima Cen"],
+    ["51 Pegasi b", "51 Peg b"], ["55 Cancri e", "55 Cnc e"],
+    ["Sun", "Sun"], ["Mercury", "Mercury"], ["Venus", "Venus"], ["Earth", "Earth"], ["Mars", "Mars"], ["Jupiter", "Jupiter"], ["Saturn", "Saturn"],
+    ["Uranus", "Uranus"], ["Neptune", "Neptune"], ["Ceres", "Ceres"], ["Pluto", "Pluto"],
+    ["Io", "moon:Io"], ["Europa", "moon:Europa"], ["Ganymede", "moon:Ganymede"], ["Callisto", "moon:Callisto"],
+  ],
+  de: [
+    ...EXO_WORDS,
+    ["Proxima b", "Proxima Cen b"], ["Proxima Centauri", "Proxima Cen"], ["Proxima", "Proxima Cen"],
+    ["51 Pegasi b", "51 Peg b"], ["55 Cancri e", "55 Cnc e"],
+    ["(?<!(?:ohne|eine|keine) )Sonne", "Sun"], ["Merkurs?", "Mercury"], ["Venus", "Venus"], ["Erde", "Earth"], ["Mars", "Mars"], ["Jupiters?", "Jupiter"], ["Saturns?", "Saturn"],
+    ["Uranus", "Uranus"], ["Neptuns?", "Neptune"], ["Ceres", "Ceres"], ["Plutos?", "Pluto"],
+    ["Io", "moon:Io"], ["Europa", "moon:Europa"], ["Ganymed", "moon:Ganymede"], ["Kallisto", "moon:Callisto"],
+  ],
+  ja: [
+    ...EXO_WORDS,
+    ["プロキシマb", "Proxima Cen b"], ["プロキシマ", "Proxima Cen"], ["アルファ・ケンタウリA", "Alpha Centauri A"], ["アルファ・ケンタウリB", "Alpha Centauri B"],
+    ["ペガスス座51番星b", "51 Peg b"], ["かに座55番星e", "55 Cnc e"],
+    ["太陽(?!系|をもた|がある)", "Sun"], ["水星", "Mercury"], ["金星", "Venus"], ["地球", "Earth"], ["火星", "Mars"], ["木星", "Jupiter"], ["土星", "Saturn"],
+    ["天王星", "Uranus"], ["海王星", "Neptune"], ["ケレス", "Ceres"], ["冥王星", "Pluto"],
+    ["エウロパ", "moon:Europa"], ["ガニメデ", "moon:Ganymede"], ["カリスト", "moon:Callisto"],
+  ],
+  bg: [
+    ...EXO_WORDS,
+    ["Проксима b", "Proxima Cen b"], ["Проксима Кентавър", "Proxima Cen"], ["Проксима", "Proxima Cen"],
+    ["Алфа Кентавър A", "Alpha Centauri A"], ["Алфа Кентавър B", "Alpha Centauri B"], ["51 Пегас b", "51 Peg b"], ["55 Рак e", "55 Cnc e"],
+    ["Слънце(?:то)?", "Sun"], ["Меркурий", "Mercury"], ["Венера", "Venus"], ["Земя(?:та)?", "Earth"], ["Марс", "Mars"], ["Юпитер", "Jupiter"], ["Сатурн", "Saturn"],
+    ["Уран", "Uranus"], ["Нептун", "Neptune"], ["Церера", "Ceres"], ["Плутон", "Pluto"],
+    ["Йо", "moon:Io"], ["Европа", "moon:Europa"], ["Ганимед", "moon:Ganymede"], ["Калисто", "moon:Callisto"],
+  ],
+};
+// Japanese has no spaces between words, so a name there is found as it is; elsewhere a name is a whole word (not "Earth" in "Earth-sized",
+// not "Sonne" in "Sonnensystem").
+const placePattern = {};
+function placeRegex(lang) {
+  if (placePattern[lang]) return placePattern[lang];
+  const words = PLACE_WORDS[lang] ?? PLACE_WORDS.en;
+  const edge = lang === "ja" ? ["", ""] : ["(?<![\\p{L}\\p{N}-])", "(?![\\p{L}\\p{N}-])"];
+  return (placePattern[lang] = new RegExp(words.map(([w]) => `${edge[0]}(${w})${edge[1]}`).join("|"), "gu"));
+}
+// A text cut into pieces: { text } and, for the first mention of each place, { text, place }. `seen` keeps the places already linked in the
+// step, so that a place is a link once.
+export function placePieces(text, lang, seen = new Set()) {
+  const words = PLACE_WORDS[lang] ?? PLACE_WORDS.en;
+  const re = placeRegex(lang);
+  re.lastIndex = 0;
+  const pieces = [];
+  let at = 0;
+  for (const m of text.matchAll(re)) {
+    const i = m.slice(1).findIndex((g) => g !== undefined);
+    const place = words[i][1];
+    if (seen.has(place)) continue;
+    seen.add(place);
+    if (m.index > at) pieces.push({ text: text.slice(at, m.index) });
+    pieces.push({ text: m[0], place });
+    at = m.index + m[0].length;
+  }
+  if (at < text.length) pieces.push({ text: text.slice(at) });
+  return pieces;
+}
 const pathOf = (step) => Object.keys(PATHS).find((p) => PATHS[p].steps.includes(step));
 
 // From a place of the map to the step that fits it (the info panel of a place shows it, main.js): the bodies of the Solar System by name,
@@ -2228,7 +2306,20 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     you.append(el("small", "", own ? tx.forYou : tx.example), el("p", "", personalLine(step, n, getLang())));
     if (!own) you.append(el("p", "hint", tx.exampleHint));
     parts.push(you);
-    for (const p of s.text) parts.push(el("p", "learn-text", p));
+    // the text, with the places of the map in it as links: a click flies there, the step stays open
+    const seen = new Set();
+    for (const text of s.text) {
+      const p = el("p", "learn-text");
+      for (const piece of placePieces(text, getLang(), seen)) {
+        if (!piece.place) {
+          p.append(piece.text);
+          continue;
+        }
+        const link = button(piece.text, "learn-place", () => (show?.(piece.place), track("learn-place-click")));
+        p.append(link);
+      }
+      parts.push(p);
+    }
     // the facts to remember
     const remember = el("div", "learn-remember");
     const facts = el("ul", "");
