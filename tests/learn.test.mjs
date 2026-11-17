@@ -253,3 +253,14 @@ test("the places in the texts of the steps: whole words, the first mention a lin
   for (const list of Object.values(MOONS)) for (const m of list) known.add(`moon:${m.id}`);
   for (const lang of LANGS) for (const [, place] of PLACE_WORDS[lang]) assert.ok(known.has(place), `${lang}: ${place}`);
 });
+
+test("the neighbourhood of path 2: its view and the three labels of its lines in four languages", () => {
+  assert.equal(VIEWS.neighbors, "view:neighborhood");
+  assert.equal(PATH_VIEWS.alpha, "view:neighborhood");
+  for (const lang of LANGS) {
+    const n = LEARN_TEXT[lang].neighborhood;
+    assert.ok(n.sunProxima.includes("4") && n.sunProxima.includes("24"), lang);
+    assert.ok(n.sunAlpha.includes("37"), lang);
+    assert.ok(n.system.includes("0") && n.system.includes("2"), lang);
+  }
+});

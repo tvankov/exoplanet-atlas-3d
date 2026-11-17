@@ -28,14 +28,15 @@ export const TASKS = {
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
-// of the step. The task above is the visitor's own action; this is only the picture behind the text.
+// of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
+// and Alpha Centauri A and B from the side, with lines and their distances (main.js).
 export const VIEWS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "Neptune",
-  neighbors: "Proxima Cen", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
+  neighbors: "view:neighborhood", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "Proxima Cen", exo: "51 Peg b", hab: "TOI-700 d" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -376,6 +377,13 @@ export const LEARN_TEXT = {
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
       rule: "5 steps, then a final test with 10 questions; passed from 70 %.",
+    },
+    // the lines of the neighbourhood in the 3D view (main.js): the distances of the NASA table (Proxima), of Kervella et al. 2017 (A and B),
+    // and between the two as worked out from these positions (0.20 light years, about 12,900 AU)
+    neighborhood: {
+      sunProxima: "Sun → Proxima Centauri: 4.24 light years",
+      sunAlpha: "Sun → Alpha Centauri A and B: 4.37 light years",
+      system: "One system: Proxima ↔ A, B 0.2 light years (13,000 AU)",
     },
     allPaths: "All learning paths",
     status: { done: "Done", next: "Next", open: "To do", locked: "All steps first" },
@@ -791,6 +799,11 @@ export const LEARN_TEXT = {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
       rule: "5 Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 70 %.",
     },
+    neighborhood: {
+      sunProxima: "Sonne → Proxima Centauri: 4,24 Lichtjahre",
+      sunAlpha: "Sonne → Alpha Centauri A und B: 4,37 Lichtjahre",
+      system: "Ein System: Proxima ↔ A, B 0,2 Lichtjahre (13.000 AE)",
+    },
     allPaths: "Alle Lernpfade",
     status: { done: "Erledigt", next: "Als Nächstes", open: "Offen", locked: "Erst alle Schritte" },
     back: "Alle Schritte", placeLabel: "Dazu lernen", stepOf: (n, all) => `Schritt ${n} von ${all}`, goalLabel: "Lernziel", speak: "Vorlesen", speakStop: "Stopp", speakTitle: "Mit einer Stimme auf deinem Gerät vorlesen; es wird nichts gesendet.", rememberLabel: "Merke", sourcesLabel: "Quellen", forYou: "Für dich", example: "Ein Beispiel", exampleHint: "Mit deinem Geburtsdatum (in der Übersicht von Mein Universum) wird das deine eigene Zahl.",
@@ -1205,6 +1218,11 @@ export const LEARN_TEXT = {
       meta: (m) => `約${m}分 · 初心者向け`,
       rule: "5つのステップのあと、10問の最終テスト。70 %以上で合格です。",
     },
+    neighborhood: {
+      sunProxima: "太陽 → プロキシマ・ケンタウリ：4.24光年",
+      sunAlpha: "太陽 → アルファ・ケンタウリA・B：4.37光年",
+      system: "ひとつの恒星系：プロキシマ ↔ A・B 0.2光年（約1万3000天文単位）",
+    },
     allPaths: "すべての学習パス",
     status: { done: "完了", next: "次はこれ", open: "未完了", locked: "先に全ステップを" },
     back: "すべてのステップ", placeLabel: "これについて学ぶ", stepOf: (n, all) => `ステップ ${n} / ${all}`, goalLabel: "学習目標", speak: "読み上げ", speakStop: "停止", speakTitle: "端末内の音声で読み上げます。何も送信されません。", rememberLabel: "覚えておこう", sourcesLabel: "出典", forYou: "あなたへ", example: "例", exampleHint: "生年月日を入れると（マイ・ユニバースの概要で）、これがあなた自身の数字になります。",
@@ -1618,6 +1636,11 @@ export const LEARN_TEXT = {
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
       rule: "5 стъпки, после финален тест с 10 въпроса; издържан от 70 %.",
+    },
+    neighborhood: {
+      sunProxima: "Слънце → Проксима Кентавър: 4,24 светлинни години",
+      sunAlpha: "Слънце → Алфа Кентавър A и B: 4,37 светлинни години",
+      system: "Една система: Проксима ↔ A, B 0,2 светлинни години (13 000 АЕ)",
     },
     allPaths: "Всички учебни пътеки",
     status: { done: "Готово", next: "Следва", open: "Предстои", locked: "Първо всички стъпки" },
@@ -2487,5 +2510,5 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     show?.(PATH_VIEWS[path]);
     return true;
   };
-  return { area, paths, open, openStep, forPlace, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
+  return { area, paths, open, openStep, forPlace, neighborhoodText: () => t().neighborhood, stop: stopSpeaking, progress: () => ({ done: doneCount(), all: steps.length, passed: pathPassed() }) };
 }

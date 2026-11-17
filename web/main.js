@@ -3955,6 +3955,7 @@ const SOLAR_REAL_VIEW = 45 * REAL_K; // the camera distance that shows the whole
 function setRealScale(on) {
   realScale = on;
   realHome = null;
+  showNeighborhood(false); // its lines are drawn on the map of the explanation mode
   if (activeExo) {
     disposeSystem(activeExo); // it was built for the other mode
     activeExo = null;
@@ -5389,6 +5390,74 @@ const ALPHA_CEN = [
 ];
 ALPHA_CEN[0].companion = ALPHA_CEN[1];
 ALPHA_CEN[1].companion = ALPHA_CEN[0];
+// The neighbourhood of the learning path Alpha Centauri: a line from the Sun to Proxima, one to Alpha Centauri A and B, and a green one between
+// the two, with their distances (learn.js, neighborhoodText). On the map the two long lines lie close together and the green one is short:
+// that is the point, Proxima and the pair are one system, 0.2 light years apart, and both are more than 4 light years from us.
+let neighborhood = null;
+function showNeighborhood(on) {
+  if (neighborhood) {
+    scene.remove(neighborhood);
+    neighborhood.traverse((o) => {
+      o.geometry?.dispose();
+      o.material?.map?.dispose();
+      o.material?.dispose();
+      allLabels.delete(o);
+    });
+    neighborhood = null;
+  }
+  if (!on || realScale) return null;
+  const tx = learn.neighborhoodText();
+  const proxima = stars.find((s) => s.hostname === "Proxima Cen");
+  const sun = new THREE.Vector3();
+  const p = toMapPosition(proxima, new THREE.Vector3());
+  const ab = toMapPosition(ALPHA_CEN[0], new THREE.Vector3());
+  const group = new THREE.Group();
+  const line = (from, to, color, opacity) =>
+    new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([from, to]),
+      new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false })
+    );
+  group.add(line(sun, p, 0xff9a6a, 0.75), line(sun, ab, 0xfff0d0, 0.75), line(p, ab, 0x7cffb2, 1));
+  const label = (text, at) => {
+    const s = labelSprite(text);
+    s.position.copy(at);
+    group.add(s);
+  };
+  // the two long lines are only 2 degrees apart, so their labels sit at different places along them
+  label(tx.sunProxima, sun.clone().lerp(p, 0.35));
+  label(tx.sunAlpha, sun.clone().lerp(ab, 0.7));
+  const pair = p.clone().add(ab).multiplyScalar(0.5);
+  label(tx.system, pair.clone().add(new THREE.Vector3(0, 0.12, 0)));
+  // a small green ring round Proxima and round A and B: from the side the green line between them is only a few pixels long
+  const ringCanvas = document.createElement("canvas");
+  ringCanvas.width = ringCanvas.height = 64;
+  const g = ringCanvas.getContext("2d");
+  g.strokeStyle = "#7cffb2";
+  g.lineWidth = 5;
+  g.beginPath();
+  g.arc(32, 32, 24, 0, Math.PI * 2);
+  g.stroke();
+  const ringMap = new THREE.CanvasTexture(ringCanvas);
+  for (const at of [p, ab]) {
+    const ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringMap, sizeAttenuation: false, depthTest: false, transparent: true }));
+    ring.scale.set(0.03, 0.03, 1);
+    ring.position.copy(at);
+    group.add(ring);
+  }
+  scene.add(group);
+  neighborhood = group;
+  // the view: from the side of the lines, all three in the picture; the point looked at is moved right and down, so that the lines lie in
+  // the free part of the screen, left of My Universe and above the cards at the bottom
+  const mid = pair.clone().multiplyScalar(0.5);
+  const side = pair.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
+  const position = mid.clone().add(side.multiplyScalar(3.4)).add(new THREE.Vector3(0, 0.4, 0));
+  const forward = mid.clone().sub(position).normalize();
+  const right = forward.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
+  const up = right.clone().cross(forward).normalize();
+  const shift = right.multiplyScalar(0.75).add(up.multiplyScalar(-0.35));
+  return { position: position.add(shift), target: mid.add(shift) };
+}
+
 // Where the companion is drawn beside its star (map units): a picture place, not the distance. In reality the two are 11 to 35 times as far
 // apart as the Earth and the Sun, and they go round each other in about 80 years. The two sizes are in the real ratio (B has 71 % of the
 // radius of A); the gap is far too small against them, as every distance of the explanation mode.
@@ -5723,6 +5792,8 @@ const learn = initLearn({
   },
   // the picture of an open path or step: the camera flies there, My Universe stays open beside it
   show: (where) => {
+    const view = showNeighborhood(where === "view:neighborhood");
+    if (view) return flyToView(view);
     if (where.startsWith("moon:")) {
       // a moon of the Solar System (a link in the text of a step)
       const id = where.slice(5);
@@ -5847,7 +5918,7 @@ for (const id of ["atlas-panel", "zone-panel", "profile-panel"]) {
   panel.addEventListener("transitionend", (e) => e.target === panel && layoutView());
   new MutationObserver(() => {
     layoutView(); // the picture makes room for the panel, or takes the room back
-    if (panel.hidden) return panel.id === "profile-panel" && learn?.stop(); // closed: a step read aloud stops too
+    if (panel.hidden) return panel.id === "profile-panel" && (learn?.stop(), showNeighborhood(false)); // closed: a step read aloud stops too, the lines go
     panel.classList.remove("sheet-down");
     handle.setAttribute("aria-expanded", "true");
   }).observe(panel, { attributes: true, attributeFilter: ["hidden"] });
