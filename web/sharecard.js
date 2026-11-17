@@ -465,6 +465,53 @@ const EMBLEM = {
     g.stroke();
     for (const [i, [x, y]] of stars.entries()) drawStar(g, r * x, r * y, r * (i === 2 ? 0.16 : 0.1), starColor(i === 2 ? 4000 : 9600));
   },
+  // nebulae: a glowing cloud of gas in red and blue with a young star in it
+  "nebula-scholar": (g, r) => {
+    for (const [x, y, rad, color] of [[0.8, 0.85, 0.5, "rgba(255,90,140,0.55)"], [1.2, 1.15, 0.5, "rgba(90,160,255,0.5)"], [1.0, 1.0, 0.35, "rgba(255,200,120,0.4)"]]) {
+      const c = g.createRadialGradient(r * x, r * y, 0, r * x, r * y, r * rad);
+      c.addColorStop(0, color);
+      c.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = c;
+      g.beginPath();
+      g.arc(r * x, r * y, r * rad, 0, Math.PI * 2);
+      g.fill();
+    }
+    drawStar(g, r * 1.05, r * 0.95, r * 0.09, starColor(20000));
+  },
+  // the Milky Way: a spiral of small stars round a bright middle
+  "milky-scholar": (g, r) => {
+    for (let arm = 0; arm < 2; arm++) {
+      for (let i = 0; i < 22; i++) {
+        const a = arm * Math.PI + i * 0.32;
+        const d = r * (0.12 + i * 0.024);
+        g.fillStyle = `rgba(200,220,255,${0.9 - i * 0.03})`;
+        g.beginPath();
+        g.arc(r + Math.cos(a) * d, r + Math.sin(a) * d * 0.7, r * 0.03, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+    drawStar(g, r, r, r * 0.14, starColor(4500));
+  },
+  // the galactic neighbourhood: two galaxies, a big one and a small one, seen at a slant
+  "local-scholar": (g, r) => {
+    const galaxy = (x, y, rx, ry, tilt) => {
+      g.save();
+      g.translate(x, y);
+      g.rotate(tilt);
+      g.scale(1, ry / rx);
+      const c = g.createRadialGradient(0, 0, 0, 0, 0, rx);
+      c.addColorStop(0, "rgba(255,240,210,0.95)");
+      c.addColorStop(0.35, "rgba(190,200,255,0.5)");
+      c.addColorStop(1, "rgba(120,140,255,0)");
+      g.fillStyle = c;
+      g.beginPath();
+      g.arc(0, 0, rx, 0, Math.PI * 2);
+      g.fill();
+      g.restore();
+    };
+    galaxy(r * 0.8, r * 0.85, r * 0.55, r * 0.2, -0.5);
+    galaxy(r * 1.4, r * 1.35, r * 0.3, r * 0.14, 0.4);
+  },
   // neutron stars and black holes: a glowing ring round a dark middle, as in the first images of a black hole
   "compact-scholar": (g, r) => {
     const ring = g.createRadialGradient(r, r, r * 0.22, r, r, r * 0.62);

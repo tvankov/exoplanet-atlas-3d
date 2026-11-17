@@ -166,6 +166,21 @@ export const BADGES = [
     ja: ["星座はかせ", "「星座と黄道十二宮」の最終テストに合格した"], bg: ["Познавач на съзвездията", "Издържа финалния тест на „Съзвездия и зодии“"],
   },
   {
+    id: "nebula-scholar", count: (t) => (t.learnPaths?.includes("nebula") ? 1 : 0), need: 1,
+    en: ["Nebula watcher", "Passed the final test of Nebulae"], de: ["Nebelbeobachter", "Den Abschlusstest von „Nebel“ bestanden"],
+    ja: ["星雲ウォッチャー", "「星雲」の最終テストに合格した"], bg: ["Наблюдател на мъглявини", "Издържа финалния тест на „Мъглявини“"],
+  },
+  {
+    id: "milky-scholar", count: (t) => (t.learnPaths?.includes("milky") ? 1 : 0), need: 1,
+    en: ["Galaxy guide", "Passed the final test of The Milky Way"], de: ["Galaxienführer", "Den Abschlusstest von „Die Milchstraße“ bestanden"],
+    ja: ["銀河の案内人", "「天の川銀河」の最終テストに合格した"], bg: ["Галактически водач", "Издържа финалния тест на „Млечният път“"],
+  },
+  {
+    id: "local-scholar", count: (t) => (t.learnPaths?.includes("local") ? 1 : 0), need: 1,
+    en: ["Good neighbour", "Passed the final test of The galactic neighbourhood"], de: ["Guter Nachbar", "Den Abschlusstest von „Die galaktische Nachbarschaft“ bestanden"],
+    ja: ["よき隣人", "「銀河のご近所」の最終テストに合格した"], bg: ["Добър съсед", "Издържа финалния тест на „Галактическото съседство“"],
+  },
+  {
     id: "compact-scholar", count: (t) => (t.learnPaths?.includes("compact") ? 1 : 0), need: 1,
     en: ["Gravity explorer", "Passed the final test of Neutron stars and black holes"], de: ["Schwerkraftforscher", "Den Abschlusstest von „Neutronensterne und Schwarze Löcher“ bestanden"],
     ja: ["重力の探検家", "「中性子星とブラックホール」の最終テストに合格した"], bg: ["Изследовател на гравитацията", "Издържа финалния тест на „Неутронни звезди и черни дупки“"],

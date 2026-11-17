@@ -25,6 +25,9 @@ export const PATHS = {
   birth: { steps: ["birthCloud", "birthProto", "birthDisk", "birthCluster", "birthSun"], minutes: 25, testSize: 10, pass: 0.7 },
   life: { steps: ["lifeMain", "lifeMass", "lifeGiant", "lifeWhite", "lifeNova"], minutes: 25, testSize: 10, pass: 0.7 },
   compact: { steps: ["nsWhat", "nsPulsar", "bhWhat", "bhCenter", "bhImage"], minutes: 25, testSize: 10, pass: 0.7 },
+  nebula: { steps: ["nebWhat", "nebPillars", "nebDark", "nebRing", "nebCrab"], minutes: 25, testSize: 10, pass: 0.7 },
+  milky: { steps: ["mwWhat", "mwArm", "mwOrbit", "mwBand", "mwGaia"], minutes: 25, testSize: 10, pass: 0.7 },
+  local: { steps: ["locGroup", "locMagellan", "locAndromeda", "locApproach", "locFuture"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -39,6 +42,9 @@ export const TASKS = {
   birthCloud: "figure:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "figure:Tau", birthSun: "Sun",
   lifeMain: "Sun", lifeMass: "Proxima Cen", lifeGiant: "Sun", lifeWhite: "WD 1856+534", lifeNova: null,
   nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: null, bhCenter: "figure:Sgr", bhImage: "figure:Vir",
+  nebWhat: "figure:Ori", nebPillars: "figure:Ser", nebDark: "figure:Ori", nebRing: "figure:Lyr", nebCrab: "figure:Tau",
+  mwWhat: "figure:Sgr", mwArm: "Sun", mwOrbit: "Sun", mwBand: "figure:Sgr", mwGaia: null,
+  locGroup: "figure:Tri", locMagellan: "figure:Tuc", locAndromeda: "figure:And", locApproach: "figure:And", locFuture: null,
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -54,6 +60,9 @@ export const VIEWS = {
   birthCloud: "Earth", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "Earth", birthSun: "Sun",
   lifeMain: "Sun", lifeMass: "Proxima Cen", lifeGiant: "Sun", lifeWhite: "WD 1856+534", lifeNova: "Sun",
   nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: "Earth", bhCenter: "Earth", bhImage: "Earth",
+  nebWhat: "Earth", nebPillars: "Earth", nebDark: "Earth", nebRing: "Earth", nebCrab: "Earth",
+  mwWhat: "Earth", mwArm: "Sun", mwOrbit: "Sun", mwBand: "Earth", mwGaia: "Sun",
+  locGroup: "Earth", locMagellan: "Earth", locAndromeda: "Earth", locApproach: "Earth", locFuture: "Earth",
 };
 // The parts of the plan the paths belong to, in the order of the list (learn.js, listView); "sky" are the paths beside the plan
 export const PARTS = [
@@ -62,7 +71,7 @@ export const PARTS = [
   { id: "galaxy", paths: ["nebula", "milky", "local"] },
   { id: "sky", paths: ["zod", "names"] },
 ];
-export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70", life: "Sun", compact: "PSR B1257+12" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70", life: "Sun", compact: "PSR B1257+12", nebula: "Earth", milky: "Sun", local: "Earth" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -240,6 +249,64 @@ export const SOURCES = {
   exoStrange: [
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
+  ],
+  nebWhat: [
+    { label: "NASA Space Place: What Is a Nebula?", url: "https://spaceplace.nasa.gov/nebula/en/" },
+  ],
+  nebPillars: [
+    { label: "NASA Science: Hubble Messier Catalog, Messier 16 (Eagle Nebula)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-16/" },
+    { label: "ESA/Webb: Pillars of Creation (2022)", url: "https://esawebb.org/images/weic2216a/" },
+  ],
+  nebDark: [
+    { label: "ESA/Hubble: The Horsehead Nebula", url: "https://esahubble.org/images/heic1307a/" },
+  ],
+  nebRing: [
+    { label: "NASA Science: Hubble Messier Catalog, Messier 57 (Ring Nebula)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-57/" },
+    { label: "NASA Science: Star Types", url: "https://science.nasa.gov/universe/stars/types/" },
+  ],
+  nebCrab: [
+    { label: "NASA Science: Hubble Messier Catalog, Messier 1 (Crab Nebula)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-1/" },
+    { label: "NASA Space Place: What Is a Nebula?", url: "https://spaceplace.nasa.gov/nebula/en/" },
+  ],
+  mwWhat: [
+    { label: "NASA Imagine the Universe: The Milky Way Galaxy", url: "https://imagine.gsfc.nasa.gov/features/cosmic/milkyway_info.html" },
+    { label: "NASA Science: Galaxies", url: "https://science.nasa.gov/universe/galaxies/" },
+    { label: "ESA: Our galaxy", url: "https://www.esa.int/what-we-do/explore-discover-space/our-galaxy" },
+  ],
+  mwArm: [
+    { label: "NASA Science: The Milky Way Galaxy", url: "https://science.nasa.gov/resource/the-milky-way-galaxy/" },
+    { label: "NASA Imagine the Universe: The Milky Way Galaxy", url: "https://imagine.gsfc.nasa.gov/features/cosmic/milkyway_info.html" },
+    { label: "NASA Science: Galaxies", url: "https://science.nasa.gov/universe/galaxies/" },
+  ],
+  mwOrbit: [
+    { label: "NASA Science: Sun Facts", url: "https://science.nasa.gov/sun/facts/" },
+    { label: "NASA Science: Galaxies", url: "https://science.nasa.gov/universe/galaxies/" },
+    { label: "ESA: Our galaxy", url: "https://www.esa.int/what-we-do/explore-discover-space/our-galaxy" },
+  ],
+  mwBand: [
+    { label: "NASA Science: Galaxies", url: "https://science.nasa.gov/universe/galaxies/" },
+  ],
+  mwGaia: [
+    { label: "ESA: Gaia", url: "https://www.esa.int/Science_Exploration/Space_Science/Gaia" },
+    { label: "ESA: Gaia Data Release 3", url: "https://www.cosmos.esa.int/web/gaia/dr3" },
+  ],
+  locGroup: [
+    { label: "NASA Science: Galaxies", url: "https://science.nasa.gov/universe/galaxies/" },
+    { label: "NASA Science: Hubble Messier Catalog, Messier 33 (Triangulum Galaxy)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-33/" },
+  ],
+  locMagellan: [
+    { label: "ESA/Hubble: Hubble casts doubt on certainty of galactic collision (2025)", url: "https://esahubble.org/news/heic2508/" },
+    { label: "ESA/Hubble: the Small Magellanic Cloud (2025)", url: "https://esahubble.org/news/heic2502/" },
+  ],
+  locAndromeda: [
+    { label: "NASA Science: Hubble Messier Catalog, Messier 31 (Andromeda Galaxy)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-31/" },
+  ],
+  locApproach: [
+    { label: "NASA: Hubble Shows Milky Way is Destined for Head-on Collision (2012)", url: "https://science.nasa.gov/missions/hubble/nasas-hubble-shows-milky-way-is-destined-for-head-on-collision/" },
+  ],
+  locFuture: [
+    { label: "ESA/Hubble: Hubble casts doubt on certainty of galactic collision (2025)", url: "https://esahubble.org/news/heic2508/" },
+    { label: "NASA: Hubble Shows Milky Way is Destined for Head-on Collision (2012)", url: "https://science.nasa.gov/missions/hubble/nasas-hubble-shows-milky-way-is-destined-for-head-on-collision/" },
   ],
   nsWhat: [
     { label: "NASA Imagine the Universe: Neutron Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/neutron_stars1.html" },
@@ -442,6 +509,38 @@ export function personalNumbers(ctx) {
     sunYearSeconds: (age / SUN_MAIN_YEARS) * 365.25 * 86400, // the visitor's life if the Sun's 10 billion years were one year
     giantLives: twoDigits(SUN_GIANT_IN / Math.max(age, 1)),
     ...compactNumbers(ctx, age),
+    ...galaxyNumbers(ctx, age),
+  };
+}
+// Part III: nebulae, the Milky Way and its neighbours, against the visitor's life. The distances and years are those of the sources of the
+// steps (NASA, ESA): the Orion Nebula 1,500 light years, the Webb image of the Pillars of Creation 2022, the Horsehead 1,300, the Ring
+// Nebula 2,000, the supernova of the Crab Nebula 1054, the Milky Way 100,000 light years across, the Sun 8 kpc (about 26,000 light years)
+// from its centre at 720,000 km/h, one lap 230 million years, Gaia DR3 2022, the Small Magellanic Cloud 200,000 light years, Andromeda
+// 2.5 million, Triangulum 3 million, Andromeda coming closer at 250,000 miles an hour, the collision of the 2012 forecast in 4 billion years.
+const KM_PER_HOUR_YEAR = 24 * 365.25;
+function galaxyNumbers(ctx, age) {
+  const thisYear = ctx.thisYear ?? new Date().getFullYear();
+  const born = ctx.age != null ? ctx.birthYear ?? thisYear - Math.floor(age) : null;
+  const since = (year) => (born != null ? born - year : null); // years an event came before the birth (below 0: at that age)
+  return {
+    orionShare: (age / 1500) * 100,
+    webbBefore: since(2022),
+    webbAgo: thisYear - 2022,
+    horseYear: thisYear - 1300,
+    ringTimes: Math.round(2000 / Math.max(age, 1)),
+    crabBefore: since(1054),
+    crabAgo: thisYear - 1054,
+    mwShare: (age / 100000) * 100,
+    centerShare: (age / 26000) * 100,
+    sunKm: twoDigits(720000 * KM_PER_HOUR_YEAR * age) / 1e9, // in billions of km
+    lapTimes: twoDigits(230e6 / Math.max(age, 1)),
+    gaiaBefore: since(2022),
+    gaiaAgo: thisYear - 2022,
+    smcTimes: twoDigits(200000 / Math.max(age, 1)),
+    andTimes: twoDigits(2.5e6 / Math.max(age, 1)),
+    m33Times: twoDigits(3e6 / Math.max(age, 1)),
+    andKm: twoDigits(250000 * 1.609344 * KM_PER_HOUR_YEAR * age) / 1e9, // in billions of km
+    collideTimes: twoDigits(4e9 / Math.max(age, 1)),
   };
 }
 // Neutron stars and black holes: the blinks of a pulsar that blinks once a second, over the visitor's life (worked out), the light of the
@@ -623,6 +722,24 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // Nebulae
+  nebWhat: [{ id: "nebulaWhat" }, { id: "nebulaDeath" }, { id: "nebulaBirth" }],
+  nebPillars: [{ id: "pillarsWhere" }, { id: "pillarsDist" }, { id: "pillarsWebb" }],
+  nebDark: [{ id: "horseType" }, { id: "horseWhere" }, { id: "horseDist" }],
+  nebRing: [{ id: "ringType" }, { id: "ringWhere" }, { id: "ringFrom" }],
+  nebCrab: [{ id: "crabType" }, { id: "crabYear" }, { id: "crabCore" }],
+  // The Milky Way
+  mwWhat: [{ id: "mwShape" }, { id: "mwSize" }, { id: "mwStars" }],
+  mwArm: [{ id: "orionArm" }, { id: "armBetween" }, { id: "centerDist" }],
+  mwOrbit: [{ id: "lapTime" }, { id: "sunSpeed" }, { id: "lapDiffer" }],
+  mwBand: [{ id: "bandWhat" }, { id: "bandEdge" }, { id: "bandDir" }],
+  mwGaia: [{ id: "gaiaWhat" }, { id: "gaiaCount" }, { id: "gaiaEnd" }],
+  // The galactic neighbourhood
+  locGroup: [{ id: "localGroup" }, { id: "groupCount" }, { id: "m33Third" }],
+  locMagellan: [{ id: "lmcSat" }, { id: "smcDist" }, { id: "smcWhere" }],
+  locAndromeda: [{ id: "andDist" }, { id: "andEye" }, { id: "andWhere" }],
+  locApproach: [{ id: "andSpeed" }, { id: "collide2012" }, { id: "merge2012" }],
+  locFuture: [{ id: "chance2025" }, { id: "dataNew" }, { id: "scienceChange" }],
   // Neutron stars and black holes
   nsWhat: [{ id: "nsForm" }, { id: "nsSize" }, { id: "nsSugar" }],
   nsPulsar: [{ id: "pulsarWhat" }, { id: "lighthouse" }, { id: "pulseTime" }],
@@ -715,6 +832,9 @@ export const LEARN_TEXT = {
       birth: { title: "The birth of stars", goal: "You can explain how a star is born from a cloud of gas and dust, how planets form round it, and how the Sun was born." },
       life: { title: "Life and death of stars", goal: "You can explain how a star lives, why its mass decides its life, and how stars end: as white dwarfs or in a supernova." },
       compact: { title: "Neutron stars and black holes", goal: "You can explain what neutron stars, pulsars and black holes are, where the black hole of the Milky Way sits, and how it was photographed." },
+      nebula: { title: "Nebulae", goal: "You know what nebulae are, where stars are born in them and how dying stars leave them behind." },
+      milky: { title: "The Milky Way", goal: "You can describe our galaxy: its shape and size, where the Sun lies in it, how it travels round the centre, and how Gaia mapped it." },
+      local: { title: "The galactic neighbourhood", goal: "You know the galaxies near ours, the Local Group, and what science says about the future with Andromeda." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -1003,6 +1123,231 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
         ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
+      },
+      nebWhat: {
+        title: "What is a nebula?", goal: "You know what a nebula is and the two ways nebulae come about.",
+        text: [
+          "According to NASA a nebula is a giant cloud of dust and gas in space.",
+          "Some nebulae come from the gas and dust thrown out by the explosion of a dying star, such as a supernova. Others are regions where new stars are beginning to form, like the Orion Nebula of the path on the birth of stars.",
+        ],
+        task: "Look at the constellation Orion: below its belt lies the Orion Nebula, a nebula where stars are born.",
+        remember: [
+          "A nebula is a giant cloud of dust and gas in space.",
+          "Some nebulae come from dying stars, for example from a supernova.",
+          "Others are regions where new stars form.",
+        ],
+        you: (p) => `The light of the Orion Nebula is about 1,500 years on its way. In your life so far it has covered about ${p} % of that way.`,
+        ref: (p) => `The light of the Orion Nebula is about 1,500 years on its way. In 30 years it covers about ${p} % of that way.`,
+      },
+      nebPillars: {
+        title: "The Pillars of Creation", goal: "You know the most famous picture of a star nursery.",
+        text: [
+          "In the Eagle Nebula (M16) in the constellation Serpens stand the Pillars of Creation: towers of gas and dust in which new stars form. NASA gives a distance of 7,000 light years, ESA 6,500: the two pages disagree.",
+          "Hubble photographed the pillars several times. On 19 October 2022 the Webb space telescope showed them in a new picture, full of young stars.",
+        ],
+        task: "Look at the constellation Serpens: the Eagle Nebula lies in it.",
+        remember: [
+          "The Pillars of Creation stand in the Eagle Nebula (M16) in Serpens.",
+          "They are 6,500 (ESA) or 7,000 (NASA) light years away.",
+          "Webb showed them in a new picture in October 2022.",
+        ],
+        you: (before, at) => (before != null ? `Webb's picture of the pillars came out in 2022, ${before} years before you were born.` : at === "0" ? "Webb's picture of the pillars came out in 2022, the year you were born." : `Webb's picture of the pillars came out in 2022, when you were ${at}.`),
+        ref: (ago) => `Webb's picture of the pillars came out in 2022, ${ago} years ago.`,
+      },
+      nebDark: {
+        title: "Dark nebulae", goal: "You know that some nebulae are dark.",
+        text: [
+          "Not every nebula glows. The Horsehead Nebula in Orion is a dark nebula: a dark cloud of dust and gas in the shape of a horse's head.",
+          "According to ESA/Hubble it is about 1,300 light years away, a little closer than the Orion Nebula in the same constellation.",
+        ],
+        task: "Look at the constellation Orion again: the Horsehead Nebula lies in it too.",
+        remember: [
+          "Some nebulae are dark: dark clouds of dust and gas.",
+          "The Horsehead Nebula is a dark nebula in Orion.",
+          "It is about 1,300 light years away.",
+        ],
+        you: (year) => `The light of the Horsehead Nebula that arrives today set off around the year ${year}, long before you were born.`,
+        ref: (year) => `The light of the Horsehead Nebula that arrives today set off around the year ${year}.`,
+      },
+      nebRing: {
+        title: "The Ring Nebula", goal: "You know what a planetary nebula looks like and where it comes from.",
+        text: [
+          "When a star like the Sun dies, it sheds its outer layers; according to NASA they form an expanding cloud, a planetary nebula. The Sun will end like this too.",
+          "The best known is the Ring Nebula (M57) in the constellation Lyra, according to NASA about 2,000 light years away.",
+        ],
+        task: "Look at the constellation Lyra: the Ring Nebula lies in it.",
+        remember: [
+          "A planetary nebula is the shed layers of a dying star like the Sun.",
+          "The Ring Nebula (M57) is a planetary nebula in Lyra.",
+          "It is about 2,000 light years away.",
+        ],
+        you: (n) => `The light of the Ring Nebula is about 2,000 years on its way: about ${n} times as long as you have lived.`,
+        ref: (n) => `The light of the Ring Nebula is about 2,000 years on its way: about ${n} times as long as a life of 30 years.`,
+      },
+      nebCrab: {
+        title: "The Crab Nebula", goal: "You know a nebula that is left from a supernova seen on the Earth.",
+        text: [
+          "The Crab Nebula (M1) in Taurus is a supernova remnant, according to NASA 6,500 light years away. In 1054 Chinese astronomers noticed a \"guest star\" there: it was a supernova explosion.",
+          "In the middle of the nebula sits a rapidly spinning neutron star, a pulsar: the core of the star that exploded.",
+        ],
+        task: "Look at the constellation Taurus: the Crab Nebula lies in it.",
+        remember: [
+          "The Crab Nebula is the remnant of a supernova, in Taurus.",
+          "Chinese astronomers saw the supernova in 1054 as a \"guest star\".",
+          "In its middle spins a neutron star, a pulsar.",
+        ],
+        you: (before) => `Chinese astronomers saw the guest star in 1054, ${before} years before you were born.`,
+        ref: (ago) => `Chinese astronomers saw the guest star in 1054, ${ago} years ago.`,
+      },
+      mwWhat: {
+        title: "Our galaxy", goal: "You know the shape and size of the Milky Way.",
+        text: [
+          "The Milky Way is our galaxy. According to NASA it is a barred spiral: a disk with spiral arms and a central bar of stars. It spans more than 100,000 light years.",
+          "According to ESA it contains more than a hundred thousand million stars, more than 100 billion. The Sun is one of them.",
+        ],
+        task: "Look at the constellation Sagittarius: in its direction lies the centre of the Milky Way.",
+        remember: [
+          "The Milky Way is a barred spiral galaxy.",
+          "It spans more than 100,000 light years.",
+          "According to ESA it has more than 100 billion stars.",
+        ],
+        you: (p) => `Light needs about 100,000 years to cross the Milky Way (worked out from its size). Your life so far is about ${p} % of that.`,
+        ref: (p) => `Light needs about 100,000 years to cross the Milky Way (worked out from its size). A life of 30 years is about ${p} % of that.`,
+      },
+      mwArm: {
+        title: "Our place: the Orion Arm", goal: "You know where the Sun lies in the Milky Way.",
+        text: [
+          "According to NASA the Sun lies near a small, partial arm called the Orion Arm, between the Sagittarius and Perseus arms, about halfway from the centre to the edge.",
+          "NASA gives the distance to the centre as about 8 kiloparsecs, about 26,000 light years worked out; ESO gives about 27,000 light years for the black hole in the middle.",
+        ],
+        task: "Look at the Sun: it lies in the Orion Arm, far out from the centre.",
+        remember: [
+          "The Sun lies near the Orion Arm, a small, partial arm.",
+          "It lies between the Sagittarius and Perseus arms.",
+          "The centre is about 26,000 to 27,000 light years away.",
+        ],
+        you: (ly, p) => `In your life light has come ${ly} light years far: about ${p} % of the way to the centre.`,
+        ref: (ly, p) => `In ${ly} years light comes ${ly} light years far: about ${p} % of the way to the centre.`,
+      },
+      mwOrbit: {
+        title: "The journey round the centre", goal: "You know that the Sun travels round the centre of the Milky Way.",
+        text: [
+          "The Sun travels round the centre of the Milky Way and takes the planets with it. According to NASA it moves at an average of 720,000 kilometres per hour.",
+          "One lap takes a very long time: NASA's page on the Sun says about 230 million years, NASA's page on galaxies and ESA say about 240 million. The pages disagree.",
+        ],
+        task: "Look at the Sun: with all its planets it travels round the centre of the Milky Way.",
+        remember: [
+          "The Sun travels round the centre of the Milky Way.",
+          "It moves at about 720,000 km/h.",
+          "One lap takes about 230 to 240 million years.",
+        ],
+        you: (km, n) => `Since you were born the Sun has carried you about ${km} billion km round the centre (worked out with 720,000 km/h). One lap takes about ${n} times your life so far.`,
+        ref: (km, n) => `In 30 years the Sun carries us about ${km} billion km round the centre (worked out with 720,000 km/h). One lap takes about ${n} times as long.`,
+      },
+      mwBand: {
+        title: "The band in the sky", goal: "You know what the band of light across the night sky is.",
+        text: [
+          "In a dark night a pale band of light stretches across the sky. According to NASA it is the central disk of our home galaxy, seen edge on.",
+          "We see it from the inside: the Sun lies in the disk itself. In the direction of Sagittarius we look towards the centre.",
+        ],
+        task: "Look at the constellation Sagittarius: there the band points to the centre.",
+        remember: [
+          "The band of light in the night sky is the disk of the Milky Way.",
+          "We see the disk edge on, from the inside.",
+          "In the direction of Sagittarius lies the centre.",
+        ],
+        you: () => "The band you can see in a dark night is the disk you live in yourself.",
+        ref: () => "The band you can see in a dark night is the disk we all live in.",
+      },
+      mwGaia: {
+        title: "Gaia's map", goal: "You know how ESA's Gaia mapped the Milky Way, and where the stars of this map come from.",
+        text: [
+          "ESA's space telescope Gaia measured the positions and distances of stars to make a precise three-dimensional map of the Milky Way. Its Data Release 3 of 13 June 2022 has 1,811,709,771 sources; ESA's mission page speaks of two billion stars and other objects.",
+          "Gaia ended its science observations on 15 January 2025. Most stars of this map come from Gaia DR3: the near stars up to 326 light years and about a million bright stars.",
+        ],
+        task: "There is no task in the 3D view for this step: the whole map is the task. Answer the questions, then the step is done.",
+        remember: [
+          "Gaia made a precise 3D map of the Milky Way.",
+          "Gaia DR3 (2022) has about 1.8 billion sources.",
+          "Most stars of this map come from Gaia DR3.",
+        ],
+        you: (before, at) => (before != null ? `Gaia DR3 came out in 2022, ${before} years before you were born.` : at === "0" ? "Gaia DR3 came out in 2022, the year you were born." : `Gaia DR3 came out in 2022, when you were ${at}.`),
+        ref: (ago) => `Gaia DR3 came out in 2022, ${ago} years ago.`,
+      },
+      locGroup: {
+        title: "The Local Group", goal: "You know the group of galaxies the Milky Way belongs to.",
+        text: [
+          "According to NASA the Milky Way belongs to a group of over 50 galaxies called the Local Group. The biggest members are the Andromeda Galaxy, the Milky Way and the Triangulum Galaxy (M33), the third largest.",
+          "Triangulum is about 3 million light years away. According to NASA it is one of the most distant objects keen-eyed observers can view.",
+        ],
+        task: "Look at the constellation Triangulum: the Triangulum Galaxy lies in it.",
+        remember: [
+          "The Milky Way belongs to the Local Group of over 50 galaxies.",
+          "The biggest are Andromeda, the Milky Way and Triangulum.",
+          "Triangulum (M33) is about 3 million light years away.",
+        ],
+        you: (n) => `The light of Triangulum is about 3 million years on its way: about ${n} times your life so far.`,
+        ref: (n) => `The light of Triangulum is about 3 million years on its way: about ${n} times a life of 30 years.`,
+      },
+      locMagellan: {
+        title: "The Magellanic Clouds", goal: "You know the companions of the Milky Way.",
+        text: [
+          "The Milky Way has small companions. According to ESA/Hubble the Large Magellanic Cloud is a satellite galaxy of the Milky Way.",
+          "The Small Magellanic Cloud lies 200,000 light years away in the constellation Tucana.",
+        ],
+        task: "Look at the constellation Tucana: the Small Magellanic Cloud lies in it.",
+        remember: [
+          "The Large Magellanic Cloud is a satellite galaxy of the Milky Way.",
+          "The Small Magellanic Cloud is 200,000 light years away.",
+          "It lies in the constellation Tucana.",
+        ],
+        you: (n) => `The light of the Small Magellanic Cloud is 200,000 years on its way: about ${n} times your life so far.`,
+        ref: (n) => `The light of the Small Magellanic Cloud is 200,000 years on its way: about ${n} times a life of 30 years.`,
+      },
+      locAndromeda: {
+        title: "The Andromeda Galaxy", goal: "You know our big neighbour galaxy.",
+        text: [
+          "The Andromeda Galaxy (M31) is the biggest galaxy of the Local Group. According to NASA it is 2.5 million light years away, in the constellation Andromeda.",
+          "Even so it is easily visible with the unaided eye from a dark sky site. The light you see then set off 2.5 million years ago.",
+        ],
+        task: "Look at the constellation Andromeda: the Andromeda Galaxy lies in it.",
+        remember: [
+          "The Andromeda Galaxy is the biggest galaxy of the Local Group.",
+          "It is 2.5 million light years away.",
+          "From a dark site it can be seen with the unaided eye.",
+        ],
+        you: (n) => `The light of Andromeda is 2.5 million years on its way: about ${n} times your life so far.`,
+        ref: (n) => `The light of Andromeda is 2.5 million years on its way: about ${n} times a life of 30 years.`,
+      },
+      locApproach: {
+        title: "Andromeda is coming closer", goal: "You know what NASA forecast in 2012 for the Milky Way and Andromeda.",
+        text: [
+          "According to NASA Andromeda is moving towards the Milky Way at about 250,000 miles per hour, about 400,000 kilometres per hour.",
+          "In 2012 NASA forecast with Hubble data a head-on collision in about four billion years. Around 6 billion years from now the two galaxies would merge into one.",
+        ],
+        task: "Look at the constellation Andromeda again: from there our neighbour is coming closer.",
+        remember: [
+          "Andromeda is moving towards us at about 400,000 km/h.",
+          "NASA forecast in 2012 a collision in about 4 billion years.",
+          "In about 6 billion years the two would merge into one.",
+        ],
+        you: (km) => `Since you were born Andromeda has come about ${km} billion km closer (worked out with 250,000 miles per hour).`,
+        ref: (km) => `In 30 years Andromeda comes about ${km} billion km closer (worked out with 250,000 miles per hour).`,
+      },
+      locFuture: {
+        title: "How sure is the future?", goal: "You know that a forecast in science can change with new data.",
+        text: [
+          "In 2025 a team led by Till Sawala looked again, with data from Hubble and ESA's Gaia. According to ESA/Hubble there is only a 50-50 chance of the two galaxies colliding within the next 10 billion years.",
+          "That is how science works: a forecast holds as long as the data hold. With better measurements the collision of 2012 became a possibility.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "A 2025 study gives only a 50-50 chance of a collision within 10 billion years.",
+          "It used data from Hubble and ESA's Gaia.",
+          "Forecasts in science can change with new data.",
+        ],
+        you: (n) => `The four billion years of the forecast of 2012 are about ${n} times your life so far.`,
+        ref: (n) => `The four billion years of the forecast of 2012 are about ${n} times a life of 30 years.`,
       },
       nsWhat: {
         title: "Neutron stars", goal: "You know what a neutron star is and how dense it is.",
@@ -1665,6 +2010,51 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
       kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
       rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
+      nebulaWhat: { q: "What is a nebula, according to NASA?", o: ["A giant cloud of dust and gas in space", "A planet covered in fog", "A small star"], e: "A giant cloud of dust and gas in space." },
+      nebulaDeath: { q: "Where do some nebulae come from?", o: ["From the gas and dust of an exploding dying star", "From the oceans of planets", "From the Moon"], e: "From the gas and dust thrown out by the explosion of a dying star, such as a supernova." },
+      nebulaBirth: { q: "What happens in other nebulae?", o: ["New stars begin to form", "Planets die", "Nothing at all"], e: "New stars begin to form." },
+      pillarsWhere: { q: "Where are the Pillars of Creation?", o: ["In the Eagle Nebula in Serpens", "On Mars", "In the Andromeda Galaxy"], e: "In the Eagle Nebula (M16) in the constellation Serpens." },
+      pillarsDist: { q: "How far away is the Eagle Nebula?", o: ["6,500 (ESA) or 7,000 (NASA) light years", "65 light years", "6.5 million light years"], e: "6,500 light years by ESA, 7,000 by NASA: the pages disagree." },
+      pillarsWebb: { q: "Which telescope showed the pillars in a new picture in 2022?", o: ["Webb", "Galileo's telescope", "TRAPPIST"], e: "The Webb space telescope, on 19 October 2022." },
+      horseType: { q: "What kind of nebula is the Horsehead Nebula?", o: ["A dark nebula", "A planetary nebula", "A supernova remnant"], e: "A dark nebula: a dark cloud of dust and gas." },
+      horseWhere: { q: "In which constellation is the Horsehead Nebula?", o: ["Orion", "Taurus", "Lyra"], e: "In Orion." },
+      horseDist: { q: "How far away is the Horsehead Nebula, according to ESA/Hubble?", o: ["About 1,300 light years", "About 13 light years", "About 13 million light years"], e: "About 1,300 light years." },
+      ringType: { q: "What kind of nebula is the Ring Nebula?", o: ["A planetary nebula", "A dark nebula", "A star nursery"], e: "A planetary nebula." },
+      ringWhere: { q: "In which constellation is the Ring Nebula?", o: ["Lyra", "Orion", "Andromeda"], e: "In Lyra, about 2,000 light years away." },
+      ringFrom: { q: "Where does a planetary nebula come from?", o: ["From the shed layers of a dying star like the Sun", "From a planet that exploded", "From a black hole"], e: "From the outer layers a dying star like the Sun sheds." },
+      crabType: { q: "What is the Crab Nebula?", o: ["The remnant of a supernova", "A star nursery", "A galaxy"], e: "The remnant of a supernova, in Taurus." },
+      crabYear: { q: "When did Chinese astronomers see the supernova of the Crab Nebula?", o: ["In 1054", "In 1954", "In 54 BC"], e: "In 1054, as a \"guest star\"." },
+      crabCore: { q: "What sits in the middle of the Crab Nebula?", o: ["A rapidly spinning neutron star, a pulsar", "A planet", "Nothing"], e: "A rapidly spinning neutron star, a pulsar." },
+      mwShape: { q: "What shape does the Milky Way have?", o: ["A barred spiral", "A ball", "A ring"], e: "A barred spiral: a disk with spiral arms and a central bar of stars." },
+      mwSize: { q: "How big is the Milky Way?", o: ["More than 100,000 light years", "About 100 light years", "About 100 million km"], e: "More than 100,000 light years across." },
+      mwStars: { q: "How many stars does the Milky Way have, according to ESA?", o: ["More than 100 billion", "About 8", "About 100,000"], e: "More than a hundred thousand million: over 100 billion." },
+      orionArm: { q: "Near which arm of the Milky Way does the Sun lie?", o: ["The Orion Arm", "The Andromeda Arm", "The arm of the Moon"], e: "Near the Orion Arm, a small, partial arm." },
+      armBetween: { q: "Between which arms does the Orion Arm lie?", o: ["The Sagittarius and Perseus arms", "Taurus and Lyra", "There are no other arms"], e: "Between the Sagittarius and Perseus arms." },
+      centerDist: { q: "How far is the centre of the Milky Way from us?", o: ["About 26,000 to 27,000 light years", "About 4 light years", "About 2.5 million light years"], e: "About 26,000 (NASA, 8 kpc) to 27,000 (ESO) light years." },
+      lapTime: { q: "How long does one lap of the Sun round the centre take?", o: ["About 230 to 240 million years", "One year", "About 4.6 billion years"], e: "About 230 million (NASA's Sun page) or 240 million years (NASA's galaxy page, ESA)." },
+      sunSpeed: { q: "How fast does the Sun travel round the centre, according to NASA?", o: ["About 720,000 km/h", "About 72 km/h", "At the speed of light"], e: "At an average of about 720,000 km/h." },
+      lapDiffer: { q: "What do the NASA and ESA pages say about the time of one lap?", o: ["They disagree: 230 or 240 million years", "They all say exactly 230 million", "They give no number"], e: "They disagree: 230 million on one page, 240 million on others." },
+      bandWhat: { q: "What is the band of light across the night sky?", o: ["The disk of our galaxy", "A cloud of the Earth", "The light of the Moon"], e: "The central disk of our home galaxy." },
+      bandEdge: { q: "From where do we see the Milky Way's disk?", o: ["From the inside, edge on", "From above", "From outside the galaxy"], e: "From the inside, edge on: the Sun lies in the disk." },
+      bandDir: { q: "In which direction lies the centre of the Milky Way?", o: ["Towards Sagittarius", "Towards Andromeda", "Towards the North Star"], e: "Towards the constellation Sagittarius." },
+      gaiaWhat: { q: "What did ESA's Gaia make?", o: ["A precise 3D map of the Milky Way", "The first image of a black hole", "A landing on Mars"], e: "A precise three-dimensional map of the Milky Way." },
+      gaiaCount: { q: "How many sources does Gaia DR3 (2022) have?", o: ["About 1.8 billion", "About 1,800", "About 18"], e: "1,811,709,771, about 1.8 billion." },
+      gaiaEnd: { q: "When did Gaia end its science observations?", o: ["On 15 January 2025", "In 1990", "It is still observing"], e: "On 15 January 2025." },
+      localGroup: { q: "What is the Local Group?", o: ["The group of galaxies the Milky Way belongs to", "The planets of the Sun", "The stars of a constellation"], e: "The group of galaxies the Milky Way belongs to." },
+      groupCount: { q: "How many galaxies does the Local Group have, according to NASA?", o: ["Over 50", "Exactly 3", "About a million"], e: "Over 50." },
+      m33Third: { q: "Which is the third largest galaxy of the Local Group?", o: ["The Triangulum Galaxy (M33)", "The Small Magellanic Cloud", "M87"], e: "The Triangulum Galaxy (M33), about 3 million light years away." },
+      lmcSat: { q: "What is the Large Magellanic Cloud?", o: ["A satellite galaxy of the Milky Way", "A nebula in Orion", "A cloud on the Earth"], e: "A satellite galaxy of the Milky Way." },
+      smcDist: { q: "How far away is the Small Magellanic Cloud, according to ESA/Hubble?", o: ["200,000 light years", "200 light years", "200 million light years"], e: "200,000 light years." },
+      smcWhere: { q: "In which constellation is the Small Magellanic Cloud?", o: ["Tucana", "Andromeda", "Orion"], e: "In Tucana." },
+      andDist: { q: "How far away is the Andromeda Galaxy, according to NASA?", o: ["2.5 million light years", "2,500 light years", "25 billion light years"], e: "2.5 million light years." },
+      andEye: { q: "Can you see the Andromeda Galaxy without a telescope?", o: ["Yes, from a dark site with the unaided eye", "No, never", "Only from the Moon"], e: "Yes: from a dark site it is easily visible with the unaided eye." },
+      andWhere: { q: "Which is the biggest galaxy of the Local Group?", o: ["The Andromeda Galaxy", "The Milky Way", "The Small Magellanic Cloud"], e: "The Andromeda Galaxy." },
+      andSpeed: { q: "How fast is Andromeda coming towards us, according to NASA?", o: ["About 250,000 miles (400,000 km) per hour", "About 25 km per hour", "It is moving away"], e: "About 250,000 miles per hour, about 400,000 km per hour." },
+      collide2012: { q: "What did NASA forecast in 2012?", o: ["A head-on collision in about 4 billion years", "A collision next year", "No collision ever"], e: "A head-on collision in about four billion years." },
+      merge2012: { q: "By the forecast of 2012, when would the two galaxies merge into one?", o: ["In about 6 billion years", "In about 6,000 years", "Never"], e: "In about 6 billion years." },
+      chance2025: { q: "What chance of a collision within 10 billion years did the 2025 study find?", o: ["Only 50-50", "100 %", "0 %"], e: "Only a 50-50 chance." },
+      dataNew: { q: "Which data did the 2025 study use?", o: ["From Hubble and ESA's Gaia", "Only old drawings", "From a probe on Andromeda"], e: "Data from Hubble and ESA's Gaia." },
+      scienceChange: { q: "What does the new study show about science?", o: ["Forecasts can change with better data", "Forecasts never change", "Science is guessing"], e: "A forecast holds as long as the data hold; better data can change it." },
       nsForm: { q: "How does a neutron star form, according to NASA?", o: ["A massive star runs out of fuel and collapses", "Two planets collide", "A comet freezes"], e: "A massive star runs out of fuel and collapses." },
       nsSize: { q: "About how big is a neutron star across?", o: ["About 20 km", "About as big as the Sun", "About 20 m"], e: "About 20 kilometres, with more mass than the Sun." },
       nsSugar: { q: "How much would a sugar cube of neutron star material weigh, according to NASA?", o: ["About 1 trillion kilograms", "About one gram", "About one tonne"], e: "About 1 trillion kilograms." },
@@ -1778,6 +2168,9 @@ export const LEARN_TEXT = {
       birth: { title: "Die Geburt der Sterne", goal: "Du kannst erklären, wie ein Stern aus einer Wolke aus Gas und Staub entsteht, wie um ihn Planeten wachsen und wie die Sonne entstand." },
       life: { title: "Leben und Tod der Sterne", goal: "Du kannst erklären, wie ein Stern lebt, warum seine Masse über sein Leben entscheidet und wie Sterne enden: als Weiße Zwerge oder in einer Supernova." },
       compact: { title: "Neutronensterne und Schwarze Löcher", goal: "Du kannst erklären, was Neutronensterne, Pulsare und Schwarze Löcher sind, wo das Schwarze Loch der Milchstraße sitzt und wie es fotografiert wurde." },
+      nebula: { title: "Nebel", goal: "Du weißt, was Nebel sind, wie in ihnen Sterne entstehen und wie sterbende Sterne sie hinterlassen." },
+      milky: { title: "Die Milchstraße", goal: "Du kannst unsere Galaxie beschreiben: ihre Form und Größe, wo die Sonne in ihr liegt, wie sie um die Mitte reist und wie Gaia sie vermessen hat." },
+      local: { title: "Die galaktische Nachbarschaft", goal: "Du kennst die Galaxien in unserer Nähe, die Lokale Gruppe und was die Forschung über die Zukunft mit Andromeda sagt." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -2064,6 +2457,231 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
         ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
+      },
+      nebWhat: {
+        title: "Was ist ein Nebel?", goal: "Du weißt, was ein Nebel ist und auf welche zwei Arten Nebel entstehen.",
+        text: [
+          "Laut NASA ist ein Nebel eine riesige Wolke aus Staub und Gas im All.",
+          "Manche Nebel stammen aus dem Gas und Staub, den die Explosion eines sterbenden Sterns hinausschleudert, etwa eine Supernova. Andere sind Gebiete, in denen neue Sterne zu entstehen beginnen, wie der Orionnebel aus dem Pfad über die Geburt der Sterne.",
+        ],
+        task: "Sieh dir das Sternbild Orion an: Unter seinem Gürtel liegt der Orionnebel, ein Nebel, in dem Sterne geboren werden.",
+        remember: [
+          "Ein Nebel ist eine riesige Wolke aus Staub und Gas im All.",
+          "Manche Nebel stammen von sterbenden Sternen, zum Beispiel aus einer Supernova.",
+          "Andere sind Gebiete, in denen neue Sterne entstehen.",
+        ],
+        you: (p) => `Das Licht des Orionnebels ist etwa 1.500 Jahre unterwegs. In deinem bisherigen Leben hat es etwa ${p} % dieses Weges geschafft.`,
+        ref: (p) => `Das Licht des Orionnebels ist etwa 1.500 Jahre unterwegs. In 30 Jahren schafft es etwa ${p} % dieses Weges.`,
+      },
+      nebPillars: {
+        title: "Die Säulen der Schöpfung", goal: "Du kennst das berühmteste Bild einer Kinderstube der Sterne.",
+        text: [
+          "Im Adlernebel (M16) im Sternbild Schlange stehen die Säulen der Schöpfung: Türme aus Gas und Staub, in denen neue Sterne entstehen. Die NASA nennt eine Entfernung von 7.000 Lichtjahren, die ESA 6.500: Die beiden Seiten stimmen nicht überein.",
+          "Hubble hat die Säulen mehrmals fotografiert. Am 19. Oktober 2022 zeigte das Weltraumteleskop Webb sie in einem neuen Bild, voller junger Sterne.",
+        ],
+        task: "Sieh dir das Sternbild Schlange an: Darin liegt der Adlernebel.",
+        remember: [
+          "Die Säulen der Schöpfung stehen im Adlernebel (M16) in der Schlange.",
+          "Sie sind 6.500 (ESA) oder 7.000 (NASA) Lichtjahre entfernt.",
+          "Webb zeigte sie im Oktober 2022 in einem neuen Bild.",
+        ],
+        you: (before, at) => (before != null ? `Webbs Bild der Säulen erschien 2022, ${before} Jahre vor deiner Geburt.` : at === "0" ? "Webbs Bild der Säulen erschien 2022, im Jahr deiner Geburt." : `Webbs Bild der Säulen erschien 2022, als du ${at} Jahre alt warst.`),
+        ref: (ago) => `Webbs Bild der Säulen erschien 2022, vor ${ago} Jahren.`,
+      },
+      nebDark: {
+        title: "Dunkelnebel", goal: "Du weißt, dass manche Nebel dunkel sind.",
+        text: [
+          "Nicht jeder Nebel leuchtet. Der Pferdekopfnebel im Orion ist ein Dunkelnebel: eine dunkle Wolke aus Staub und Gas in der Form eines Pferdekopfs.",
+          "Laut ESA/Hubble ist er etwa 1.300 Lichtjahre entfernt, etwas näher als der Orionnebel im selben Sternbild.",
+        ],
+        task: "Sieh dir noch einmal das Sternbild Orion an: Auch der Pferdekopfnebel liegt darin.",
+        remember: [
+          "Manche Nebel sind dunkel: dunkle Wolken aus Staub und Gas.",
+          "Der Pferdekopfnebel ist ein Dunkelnebel im Orion.",
+          "Er ist etwa 1.300 Lichtjahre entfernt.",
+        ],
+        you: (year) => `Das Licht des Pferdekopfnebels, das heute ankommt, flog um das Jahr ${year} los, lange vor deiner Geburt.`,
+        ref: (year) => `Das Licht des Pferdekopfnebels, das heute ankommt, flog um das Jahr ${year} los.`,
+      },
+      nebRing: {
+        title: "Der Ringnebel", goal: "Du weißt, wie ein planetarischer Nebel aussieht und woher er kommt.",
+        text: [
+          "Stirbt ein Stern wie die Sonne, stößt er seine äußeren Schichten ab; laut NASA bilden sie eine wachsende Wolke, einen planetarischen Nebel. So wird auch die Sonne enden.",
+          "Der bekannteste ist der Ringnebel (M57) im Sternbild Leier, laut NASA etwa 2.000 Lichtjahre entfernt.",
+        ],
+        task: "Sieh dir das Sternbild Leier an: Darin liegt der Ringnebel.",
+        remember: [
+          "Ein planetarischer Nebel sind die abgestoßenen Schichten eines sterbenden Sterns wie der Sonne.",
+          "Der Ringnebel (M57) ist ein planetarischer Nebel in der Leier.",
+          "Er ist etwa 2.000 Lichtjahre entfernt.",
+        ],
+        you: (n) => `Das Licht des Ringnebels ist etwa 2.000 Jahre unterwegs: etwa ${n}-mal so lange, wie du lebst.`,
+        ref: (n) => `Das Licht des Ringnebels ist etwa 2.000 Jahre unterwegs: etwa ${n}-mal so lange wie ein Leben von 30 Jahren.`,
+      },
+      nebCrab: {
+        title: "Der Krebsnebel", goal: "Du kennst einen Nebel, der von einer auf der Erde gesehenen Supernova übrig ist.",
+        text: [
+          "Der Krebsnebel (M1) im Stier ist der Überrest einer Supernova, laut NASA 6.500 Lichtjahre entfernt. 1054 bemerkten chinesische Astronomen dort einen „Gaststern“: Es war die Explosion einer Supernova.",
+          "In der Mitte des Nebels sitzt ein schnell rotierender Neutronenstern, ein Pulsar: der Kern des explodierten Sterns.",
+        ],
+        task: "Sieh dir das Sternbild Stier an: Darin liegt der Krebsnebel.",
+        remember: [
+          "Der Krebsnebel ist der Überrest einer Supernova, im Stier.",
+          "Chinesische Astronomen sahen die Supernova 1054 als „Gaststern“.",
+          "In seiner Mitte dreht sich ein Neutronenstern, ein Pulsar.",
+        ],
+        you: (before) => `Chinesische Astronomen sahen den Gaststern 1054, ${before} Jahre vor deiner Geburt.`,
+        ref: (ago) => `Chinesische Astronomen sahen den Gaststern 1054, vor ${ago} Jahren.`,
+      },
+      mwWhat: {
+        title: "Unsere Galaxie", goal: "Du kennst Form und Größe der Milchstraße.",
+        text: [
+          "Die Milchstraße ist unsere Galaxie. Laut NASA ist sie eine Balkenspirale: eine Scheibe mit Spiralarmen und einem Balken aus Sternen in der Mitte. Sie ist mehr als 100.000 Lichtjahre groß.",
+          "Laut ESA enthält sie mehr als hundert Milliarden Sterne. Die Sonne ist einer davon.",
+        ],
+        task: "Sieh dir das Sternbild Schütze an: In seiner Richtung liegt das Zentrum der Milchstraße.",
+        remember: [
+          "Die Milchstraße ist eine Balkenspiralgalaxie.",
+          "Sie ist mehr als 100.000 Lichtjahre groß.",
+          "Laut ESA hat sie mehr als 100 Milliarden Sterne.",
+        ],
+        you: (p) => `Licht braucht etwa 100.000 Jahre, um die Milchstraße zu durchqueren (gerechnet aus ihrer Größe). Dein bisheriges Leben ist etwa ${p} % davon.`,
+        ref: (p) => `Licht braucht etwa 100.000 Jahre, um die Milchstraße zu durchqueren (gerechnet aus ihrer Größe). Ein Leben von 30 Jahren ist etwa ${p} % davon.`,
+      },
+      mwArm: {
+        title: "Unser Platz: der Orionarm", goal: "Du weißt, wo die Sonne in der Milchstraße liegt.",
+        text: [
+          "Laut NASA liegt die Sonne nahe einem kleinen, unvollständigen Arm, dem Orionarm, zwischen dem Schütze- und dem Perseusarm, etwa auf halbem Weg von der Mitte zum Rand.",
+          "Die NASA gibt die Entfernung zur Mitte mit etwa 8 Kiloparsec an, gerechnet etwa 26.000 Lichtjahre; die ESO nennt für das Schwarze Loch in der Mitte etwa 27.000 Lichtjahre.",
+        ],
+        task: "Sieh dir die Sonne an: Sie liegt im Orionarm, weit draußen von der Mitte.",
+        remember: [
+          "Die Sonne liegt nahe dem Orionarm, einem kleinen, unvollständigen Arm.",
+          "Er liegt zwischen dem Schütze- und dem Perseusarm.",
+          "Die Mitte ist etwa 26.000 bis 27.000 Lichtjahre entfernt.",
+        ],
+        you: (ly, p) => `In deinem Leben ist Licht ${ly} Lichtjahre weit gekommen: etwa ${p} % des Weges zur Mitte.`,
+        ref: (ly, p) => `In ${ly} Jahren kommt Licht ${ly} Lichtjahre weit: etwa ${p} % des Weges zur Mitte.`,
+      },
+      mwOrbit: {
+        title: "Die Reise um die Mitte", goal: "Du weißt, dass die Sonne um das Zentrum der Milchstraße reist.",
+        text: [
+          "Die Sonne reist um das Zentrum der Milchstraße und nimmt die Planeten mit. Laut NASA bewegt sie sich im Mittel mit 720.000 Kilometern pro Stunde.",
+          "Eine Runde dauert sehr lange: Die NASA-Seite zur Sonne sagt etwa 230 Millionen Jahre, die NASA-Seite zu Galaxien und die ESA etwa 240 Millionen. Die Seiten stimmen nicht überein.",
+        ],
+        task: "Sieh dir die Sonne an: Mit allen Planeten reist sie um das Zentrum der Milchstraße.",
+        remember: [
+          "Die Sonne reist um das Zentrum der Milchstraße.",
+          "Sie bewegt sich mit etwa 720.000 km/h.",
+          "Eine Runde dauert etwa 230 bis 240 Millionen Jahre.",
+        ],
+        you: (km, n) => `Seit deiner Geburt hat die Sonne dich rund ${km} Milliarden km um die Mitte getragen (gerechnet mit 720.000 km/h). Eine Runde dauert etwa ${n}-mal so lange wie dein bisheriges Leben.`,
+        ref: (km, n) => `In 30 Jahren trägt die Sonne uns rund ${km} Milliarden km um die Mitte (gerechnet mit 720.000 km/h). Eine Runde dauert etwa ${n}-mal so lange.`,
+      },
+      mwBand: {
+        title: "Das Band am Himmel", goal: "Du weißt, was das Lichtband am Nachthimmel ist.",
+        text: [
+          "In einer dunklen Nacht zieht sich ein blasses Lichtband über den Himmel. Laut NASA ist es die zentrale Scheibe unserer Heimatgalaxie, von der Kante gesehen.",
+          "Wir sehen sie von innen: Die Sonne liegt selbst in der Scheibe. In Richtung Schütze blicken wir zur Mitte.",
+        ],
+        task: "Sieh dir das Sternbild Schütze an: Dort zeigt das Band zur Mitte.",
+        remember: [
+          "Das Lichtband am Nachthimmel ist die Scheibe der Milchstraße.",
+          "Wir sehen die Scheibe von der Kante, von innen.",
+          "In Richtung Schütze liegt die Mitte.",
+        ],
+        you: () => "Das Band, das du in einer dunklen Nacht sehen kannst, ist die Scheibe, in der du selbst wohnst.",
+        ref: () => "Das Band, das man in einer dunklen Nacht sehen kann, ist die Scheibe, in der wir alle wohnen.",
+      },
+      mwGaia: {
+        title: "Gaias Karte", goal: "Du weißt, wie Gaia von der ESA die Milchstraße vermessen hat und woher die Sterne dieser Karte stammen.",
+        text: [
+          "Das Weltraumteleskop Gaia der ESA hat Orte und Entfernungen von Sternen gemessen, für eine genaue dreidimensionale Karte der Milchstraße. Seine dritte Datenveröffentlichung vom 13. Juni 2022 enthält 1.811.709.771 Quellen; die Missionsseite der ESA spricht von zwei Milliarden Sternen und anderen Objekten.",
+          "Gaia beendete seine wissenschaftlichen Beobachtungen am 15. Januar 2025. Die meisten Sterne dieser Karte stammen aus Gaia DR3: die nahen Sterne bis 326 Lichtjahre und etwa eine Million helle Sterne.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht: Die ganze Karte ist die Aufgabe. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Gaia hat eine genaue 3D-Karte der Milchstraße gemacht.",
+          "Gaia DR3 (2022) enthält etwa 1,8 Milliarden Quellen.",
+          "Die meisten Sterne dieser Karte stammen aus Gaia DR3.",
+        ],
+        you: (before, at) => (before != null ? `Gaia DR3 erschien 2022, ${before} Jahre vor deiner Geburt.` : at === "0" ? "Gaia DR3 erschien 2022, im Jahr deiner Geburt." : `Gaia DR3 erschien 2022, als du ${at} Jahre alt warst.`),
+        ref: (ago) => `Gaia DR3 erschien 2022, vor ${ago} Jahren.`,
+      },
+      locGroup: {
+        title: "Die Lokale Gruppe", goal: "Du kennst die Gruppe von Galaxien, zu der die Milchstraße gehört.",
+        text: [
+          "Laut NASA gehört die Milchstraße zu einer Gruppe von über 50 Galaxien, der Lokalen Gruppe. Die größten Mitglieder sind die Andromedagalaxie, die Milchstraße und die Dreiecksgalaxie (M33), die drittgrößte.",
+          "Die Dreiecksgalaxie ist etwa 3 Millionen Lichtjahre entfernt. Laut NASA ist sie eines der fernsten Objekte, die scharfäugige Beobachter sehen können.",
+        ],
+        task: "Sieh dir das Sternbild Dreieck an: Darin liegt die Dreiecksgalaxie.",
+        remember: [
+          "Die Milchstraße gehört zur Lokalen Gruppe aus über 50 Galaxien.",
+          "Die größten sind Andromeda, die Milchstraße und die Dreiecksgalaxie.",
+          "Die Dreiecksgalaxie (M33) ist etwa 3 Millionen Lichtjahre entfernt.",
+        ],
+        you: (n) => `Das Licht der Dreiecksgalaxie ist etwa 3 Millionen Jahre unterwegs: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Das Licht der Dreiecksgalaxie ist etwa 3 Millionen Jahre unterwegs: etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      locMagellan: {
+        title: "Die Magellanschen Wolken", goal: "Du kennst die Begleiter der Milchstraße.",
+        text: [
+          "Die Milchstraße hat kleine Begleiter. Laut ESA/Hubble ist die Große Magellansche Wolke eine Satellitengalaxie der Milchstraße.",
+          "Die Kleine Magellansche Wolke liegt 200.000 Lichtjahre entfernt im Sternbild Tukan.",
+        ],
+        task: "Sieh dir das Sternbild Tukan an: Darin liegt die Kleine Magellansche Wolke.",
+        remember: [
+          "Die Große Magellansche Wolke ist eine Satellitengalaxie der Milchstraße.",
+          "Die Kleine Magellansche Wolke ist 200.000 Lichtjahre entfernt.",
+          "Sie liegt im Sternbild Tukan.",
+        ],
+        you: (n) => `Das Licht der Kleinen Magellanschen Wolke ist 200.000 Jahre unterwegs: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Das Licht der Kleinen Magellanschen Wolke ist 200.000 Jahre unterwegs: etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      locAndromeda: {
+        title: "Die Andromedagalaxie", goal: "Du kennst unsere große Nachbargalaxie.",
+        text: [
+          "Die Andromedagalaxie (M31) ist die größte Galaxie der Lokalen Gruppe. Laut NASA ist sie 2,5 Millionen Lichtjahre entfernt, im Sternbild Andromeda.",
+          "Trotzdem sieht man sie an einem dunklen Ort leicht mit bloßem Auge. Das Licht, das man dann sieht, flog vor 2,5 Millionen Jahren los.",
+        ],
+        task: "Sieh dir das Sternbild Andromeda an: Darin liegt die Andromedagalaxie.",
+        remember: [
+          "Die Andromedagalaxie ist die größte Galaxie der Lokalen Gruppe.",
+          "Sie ist 2,5 Millionen Lichtjahre entfernt.",
+          "An einem dunklen Ort sieht man sie mit bloßem Auge.",
+        ],
+        you: (n) => `Das Licht von Andromeda ist 2,5 Millionen Jahre unterwegs: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Das Licht von Andromeda ist 2,5 Millionen Jahre unterwegs: etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      locApproach: {
+        title: "Andromeda kommt näher", goal: "Du weißt, was die NASA 2012 für Milchstraße und Andromeda vorhergesagt hat.",
+        text: [
+          "Laut NASA bewegt sich Andromeda mit etwa 250.000 Meilen pro Stunde auf die Milchstraße zu, rund 400.000 Kilometer pro Stunde.",
+          "2012 sagte die NASA mit Hubble-Daten einen Frontalzusammenstoß in etwa vier Milliarden Jahren voraus. In rund 6 Milliarden Jahren würden die beiden Galaxien zu einer verschmelzen.",
+        ],
+        task: "Sieh dir noch einmal das Sternbild Andromeda an: Von dort kommt unser Nachbar näher.",
+        remember: [
+          "Andromeda kommt mit etwa 400.000 km/h auf uns zu.",
+          "Die NASA sagte 2012 einen Zusammenstoß in etwa 4 Milliarden Jahren voraus.",
+          "In etwa 6 Milliarden Jahren würden beide zu einer verschmelzen.",
+        ],
+        you: (km) => `Seit deiner Geburt ist Andromeda uns rund ${km} Milliarden km näher gekommen (gerechnet mit 250.000 Meilen pro Stunde).`,
+        ref: (km) => `In 30 Jahren kommt Andromeda uns rund ${km} Milliarden km näher (gerechnet mit 250.000 Meilen pro Stunde).`,
+      },
+      locFuture: {
+        title: "Wie sicher ist die Zukunft?", goal: "Du weißt, dass sich eine Vorhersage der Wissenschaft mit neuen Daten ändern kann.",
+        text: [
+          "2025 sah ein Team um Till Sawala noch einmal hin, mit Daten von Hubble und Gaia der ESA. Laut ESA/Hubble liegt die Chance, dass die beiden Galaxien in den nächsten 10 Milliarden Jahren zusammenstoßen, nur bei 50 zu 50.",
+          "So arbeitet die Wissenschaft: Eine Vorhersage gilt, solange die Daten sie tragen. Mit besseren Messungen wurde aus dem Zusammenstoß von 2012 eine Möglichkeit.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Eine Studie von 2025 gibt nur 50 zu 50 für einen Zusammenstoß in 10 Milliarden Jahren.",
+          "Sie nutzte Daten von Hubble und Gaia der ESA.",
+          "Vorhersagen der Wissenschaft können sich mit neuen Daten ändern.",
+        ],
+        you: (n) => `Die vier Milliarden Jahre der Vorhersage von 2012 sind etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Die vier Milliarden Jahre der Vorhersage von 2012 sind etwa ${n}-mal ein Leben von 30 Jahren.`,
       },
       nsWhat: {
         title: "Neutronensterne", goal: "Du weißt, was ein Neutronenstern ist und wie dicht er ist.",
@@ -2726,6 +3344,51 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
       kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
       rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
+      nebulaWhat: { q: "Was ist ein Nebel laut NASA?", o: ["Eine riesige Wolke aus Staub und Gas im All", "Ein Planet voller Nebel", "Ein kleiner Stern"], e: "Eine riesige Wolke aus Staub und Gas im All." },
+      nebulaDeath: { q: "Woher stammen manche Nebel?", o: ["Aus Gas und Staub eines explodierenden sterbenden Sterns", "Aus den Meeren von Planeten", "Vom Mond"], e: "Aus dem Gas und Staub, den die Explosion eines sterbenden Sterns hinausschleudert, etwa eine Supernova." },
+      nebulaBirth: { q: "Was passiert in anderen Nebeln?", o: ["Neue Sterne beginnen zu entstehen", "Planeten sterben", "Gar nichts"], e: "Neue Sterne beginnen zu entstehen." },
+      pillarsWhere: { q: "Wo stehen die Säulen der Schöpfung?", o: ["Im Adlernebel in der Schlange", "Auf dem Mars", "In der Andromedagalaxie"], e: "Im Adlernebel (M16) im Sternbild Schlange." },
+      pillarsDist: { q: "Wie weit ist der Adlernebel entfernt?", o: ["6.500 (ESA) oder 7.000 (NASA) Lichtjahre", "65 Lichtjahre", "6,5 Millionen Lichtjahre"], e: "6.500 Lichtjahre laut ESA, 7.000 laut NASA: Die Seiten stimmen nicht überein." },
+      pillarsWebb: { q: "Welches Teleskop zeigte die Säulen 2022 in einem neuen Bild?", o: ["Webb", "Galileis Fernrohr", "TRAPPIST"], e: "Das Weltraumteleskop Webb, am 19. Oktober 2022." },
+      horseType: { q: "Was für ein Nebel ist der Pferdekopfnebel?", o: ["Ein Dunkelnebel", "Ein planetarischer Nebel", "Der Überrest einer Supernova"], e: "Ein Dunkelnebel: eine dunkle Wolke aus Staub und Gas." },
+      horseWhere: { q: "In welchem Sternbild liegt der Pferdekopfnebel?", o: ["Orion", "Stier", "Leier"], e: "Im Orion." },
+      horseDist: { q: "Wie weit ist der Pferdekopfnebel laut ESA/Hubble entfernt?", o: ["Etwa 1.300 Lichtjahre", "Etwa 13 Lichtjahre", "Etwa 13 Millionen Lichtjahre"], e: "Etwa 1.300 Lichtjahre." },
+      ringType: { q: "Was für ein Nebel ist der Ringnebel?", o: ["Ein planetarischer Nebel", "Ein Dunkelnebel", "Eine Kinderstube der Sterne"], e: "Ein planetarischer Nebel." },
+      ringWhere: { q: "In welchem Sternbild liegt der Ringnebel?", o: ["Leier", "Orion", "Andromeda"], e: "In der Leier, etwa 2.000 Lichtjahre entfernt." },
+      ringFrom: { q: "Woher kommt ein planetarischer Nebel?", o: ["Von den abgestoßenen Schichten eines sterbenden Sterns wie der Sonne", "Von einem explodierten Planeten", "Von einem Schwarzen Loch"], e: "Von den äußeren Schichten, die ein sterbender Stern wie die Sonne abstößt." },
+      crabType: { q: "Was ist der Krebsnebel?", o: ["Der Überrest einer Supernova", "Eine Kinderstube der Sterne", "Eine Galaxie"], e: "Der Überrest einer Supernova, im Stier." },
+      crabYear: { q: "Wann sahen chinesische Astronomen die Supernova des Krebsnebels?", o: ["1054", "1954", "54 vor Christus"], e: "1054, als „Gaststern“." },
+      crabCore: { q: "Was sitzt in der Mitte des Krebsnebels?", o: ["Ein schnell rotierender Neutronenstern, ein Pulsar", "Ein Planet", "Nichts"], e: "Ein schnell rotierender Neutronenstern, ein Pulsar." },
+      mwShape: { q: "Welche Form hat die Milchstraße?", o: ["Eine Balkenspirale", "Eine Kugel", "Ein Ring"], e: "Eine Balkenspirale: eine Scheibe mit Spiralarmen und einem Balken aus Sternen in der Mitte." },
+      mwSize: { q: "Wie groß ist die Milchstraße?", o: ["Mehr als 100.000 Lichtjahre", "Etwa 100 Lichtjahre", "Etwa 100 Millionen km"], e: "Mehr als 100.000 Lichtjahre." },
+      mwStars: { q: "Wie viele Sterne hat die Milchstraße laut ESA?", o: ["Mehr als 100 Milliarden", "Etwa 8", "Etwa 100.000"], e: "Mehr als hundert Milliarden." },
+      orionArm: { q: "Nahe welchem Arm der Milchstraße liegt die Sonne?", o: ["Dem Orionarm", "Dem Andromedaarm", "Dem Arm des Mondes"], e: "Nahe dem Orionarm, einem kleinen, unvollständigen Arm." },
+      armBetween: { q: "Zwischen welchen Armen liegt der Orionarm?", o: ["Dem Schütze- und dem Perseusarm", "Stier und Leier", "Es gibt keine anderen Arme"], e: "Zwischen dem Schütze- und dem Perseusarm." },
+      centerDist: { q: "Wie weit ist das Zentrum der Milchstraße von uns entfernt?", o: ["Etwa 26.000 bis 27.000 Lichtjahre", "Etwa 4 Lichtjahre", "Etwa 2,5 Millionen Lichtjahre"], e: "Etwa 26.000 (NASA, 8 kpc) bis 27.000 (ESO) Lichtjahre." },
+      lapTime: { q: "Wie lange dauert eine Runde der Sonne um die Mitte?", o: ["Etwa 230 bis 240 Millionen Jahre", "Ein Jahr", "Etwa 4,6 Milliarden Jahre"], e: "Etwa 230 Millionen (NASA-Seite zur Sonne) oder 240 Millionen Jahre (NASA-Seite zu Galaxien, ESA)." },
+      sunSpeed: { q: "Wie schnell reist die Sonne laut NASA um die Mitte?", o: ["Etwa 720.000 km/h", "Etwa 72 km/h", "Mit Lichtgeschwindigkeit"], e: "Im Mittel mit etwa 720.000 km/h." },
+      lapDiffer: { q: "Was sagen die Seiten von NASA und ESA zur Dauer einer Runde?", o: ["Sie stimmen nicht überein: 230 oder 240 Millionen Jahre", "Alle sagen genau 230 Millionen", "Sie nennen keine Zahl"], e: "Sie stimmen nicht überein: 230 Millionen auf einer Seite, 240 Millionen auf anderen." },
+      bandWhat: { q: "Was ist das Lichtband am Nachthimmel?", o: ["Die Scheibe unserer Galaxie", "Eine Wolke der Erde", "Das Licht des Mondes"], e: "Die zentrale Scheibe unserer Heimatgalaxie." },
+      bandEdge: { q: "Von wo sehen wir die Scheibe der Milchstraße?", o: ["Von innen, von der Kante", "Von oben", "Von außerhalb der Galaxie"], e: "Von innen, von der Kante: Die Sonne liegt in der Scheibe." },
+      bandDir: { q: "In welcher Richtung liegt das Zentrum der Milchstraße?", o: ["In Richtung Schütze", "In Richtung Andromeda", "In Richtung Polarstern"], e: "In Richtung des Sternbilds Schütze." },
+      gaiaWhat: { q: "Was hat Gaia von der ESA gemacht?", o: ["Eine genaue 3D-Karte der Milchstraße", "Das erste Bild eines Schwarzen Lochs", "Eine Landung auf dem Mars"], e: "Eine genaue dreidimensionale Karte der Milchstraße." },
+      gaiaCount: { q: "Wie viele Quellen enthält Gaia DR3 (2022)?", o: ["Etwa 1,8 Milliarden", "Etwa 1.800", "Etwa 18"], e: "1.811.709.771, etwa 1,8 Milliarden." },
+      gaiaEnd: { q: "Wann beendete Gaia seine wissenschaftlichen Beobachtungen?", o: ["Am 15. Januar 2025", "1990", "Es beobachtet noch"], e: "Am 15. Januar 2025." },
+      localGroup: { q: "Was ist die Lokale Gruppe?", o: ["Die Gruppe von Galaxien, zu der die Milchstraße gehört", "Die Planeten der Sonne", "Die Sterne eines Sternbilds"], e: "Die Gruppe von Galaxien, zu der die Milchstraße gehört." },
+      groupCount: { q: "Wie viele Galaxien hat die Lokale Gruppe laut NASA?", o: ["Über 50", "Genau 3", "Etwa eine Million"], e: "Über 50." },
+      m33Third: { q: "Welche ist die drittgrößte Galaxie der Lokalen Gruppe?", o: ["Die Dreiecksgalaxie (M33)", "Die Kleine Magellansche Wolke", "M87"], e: "Die Dreiecksgalaxie (M33), etwa 3 Millionen Lichtjahre entfernt." },
+      lmcSat: { q: "Was ist die Große Magellansche Wolke?", o: ["Eine Satellitengalaxie der Milchstraße", "Ein Nebel im Orion", "Eine Wolke auf der Erde"], e: "Eine Satellitengalaxie der Milchstraße." },
+      smcDist: { q: "Wie weit ist die Kleine Magellansche Wolke laut ESA/Hubble entfernt?", o: ["200.000 Lichtjahre", "200 Lichtjahre", "200 Millionen Lichtjahre"], e: "200.000 Lichtjahre." },
+      smcWhere: { q: "In welchem Sternbild liegt die Kleine Magellansche Wolke?", o: ["Tukan", "Andromeda", "Orion"], e: "Im Tukan." },
+      andDist: { q: "Wie weit ist die Andromedagalaxie laut NASA entfernt?", o: ["2,5 Millionen Lichtjahre", "2.500 Lichtjahre", "25 Milliarden Lichtjahre"], e: "2,5 Millionen Lichtjahre." },
+      andEye: { q: "Kann man die Andromedagalaxie ohne Teleskop sehen?", o: ["Ja, an einem dunklen Ort mit bloßem Auge", "Nein, nie", "Nur vom Mond aus"], e: "Ja: An einem dunklen Ort sieht man sie leicht mit bloßem Auge." },
+      andWhere: { q: "Welche ist die größte Galaxie der Lokalen Gruppe?", o: ["Die Andromedagalaxie", "Die Milchstraße", "Die Kleine Magellansche Wolke"], e: "Die Andromedagalaxie." },
+      andSpeed: { q: "Wie schnell kommt Andromeda laut NASA auf uns zu?", o: ["Etwa 250.000 Meilen (400.000 km) pro Stunde", "Etwa 25 km pro Stunde", "Sie entfernt sich"], e: "Etwa 250.000 Meilen pro Stunde, rund 400.000 km pro Stunde." },
+      collide2012: { q: "Was sagte die NASA 2012 voraus?", o: ["Einen Frontalzusammenstoß in etwa 4 Milliarden Jahren", "Einen Zusammenstoß im nächsten Jahr", "Nie einen Zusammenstoß"], e: "Einen Frontalzusammenstoß in etwa vier Milliarden Jahren." },
+      merge2012: { q: "Wann würden die beiden Galaxien nach der Vorhersage von 2012 zu einer verschmelzen?", o: ["In etwa 6 Milliarden Jahren", "In etwa 6.000 Jahren", "Nie"], e: "In etwa 6 Milliarden Jahren." },
+      chance2025: { q: "Welche Chance für einen Zusammenstoß in 10 Milliarden Jahren fand die Studie von 2025?", o: ["Nur 50 zu 50", "100 %", "0 %"], e: "Nur 50 zu 50." },
+      dataNew: { q: "Welche Daten nutzte die Studie von 2025?", o: ["Von Hubble und Gaia der ESA", "Nur alte Zeichnungen", "Von einer Sonde auf Andromeda"], e: "Daten von Hubble und Gaia der ESA." },
+      scienceChange: { q: "Was zeigt die neue Studie über die Wissenschaft?", o: ["Vorhersagen können sich mit besseren Daten ändern", "Vorhersagen ändern sich nie", "Wissenschaft ist Raten"], e: "Eine Vorhersage gilt, solange die Daten sie tragen; bessere Daten können sie ändern." },
       nsForm: { q: "Wie entsteht laut NASA ein Neutronenstern?", o: ["Einem massereichen Stern geht der Brennstoff aus und er stürzt zusammen", "Zwei Planeten stoßen zusammen", "Ein Komet gefriert"], e: "Einem massereichen Stern geht der Brennstoff aus, und er stürzt zusammen." },
       nsSize: { q: "Wie groß ist ein Neutronenstern etwa im Durchmesser?", o: ["Etwa 20 km", "Etwa so groß wie die Sonne", "Etwa 20 m"], e: "Etwa 20 Kilometer, mit mehr Masse als die Sonne." },
       nsSugar: { q: "Wie schwer wäre laut NASA ein Würfelzucker Neutronenstern-Material?", o: ["Etwa 1 Billion Kilogramm", "Etwa ein Gramm", "Etwa eine Tonne"], e: "Etwa 1 Billion Kilogramm." },
@@ -2839,6 +3502,9 @@ export const LEARN_TEXT = {
       birth: { title: "星の誕生", goal: "ガスとちりの雲から恒星がどう生まれ、そのまわりで惑星がどう育ち、太陽がどう生まれたのかを説明できます。" },
       life: { title: "星の一生と死", goal: "恒星がどう生き、なぜ質量が一生を決め、恒星がどう終わるのか（白色わい星か超新星か）を説明できます。" },
       compact: { title: "中性子星とブラックホール", goal: "中性子星、パルサー、ブラックホールとは何か、天の川銀河のブラックホールがどこにあり、どう撮影されたのかを説明できます。" },
+      nebula: { title: "星雲", goal: "星雲とは何か、その中で恒星がどう生まれ、死にゆく恒星がどう星雲を残すのかを知っています。" },
+      milky: { title: "天の川銀河", goal: "私たちの銀河の形と大きさ、太陽の場所、中心をまわる旅、そしてガイアの地図を説明できます。" },
+      local: { title: "銀河のご近所", goal: "近くの銀河、局所銀河群、そしてアンドロメダとの未来について科学が言っていることを知っています。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -3125,6 +3791,231 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
         ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
+      },
+      nebWhat: {
+        title: "星雲とは？", goal: "星雲とは何か、星雲ができる2つのしかたを知っています。",
+        text: [
+          "NASAによると、星雲は宇宙にあるちりとガスの巨大な雲です。",
+          "星雲の中には、超新星のような死にゆく恒星の爆発で放り出されたガスやちりからできたものがあります。ほかに、新しい恒星が生まれはじめている場所もあります。星の誕生のパスに出てきたオリオン大星雲がそうです。",
+        ],
+        task: "オリオン座を見てみましょう。ベルトの下に、恒星が生まれる星雲、オリオン大星雲があります。",
+        remember: [
+          "星雲は、宇宙にあるちりとガスの巨大な雲です。",
+          "死にゆく恒星、たとえば超新星からできた星雲があります。",
+          "新しい恒星が生まれる場所の星雲もあります。",
+        ],
+        you: (p) => `オリオン大星雲の光は約1,500年かけて来ます。あなたのこれまでの人生で、その道のりの約${p} %を進みました。`,
+        ref: (p) => `オリオン大星雲の光は約1,500年かけて来ます。30年で、その道のりの約${p} %を進みます。`,
+      },
+      nebPillars: {
+        title: "創造の柱", goal: "星のゆりかごのいちばん有名な写真を知っています。",
+        text: [
+          "へび座のわし星雲（M16）には、創造の柱があります。新しい恒星が生まれる、ガスとちりの塔です。距離はNASAが7,000光年、ESAが6,500光年としていて、2つのページは一致していません。",
+          "ハッブルは柱を何度も撮影しました。2022年10月19日には、ウェッブ宇宙望遠鏡が、若い恒星でいっぱいの新しい画像を発表しました。",
+        ],
+        task: "へび座を見てみましょう。わし星雲はその中にあります。",
+        remember: [
+          "創造の柱は、へび座のわし星雲（M16）にあります。",
+          "距離は6,500光年（ESA）または7,000光年（NASA）です。",
+          "ウェッブは2022年10月に新しい画像を発表しました。",
+        ],
+        you: (before, at) => (before != null ? `ウェッブの柱の画像は2022年、あなたが生まれる${before}年前に発表されました。` : at === "0" ? "ウェッブの柱の画像は2022年、あなたが生まれた年に発表されました。" : `ウェッブの柱の画像は2022年、あなたが${at}歳のときに発表されました。`),
+        ref: (ago) => `ウェッブの柱の画像は2022年、いまから${ago}年前に発表されました。`,
+      },
+      nebDark: {
+        title: "暗黒星雲", goal: "暗い星雲もあることを知っています。",
+        text: [
+          "すべての星雲が光るわけではありません。オリオン座の馬頭星雲は暗黒星雲で、馬の頭の形をした、ちりとガスの暗い雲です。",
+          "ESA/ハッブルによると約1,300光年はなれていて、同じ星座のオリオン大星雲より少し近くにあります。",
+        ],
+        task: "もう一度オリオン座を見てみましょう。馬頭星雲もその中にあります。",
+        remember: [
+          "暗い星雲もあります。ちりとガスの暗い雲です。",
+          "馬頭星雲はオリオン座の暗黒星雲です。",
+          "約1,300光年はなれています。",
+        ],
+        you: (year) => `今日とどく馬頭星雲の光は、${year}年ごろ、あなたが生まれるずっと前に出発しました。`,
+        ref: (year) => `今日とどく馬頭星雲の光は、${year}年ごろに出発しました。`,
+      },
+      nebRing: {
+        title: "環状星雲", goal: "惑星状星雲がどんな姿で、どこから来るのかを知っています。",
+        text: [
+          "太陽のような恒星が死ぬと、外側の層を放り出します。NASAによると、それは広がる雲、惑星状星雲になります。太陽もこうして終わります。",
+          "いちばん有名なのは、こと座の環状星雲（M57）で、NASAによると約2,000光年はなれています。",
+        ],
+        task: "こと座を見てみましょう。環状星雲はその中にあります。",
+        remember: [
+          "惑星状星雲は、太陽のような死にゆく恒星が放り出した層です。",
+          "環状星雲（M57）は、こと座の惑星状星雲です。",
+          "約2,000光年はなれています。",
+        ],
+        you: (n) => `環状星雲の光は約2,000年かけて来ます。あなたが生きてきた時間の約${n}倍です。`,
+        ref: (n) => `環状星雲の光は約2,000年かけて来ます。30年の人生の約${n}倍です。`,
+      },
+      nebCrab: {
+        title: "かに星雲", goal: "地球で見られた超新星から残った星雲を知っています。",
+        text: [
+          "おうし座のかに星雲（M1）は超新星残骸で、NASAによると6,500光年はなれています。1054年、中国の天文学者がそこに「客星」を見つけました。それは超新星の爆発でした。",
+          "星雲のまんなかには、高速で回転する中性子星、パルサーがあります。爆発した恒星の中心です。",
+        ],
+        task: "おうし座を見てみましょう。かに星雲はその中にあります。",
+        remember: [
+          "かに星雲は、おうし座にある超新星の残骸です。",
+          "中国の天文学者は1054年、その超新星を「客星」として見ました。",
+          "まんなかでは中性子星、パルサーが回っています。",
+        ],
+        you: (before) => `中国の天文学者が客星を見たのは1054年、あなたが生まれる${before}年前です。`,
+        ref: (ago) => `中国の天文学者が客星を見たのは1054年、いまから${ago}年前です。`,
+      },
+      mwWhat: {
+        title: "私たちの銀河", goal: "天の川銀河の形と大きさを知っています。",
+        text: [
+          "天の川銀河は私たちの銀河です。NASAによると、棒渦巻銀河で、渦巻く腕と、まんなかに恒星の棒がある円盤です。大きさは10万光年をこえます。",
+          "ESAによると、1000億個をこえる恒星があります。太陽もそのひとつです。",
+        ],
+        task: "いて座を見てみましょう。その方向に天の川銀河の中心があります。",
+        remember: [
+          "天の川銀河は棒渦巻銀河です。",
+          "大きさは10万光年をこえます。",
+          "ESAによると、1000億個をこえる恒星があります。",
+        ],
+        you: (p) => `光が天の川銀河をよこぎるには約10万年かかります（大きさから計算）。あなたのこれまでの人生はその約${p} %です。`,
+        ref: (p) => `光が天の川銀河をよこぎるには約10万年かかります（大きさから計算）。30年の人生はその約${p} %です。`,
+      },
+      mwArm: {
+        title: "私たちの場所：オリオン腕", goal: "天の川銀河の中で太陽がどこにあるかを知っています。",
+        text: [
+          "NASAによると、太陽はオリオン腕という小さな、とぎれた腕の近くにあります。いて座腕とペルセウス腕のあいだで、中心から外のふちまでのほぼまんなかです。",
+          "NASAは中心までの距離を約8キロパーセクとしています。計算すると約26,000光年です。ESOは中心のブラックホールまで約27,000光年としています。",
+        ],
+        task: "太陽を見てみましょう。中心から遠くはなれたオリオン腕にあります。",
+        remember: [
+          "太陽は、小さな、とぎれた腕、オリオン腕の近くにあります。",
+          "オリオン腕は、いて座腕とペルセウス腕のあいだにあります。",
+          "中心までは約26,000〜27,000光年です。",
+        ],
+        you: (ly, p) => `あなたの人生のあいだに、光は${ly}光年進みました。中心までの道のりの約${p} %です。`,
+        ref: (ly, p) => `${ly}年で光は${ly}光年進みます。中心までの道のりの約${p} %です。`,
+      },
+      mwOrbit: {
+        title: "中心をまわる旅", goal: "太陽が天の川銀河の中心のまわりを旅していることを知っています。",
+        text: [
+          "太陽は惑星をつれて、天の川銀河の中心のまわりを旅しています。NASAによると、平均時速72万キロメートルで動いています。",
+          "1周にはとても長い時間がかかります。NASAの太陽のページは約2億3000万年、NASAの銀河のページとESAは約2億4000万年としていて、一致していません。",
+        ],
+        task: "太陽を見てみましょう。すべての惑星をつれて、天の川銀河の中心のまわりを旅しています。",
+        remember: [
+          "太陽は天の川銀河の中心のまわりを旅しています。",
+          "時速約72万kmで動いています。",
+          "1周には約2億3000万〜2億4000万年かかります。",
+        ],
+        you: (km, n) => `あなたが生まれてから、太陽はあなたを中心のまわりに約${km}0億km運びました（時速72万kmで計算）。1周には、あなたのこれまでの人生の約${n}倍の時間がかかります。`,
+        ref: (km, n) => `30年で、太陽は私たちを中心のまわりに約${km}0億km運びます（時速72万kmで計算）。1周にはその約${n}倍の時間がかかります。`,
+      },
+      mwBand: {
+        title: "空の帯", goal: "夜空をよこぎる光の帯が何かを知っています。",
+        text: [
+          "暗い夜には、うすい光の帯が空をよこぎっています。NASAによると、それは私たちの銀河の中心の円盤を、ふちから見たものです。",
+          "私たちは内側から見ています。太陽そのものが円盤の中にあるからです。いて座の方向には中心があります。",
+        ],
+        task: "いて座を見てみましょう。そこで帯は中心をさしています。",
+        remember: [
+          "夜空の光の帯は、天の川銀河の円盤です。",
+          "私たちは円盤をふちから、内側から見ています。",
+          "いて座の方向に中心があります。",
+        ],
+        you: () => "暗い夜に見える帯は、あなた自身が住んでいる円盤です。",
+        ref: () => "暗い夜に見える帯は、私たちみんなが住んでいる円盤です。",
+      },
+      mwGaia: {
+        title: "ガイアの地図", goal: "ESAのガイアが天の川銀河をどう測ったのか、そしてこの地図の恒星がどこから来たのかを知っています。",
+        text: [
+          "ESAの宇宙望遠鏡ガイアは、恒星の位置と距離を測り、天の川銀河のくわしい3次元地図をつくりました。2022年6月13日の第3回データ公開には1,811,709,771個の天体があります。ESAのミッションのページは、20億個の恒星やほかの天体としています。",
+          "ガイアは2025年1月15日に科学観測を終えました。この地図の恒星の多くはガイアDR3から来ています。326光年までの近くの恒星と、約100万個の明るい恒星です。",
+        ],
+        task: "このステップには3Dのタスクはありません。地図そのものがタスクです。質問に答えれば完了です。",
+        remember: [
+          "ガイアは天の川銀河のくわしい3D地図をつくりました。",
+          "ガイアDR3（2022年）には約18億個の天体があります。",
+          "この地図の恒星の多くはガイアDR3から来ています。",
+        ],
+        you: (before, at) => (before != null ? `ガイアDR3は2022年、あなたが生まれる${before}年前に公開されました。` : at === "0" ? "ガイアDR3は2022年、あなたが生まれた年に公開されました。" : `ガイアDR3は2022年、あなたが${at}歳のときに公開されました。`),
+        ref: (ago) => `ガイアDR3は2022年、いまから${ago}年前に公開されました。`,
+      },
+      locGroup: {
+        title: "局所銀河群", goal: "天の川銀河が属する銀河のグループを知っています。",
+        text: [
+          "NASAによると、天の川銀河は50をこえる銀河のグループ、局所銀河群に属しています。いちばん大きいのはアンドロメダ銀河、天の川銀河、そして3番めのさんかく座銀河（M33）です。",
+          "さんかく座銀河は約300万光年はなれています。NASAによると、目のよい人が見られる、いちばん遠い天体のひとつです。",
+        ],
+        task: "さんかく座を見てみましょう。さんかく座銀河はその中にあります。",
+        remember: [
+          "天の川銀河は、50をこえる銀河の局所銀河群に属しています。",
+          "いちばん大きいのはアンドロメダ、天の川、さんかく座銀河です。",
+          "さんかく座銀河（M33）は約300万光年はなれています。",
+        ],
+        you: (n) => `さんかく座銀河の光は約300万年かけて来ます。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `さんかく座銀河の光は約300万年かけて来ます。30年の人生の約${n}倍です。`,
+      },
+      locMagellan: {
+        title: "マゼラン雲", goal: "天の川銀河の仲間を知っています。",
+        text: [
+          "天の川銀河には小さな仲間がいます。ESA/ハッブルによると、大マゼラン雲は天の川銀河の伴銀河です。",
+          "小マゼラン雲は、きょしちょう座の方向に20万光年はなれています。",
+        ],
+        task: "きょしちょう座を見てみましょう。小マゼラン雲はその中にあります。",
+        remember: [
+          "大マゼラン雲は天の川銀河の伴銀河です。",
+          "小マゼラン雲は20万光年はなれています。",
+          "きょしちょう座にあります。",
+        ],
+        you: (n) => `小マゼラン雲の光は20万年かけて来ます。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `小マゼラン雲の光は20万年かけて来ます。30年の人生の約${n}倍です。`,
+      },
+      locAndromeda: {
+        title: "アンドロメダ銀河", goal: "私たちの大きなとなりの銀河を知っています。",
+        text: [
+          "アンドロメダ銀河（M31）は、局所銀河群でいちばん大きな銀河です。NASAによると、アンドロメダ座の方向に250万光年はなれています。",
+          "それでも、暗い場所からなら肉眼でかんたんに見えます。そのとき見える光は、250万年前に出発した光です。",
+        ],
+        task: "アンドロメダ座を見てみましょう。アンドロメダ銀河はその中にあります。",
+        remember: [
+          "アンドロメダ銀河は、局所銀河群でいちばん大きな銀河です。",
+          "250万光年はなれています。",
+          "暗い場所からなら肉眼で見えます。",
+        ],
+        you: (n) => `アンドロメダの光は250万年かけて来ます。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `アンドロメダの光は250万年かけて来ます。30年の人生の約${n}倍です。`,
+      },
+      locApproach: {
+        title: "近づくアンドロメダ", goal: "2012年にNASAが天の川とアンドロメダについて予測したことを知っています。",
+        text: [
+          "NASAによると、アンドロメダは時速約25万マイル、約40万キロメートルで天の川銀河に近づいています。",
+          "2012年、NASAはハッブルのデータで、約40億年後に正面衝突すると予測しました。約60億年後には、2つの銀河は1つにまとまるとされました。",
+        ],
+        task: "もう一度アンドロメダ座を見てみましょう。そこからとなりの銀河が近づいています。",
+        remember: [
+          "アンドロメダは時速約40万kmで近づいています。",
+          "NASAは2012年、約40億年後の衝突を予測しました。",
+          "約60億年後には2つは1つにまとまるとされました。",
+        ],
+        you: (km) => `あなたが生まれてから、アンドロメダは約${km}0億km近づきました（時速25万マイルで計算）。`,
+        ref: (km) => `30年で、アンドロメダは約${km}0億km近づきます（時速25万マイルで計算）。`,
+      },
+      locFuture: {
+        title: "未来はどれくらい確か？", goal: "科学の予測は、新しいデータで変わることがあると知っています。",
+        text: [
+          "2025年、ティル・サワラのチームが、ハッブルとESAのガイアのデータでもう一度調べました。ESA/ハッブルによると、2つの銀河がこれから100億年のうちに衝突する確率は50パーセントしかありません。",
+          "これが科学のやり方です。予測はデータが支えるかぎり正しいとされます。よりよい測定によって、2012年の衝突は「起こるかもしれないこと」になりました。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "2025年の研究では、100億年のうちの衝突の確率は50パーセントです。",
+          "ハッブルとESAのガイアのデータを使いました。",
+          "科学の予測は新しいデータで変わることがあります。",
+        ],
+        you: (n) => `2012年の予測の40億年は、あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `2012年の予測の40億年は、30年の人生の約${n}倍です。`,
       },
       nsWhat: {
         title: "中性子星", goal: "中性子星とは何か、どれほど密度が高いかを知っています。",
@@ -3787,6 +4678,51 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
       kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
       rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
+      nebulaWhat: { q: "NASAによると、星雲とは何ですか？", o: ["宇宙にあるちりとガスの巨大な雲", "霧でおおわれた惑星", "小さな恒星"], e: "宇宙にあるちりとガスの巨大な雲です。" },
+      nebulaDeath: { q: "星雲の中には、何からできたものがありますか？", o: ["爆発した死にゆく恒星のガスとちり", "惑星の海", "月"], e: "超新星のような、死にゆく恒星の爆発で放り出されたガスとちりです。" },
+      nebulaBirth: { q: "ほかの星雲では何が起きていますか？", o: ["新しい恒星が生まれはじめている", "惑星が死んでいる", "何も起きていない"], e: "新しい恒星が生まれはじめています。" },
+      pillarsWhere: { q: "創造の柱はどこにありますか？", o: ["へび座のわし星雲", "火星", "アンドロメダ銀河"], e: "へび座のわし星雲（M16）です。" },
+      pillarsDist: { q: "わし星雲までの距離は？", o: ["6,500光年（ESA）または7,000光年（NASA）", "65光年", "650万光年"], e: "ESAは6,500光年、NASAは7,000光年で、ページは一致していません。" },
+      pillarsWebb: { q: "2022年に柱の新しい画像を発表した望遠鏡は？", o: ["ウェッブ", "ガリレオの望遠鏡", "TRAPPIST"], e: "ウェッブ宇宙望遠鏡で、2022年10月19日です。" },
+      horseType: { q: "馬頭星雲はどんな星雲ですか？", o: ["暗黒星雲", "惑星状星雲", "超新星残骸"], e: "暗黒星雲で、ちりとガスの暗い雲です。" },
+      horseWhere: { q: "馬頭星雲はどの星座にありますか？", o: ["オリオン座", "おうし座", "こと座"], e: "オリオン座です。" },
+      horseDist: { q: "ESA/ハッブルによると、馬頭星雲までの距離は？", o: ["約1,300光年", "約13光年", "約1300万光年"], e: "約1,300光年です。" },
+      ringType: { q: "環状星雲はどんな星雲ですか？", o: ["惑星状星雲", "暗黒星雲", "星のゆりかご"], e: "惑星状星雲です。" },
+      ringWhere: { q: "環状星雲はどの星座にありますか？", o: ["こと座", "オリオン座", "アンドロメダ座"], e: "こと座で、約2,000光年はなれています。" },
+      ringFrom: { q: "惑星状星雲はどこから来ますか？", o: ["太陽のような死にゆく恒星が放り出した層", "爆発した惑星", "ブラックホール"], e: "太陽のような死にゆく恒星が放り出した外側の層です。" },
+      crabType: { q: "かに星雲とは何ですか？", o: ["超新星の残骸", "星のゆりかご", "銀河"], e: "おうし座にある超新星の残骸です。" },
+      crabYear: { q: "中国の天文学者が、かに星雲の超新星を見たのはいつですか？", o: ["1054年", "1954年", "紀元前54年"], e: "1054年で、「客星」として見ました。" },
+      crabCore: { q: "かに星雲のまんなかには何がありますか？", o: ["高速で回転する中性子星、パルサー", "惑星", "何もない"], e: "高速で回転する中性子星、パルサーです。" },
+      mwShape: { q: "天の川銀河はどんな形ですか？", o: ["棒渦巻", "球", "環"], e: "棒渦巻です。渦巻く腕と、まんなかに恒星の棒がある円盤です。" },
+      mwSize: { q: "天の川銀河の大きさは？", o: ["10万光年をこえる", "約100光年", "約1億km"], e: "10万光年をこえます。" },
+      mwStars: { q: "ESAによると、天の川銀河には恒星がいくつありますか？", o: ["1000億個をこえる", "約8個", "約10万個"], e: "1000億個をこえます。" },
+      orionArm: { q: "太陽は天の川銀河のどの腕の近くにありますか？", o: ["オリオン腕", "アンドロメダ腕", "月の腕"], e: "小さな、とぎれた腕、オリオン腕の近くです。" },
+      armBetween: { q: "オリオン腕はどの腕のあいだにありますか？", o: ["いて座腕とペルセウス腕", "おうし座とこと座", "ほかの腕はない"], e: "いて座腕とペルセウス腕のあいだです。" },
+      centerDist: { q: "天の川銀河の中心までの距離は？", o: ["約26,000〜27,000光年", "約4光年", "約250万光年"], e: "約26,000光年（NASA、8 kpc）から27,000光年（ESO）です。" },
+      lapTime: { q: "太陽が中心のまわりを1周するのにかかる時間は？", o: ["約2億3000万〜2億4000万年", "1年", "約46億年"], e: "約2億3000万年（NASAの太陽のページ）または2億4000万年（NASAの銀河のページ、ESA）です。" },
+      sunSpeed: { q: "NASAによると、太陽はどれくらいの速さで中心のまわりを旅していますか？", o: ["時速約72万km", "時速約72km", "光の速さ"], e: "平均時速約72万kmです。" },
+      lapDiffer: { q: "1周の時間について、NASAとESAのページは何と言っていますか？", o: ["一致していない：2億3000万年か2億4000万年", "みな正確に2億3000万年", "数字がない"], e: "一致していません。あるページは2億3000万年、ほかは2億4000万年です。" },
+      bandWhat: { q: "夜空をよこぎる光の帯は何ですか？", o: ["私たちの銀河の円盤", "地球の雲", "月の光"], e: "私たちの銀河の中心の円盤です。" },
+      bandEdge: { q: "私たちは天の川銀河の円盤をどこから見ていますか？", o: ["内側から、ふちから", "上から", "銀河の外から"], e: "内側から、ふちから見ています。太陽は円盤の中にあります。" },
+      bandDir: { q: "天の川銀河の中心はどの方向にありますか？", o: ["いて座の方向", "アンドロメダの方向", "北極星の方向"], e: "いて座の方向です。" },
+      gaiaWhat: { q: "ESAのガイアは何をつくりましたか？", o: ["天の川銀河のくわしい3D地図", "はじめてのブラックホールの画像", "火星への着陸"], e: "天の川銀河のくわしい3次元地図です。" },
+      gaiaCount: { q: "ガイアDR3（2022年）には何個の天体がありますか？", o: ["約18億個", "約1,800個", "約18個"], e: "1,811,709,771個、約18億個です。" },
+      gaiaEnd: { q: "ガイアが科学観測を終えたのはいつですか？", o: ["2025年1月15日", "1990年", "まだ観測している"], e: "2025年1月15日です。" },
+      localGroup: { q: "局所銀河群とは何ですか？", o: ["天の川銀河が属する銀河のグループ", "太陽の惑星", "星座の恒星"], e: "天の川銀河が属する銀河のグループです。" },
+      groupCount: { q: "NASAによると、局所銀河群にはいくつの銀河がありますか？", o: ["50をこえる", "ちょうど3つ", "約100万"], e: "50をこえます。" },
+      m33Third: { q: "局所銀河群で3番めに大きい銀河はどれですか？", o: ["さんかく座銀河（M33）", "小マゼラン雲", "M87"], e: "さんかく座銀河（M33）で、約300万光年はなれています。" },
+      lmcSat: { q: "大マゼラン雲とは何ですか？", o: ["天の川銀河の伴銀河", "オリオン座の星雲", "地球の雲"], e: "天の川銀河の伴銀河です。" },
+      smcDist: { q: "ESA/ハッブルによると、小マゼラン雲までの距離は？", o: ["20万光年", "200光年", "2億光年"], e: "20万光年です。" },
+      smcWhere: { q: "小マゼラン雲はどの星座にありますか？", o: ["きょしちょう座", "アンドロメダ座", "オリオン座"], e: "きょしちょう座です。" },
+      andDist: { q: "NASAによると、アンドロメダ銀河までの距離は？", o: ["250万光年", "2,500光年", "250億光年"], e: "250万光年です。" },
+      andEye: { q: "アンドロメダ銀河は望遠鏡なしで見えますか？", o: ["はい、暗い場所なら肉眼で", "いいえ、けっして", "月からだけ"], e: "はい。暗い場所なら肉眼でかんたんに見えます。" },
+      andWhere: { q: "局所銀河群でいちばん大きな銀河はどれですか？", o: ["アンドロメダ銀河", "天の川銀河", "小マゼラン雲"], e: "アンドロメダ銀河です。" },
+      andSpeed: { q: "NASAによると、アンドロメダはどれくらいの速さで近づいていますか？", o: ["時速約25万マイル（40万km）", "時速約25km", "遠ざかっている"], e: "時速約25万マイル、約40万kmです。" },
+      collide2012: { q: "2012年、NASAは何を予測しましたか？", o: ["約40億年後の正面衝突", "来年の衝突", "衝突はけっして起きない"], e: "約40億年後の正面衝突です。" },
+      merge2012: { q: "2012年の予測では、2つの銀河はいつ1つにまとまりますか？", o: ["約60億年後", "約6,000年後", "けっしてない"], e: "約60億年後です。" },
+      chance2025: { q: "2025年の研究では、100億年のうちに衝突する確率は？", o: ["50パーセントだけ", "100 %", "0 %"], e: "50パーセントだけです。" },
+      dataNew: { q: "2025年の研究はどのデータを使いましたか？", o: ["ハッブルとESAのガイア", "古い絵だけ", "アンドロメダの探査機"], e: "ハッブルとESAのガイアのデータです。" },
+      scienceChange: { q: "新しい研究は、科学について何を示していますか？", o: ["予測はよりよいデータで変わることがある", "予測はけっして変わらない", "科学はあてずっぽう"], e: "予測はデータが支えるかぎり正しく、よりよいデータで変わることがあります。" },
       nsForm: { q: "NASAによると、中性子星はどうやってできますか？", o: ["重い恒星の燃料がつきてつぶれる", "2つの惑星がぶつかる", "彗星がこおる"], e: "重い恒星の燃料がつきてつぶれたときにできます。" },
       nsSize: { q: "中性子星の直径はどれくらいですか？", o: ["約20 km", "太陽くらい", "約20 m"], e: "約20キロメートルで、太陽より大きな質量をもっています。" },
       nsSugar: { q: "NASAによると、中性子星の物質角砂糖1個分の重さは？", o: ["約1兆キログラム", "約1グラム", "約1トン"], e: "約1兆キログラムです。" },
@@ -3900,6 +4836,9 @@ export const LEARN_TEXT = {
       birth: { title: "Раждането на звездите", goal: "Можеш да обясниш как от облак газ и прах се ражда звезда, как около нея растат планети и как се е родило Слънцето." },
       life: { title: "Животът и смъртта на звездите", goal: "Можеш да обясниш как живее една звезда, защо масата ѝ решава живота ѝ и как свършват звездите: като бели джуджета или в свръхнова." },
       compact: { title: "Неутронни звезди и черни дупки", goal: "Можеш да обясниш какво са неутронните звезди, пулсарите и черните дупки, къде е черната дупка на Млечния път и как е снимана." },
+      nebula: { title: "Мъглявини", goal: "Знаеш какво са мъглявините, как в тях се раждат звезди и как умиращите звезди ги оставят след себе си." },
+      milky: { title: "Млечният път", goal: "Можеш да опишеш нашата галактика: формата и размера ѝ, къде е Слънцето в нея, как обикаля центъра и как Гая я е измерила." },
+      local: { title: "Галактическото съседство", goal: "Познаваш галактиките около нашата, Местната група и какво казва науката за бъдещето с Андромеда." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -4186,6 +5125,231 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
+      },
+      nebWhat: {
+        title: "Какво е мъглявина?", goal: "Знаеш какво е мъглявина и двата начина, по които се образуват мъглявини.",
+        text: [
+          "Според НАСА мъглявината е огромен облак от прах и газ в космоса.",
+          "Някои мъглявини идват от газа и праха, изхвърлени при експлозията на умираща звезда, например свръхнова. Други са области, в които започват да се образуват нови звезди, като мъглявината Орион от пътеката за раждането на звездите.",
+        ],
+        task: "Разгледай съзвездието Орион: под пояса му е мъглявината Орион, мъглявина, в която се раждат звезди.",
+        remember: [
+          "Мъглявината е огромен облак от прах и газ в космоса.",
+          "Някои мъглявини идват от умиращи звезди, например от свръхнова.",
+          "Други са области, в които се образуват нови звезди.",
+        ],
+        you: (p) => `Светлината на мъглявината Орион пътува около 1500 години. През досегашния ти живот тя е изминала около ${p} % от този път.`,
+        ref: (p) => `Светлината на мъглявината Орион пътува около 1500 години. За 30 години тя изминава около ${p} % от този път.`,
+      },
+      nebPillars: {
+        title: "Стълбовете на сътворението", goal: "Познаваш най-известната снимка на звездна детска градина.",
+        text: [
+          "В мъглявината Орел (M16) в съзвездието Змия са Стълбовете на сътворението: кули от газ и прах, в които се раждат нови звезди. НАСА дава разстояние 7000 светлинни години, ЕКА 6500: двете страници не съвпадат.",
+          "Хъбъл е снимал стълбовете няколко пъти. На 19 октомври 2022 г. космическият телескоп „Уеб“ ги показва в нова снимка, пълна с млади звезди.",
+        ],
+        task: "Разгледай съзвездието Змия: мъглявината Орел е в него.",
+        remember: [
+          "Стълбовете на сътворението са в мъглявината Орел (M16) в Змия.",
+          "Те са на 6500 (ЕКА) или 7000 (НАСА) светлинни години.",
+          "„Уеб“ ги показва в нова снимка през октомври 2022 г.",
+        ],
+        you: (before, at) => (before != null ? `Снимката на „Уеб“ излиза през 2022 г., ${before} години преди раждането ти.` : at === "0" ? "Снимката на „Уеб“ излиза през 2022 г., в годината на раждането ти." : `Снимката на „Уеб“ излиза през 2022 г., на твоите ${at} години.`),
+        ref: (ago) => `Снимката на „Уеб“ излиза през 2022 г., преди ${ago} години.`,
+      },
+      nebDark: {
+        title: "Тъмни мъглявини", goal: "Знаеш, че някои мъглявини са тъмни.",
+        text: [
+          "Не всяка мъглявина свети. Мъглявината Конска глава в Орион е тъмна мъглявина: тъмен облак от прах и газ във формата на конска глава.",
+          "Според ЕКА/Хъбъл тя е на около 1300 светлинни години, малко по-близо от мъглявината Орион в същото съзвездие.",
+        ],
+        task: "Разгледай още веднъж съзвездието Орион: и мъглявината Конска глава е в него.",
+        remember: [
+          "Някои мъглявини са тъмни: тъмни облаци от прах и газ.",
+          "Конската глава е тъмна мъглявина в Орион.",
+          "Тя е на около 1300 светлинни години.",
+        ],
+        you: (year) => `Светлината на Конската глава, която пристига днес, е тръгнала около ${year} г., много преди раждането ти.`,
+        ref: (year) => `Светлината на Конската глава, която пристига днес, е тръгнала около ${year} г.`,
+      },
+      nebRing: {
+        title: "Мъглявината Пръстен", goal: "Знаеш как изглежда планетарна мъглявина и откъде идва.",
+        text: [
+          "Когато звезда като Слънцето умира, тя изхвърля външните си слоеве; според НАСА те образуват разширяващ се облак, планетарна мъглявина. Така ще свърши и Слънцето.",
+          "Най-известната е мъглявината Пръстен (M57) в съзвездието Лира, според НАСА на около 2000 светлинни години.",
+        ],
+        task: "Разгледай съзвездието Лира: мъглявината Пръстен е в него.",
+        remember: [
+          "Планетарната мъглявина са изхвърлените слоеве на умираща звезда като Слънцето.",
+          "Мъглявината Пръстен (M57) е планетарна мъглявина в Лира.",
+          "Тя е на около 2000 светлинни години.",
+        ],
+        you: (n) => `Светлината на мъглявината Пръстен пътува около 2000 години: около ${n} пъти колкото си живял досега.`,
+        ref: (n) => `Светлината на мъглявината Пръстен пътува около 2000 години: около ${n} пъти колкото един живот от 30 години.`,
+      },
+      nebCrab: {
+        title: "Мъглявината Рак", goal: "Познаваш мъглявина, останала от свръхнова, видяна от Земята.",
+        text: [
+          "Мъглявината Рак (M1) в Телец е остатък от свръхнова, според НАСА на 6500 светлинни години. През 1054 г. китайски астрономи забелязват там „звезда гостенка“: това е експлозия на свръхнова.",
+          "В средата на мъглявината има бързо въртяща се неутронна звезда, пулсар: ядрото на избухналата звезда.",
+        ],
+        task: "Разгледай съзвездието Телец: мъглявината Рак е в него.",
+        remember: [
+          "Мъглявината Рак е остатък от свръхнова, в Телец.",
+          "Китайски астрономи виждат свръхновата през 1054 г. като „звезда гостенка“.",
+          "В средата ѝ се върти неутронна звезда, пулсар.",
+        ],
+        you: (before) => `Китайски астрономи виждат звездата гостенка през 1054 г., ${before} години преди раждането ти.`,
+        ref: (ago) => `Китайски астрономи виждат звездата гостенка през 1054 г., преди ${ago} години.`,
+      },
+      mwWhat: {
+        title: "Нашата галактика", goal: "Знаеш формата и размера на Млечния път.",
+        text: [
+          "Млечният път е нашата галактика. Според НАСА той е спирала с пречка: диск със спирални ръкави и пречка от звезди в средата. Голям е над 100 000 светлинни години.",
+          "Според ЕКА в него има над сто милиарда звезди. Слънцето е една от тях.",
+        ],
+        task: "Разгледай съзвездието Стрелец: в неговата посока е центърът на Млечния път.",
+        remember: [
+          "Млечният път е спирална галактика с пречка.",
+          "Голям е над 100 000 светлинни години.",
+          "Според ЕКА има над 100 милиарда звезди.",
+        ],
+        you: (p) => `На светлината ѝ трябват около 100 000 години, за да прекоси Млечния път (изчислено от размера му). Досегашният ти живот е около ${p} % от това.`,
+        ref: (p) => `На светлината ѝ трябват около 100 000 години, за да прекоси Млечния път (изчислено от размера му). Един живот от 30 години е около ${p} % от това.`,
+      },
+      mwArm: {
+        title: "Нашето място: ръкавът на Орион", goal: "Знаеш къде е Слънцето в Млечния път.",
+        text: [
+          "Според НАСА Слънцето е близо до малък, непълен ръкав, ръкава на Орион, между ръкавите на Стрелец и Персей, около средата на пътя от центъра до края.",
+          "НАСА дава разстоянието до центъра около 8 килопарсека, изчислено около 26 000 светлинни години; ЕЮО дава за черната дупка в средата около 27 000 светлинни години.",
+        ],
+        task: "Разгледай Слънцето: то е в ръкава на Орион, далеч от центъра.",
+        remember: [
+          "Слънцето е близо до ръкава на Орион, малък, непълен ръкав.",
+          "Той е между ръкавите на Стрелец и Персей.",
+          "Центърът е на около 26 000 до 27 000 светлинни години.",
+        ],
+        you: (ly, p) => `През живота ти светлината е изминала ${ly} светлинни години: около ${p} % от пътя до центъра.`,
+        ref: (ly, p) => `За ${ly} години светлината изминава ${ly} светлинни години: около ${p} % от пътя до центъра.`,
+      },
+      mwOrbit: {
+        title: "Пътуването около центъра", goal: "Знаеш, че Слънцето обикаля центъра на Млечния път.",
+        text: [
+          "Слънцето обикаля центъра на Млечния път и носи планетите със себе си. Според НАСА то се движи средно с 720 000 километра в час.",
+          "Една обиколка трае много дълго: страницата на НАСА за Слънцето казва около 230 милиона години, страницата на НАСА за галактиките и ЕКА около 240 милиона. Страниците не съвпадат.",
+        ],
+        task: "Разгледай Слънцето: с всичките си планети то обикаля центъра на Млечния път.",
+        remember: [
+          "Слънцето обикаля центъра на Млечния път.",
+          "То се движи с около 720 000 km/h.",
+          "Една обиколка трае около 230 до 240 милиона години.",
+        ],
+        you: (km, n) => `От раждането ти Слънцето те е пренесло около ${km} милиарда km около центъра (изчислено с 720 000 km/h). Една обиколка трае около ${n} пъти досегашния ти живот.`,
+        ref: (km, n) => `За 30 години Слънцето ни пренася около ${km} милиарда km около центъра (изчислено с 720 000 km/h). Една обиколка трае около ${n} пъти повече.`,
+      },
+      mwBand: {
+        title: "Ивицата на небето", goal: "Знаеш какво е светлата ивица на нощното небе.",
+        text: [
+          "В тъмна нощ бледа светла ивица се простира през небето. Според НАСА това е централният диск на нашата галактика, погледнат откъм ръба.",
+          "Виждаме го отвътре: самото Слънце е в диска. В посока Стрелец гледаме към центъра.",
+        ],
+        task: "Разгледай съзвездието Стрелец: там ивицата сочи към центъра.",
+        remember: [
+          "Светлата ивица на нощното небе е дискът на Млечния път.",
+          "Виждаме диска откъм ръба, отвътре.",
+          "В посока Стрелец е центърът.",
+        ],
+        you: () => "Ивицата, която можеш да видиш в тъмна нощ, е дискът, в който живееш самият ти.",
+        ref: () => "Ивицата, която може да се види в тъмна нощ, е дискът, в който живеем всички.",
+      },
+      mwGaia: {
+        title: "Картата на Гая", goal: "Знаеш как „Гая“ на ЕКА е измерила Млечния път и откъде са звездите на тази карта.",
+        text: [
+          "Космическият телескоп „Гая“ на ЕКА е измерил местата и разстоянията на звезди за точна триизмерна карта на Млечния път. Третото му публикуване на данни от 13 юни 2022 г. съдържа 1 811 709 771 източника; страницата на мисията на ЕКА говори за два милиарда звезди и други обекти.",
+          "„Гая“ приключва научните си наблюдения на 15 януари 2025 г. Повечето звезди на тази карта са от Gaia DR3: близките звезди до 326 светлинни години и около един милион ярки звезди.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа: цялата карта е задачата. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "„Гая“ е направила точна 3D карта на Млечния път.",
+          "Gaia DR3 (2022 г.) съдържа около 1,8 милиарда източника.",
+          "Повечето звезди на тази карта са от Gaia DR3.",
+        ],
+        you: (before, at) => (before != null ? `Gaia DR3 излиза през 2022 г., ${before} години преди раждането ти.` : at === "0" ? "Gaia DR3 излиза през 2022 г., в годината на раждането ти." : `Gaia DR3 излиза през 2022 г., на твоите ${at} години.`),
+        ref: (ago) => `Gaia DR3 излиза през 2022 г., преди ${ago} години.`,
+      },
+      locGroup: {
+        title: "Местната група", goal: "Познаваш групата галактики, към която принадлежи Млечният път.",
+        text: [
+          "Според НАСА Млечният път принадлежи към група от над 50 галактики, Местната група. Най-големите членове са галактиката Андромеда, Млечният път и галактиката Триъгълник (M33), третата по големина.",
+          "Галактиката Триъгълник е на около 3 милиона светлинни години. Според НАСА тя е един от най-далечните обекти, които наблюдатели с остро зрение могат да видят.",
+        ],
+        task: "Разгледай съзвездието Триъгълник: галактиката Триъгълник е в него.",
+        remember: [
+          "Млечният път принадлежи към Местната група от над 50 галактики.",
+          "Най-големите са Андромеда, Млечният път и Триъгълник.",
+          "Галактиката Триъгълник (M33) е на около 3 милиона светлинни години.",
+        ],
+        you: (n) => `Светлината на галактиката Триъгълник пътува около 3 милиона години: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Светлината на галактиката Триъгълник пътува около 3 милиона години: около ${n} пъти един живот от 30 години.`,
+      },
+      locMagellan: {
+        title: "Магелановите облаци", goal: "Познаваш спътниците на Млечния път.",
+        text: [
+          "Млечният път има малки спътници. Според ЕКА/Хъбъл Големият Магеланов облак е галактика спътник на Млечния път.",
+          "Малкият Магеланов облак е на 200 000 светлинни години в съзвездието Тукан.",
+        ],
+        task: "Разгледай съзвездието Тукан: Малкият Магеланов облак е в него.",
+        remember: [
+          "Големият Магеланов облак е галактика спътник на Млечния път.",
+          "Малкият Магеланов облак е на 200 000 светлинни години.",
+          "Той е в съзвездието Тукан.",
+        ],
+        you: (n) => `Светлината на Малкия Магеланов облак пътува 200 000 години: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Светлината на Малкия Магеланов облак пътува 200 000 години: около ${n} пъти един живот от 30 години.`,
+      },
+      locAndromeda: {
+        title: "Галактиката Андромеда", goal: "Познаваш голямата ни съседна галактика.",
+        text: [
+          "Галактиката Андромеда (M31) е най-голямата галактика в Местната група. Според НАСА тя е на 2,5 милиона светлинни години, в съзвездието Андромеда.",
+          "Въпреки това от тъмно място лесно се вижда с просто око. Светлината, която виждаш тогава, е тръгнала преди 2,5 милиона години.",
+        ],
+        task: "Разгледай съзвездието Андромеда: галактиката Андромеда е в него.",
+        remember: [
+          "Галактиката Андромеда е най-голямата галактика в Местната група.",
+          "Тя е на 2,5 милиона светлинни години.",
+          "От тъмно място се вижда с просто око.",
+        ],
+        you: (n) => `Светлината на Андромеда пътува 2,5 милиона години: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Светлината на Андромеда пътува 2,5 милиона години: около ${n} пъти един живот от 30 години.`,
+      },
+      locApproach: {
+        title: "Андромеда се приближава", goal: "Знаеш какво предсказва НАСА през 2012 г. за Млечния път и Андромеда.",
+        text: [
+          "Според НАСА Андромеда се движи към Млечния път с около 250 000 мили в час, около 400 000 километра в час.",
+          "През 2012 г. НАСА предсказва с данни от „Хъбъл“ челен сблъсък след около четири милиарда години. След около 6 милиарда години двете галактики биха се слели в една.",
+        ],
+        task: "Разгледай още веднъж съзвездието Андромеда: оттам съседката ни се приближава.",
+        remember: [
+          "Андромеда се приближава към нас с около 400 000 km/h.",
+          "НАСА предсказва през 2012 г. сблъсък след около 4 милиарда години.",
+          "След около 6 милиарда години двете биха се слели в една.",
+        ],
+        you: (km) => `От раждането ти Андромеда се е приближила с около ${km} милиарда km (изчислено с 250 000 мили в час).`,
+        ref: (km) => `За 30 години Андромеда се приближава с около ${km} милиарда km (изчислено с 250 000 мили в час).`,
+      },
+      locFuture: {
+        title: "Колко сигурно е бъдещето?", goal: "Знаеш, че една прогноза на науката може да се промени с нови данни.",
+        text: [
+          "През 2025 г. екип на Тил Савала проверява отново, с данни от „Хъбъл“ и „Гая“ на ЕКА. Според ЕКА/Хъбъл шансът двете галактики да се сблъскат през следващите 10 милиарда години е само 50 на 50.",
+          "Така работи науката: прогнозата важи, докато данните я подкрепят. С по-добри измервания сблъсъкът от 2012 г. става възможност.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Проучване от 2025 г. дава само 50 на 50 за сблъсък в рамките на 10 милиарда години.",
+          "То използва данни от „Хъбъл“ и „Гая“ на ЕКА.",
+          "Прогнозите на науката може да се променят с нови данни.",
+        ],
+        you: (n) => `Четирите милиарда години от прогнозата от 2012 г. са около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Четирите милиарда години от прогнозата от 2012 г. са около ${n} пъти един живот от 30 години.`,
       },
       nsWhat: {
         title: "Неутронни звезди", goal: "Знаеш какво е неутронна звезда и колко е плътна.",
@@ -4848,6 +6012,51 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
       kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
       rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
+      nebulaWhat: { q: "Какво е мъглявина според НАСА?", o: ["Огромен облак от прах и газ в космоса", "Планета, покрита с мъгла", "Малка звезда"], e: "Огромен облак от прах и газ в космоса." },
+      nebulaDeath: { q: "Откъде идват някои мъглявини?", o: ["От газа и праха на избухваща умираща звезда", "От моретата на планети", "От Луната"], e: "От газа и праха, изхвърлени при експлозията на умираща звезда, например свръхнова." },
+      nebulaBirth: { q: "Какво става в други мъглявини?", o: ["Започват да се образуват нови звезди", "Умират планети", "Нищо"], e: "Започват да се образуват нови звезди." },
+      pillarsWhere: { q: "Къде са Стълбовете на сътворението?", o: ["В мъглявината Орел в Змия", "На Марс", "В галактиката Андромеда"], e: "В мъглявината Орел (M16) в съзвездието Змия." },
+      pillarsDist: { q: "Колко далеч е мъглявината Орел?", o: ["6500 (ЕКА) или 7000 (НАСА) светлинни години", "65 светлинни години", "6,5 милиона светлинни години"], e: "6500 светлинни години според ЕКА, 7000 според НАСА: страниците не съвпадат." },
+      pillarsWebb: { q: "Кой телескоп показва стълбовете в нова снимка през 2022 г.?", o: ["„Уеб“", "Телескопът на Галилей", "TRAPPIST"], e: "Космическият телескоп „Уеб“, на 19 октомври 2022 г." },
+      horseType: { q: "Каква мъглявина е Конската глава?", o: ["Тъмна мъглявина", "Планетарна мъглявина", "Остатък от свръхнова"], e: "Тъмна мъглявина: тъмен облак от прах и газ." },
+      horseWhere: { q: "В кое съзвездие е Конската глава?", o: ["Орион", "Телец", "Лира"], e: "В Орион." },
+      horseDist: { q: "Колко далеч е Конската глава според ЕКА/Хъбъл?", o: ["Около 1300 светлинни години", "Около 13 светлинни години", "Около 13 милиона светлинни години"], e: "Около 1300 светлинни години." },
+      ringType: { q: "Каква мъглявина е мъглявината Пръстен?", o: ["Планетарна мъглявина", "Тъмна мъглявина", "Звездна детска градина"], e: "Планетарна мъглявина." },
+      ringWhere: { q: "В кое съзвездие е мъглявината Пръстен?", o: ["Лира", "Орион", "Андромеда"], e: "В Лира, на около 2000 светлинни години." },
+      ringFrom: { q: "Откъде идва планетарната мъглявина?", o: ["От изхвърлените слоеве на умираща звезда като Слънцето", "От избухнала планета", "От черна дупка"], e: "От външните слоеве, които изхвърля умираща звезда като Слънцето." },
+      crabType: { q: "Какво е мъглявината Рак?", o: ["Остатък от свръхнова", "Звездна детска градина", "Галактика"], e: "Остатък от свръхнова, в Телец." },
+      crabYear: { q: "Кога китайски астрономи виждат свръхновата на мъглявината Рак?", o: ["През 1054 г.", "През 1954 г.", "През 54 г. пр.н.е."], e: "През 1054 г., като „звезда гостенка“." },
+      crabCore: { q: "Какво има в средата на мъглявината Рак?", o: ["Бързо въртяща се неутронна звезда, пулсар", "Планета", "Нищо"], e: "Бързо въртяща се неутронна звезда, пулсар." },
+      mwShape: { q: "Каква форма има Млечният път?", o: ["Спирала с пречка", "Кълбо", "Пръстен"], e: "Спирала с пречка: диск със спирални ръкави и пречка от звезди в средата." },
+      mwSize: { q: "Колко голям е Млечният път?", o: ["Над 100 000 светлинни години", "Около 100 светлинни години", "Около 100 милиона km"], e: "Над 100 000 светлинни години." },
+      mwStars: { q: "Колко звезди има Млечният път според ЕКА?", o: ["Над 100 милиарда", "Около 8", "Около 100 000"], e: "Над сто милиарда." },
+      orionArm: { q: "Близо до кой ръкав на Млечния път е Слънцето?", o: ["Ръкава на Орион", "Ръкава на Андромеда", "Ръкава на Луната"], e: "Близо до ръкава на Орион, малък, непълен ръкав." },
+      armBetween: { q: "Между кои ръкави е ръкавът на Орион?", o: ["Ръкавите на Стрелец и Персей", "Телец и Лира", "Няма други ръкави"], e: "Между ръкавите на Стрелец и Персей." },
+      centerDist: { q: "Колко далеч е центърът на Млечния път?", o: ["Около 26 000 до 27 000 светлинни години", "Около 4 светлинни години", "Около 2,5 милиона светлинни години"], e: "Около 26 000 (НАСА, 8 kpc) до 27 000 (ЕЮО) светлинни години." },
+      lapTime: { q: "Колко трае една обиколка на Слънцето около центъра?", o: ["Около 230 до 240 милиона години", "Една година", "Около 4,6 милиарда години"], e: "Около 230 милиона (страницата на НАСА за Слънцето) или 240 милиона години (страницата на НАСА за галактиките, ЕКА)." },
+      sunSpeed: { q: "Колко бързо обикаля Слънцето около центъра според НАСА?", o: ["С около 720 000 km/h", "С около 72 km/h", "Със скоростта на светлината"], e: "Средно с около 720 000 km/h." },
+      lapDiffer: { q: "Какво казват страниците на НАСА и ЕКА за времето на една обиколка?", o: ["Не съвпадат: 230 или 240 милиона години", "Всички казват точно 230 милиона", "Не дават число"], e: "Не съвпадат: 230 милиона на една страница, 240 милиона на други." },
+      bandWhat: { q: "Какво е светлата ивица на нощното небе?", o: ["Дискът на нашата галактика", "Облак на Земята", "Светлината на Луната"], e: "Централният диск на нашата галактика." },
+      bandEdge: { q: "Откъде виждаме диска на Млечния път?", o: ["Отвътре, откъм ръба", "Отгоре", "Извън галактиката"], e: "Отвътре, откъм ръба: Слънцето е в диска." },
+      bandDir: { q: "В каква посока е центърът на Млечния път?", o: ["В посока Стрелец", "В посока Андромеда", "В посока Полярната звезда"], e: "В посока на съзвездието Стрелец." },
+      gaiaWhat: { q: "Какво е направила „Гая“ на ЕКА?", o: ["Точна 3D карта на Млечния път", "Първото изображение на черна дупка", "Кацане на Марс"], e: "Точна триизмерна карта на Млечния път." },
+      gaiaCount: { q: "Колко източника съдържа Gaia DR3 (2022 г.)?", o: ["Около 1,8 милиарда", "Около 1800", "Около 18"], e: "1 811 709 771, около 1,8 милиарда." },
+      gaiaEnd: { q: "Кога „Гая“ приключва научните си наблюдения?", o: ["На 15 януари 2025 г.", "През 1990 г.", "Още наблюдава"], e: "На 15 януари 2025 г." },
+      localGroup: { q: "Какво е Местната група?", o: ["Групата галактики, към която принадлежи Млечният път", "Планетите на Слънцето", "Звездите на едно съзвездие"], e: "Групата галактики, към която принадлежи Млечният път." },
+      groupCount: { q: "Колко галактики има в Местната група според НАСА?", o: ["Над 50", "Точно 3", "Около милион"], e: "Над 50." },
+      m33Third: { q: "Коя е третата по големина галактика в Местната група?", o: ["Галактиката Триъгълник (M33)", "Малкият Магеланов облак", "M87"], e: "Галактиката Триъгълник (M33), на около 3 милиона светлинни години." },
+      lmcSat: { q: "Какво е Големият Магеланов облак?", o: ["Галактика спътник на Млечния път", "Мъглявина в Орион", "Облак на Земята"], e: "Галактика спътник на Млечния път." },
+      smcDist: { q: "Колко далеч е Малкият Магеланов облак според ЕКА/Хъбъл?", o: ["200 000 светлинни години", "200 светлинни години", "200 милиона светлинни години"], e: "200 000 светлинни години." },
+      smcWhere: { q: "В кое съзвездие е Малкият Магеланов облак?", o: ["Тукан", "Андромеда", "Орион"], e: "В Тукан." },
+      andDist: { q: "Колко далеч е галактиката Андромеда според НАСА?", o: ["2,5 милиона светлинни години", "2500 светлинни години", "25 милиарда светлинни години"], e: "2,5 милиона светлинни години." },
+      andEye: { q: "Може ли галактиката Андромеда да се види без телескоп?", o: ["Да, от тъмно място с просто око", "Не, никога", "Само от Луната"], e: "Да: от тъмно място лесно се вижда с просто око." },
+      andWhere: { q: "Коя е най-голямата галактика в Местната група?", o: ["Галактиката Андромеда", "Млечният път", "Малкият Магеланов облак"], e: "Галактиката Андромеда." },
+      andSpeed: { q: "Колко бързо се приближава Андромеда според НАСА?", o: ["С около 250 000 мили (400 000 km) в час", "С около 25 km в час", "Тя се отдалечава"], e: "С около 250 000 мили в час, около 400 000 km в час." },
+      collide2012: { q: "Какво предсказва НАСА през 2012 г.?", o: ["Челен сблъсък след около 4 милиарда години", "Сблъсък догодина", "Никога сблъсък"], e: "Челен сблъсък след около четири милиарда години." },
+      merge2012: { q: "Според прогнозата от 2012 г. кога двете галактики биха се слели в една?", o: ["След около 6 милиарда години", "След около 6000 години", "Никога"], e: "След около 6 милиарда години." },
+      chance2025: { q: "Какъв шанс за сблъсък в рамките на 10 милиарда години намира проучването от 2025 г.?", o: ["Само 50 на 50", "100 %", "0 %"], e: "Само 50 на 50." },
+      dataNew: { q: "Какви данни използва проучването от 2025 г.?", o: ["От „Хъбъл“ и „Гая“ на ЕКА", "Само стари рисунки", "От сонда на Андромеда"], e: "Данни от „Хъбъл“ и „Гая“ на ЕКА." },
+      scienceChange: { q: "Какво показва новото проучване за науката?", o: ["Прогнозите може да се променят с по-добри данни", "Прогнозите никога не се променят", "Науката е гадаене"], e: "Прогнозата важи, докато данните я подкрепят; по-добри данни може да я променят." },
       nsForm: { q: "Как се образува неутронна звезда според НАСА?", o: ["На масивна звезда ѝ свършва горивото и тя се срутва", "Две планети се сблъскват", "Комета замръзва"], e: "На масивна звезда ѝ свършва горивото и тя се срутва." },
       nsSize: { q: "Какъв е приблизително диаметърът на неутронна звезда?", o: ["Около 20 km", "Колкото Слънцето", "Около 20 m"], e: "Около 20 километра, с повече маса от Слънцето." },
       nsSugar: { q: "Колко би тежала според НАСА бучка захар от материя на неутронна звезда?", o: ["Около 1 трилион килограма", "Около един грам", "Около един тон"], e: "Около 1 трилион килограма." },
@@ -4960,6 +6169,28 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  if (PATHS.nebula.steps.includes(step) || PATHS.milky.steps.includes(step) || PATHS.local.steps.includes(step)) {
+    const f = nums.you ? s.you : s.ref;
+    // an event before the birth, in its year, or at an age; without a year of birth: how long ago
+    const when = (before, ago) => (before == null ? s.ref(fmt(ago)) : s.you(before > 0 ? fmt(before) : null, before <= 0 ? fmt(Math.abs(before)) : null));
+    switch (step) {
+      case "nebWhat": return f(fmt(nums.orionShare, 1));
+      case "nebPillars": return when(nums.webbBefore, nums.webbAgo);
+      case "nebDark": return f(String(nums.horseYear));
+      case "nebRing": return f(fmt(nums.ringTimes));
+      case "nebCrab": return nums.crabBefore == null ? s.ref(fmt(nums.crabAgo)) : s.you(fmt(nums.crabBefore));
+      case "mwWhat": return f(fmt(nums.mwShare, 3));
+      case "mwArm": return f(fmt(nums.orbits), fmt(nums.centerShare, 2));
+      case "mwOrbit": return f(fmt(Math.round(nums.sunKm)), fmt(nums.lapTimes));
+      case "mwBand": return f(fmt(nums.orbits));
+      case "mwGaia": return when(nums.gaiaBefore, nums.gaiaAgo);
+      case "locGroup": return f(fmt(nums.m33Times));
+      case "locMagellan": return f(fmt(nums.smcTimes));
+      case "locAndromeda": return f(fmt(nums.andTimes));
+      case "locApproach": return f(fmt(Math.round(nums.andKm)));
+      default: return f(fmt(nums.collideTimes));
+    }
+  }
   if (PATHS.compact.steps.includes(step)) {
     const f = nums.you ? s.you : s.ref;
     if (step === "nsWhat") {
@@ -5100,6 +6331,11 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
+  const GALAXY_PICTURE = {
+    nebWhat: 20000, nebPillars: 25000, nebDark: 15000, nebRing: 60000, nebCrab: 30000,
+    mwWhat: 6500, mwArm: 5772, mwOrbit: 5772, mwBand: 8000, mwGaia: 7000,
+    locGroup: 9000, locMagellan: 12000, locAndromeda: 7000, locApproach: 7000, locFuture: 9000,
+  }; // the temperatures of the stars drawn
   const COMPACT_PICTURE = { nsWhat: 30000, nsPulsar: 30000, bhWhat: 3500, bhCenter: 3500, bhImage: 3500 }; // the temperatures of the stars drawn
   const LIFE_PICTURE = { lifeMain: 5772, lifeMass: 2900, lifeGiant: 3500, lifeWhite: 9000, lifeNova: 25000 }; // the temperatures of the stars drawn
   const BIRTH_PICTURE = { birthCloud: 20000, birthProto: 3540, birthDisk: 4109, birthCluster: 12000, birthSun: 5772 }; // the temperatures of the stars drawn
@@ -5107,7 +6343,8 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const NAME_PICTURE = { nameLetters: 3050, nameStars: 5790, nameGreek: 9600, nameCatalog: 2566, nameStories: 5770 }; // the temperatures of the stars drawn
   const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
-    COMPACT_PICTURE[step] ? starCanvas(COMPACT_PICTURE[step], "uni-orb small star", 28)
+    GALAXY_PICTURE[step] ? starCanvas(GALAXY_PICTURE[step], "uni-orb small star", 28)
+    : COMPACT_PICTURE[step] ? starCanvas(COMPACT_PICTURE[step], "uni-orb small star", 28)
     : LIFE_PICTURE[step] ? starCanvas(LIFE_PICTURE[step], "uni-orb small star", 28)
     : BIRTH_PICTURE[step] ? starCanvas(BIRTH_PICTURE[step], "uni-orb small star", 28)
     : STAR_PICTURE[step] ? starCanvas(STAR_PICTURE[step], "uni-orb small star", 28)
@@ -5200,6 +6437,9 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     : path === "birth" ? starCanvas(4109, `${cls} star`, size)
     : path === "life" ? starCanvas(3500, `${cls} star`, size)
     : path === "compact" ? starCanvas(30000, `${cls} star`, size)
+    : path === "nebula" ? starCanvas(20000, `${cls} star`, size)
+    : path === "milky" ? starCanvas(6500, `${cls} star`, size)
+    : path === "local" ? starCanvas(9000, `${cls} star`, size)
     : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);

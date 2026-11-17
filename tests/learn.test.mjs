@@ -119,7 +119,7 @@ test("every step has 3 to 5 facts to remember in every language, and its sources
       assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
     }
     assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
-    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu|www\.iau\.org|heasarc\.gsfc\.nasa\.gov|starchild\.gsfc\.nasa\.gov|www\.jpl\.nasa\.gov|www.cosmos.esa.int|imagine.gsfc.nasa.gov)\//, `${step}: ${src.url}`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu|www\.iau\.org|heasarc\.gsfc\.nasa\.gov|starchild\.gsfc\.nasa\.gov|esahubble.org|esawebb.org|www.esa.int|www\.jpl\.nasa\.gov|www.cosmos.esa.int|imagine.gsfc.nasa.gov)\//, `${step}: ${src.url}`);
   }
 });
 
@@ -411,4 +411,20 @@ test("every learning path belongs to exactly one part of the plan, and every par
   const all = PARTS.flatMap((p) => p.paths);
   for (const path of Object.keys(PATHS)) assert.equal(all.filter((p) => p === path).length, 1, path);
   for (const lang of LANGS) for (const part of PARTS) assert.ok(LEARN_TEXT[lang].parts[part.id]?.length > 3, `${lang} ${part.id}`);
+});
+
+test("part III: nebulae, the Milky Way and the neighbourhood, each step with the visitor's life", () => {
+  const at = (y) => personalNumbers({ age: 2026 - y + 0.4, years: YEARS, star: null, birthYear: y, thisYear: 2026 });
+  const n = at(1995);
+  assert.ok(personalLine("nebCrab", n, "de").includes("941 Jahre vor deiner Geburt"));
+  assert.ok(personalLine("nebDark", n, "de").includes("um das Jahr 726"));
+  assert.ok(personalLine("nebPillars", at(2022), "de").includes("im Jahr deiner Geburt"));
+  assert.ok(personalLine("mwOrbit", n, "de").includes("rund 200 Milliarden km"));
+  assert.ok(personalLine("locApproach", n, "de").includes("rund 110 Milliarden km"));
+  assert.ok(personalLine("locAndromeda", n, "de").includes("80.000-mal"));
+  for (const lang of LANGS) for (const path of ["nebula", "milky", "local"]) for (const step of PATHS[path].steps) for (const nums of [you, nobody, n, at(2022), at(2024)]) {
+    const line = personalLine(step, nums, lang);
+    assert.ok(line && !/undefined|null|NaN|-0/.test(line), `${lang} ${step}: ${line}`);
+  }
+  for (const path of ["nebula", "milky", "local"]) assert.equal(new Set(testQuestions(path, you, "de", 0).map((q) => q.id)).size, 10, path);
 });
