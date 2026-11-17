@@ -486,18 +486,65 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     renderAll();
     document.getElementById("profile-panel")?.scrollTo?.({ top: 0 });
   }
+  // a line icon for each area (24 x 24, drawn in the colour of the text)
+  const AREA_ICONS = {
+    home: '<path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/>',
+    explore: '<circle cx="12" cy="12" r="8.5"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+    learn: '<path d="m2.5 9 9.5-4.5L21.5 9 12 13.5z"/><path d="M6.5 11v4.5c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3V11"/><path d="M21.5 9v5"/>',
+    self: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/><path d="M19 3.5v3M17.5 5h3"/>',
+    collection: '<path d="M12 3.5 14.5 9l6 .6-4.5 4 1.3 5.9L12 16.5l-5.3 3 1.3-5.9-4.5-4 6-.6z"/>',
+    certs: '<circle cx="12" cy="9" r="5.5"/><path d="m8.5 13.5-1.5 7 5-2.5 5 2.5-1.5-7"/>',
+  };
   function tabs() {
     const tx = t();
     const row = el("div", "uni-tabs");
     row.setAttribute("role", "tablist");
     row.setAttribute("aria-label", tx.title);
     for (const a of AREAS) {
-      const b = button(tx.areas[a], "uni-tab", () => show(a));
+      const b = button("", "uni-tab", () => show(a));
+      const i = el("span", "uni-tab-icon");
+      i.setAttribute("aria-hidden", "true");
+      i.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${AREA_ICONS[a]}</svg>`;
+      b.append(i, el("span", "uni-tab-label", tx.areas[a]));
       b.setAttribute("role", "tab");
       b.setAttribute("aria-selected", String(a === area));
       row.append(b);
     }
     return row;
+  }
+  // the experience points at the top of the panel, next to the title
+  function xpChip(tx) {
+    const pr = explorer.progress();
+    const chip = el("span", "uni-xp", `${pr.xp} XP`);
+    chip.title = tx.levelLine(pr.level, pr.xp);
+    return chip;
+  }
+  // a ring cut into parts, one part per path, each filled as far as that path is done (shares from 0 to 1)
+  function segmentRing(shares, size) {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.setAttribute("width", String(size));
+    svg.setAttribute("height", String(size));
+    svg.setAttribute("aria-hidden", "true");
+    svg.classList.add("uni-ring");
+    const part = 100 / shares.length;
+    const gap = 3;
+    shares.forEach((share, i) => {
+      for (const [cls, len] of [["track", part - gap], ["fill", (part - gap) * share]]) {
+        if (len <= 0) continue;
+        const c = document.createElementNS(NS, "circle");
+        c.setAttribute("cx", "50");
+        c.setAttribute("cy", "50");
+        c.setAttribute("r", "42");
+        c.setAttribute("pathLength", "100");
+        c.setAttribute("class", `${cls}${share >= 1 ? " full" : ""}`);
+        c.setAttribute("stroke-dasharray", `${len} ${100 - len}`);
+        c.setAttribute("stroke-dashoffset", String(-(i * part + gap / 2)));
+        svg.append(c);
+      }
+    });
+    return svg;
   }
   // a small certificate (paper and seal) for the tile and the area of the certificates
   function certificatePicture() {
@@ -668,11 +715,37 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     const own = learn?.area(() => renderAll());
     if (own && !own.overview) return own.nodes;
     const paths = own ? section(tx.paths, ...own.nodes) : section(tx.paths, el("p", "hint", tx.learnSoon));
+    if (own) return [foundationsCard(tx), paths, practiceSection(tx)];
+    return [paths, practiceSection(tx)];
+  }
+  // the four foundation paths as one ring: a part per path, filled by its steps and its final test
+  function foundationsCard(tx) {
+    const four = learn.paths().filter((p) => FOUNDATION_PATHS.includes(p.id));
+    const passed = four.filter((p) => p.passed);
+    const all = four.length > 0 && passed.length === four.length;
+    const next = four.find((p) => !p.passed);
+    const card = el("button", `uni-found${all ? " done" : ""}`);
+    card.type = "button";
+    const ring = el("span", "uni-found-ring");
+    ring.append(segmentRing(four.map((p) => (p.passed ? 1 : p.done / (p.all + 1))), 92), el("b", "", `${passed.length}/${four.length}`));
+    const text = el("span", "uni-found-text");
+    const avg = four.length ? Math.round(four.reduce((s, p) => s + p.best, 0) / four.length) : 0;
+    text.append(
+      el("small", "", tx.areas.certs),
+      el("strong", "", tx.certFoundTitle),
+      el("span", "", all ? tx.certFoundPassed(avg, null) : tx.certFoundMissing(passed.length, four.length)),
+      el("span", "uni-found-go", `${all ? tx.areas.certs : next.title} ›`)
+    );
+    card.append(ring, text);
+    card.addEventListener("click", () => (all ? show("certs") : (learn.open(next.id), renderAll())));
+    return card;
+  }
+  function practiceSection(tx) {
     const practice = el("div", "uni-list");
     practice.append(wide(item(dockPicture("dock-games") ?? icon("✦"), tx.qZodiac, tx.qZodiacSub, () => (closePanel?.(), openAtlas?.()))));
     if (openZoneQuiz) practice.append(wide(item(dockPicture("dock-near") ?? icon("◎"), tx.qZone, tx.qZoneSub, () => (closePanel?.(), openZoneQuiz()))));
     if (daily) practice.append(wide(item(dockPicture("dock-daily") ?? icon("?"), tx.qDaily, tx.qDailySub, () => (closePanel?.(), daily.open()))));
-    return [paths, section(tx.practice, practice)];
+    return section(tx.practice, practice);
   }
 
   function selfArea(tx) {
@@ -921,7 +994,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     panel.setAttribute("role", "tabpanel");
     panel.setAttribute("aria-label", tx.areas[area]);
     panel.append(...content);
-    container.replaceChildren(tabs(), panel);
+    container.replaceChildren(xpChip(tx), tabs(), panel);
     // the account (auth.js) belongs to the collection; the stylesheet shows it there, or while it is in the middle of a sign-in
     document.getElementById("profile-panel")?.setAttribute("data-area", area);
   }

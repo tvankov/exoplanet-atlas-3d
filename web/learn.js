@@ -2067,22 +2067,46 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);
 
-  // all the paths: a card each, with its progress
+  // the picture of a path in a ring that fills with its steps and its final test (share from 0 to 1)
+  function ringed(picture, share) {
+    const NS = "http://www.w3.org/2000/svg";
+    const box = el("span", "learn-ring");
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.setAttribute("aria-hidden", "true");
+    for (const [cls, len] of [["track", 100], ["fill", share * 100]]) {
+      if (len <= 0) continue;
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", "50");
+      c.setAttribute("cy", "50");
+      c.setAttribute("r", "46");
+      c.setAttribute("pathLength", "100");
+      c.setAttribute("class", cls);
+      c.setAttribute("stroke-dasharray", `${len} ${100 - len}`);
+      svg.append(c);
+    }
+    box.append(svg, picture);
+    return box;
+  }
+
+  // all the paths: a card each, its picture in a ring of its progress
   function listView(onChange) {
     const tx = t();
-    const list = el("div", "uni-list");
+    const list = el("div", "learn-cards");
     for (const path of Object.keys(PATHS)) {
       const all = PATHS[path].steps.length;
+      const done = doneOf(path);
       const passedIt = has("learnPaths", path);
-      const row = el("button", `uni-item learn-step${passedIt ? " done" : ""}`);
-      row.type = "button";
-      const text = el("span", "uni-item-text");
-      text.append(el("strong", "", tx.paths[path].title), el("small", "", `${tx.path.meta(PATHS[path].minutes)} · ${tx.progress(doneOf(path), all)}`));
-      const arrow = el("span", "uni-arrow", passedIt ? "★" : "›");
-      arrow.setAttribute("aria-hidden", "true");
-      row.append(pathPicture(path, "uni-orb small", 28), text, arrow);
-      row.addEventListener("click", () => (choose(path), (view = "path"), show?.(PATH_VIEWS[path]), track(`learn-path-${path}`), onChange?.()));
-      list.append(row);
+      const card = el("button", `learn-card${passedIt ? " done" : ""}`);
+      card.type = "button";
+      card.append(
+        ringed(pathPicture(path, "learn-card-pic", 56), passedIt ? 1 : done / (all + 1)),
+        el("strong", "", tx.paths[path].title),
+        el("small", "", passedIt ? `★ ${tx.status.done}` : tx.progress(done, all)),
+        el("small", "learn-card-meta", tx.path.meta(PATHS[path].minutes))
+      );
+      card.addEventListener("click", () => (choose(path), (view = "path"), show?.(PATH_VIEWS[path]), track(`learn-path-${path}`), onChange?.()));
+      list.append(card);
     }
     return [list];
   }
