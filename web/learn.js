@@ -62,19 +62,19 @@ export const VIEWS = {
   neighbors: "view:neighborhood", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
-  zodWhat: "Earth", zodPath: "Sun", zodShift: "Sun", zodScience: "Earth", zodLight: "Earth",
-  nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "Earth", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
-  starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
-  birthCloud: "Earth", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "Earth", birthSun: "Sun",
-  lifeMain: "Sun", lifeMass: "Proxima Cen", lifeGiant: "Sun", lifeWhite: "WD 1856+534", lifeNova: "Sun",
-  nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: "Earth", bhCenter: "Earth", bhImage: "Earth",
-  nebWhat: "Earth", nebPillars: "Earth", nebDark: "Earth", nebRing: "Earth", nebCrab: "Earth",
-  mwWhat: "Earth", mwArm: "Sun", mwOrbit: "Sun", mwBand: "Earth", mwGaia: "Sun",
-  locGroup: "Earth", locMagellan: "Earth", locAndromeda: "Earth", locApproach: "Earth", locFuture: "Earth",
-  galWhat: "Earth", galTypes: "Earth", galWhirl: "Earth", galHubble: "Earth", galWebb: "Earth",
-  clWhat: "Earth", clGas: "Earth", clDark: "Earth", clLens: "Earth", clWeb: "Earth",
-  obsBack: "Earth", obsExpand: "Earth", obsCmb: "Earth", obsAge: "Sun", obsFar: "Earth",
-  bbStart: "Earth", bbElements: "Earth", bbDark: "Earth", bbEnergy: "Earth", bbFuture: "Sun",
+  zodWhat: "sky:birth", zodPath: "sky:Oph", zodShift: "sky:birthSign", zodScience: "Earth", zodLight: "sky:birth",
+  nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "sky:Cen", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
+  starWhat: "view:sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
+  birthCloud: "sky:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "sky:Tau", birthSun: "view:solar",
+  lifeMain: "view:sun", lifeMass: "Proxima Cen", lifeGiant: "view:sun", lifeWhite: "WD 1856+534", lifeNova: "sky:Tau",
+  nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: "sky:Sgr", bhCenter: "sky:Sgr", bhImage: "sky:Vir",
+  nebWhat: "sky:Ori", nebPillars: "sky:Ser", nebDark: "sky:Ori", nebRing: "sky:Lyr", nebCrab: "sky:Tau",
+  mwWhat: "sky:Sgr", mwArm: "view:solar", mwOrbit: "view:solar", mwBand: "sky:Sgr", mwGaia: "view:solar",
+  locGroup: "sky:Tri", locMagellan: "sky:Tuc", locAndromeda: "sky:And", locApproach: "sky:And", locFuture: "sky:And",
+  galWhat: "sky:Vir", galTypes: "sky:Vir", galWhirl: "sky:CVn", galHubble: "sky:UMa", galWebb: "sky:Vol",
+  clWhat: "sky:Vir", clGas: "sky:Vir", clDark: "sky:Com", clLens: "sky:Com", clWeb: "sky:Vir",
+  obsBack: "yourStar", obsExpand: "sky:UMa", obsCmb: "Earth", obsAge: "view:solar", obsFar: "sky:UMa",
+  bbStart: "Earth", bbElements: "Earth", bbDark: "Earth", bbEnergy: "Earth", bbFuture: "view:sun",
 };
 // The parts of the plan the paths belong to, in the order of the list (learn.js, listView); "sky" are the paths beside the plan
 export const PARTS = [
@@ -8034,6 +8034,13 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   };
 
   // the task of a step, with "figure:birth" and "figure:birthSign" turned into the visitor's constellations (zodNumbers)
+  // the picture of a step: "sky:birth" and "sky:birthSign" are the visitor's constellations, "yourStar" the visitor's star (as in taskOf)
+  const viewOf = (step) => {
+    const v = VIEWS[step];
+    if (v === "sky:birth" || v === "sky:birthSign") return `sky:${taskOf(v === "sky:birth" ? "zodWhat" : "zodShift").slice(7)}`;
+    if (v === "yourStar") return taskOf("obsBack");
+    return v;
+  };
   const taskOf = (step) => {
     const task = TASKS[step];
     // "yourStar": the visitor's star (from the year of birth), or Proxima Centauri without one
@@ -8153,7 +8160,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
       const arrow = el("span", "uni-arrow", stepDone(step) ? "✓" : "›");
       arrow.setAttribute("aria-hidden", "true");
       row.append(pictureOf(step), t2, arrow);
-      row.addEventListener("click", () => ((view = step), show?.(VIEWS[step]), track(`learn-open-${step}`), onChange?.()));
+      row.addEventListener("click", () => ((view = step), show?.(viewOf(step)), track(`learn-open-${step}`), onChange?.()));
       list.append(row);
     });
     // the final test, open when all steps are done
@@ -8282,7 +8289,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
       done.append(el("strong", "", tx.stepDone(XP_LEARN.step)));
       done.append(
         next
-          ? button(tx.nextStep, "uni-primary", () => ((view = next), show?.(VIEWS[next]), onChange?.()))
+          ? button(tx.nextStep, "uni-primary", () => ((view = next), show?.(viewOf(next)), onChange?.()))
           : button(tx.toTest, "uni-primary", () => ((view = doneCount() === steps.length ? "test" : "path"), onChange?.()))
       );
       parts.push(done);
