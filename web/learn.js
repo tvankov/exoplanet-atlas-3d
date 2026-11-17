@@ -5233,11 +5233,11 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     const out = [];
     for (const part of PARTS) {
       const paths = part.paths.filter((p) => PATHS[p]);
-      if (paths.length) out.push(el("h4", "learn-part", tx.parts[part.id]), cards(paths));
+      if (paths.length) out.push(el("h4", "learn-part", tx.parts[part.id]), cards(paths, onChange));
     }
     return out;
   }
-  function cards(paths) {
+  function cards(paths, onChange) {
     const tx = t();
     const list = el("div", "learn-cards");
     for (const path of paths) {
