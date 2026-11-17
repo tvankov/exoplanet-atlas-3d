@@ -529,7 +529,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     svg.setAttribute("aria-hidden", "true");
     svg.classList.add("uni-ring");
     const part = 100 / shares.length;
-    const gap = 3;
+    const gap = shares.length > 1 ? 3 : 0; // one part is a closed ring
     shares.forEach((share, i) => {
       for (const [cls, len] of [["track", part - gap], ["fill", (part - gap) * share]]) {
         if (len <= 0) continue;
@@ -579,18 +579,18 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
   function heroPart(tx, p, last) {
     const pr = explorer.progress();
     const hero = el("div", "uni-hero");
+    const ring = el("span", "uni-hero-ring");
+    ring.setAttribute("role", "progressbar");
+    ring.setAttribute("aria-valuemin", "0");
+    ring.setAttribute("aria-valuemax", "100");
+    ring.setAttribute("aria-valuenow", String(Math.round(pr.share * 100)));
+    ring.setAttribute("aria-label", pr.toNext);
+    ring.append(segmentRing([Math.max(0.02, Math.min(1, pr.share))], 84), el("b", "", String(pr.level)));
+    const text = el("div", "uni-hero-text");
     const level = el("div", "uni-level");
     level.append(el("span", "uni-badge", tx.levelLine(pr.level, pr.xp)));
-    const bar = el("div", "uni-bar");
-    bar.setAttribute("role", "progressbar");
-    bar.setAttribute("aria-valuemin", "0");
-    bar.setAttribute("aria-valuemax", "100");
-    bar.setAttribute("aria-valuenow", String(Math.round(pr.share * 100)));
-    bar.setAttribute("aria-label", pr.toNext);
-    const fill = el("i", "");
-    fill.style.width = `${Math.max(2, Math.min(100, pr.share * 100))}%`;
-    bar.append(fill);
-    hero.append(el("strong", "uni-hello", last ? tx.heroBack(p.name) : tx.hello(p.name)), level, bar, el("small", "hint", pr.toNext));
+    text.append(el("strong", "uni-hello", last ? tx.heroBack(p.name) : tx.hello(p.name)), level, el("small", "hint", pr.toNext));
+    hero.append(ring, text);
     return hero;
   }
 

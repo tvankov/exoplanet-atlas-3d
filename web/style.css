@@ -4614,3 +4614,89 @@ input.uni-date {
     transform: none;
   }
 }
+
+/* The glass look for the other areas of My Universe: the greeting as a card with the level in a ring, the lists and the folds as glass cards,
+   the numbers of the collection as small cards, and the same rounding everywhere. The row of medals of the badges moves under its title,
+   where it no longer covers it. */
+.uni-hero {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  background: radial-gradient(circle at 12% 50%, rgba(124, 255, 178, 0.12), transparent 60%), rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+}
+.uni-hero-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+}
+.uni-hero-ring svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.uni-hero-ring b {
+  font-size: 26px;
+  font-weight: 700;
+}
+.uni-hero-text {
+  min-width: 0;
+}
+.uni-hero-text .uni-hello {
+  font-size: 19px;
+}
+#universe-body .uni-hero-text .hint {
+  display: block;
+  margin-top: 6px;
+}
+#universe-body .uni-section > .uni-list,
+#universe-body .uni-area > .uni-list,
+#universe-body .uni-section > .uni-fold.rich,
+#universe-body .uni-area > .uni-fold.rich {
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+}
+#universe-body .uni-area > .uni-fold.rich {
+  margin: 0 0 12px;
+}
+#universe-body .uni-section > .uni-fold.rich {
+  margin-top: 8px;
+}
+#universe-body .uni-section > .uni-list + .uni-fold.rich {
+  margin-top: 8px;
+}
+.uni-stats {
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.uni-stat {
+  padding: 12px 6px 10px;
+  background: radial-gradient(circle at 50% 0%, rgba(124, 255, 178, 0.1), transparent 70%), rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+.uni-stat b {
+  font-size: 22px;
+  color: #7cffb2;
+}
+.uni-tile,
+#universe-body button.uni-tile,
+.uni-discover,
+.uni-cert,
+.uni-cert-empty {
+  border-radius: 18px;
+}
+.uni-fold-head {
+  flex-wrap: wrap;
+}
+.uni-fold-head .medal-strip {
+  flex-basis: 100%;
+  margin: 2px 0 0 40px;
+}
