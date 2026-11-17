@@ -31,6 +31,12 @@ export const UNIVERSE_TEXT = {
     certNoName: "an explorer", certShare: "Share as a picture", certOpen: "To the learning path",
     certPassed: (p, d) => (d ? `Passed with ${p} % · ${d}` : `Passed with ${p} %`), certMissing: (d, all) => `${d} of ${all} steps · final test still open`,
     certMessage: (title) => `I passed the learning path "${title}" in Space Explorer. Try it yourself:`,
+    certFoundTitle: "Foundations of Planetary Science", certFoundGoal: "Our Solar System, Alpha Centauri, exoplanets and the search for habitable worlds",
+    certFoundCompleted: "has completed all four foundation learning paths",
+    certFoundScore: (p, d) => (d ? `with an average of ${p} % in the final tests, on ${d}` : `with an average of ${p} % in the final tests`),
+    certFoundPassed: (p, d) => (d ? `All four passed, on average ${p} % · ${d}` : `All four passed, on average ${p} %`),
+    certFoundMissing: (d, all) => `${d} of ${all} learning paths passed`, certFoundOpen: "To the next learning path",
+    certFoundMessage: (title) => `I completed "${title}" in Space Explorer: four learning paths, from the Solar System to habitable worlds. Try it yourself:`,
     certShareMenu: "Share", certSharePicture: "Share the picture", certSavePicture: "Save the picture", certLinkedInProfile: "Add to my LinkedIn profile",
     certLinkedInPost: "Post on LinkedIn", certMail: "E-mail", certCopy: "Copy the link", certCopied: "Link copied.",
     certLinkHint: "The link leads straight to this learning path, so that others can try it.",
@@ -88,6 +94,12 @@ export const UNIVERSE_TEXT = {
     certNoName: "ein Explorer", certShare: "Als Bild teilen", certOpen: "Zum Lernpfad",
     certPassed: (p, d) => (d ? `Bestanden mit ${p} % · ${d}` : `Bestanden mit ${p} %`), certMissing: (d, all) => `${d} von ${all} Schritten · Abschlusstest noch offen`,
     certMessage: (title) => `Ich habe in Space Explorer den Lernpfad „${title}“ bestanden. Probier ihn selbst aus:`,
+    certFoundTitle: "Grundlagen der Planetenwissenschaft", certFoundGoal: "Unser Sonnensystem, Alpha Centauri, Exoplaneten und die Suche nach bewohnbaren Welten",
+    certFoundCompleted: "alle vier Grundlagen-Lernpfade abgeschlossen hat",
+    certFoundScore: (p, d) => (d ? `mit durchschnittlich ${p} % in den Abschlusstests, am ${d}` : `mit durchschnittlich ${p} % in den Abschlusstests`),
+    certFoundPassed: (p, d) => (d ? `Alle vier bestanden, im Schnitt ${p} % · ${d}` : `Alle vier bestanden, im Schnitt ${p} %`),
+    certFoundMissing: (d, all) => `${d} von ${all} Lernpfaden bestanden`, certFoundOpen: "Zum nächsten Lernpfad",
+    certFoundMessage: (title) => `Ich habe in Space Explorer „${title}“ abgeschlossen: vier Lernpfade, vom Sonnensystem bis zu bewohnbaren Welten. Probier es selbst aus:`,
     certShareMenu: "Teilen", certSharePicture: "Bild teilen", certSavePicture: "Bild speichern", certLinkedInProfile: "Zum LinkedIn-Profil hinzufügen",
     certLinkedInPost: "Auf LinkedIn posten", certMail: "E-Mail", certCopy: "Link kopieren", certCopied: "Link kopiert.",
     certLinkHint: "Der Link führt direkt zu diesem Lernpfad, damit andere ihn selbst ausprobieren können.",
@@ -145,6 +157,12 @@ export const UNIVERSE_TEXT = {
     certNoName: "エクスプローラー", certShare: "画像として共有", certOpen: "学習コースへ",
     certPassed: (p, d) => (d ? `${p} %で合格 · ${d}` : `${p} %で合格`), certMissing: (d, all) => `${all}ステップ中${d}完了 · 最終テストはまだ`,
     certMessage: (title) => `Space Explorerで学習コース「${title}」に合格しました。あなたもやってみませんか：`,
+    certFoundTitle: "惑星科学の基礎", certFoundGoal: "私たちの太陽系、ケンタウルス座アルファ星、系外惑星、住める世界さがし",
+    certFoundCompleted: "4つの基礎学習コースをすべて修了したことを証明します",
+    certFoundScore: (p, d) => (d ? `最終テスト平均${p} %、${d}` : `最終テスト平均${p} %`),
+    certFoundPassed: (p, d) => (d ? `4つすべて合格、平均${p} % · ${d}` : `4つすべて合格、平均${p} %`),
+    certFoundMissing: (d, all) => `${all}コース中${d}コース合格`, certFoundOpen: "次の学習コースへ",
+    certFoundMessage: (title) => `Space Explorerで「${title}」を修了しました。太陽系から住める世界まで、4つの学習コースです。あなたもやってみませんか：`,
     certShareMenu: "共有", certSharePicture: "画像を共有", certSavePicture: "画像を保存", certLinkedInProfile: "LinkedInのプロフィールに追加",
     certLinkedInPost: "LinkedInに投稿", certMail: "メール", certCopy: "リンクをコピー", certCopied: "リンクをコピーしました。",
     certLinkHint: "リンクはこの学習コースに直接つながるので、ほかの人もためせます。",
@@ -202,6 +220,12 @@ export const UNIVERSE_TEXT = {
     certNoName: "изследовател", certShare: "Сподели като снимка", certOpen: "Към учебната пътека",
     certPassed: (p, d) => (d ? `Издържан с ${p} % · ${d}` : `Издържан с ${p} %`), certMissing: (d, all) => `${d} от ${all} стъпки · финалният тест предстои`,
     certMessage: (title) => `Издържах учебната пътека „${title}“ в Space Explorer. Опитай и ти:`,
+    certFoundTitle: "Основи на планетологията", certFoundGoal: "Нашата Слънчева система, Алфа Кентавър, екзопланетите и търсенето на обитаеми светове",
+    certFoundCompleted: "завърши и четирите основни учебни пътеки",
+    certFoundScore: (p, d) => (d ? `със среден резултат ${p} % на финалните тестове, на ${d}` : `със среден резултат ${p} % на финалните тестове`),
+    certFoundPassed: (p, d) => (d ? `И четирите издържани, средно ${p} % · ${d}` : `И четирите издържани, средно ${p} %`),
+    certFoundMissing: (d, all) => `${d} от ${all} учебни пътеки издържани`, certFoundOpen: "Към следващата учебна пътека",
+    certFoundMessage: (title) => `Завърших „${title}“ в Space Explorer: четири учебни пътеки, от Слънчевата система до обитаеми светове. Опитай и ти:`,
     certShareMenu: "Сподели", certSharePicture: "Сподели снимката", certSavePicture: "Запази снимката", certLinkedInProfile: "Добави към профила ми в LinkedIn",
     certLinkedInPost: "Публикувай в LinkedIn", certMail: "Имейл", certCopy: "Копирай връзката", certCopied: "Връзката е копирана.",
     certLinkHint: "Връзката води направо към тази учебна пътека, за да могат и други да я опитат.",
@@ -754,7 +778,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
   // The certificates: one per learning path (learn.js), earned by passing its final test. A passed one shows the certificate itself and can
   // be shared as a picture; one not passed yet is a pale preview with what is still missing. The date is the day of its badge.
   function certificateData(tx, p) {
-    const badge = explorer.getState().badges?.find((b) => b.id === `${p.id}-scholar`);
+    const badge = explorer.getState().badges?.find((b) => b.id === (p.badge ?? `${p.id}-scholar`));
     const date = badge?.t ? new Date(badge.t).toLocaleDateString(getLang(), { day: "numeric", month: "long", year: "numeric" }) : null;
     return {
       name: explorer.getProfile().name || tx.certNoName,
@@ -763,15 +787,21 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       score: p.best,
       date,
       passed: p.passed,
-      labels: { heading: tx.certHeading, confirms: tx.certConfirms, completed: tx.certCompleted, scoreLine: tx.certScoreLine, privateLine: tx.certPrivate },
+      labels: {
+        heading: tx.certHeading,
+        confirms: tx.certConfirms,
+        completed: p.found ? tx.certFoundCompleted : tx.certCompleted,
+        scoreLine: p.found ? tx.certFoundScore : tx.certScoreLine,
+        privateLine: tx.certPrivate,
+      },
     };
   }
   // The ways to share a certificate. The picture goes through the share sheet (or into a file); the others share the link, which leads
   // straight into the learning path (?learn=<path>), so that every share invites others to try it. Only the title of the path and the link
   // go to the other service, never the name of the visitor (that is on the picture alone, which the visitor sends where they like).
   function shareMenu(tx, p, d) {
-    const link = `https://${SITE}/?ref=share-certificate&learn=${p.id}`;
-    const message = tx.certMessage(p.title);
+    const link = `https://${SITE}/?ref=share-certificate&learn=${p.found ? "solar" : p.id}`; // the four start with the first path
+    const message = (p.found ? tx.certFoundMessage : tx.certMessage)(p.title);
     const q = encodeURIComponent;
     const menu = el("div", "uni-share");
     menu.hidden = true;
@@ -780,7 +810,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     const canShareFiles = !!navigator.canShare;
     if (canShareFiles) menu.append(button(tx.certSharePicture, "uni-share-item", () => picture(false)));
     menu.append(button(tx.certSavePicture, "uni-share-item", () => picture(true)));
-    const badge = explorer.getState().badges?.find((b) => b.id === `${p.id}-scholar`);
+    const badge = explorer.getState().badges?.find((b) => b.id === (p.badge ?? `${p.id}-scholar`));
     const when = badge?.t ? new Date(badge.t) : new Date();
     const out = [
       ["linkedin-profile", tx.certLinkedInProfile, `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${q(p.title)}&organizationName=${q("Space Explorer")}&issueYear=${when.getFullYear()}&issueMonth=${when.getMonth() + 1}&certUrl=${q(link)}`],
@@ -817,6 +847,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     );
     return menu;
   }
+  const FOUNDATION_PATHS = ["solar", "alpha", "exo", "hab"]; // the certificate of the four (and its badge in explorer.js)
   function certsArea(tx) {
     const paths = learn?.paths() ?? [];
     const intro = el("div", "uni-cert-empty");
@@ -825,9 +856,24 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     text.append(el("strong", "", any ? tx.areas.certs : tx.certNone), el("p", "", any ? tx.certSome : tx.certIntro), el("p", "hint", tx.certRule));
     intro.append(certificatePicture(), text);
     const list = el("div", "uni-certs");
-    for (const p of paths) {
+    // first the certificate of the four foundation paths: passed when all four are, with the average of their final tests
+    const four = paths.filter((p) => FOUNDATION_PATHS.includes(p.id));
+    const passedFour = four.filter((p) => p.passed);
+    const found = {
+      id: "foundations",
+      found: true,
+      badge: "foundations",
+      title: tx.certFoundTitle,
+      goal: tx.certFoundGoal,
+      done: passedFour.length,
+      all: four.length,
+      passed: four.length > 0 && passedFour.length === four.length,
+      best: four.length ? Math.round(four.reduce((s, p) => s + p.best, 0) / four.length) : 0,
+      next: four.find((p) => !p.passed)?.id,
+    };
+    for (const p of [found, ...paths]) {
       const d = certificateData(tx, p);
-      const card = el("div", `uni-cert${p.passed ? "" : " locked"}`);
+      const card = el("div", `uni-cert${p.passed ? "" : " locked"}${p.found ? " main" : ""}`);
       const c = document.createElement("canvas");
       c.width = 230;
       c.height = 240;
@@ -836,7 +882,8 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       c.setAttribute("aria-label", `${tx.certHeading}: ${p.title}`);
       drawCertificate(c.getContext("2d"), 0, 0, 230, d);
       const info = el("div", "uni-cert-text");
-      info.append(el("strong", "", p.title), el("small", "", p.passed ? tx.certPassed(p.best, d.date) : tx.certMissing(p.done, p.all)));
+      const line = p.found ? (p.passed ? tx.certFoundPassed(p.best, d.date) : tx.certFoundMissing(p.done, p.all)) : p.passed ? tx.certPassed(p.best, d.date) : tx.certMissing(p.done, p.all);
+      info.append(el("strong", "", p.title), el("small", "", line));
       const row = el("div", "uni-actions");
       if (p.passed) {
         const menu = shareMenu(tx, p, d);
@@ -848,7 +895,8 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
         row.append(toggle);
         info.append(row, menu);
       } else {
-        row.append(button(tx.certOpen, "uni-link", () => (learn.open(p.id), show("learn"))));
+        const target = p.found ? p.next : p.id;
+        row.append(button(p.found ? tx.certFoundOpen : tx.certOpen, "uni-link", () => (learn.open(target), show("learn"))));
         info.append(row);
       }
       card.append(c, info);

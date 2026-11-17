@@ -453,6 +453,20 @@ const EMBLEM = {
     g.stroke();
     await drawPlanet(g, "Earth", r, r, r * 0.36);
   },
+  // the foundations: the Sun with the four worlds of the four paths round it (Earth, Proxima b, a hot Jupiter, a temperate world)
+  foundations: async (g, r) => {
+    drawStar(g, r, r, r * 0.42, starColor(5772));
+    g.strokeStyle = "rgba(255,231,176,0.55)";
+    g.lineWidth = r * 0.03;
+    g.beginPath();
+    g.arc(r, r, r * 0.66, 0, TAU);
+    g.stroke();
+    const worlds = ["Earth", exoLook(218), exoLook(1300), exoLook(270)];
+    for (const [i, w] of worlds.entries()) {
+      const a = -Math.PI / 2 + (i * TAU) / 4;
+      await drawPlanet(g, w, r + Math.cos(a) * r * 0.66, r + Math.sin(a) * r * 0.66, r * 0.14);
+    }
+  },
   // ten missions: ten lights round the number
   regular: (g, r) => {
     for (let i = 0; i < 10; i++) {

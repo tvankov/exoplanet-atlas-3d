@@ -160,6 +160,12 @@ export const BADGES = [
     en: ["Seeker of worlds", "Passed the final test of The search for habitable worlds"], de: ["Weltensucher", "Den Abschlusstest von „Die Suche nach bewohnbaren Welten“ bestanden"],
     ja: ["世界をさがす人", "「住める世界をさがして」の最終テストに合格した"], bg: ["Търсач на светове", "Издържа финалния тест на „Търсенето на обитаеми светове“"],
   },
+  {
+    // all four foundation paths (the certificate of the four in universe.js)
+    id: "foundations", count: (t) => ["solar", "alpha", "exo", "hab"].filter((p) => t.learnPaths?.includes(p)).length, need: 4,
+    en: ["Foundations of Planetary Science", "Passed all four foundation learning paths"], de: ["Grundlagen der Planetenwissenschaft", "Alle vier Grundlagen-Lernpfade bestanden"],
+    ja: ["惑星科学の基礎", "4つの基礎学習コースすべてに合格した"], bg: ["Основи на планетологията", "Издържа и четирите основни учебни пътеки"],
+  },
 ];
 
 // Each badge with how far the visitor is: [{ id, have (at most need), need, earned }]. total: state.total; earned: the ids already earned.

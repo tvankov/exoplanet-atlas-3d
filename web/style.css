@@ -4365,3 +4365,9 @@ input.uni-date {
   font-size: 12px;
   opacity: 0.7;
 }
+
+/* the certificate of the four foundation paths: first and a little brighter */
+.uni-cert.main {
+  border-color: rgba(255, 213, 128, 0.45);
+  background: rgba(255, 213, 128, 0.06);
+}
