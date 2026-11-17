@@ -151,11 +151,12 @@ test("Alpha Centauri: the visitor's numbers, the trip at the speed of Voyager 1,
   assert.ok(ids.includes("proximaLight") && !ids.includes("proximaLeft"));
 });
 
-test("Alpha Centauri: a final test of 10 different questions, and a step that needs no task", () => {
+test("Alpha Centauri: a final test of 10 different questions, and the pair A and B as a place of the map", () => {
   const t1 = testQuestions("alpha", you, "de", 0);
   assert.equal(t1.length, 10);
   assert.equal(new Set(t1.map((q) => q.id)).size, 10);
-  assert.equal(TASKS.pair, null);
+  assert.equal(TASKS.pair, "Alpha Centauri A");
+  assert.equal(VIEWS.pair, "Alpha Centauri A");
   assert.ok(LEARN_TEXT.de.paths.alpha.title.includes("Alpha Centauri"));
 });
 

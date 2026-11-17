@@ -23,7 +23,7 @@ export const PATHS = {
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
 export const TASKS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale",
-  neighbors: "figure:Cen", pair: null, proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
+  neighbors: "figure:Cen", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
 };
@@ -31,7 +31,7 @@ export const TASKS = {
 // of the step. The task above is the visitor's own action; this is only the picture behind the text.
 export const VIEWS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "Neptune",
-  neighbors: "Proxima Cen", pair: "Proxima Cen", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
+  neighbors: "Proxima Cen", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
 };
@@ -416,7 +416,7 @@ export const LEARN_TEXT = {
           "Alpha Centauri A and B are a pair of stars that go round a common centre of gravity once every 80 years. At their closest they are about 11 times as far apart as the Earth and the Sun.",
           "A is the same type of star as our Sun (G2) and a little bigger; B (type K1) is a little smaller. In 2025 the James Webb Space Telescope found signs of a possible giant planet round A, about as heavy as Saturn. Whether it is really there is still an open question.",
         ],
-        task: "There is no task in the 3D view for this step: A and B are not in the map yet. Answer the questions, then the step is done.", // no task in the 3D view: A and B are not in the map
+        task: "Fly to Alpha Centauri A: B shines beside it. The gap between the two is drawn smaller than it is.",
         remember: [
           "Alpha Centauri A and B go round each other once every 80 years.",
           "A is the same type of star as the Sun and a little bigger, B a little smaller.",
@@ -830,7 +830,7 @@ export const LEARN_TEXT = {
           "Alpha Centauri A und B sind ein Sternpaar, das alle 80 Jahre einmal um einen gemeinsamen Schwerpunkt läuft. Am nächsten kommen sie sich auf etwa den 11-fachen Abstand von Erde und Sonne.",
           "A ist ein Stern derselben Art wie unsere Sonne (G2) und etwas größer; B (Typ K1) ist etwas kleiner. 2025 fand das James-Webb-Weltraumteleskop Hinweise auf einen möglichen Riesenplaneten um A, etwa so schwer wie Saturn. Ob es ihn wirklich gibt, ist noch eine offene Frage.",
         ],
-        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht: A und B sind noch nicht auf der Karte. Beantworte die Fragen, dann ist der Schritt geschafft.", // no task in the 3D view: A and B are not in the map
+        task: "Flieg zu Alpha Centauri A: Daneben leuchtet B. Der Abstand zwischen den beiden ist kleiner gezeichnet, als er ist.",
         remember: [
           "Alpha Centauri A und B laufen alle 80 Jahre einmal umeinander.",
           "A ist ein Stern derselben Art wie die Sonne und etwas größer, B etwas kleiner.",
@@ -1244,7 +1244,7 @@ export const LEARN_TEXT = {
           "アルファ・ケンタウリAとBは、共通の重心のまわりを80年に1回まわる2つの星です。いちばん近づくときの間隔は、地球と太陽の距離の約11倍です。",
           "Aは私たちの太陽と同じタイプの星（G2）で、少し大きく、B（K1型）は少し小さい星です。2025年、ジェームズ・ウェッブ宇宙望遠鏡が、Aのまわりに土星くらいの重さの巨大惑星があるかもしれない手がかりを見つけました。本当にあるかどうかは、まだ未解決の問いです。",
         ],
-        task: "このステップには3D表示での課題がありません。AとBはまだ地図にないからです。問題に答えれば、ステップ完了です。", // no task in the 3D view: A and B are not in the map
+        task: "ケンタウルス座アルファ星Aへ飛んでみましょう。となりでBが光っています。2つの星の間の距離は、実際より小さく描かれています。",
         remember: [
           "アルファ・ケンタウリAとBは、80年に1回たがいのまわりをまわります。",
           "Aは太陽と同じタイプの星で少し大きく、Bは少し小さい星です。",
@@ -1658,7 +1658,7 @@ export const LEARN_TEXT = {
           "Алфа Кентавър A и B са двойка звезди, които обикалят около общ център на тежестта веднъж на 80 години. Когато са най-близо, разстоянието между тях е около 11 пъти разстоянието Земя–Слънце.",
           "A е звезда от същия вид като нашето Слънце (G2) и е малко по-голяма; B (тип K1) е малко по-малка. През 2025 г. космическият телескоп „Джеймс Уеб“ откри следи от възможна гигантска планета около A, тежка колкото Сатурн. Дали тя наистина съществува, е още открит въпрос.",
         ],
-        task: "За тази стъпка няма задача в 3D изгледа: A и B още ги няма на картата. Отговори на въпросите и стъпката е готова.", // no task in the 3D view: A and B are not in the map
+        task: "Полети до Алфа Кентавър A: до нея свети B. Разстоянието между двете е нарисувано по-малко, отколкото е.",
         remember: [
           "Алфа Кентавър A и B обикалят една около друга веднъж на 80 години.",
           "A е звезда от същия вид като Слънцето и е малко по-голяма, B е малко по-малка.",

@@ -2668,6 +2668,17 @@ function exoSystem(star) {
     const toMap = (au) => (real ? REAL_K * au : Math.min(MAX_ORBIT, 0.15 * Math.sqrt(au / auMin)));
     addZone(system, toMap(zone.inner), toMap(zone.outer));
   }
+  if (star.companion && !real) {
+    const c = star.companion;
+    const r = drawnStarRadius(c.st_rad);
+    const body = starBody(c.color, c.hostname, r);
+    body.position.set(COMPANION_PLACE, 0, 0);
+    body.add(starGlow(c.color, r * 7));
+    const label = labelSprite(c.hostname);
+    body.add(label);
+    system.group.add(body);
+    system.companion = body;
+  }
   system.star = star; // a click on one of its planets needs the star data for the story
   return system;
 }
@@ -3715,7 +3726,9 @@ function runSearch() {
   if (query.length < 2) return;
   trackOnce("search-used");
   searchIndex ??= stars.flatMap((star) =>
-    star.planets.map((planet) => ({ key: `${planet.pl_name} ${star.hostname}`.toLowerCase(), star, planet }))
+    star.planets.length
+      ? star.planets.map((planet) => ({ key: `${planet.pl_name} ${star.hostname}`.toLowerCase(), star, planet }))
+      : [{ key: star.hostname.toLowerCase(), star, planet: null }] // a star without planets (Alpha Centauri A and B)
   );
   const hits = searchIndex
     .filter((e) => e.key.includes(query))
@@ -3733,14 +3746,25 @@ function runSearch() {
   }
   for (const { star, planet } of hits) {
     const name = document.createElement("span");
-    name.textContent = planet.pl_name;
+    name.textContent = planet?.pl_name ?? star.hostname;
     const info = document.createElement("small");
-    info.textContent = `${star.hostname} · ${star.dist_ly.toFixed(1)} ${UI[lang].lightYears}`;
+    info.textContent = planet ? `${star.hostname} · ${star.dist_ly.toFixed(1)} ${UI[lang].lightYears}` : `${star.dist_ly.toFixed(1)} ${UI[lang].lightYears}`;
     const label = document.createElement("div");
     label.append(name, info);
     const row = document.createElement("div");
     row.className = "row";
-    row.append(label, viewButtons(star, planet));
+    let views;
+    if (planet) views = viewButtons(star, planet);
+    else {
+      views = document.createElement("div");
+      views.className = "views";
+      const fly = document.createElement("button");
+      fly.type = "button";
+      fly.textContent = UI[lang].flyTo;
+      fly.addEventListener("click", () => showLoneStar(star));
+      views.append(fly);
+    }
+    row.append(label, views);
     const li = document.createElement("li");
     li.append(row);
     searchResults.append(li);
@@ -5037,7 +5061,24 @@ function showPlace(to, keepView = false, systemOnly = false) {
     showSystem(EARTH.star, EARTH.planet);
   } else if (to.star.planets.length) {
     showSystem(to.star, to.star.planets[0]);
+  } else {
+    showLoneStar(to.star);
   }
+}
+// A star without planets (Alpha Centauri A or B): the camera flies to it; there is no planet to choose, so no ring and no story.
+function showLoneStar(star) {
+  leaveCloseup();
+  current = null;
+  ring.visible = false;
+  updateCloseupButton();
+  if (realScale) return setHome(star);
+  if (activeExo?.star !== star) {
+    if (activeExo) disposeSystem(activeExo);
+    activeExo = exoSystem(star);
+  }
+  const target = toMapPosition(star, new THREE.Vector3());
+  activeExo.group.position.copy(target);
+  startFlight(() => target, activeExo.viewDistance);
 }
 
 // The camera cuts away everything closer than its near plane (0.01). A trip ends 1.5 radii from a planet that is 0.0135 wide
@@ -5330,6 +5371,22 @@ let measureB = null;
 const measureButton = document.getElementById("measure");
 const measureNote = document.getElementById("measure-note");
 const SUN_POINT = { hostname: "Sun", x: 0, y: 0, z: 0 };
+
+// Alpha Centauri A and B, the bright pair beside Proxima. They have no confirmed planet, so the NASA table (stars.json) does not have them, and
+// the Gaia layer has no entry for them either; they are added here as two stars without planets, each the companion of the other. Direction:
+// Hipparcos, new reduction (van Leeuwen 2007, HIP 71683 and 71681), moved to J2000 by the proper motion as in src/build_constellation_stars.py.
+// Distance (parallax 747.17 mas), radii and effective temperatures: Kervella et al. 2017, A&A 597, A137 ("The radii and limb darkenings of
+// alpha Centauri A and B"), Table 5. Colour: teff_to_hex of src/transform.py. Spectral types G2 V and K1 V as in the learning path.
+const ALPHA_CEN_COMMON = { sy_dist: 1.33838, dist_ly: 4.37, x: -1.63, y: -1.36, z: -3.81, st_mass: null, dist_from_gaia: false, rad_missing: false, teff_missing: false, planets: [] };
+const ALPHA_CEN = [
+  { ...ALPHA_CEN_COMMON, hostname: "Alpha Centauri A", ra: 219.9020577, dec: -60.8339939, glon: 315.73417, glat: -0.67966, st_teff: 5795, st_rad: 1.2234, st_spectype: "G2 V", color: "#ffefd5" },
+  { ...ALPHA_CEN_COMMON, hostname: "Alpha Centauri B", ra: 219.8960952, dec: -60.8375288, glon: 315.73008, glat: -0.68171, st_teff: 5231, st_rad: 0.8632, st_spectype: "K1 V", color: "#ffe1a8" },
+];
+ALPHA_CEN[0].companion = ALPHA_CEN[1];
+ALPHA_CEN[1].companion = ALPHA_CEN[0];
+// Where the companion is drawn beside its star (map units): a picture place, not the distance. In reality the two are 11 to 35 times as far
+// apart as the Earth and the Sun, and they go round each other in about 80 years.
+const COMPANION_PLACE = 0.15;
 const MEASURE_COLOR = 0xffd166;
 const measureLine = new THREE.Line(
   new THREE.BufferGeometry(),
@@ -5468,7 +5525,7 @@ const hintLine = document.getElementById("hint-line");
 const TOUCH = window.matchMedia("(pointer: coarse)").matches;
 const res = await fetch("data/stars.json");
 const data = await res.json();
-stars = data.stars;
+stars = [...data.stars, ...ALPHA_CEN];
 rule = data.rule;
 // The Sun is not in the NASA table, its radius and temperature are the textbook values.
 const sunZone = zoneAu({ st_rad: 1, st_teff: 5772 });
@@ -5510,7 +5567,7 @@ let hostList = null;
 let namedList = null;
 myStar = initMyStar({
   getLang: () => lang,
-  hosts: () => (hostList ??= stars.map((s) => ({ name: s.hostname, dist: s.dist_ly, planets: s.planets.length, teff: s.teff_missing ? null : s.st_teff }))),
+  hosts: () => (hostList ??= stars.filter((s) => s.planets.length).map((s) => ({ name: s.hostname, dist: s.dist_ly, planets: s.planets.length, teff: s.teff_missing ? null : s.st_teff }))),
   named: () => {
     if (!sky) return [];
     if (namedList) return namedList.map((s) => ({ ...s, constellation: s.figure ? sky.data.nameOf(s.figure, lang) : null }));
