@@ -119,7 +119,7 @@ test("every step has 3 to 5 facts to remember in every language, and its sources
       assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
     }
     assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
-    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu|www\.iau\.org|heasarc\.gsfc\.nasa\.gov|starchild\.gsfc\.nasa\.gov|esahubble.org|esawebb.org|www.esa.int|www\.jpl\.nasa\.gov|www.cosmos.esa.int|imagine.gsfc.nasa.gov)\//, `${step}: ${src.url}`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu|www\.iau\.org|heasarc\.gsfc\.nasa\.gov|starchild\.gsfc\.nasa\.gov|esahubble\.org|esawebb\.org|www\.esa\.int|chandra\.harvard\.edu|www\.jpl\.nasa\.gov|www\.cosmos\.esa\.int|imagine\.gsfc\.nasa\.gov)\//, `${step}: ${src.url}`);
   }
 });
 
@@ -427,4 +427,20 @@ test("part III: nebulae, the Milky Way and the neighbourhood, each step with the
     assert.ok(line && !/undefined|null|NaN|-0/.test(line), `${lang} ${step}: ${line}`);
   }
   for (const path of ["nebula", "milky", "local"]) assert.equal(new Set(testQuestions(path, you, "de", 0).map((q) => q.id)).size, 10, path);
+});
+
+test("part IV: galaxies, clusters, the observable universe and the Big Bang, each step with the visitor's life", () => {
+  const at = (y) => personalNumbers({ age: y == null ? null : 2026 - y + 0.4, years: YEARS, star: y == null ? null : { name: "GJ 680", dist: 31.55, year: y }, birthYear: y, thisYear: 2026 });
+  const n = at(1995);
+  assert.ok(personalLine("galHubble", n, "de").includes("im Jahr deiner Geburt"));
+  assert.ok(personalLine("obsBack", n, "de").includes("GJ 680 ist 31,6 Lichtjahre"));
+  assert.ok(personalLine("obsFar", at(null), "de").includes("vor einem Jahr"));
+  assert.ok(personalLine("obsFar", at(2026), "de").includes("ein Jahr vor deiner Geburt"));
+  assert.ok(personalLine("obsAge", n, "de").includes("0,07 Sekunden"));
+  for (const lang of LANGS) for (const path of ["galaxies", "clusters", "observable", "bigbang"]) for (const step of PATHS[path].steps) for (const nums of [you, nobody, n, at(2025), at(2026)]) {
+    const line = personalLine(step, nums, lang);
+    assert.ok(line && !/undefined|null|NaN|-0/.test(line), `${lang} ${step}: ${line}`);
+  }
+  for (const path of ["galaxies", "clusters", "observable", "bigbang"]) assert.equal(new Set(testQuestions(path, you, "ja", 0).map((q) => q.id)).size, 10, path);
+  assert.equal(TASKS.obsBack, "yourStar");
 });

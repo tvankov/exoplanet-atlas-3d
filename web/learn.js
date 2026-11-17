@@ -28,6 +28,10 @@ export const PATHS = {
   nebula: { steps: ["nebWhat", "nebPillars", "nebDark", "nebRing", "nebCrab"], minutes: 25, testSize: 10, pass: 0.7 },
   milky: { steps: ["mwWhat", "mwArm", "mwOrbit", "mwBand", "mwGaia"], minutes: 25, testSize: 10, pass: 0.7 },
   local: { steps: ["locGroup", "locMagellan", "locAndromeda", "locApproach", "locFuture"], minutes: 25, testSize: 10, pass: 0.7 },
+  galaxies: { steps: ["galWhat", "galTypes", "galWhirl", "galHubble", "galWebb"], minutes: 25, testSize: 10, pass: 0.7 },
+  clusters: { steps: ["clWhat", "clGas", "clDark", "clLens", "clWeb"], minutes: 25, testSize: 10, pass: 0.7 },
+  observable: { steps: ["obsBack", "obsExpand", "obsCmb", "obsAge", "obsFar"], minutes: 25, testSize: 10, pass: 0.7 },
+  bigbang: { steps: ["bbStart", "bbElements", "bbDark", "bbEnergy", "bbFuture"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -45,6 +49,10 @@ export const TASKS = {
   nebWhat: "figure:Ori", nebPillars: "figure:Ser", nebDark: "figure:Ori", nebRing: "figure:Lyr", nebCrab: "figure:Tau",
   mwWhat: "figure:Sgr", mwArm: "Sun", mwOrbit: "Sun", mwBand: "figure:Sgr", mwGaia: null,
   locGroup: "figure:Tri", locMagellan: "figure:Tuc", locAndromeda: "figure:And", locApproach: "figure:And", locFuture: null,
+  galWhat: "figure:Vir", galTypes: null, galWhirl: "figure:CVn", galHubble: "figure:UMa", galWebb: "figure:Vol",
+  clWhat: "figure:Vir", clGas: null, clDark: "figure:Com", clLens: null, clWeb: null,
+  obsBack: "yourStar", obsExpand: null, obsCmb: null, obsAge: "Sun", obsFar: null,
+  bbStart: null, bbElements: null, bbDark: null, bbEnergy: null, bbFuture: "Sun",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -63,15 +71,20 @@ export const VIEWS = {
   nebWhat: "Earth", nebPillars: "Earth", nebDark: "Earth", nebRing: "Earth", nebCrab: "Earth",
   mwWhat: "Earth", mwArm: "Sun", mwOrbit: "Sun", mwBand: "Earth", mwGaia: "Sun",
   locGroup: "Earth", locMagellan: "Earth", locAndromeda: "Earth", locApproach: "Earth", locFuture: "Earth",
+  galWhat: "Earth", galTypes: "Earth", galWhirl: "Earth", galHubble: "Earth", galWebb: "Earth",
+  clWhat: "Earth", clGas: "Earth", clDark: "Earth", clLens: "Earth", clWeb: "Earth",
+  obsBack: "Earth", obsExpand: "Earth", obsCmb: "Earth", obsAge: "Sun", obsFar: "Earth",
+  bbStart: "Earth", bbElements: "Earth", bbDark: "Earth", bbEnergy: "Earth", bbFuture: "Sun",
 };
 // The parts of the plan the paths belong to, in the order of the list (learn.js, listView); "sky" are the paths beside the plan
 export const PARTS = [
   { id: "basics", paths: ["solar", "alpha", "exo", "hab"] },
   { id: "starLives", paths: ["stars", "birth", "life", "compact"] },
   { id: "galaxy", paths: ["nebula", "milky", "local"] },
+  { id: "beyond", paths: ["galaxies", "clusters", "observable", "bigbang"] },
   { id: "sky", paths: ["zod", "names"] },
 ];
-export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70", life: "Sun", compact: "PSR B1257+12", nebula: "Earth", milky: "Sun", local: "Earth" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70", life: "Sun", compact: "PSR B1257+12", nebula: "Earth", milky: "Sun", local: "Earth", galaxies: "Earth", clusters: "Earth", observable: "Earth", bigbang: "Earth" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -249,6 +262,83 @@ export const SOURCES = {
   exoStrange: [
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
+  ],
+  galWhat: [
+    { label: "NASA Science: Galaxies", url: "https://science.nasa.gov/universe/galaxies/" },
+    { label: "NASA Science: Hubble Messier Catalog, Messier 104 (Sombrero Galaxy)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-104/" },
+  ],
+  galTypes: [
+    { label: "NASA Science: Galaxies", url: "https://science.nasa.gov/universe/galaxies/" },
+    { label: "NASA Science: Galaxy Types", url: "https://science.nasa.gov/universe/galaxies/types/" },
+  ],
+  galWhirl: [
+    { label: "NASA Science: Hubble Messier Catalog, Messier 51 (Whirlpool Galaxy)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-51/" },
+  ],
+  galHubble: [
+    { label: "NASA Science: Hubble Deep Fields", url: "https://science.nasa.gov/mission/hubble/science/universe-uncovered/hubble-deep-fields/" },
+  ],
+  galWebb: [
+    { label: "ESA/Webb: Webb's First Deep Field (2022)", url: "https://esawebb.org/news/weic2209/" },
+  ],
+  clWhat: [
+    { label: "NASA Chandra: Galaxy Clusters", url: "https://chandra.harvard.edu/xray_sources/galaxy_clusters.html" },
+    { label: "NASA Science: Large-Scale Structures", url: "https://science.nasa.gov/universe/galaxies/large-scale-structures/" },
+    { label: "NASA Science: Hubble Messier Catalog, Messier 87", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-87/" },
+  ],
+  clGas: [
+    { label: "NASA Chandra: Galaxy Clusters", url: "https://chandra.harvard.edu/xray_sources/galaxy_clusters.html" },
+    { label: "NASA Science: Dark Matter & Dark Energy", url: "https://science.nasa.gov/universe/dark-matter-dark-energy/" },
+  ],
+  clDark: [
+    { label: "NASA Science: Dark Matter & Dark Energy", url: "https://science.nasa.gov/universe/dark-matter-dark-energy/" },
+  ],
+  clLens: [
+    { label: "NASA Science: Hubble's Gravitational Lenses", url: "https://science.nasa.gov/mission/hubble/science/science-behind-the-discoveries/hubble-gravitational-lenses/" },
+    { label: "NASA Chandra: 1E 0657-56, the Bullet Cluster (2006)", url: "https://chandra.harvard.edu/photo/2006/1e0657/" },
+  ],
+  clWeb: [
+    { label: "NASA Science: Large-Scale Structures", url: "https://science.nasa.gov/universe/galaxies/large-scale-structures/" },
+    { label: "NASA Science: Galaxies", url: "https://science.nasa.gov/universe/galaxies/" },
+  ],
+  obsBack: [
+    { label: "NASA Science: Webb, Early Universe", url: "https://science.nasa.gov/mission/webb/early-universe/" },
+  ],
+  obsExpand: [
+    { label: "NASA Science: Universe Overview", url: "https://science.nasa.gov/universe/overview/" },
+    { label: "NASA Science: Webb, Early Universe", url: "https://science.nasa.gov/mission/webb/early-universe/" },
+  ],
+  obsCmb: [
+    { label: "NASA Science: Universe Overview", url: "https://science.nasa.gov/universe/overview/" },
+    { label: "ESA: Planck", url: "https://www.esa.int/Science_Exploration/Space_Science/Planck" },
+    { label: "NASA Science: WMAP Overview", url: "https://science.nasa.gov/mission/wmap/wmap-overview/" },
+  ],
+  obsAge: [
+    { label: "NASA Science: Universe Overview", url: "https://science.nasa.gov/universe/overview/" },
+    { label: "NASA Science: WMAP Overview", url: "https://science.nasa.gov/mission/wmap/wmap-overview/" },
+    { label: "NASA Science: Sun Facts", url: "https://science.nasa.gov/sun/facts/" },
+  ],
+  obsFar: [
+    { label: "NASA Science: Webb, Early Universe", url: "https://science.nasa.gov/mission/webb/early-universe/" },
+  ],
+  bbStart: [
+    { label: "NASA Science: Dark Energy", url: "https://science.nasa.gov/dark-energy/" },
+    { label: "NASA Science: Universe Overview", url: "https://science.nasa.gov/universe/overview/" },
+  ],
+  bbElements: [
+    { label: "NASA Science: Universe Overview", url: "https://science.nasa.gov/universe/overview/" },
+  ],
+  bbDark: [
+    { label: "NASA Science: Universe Overview", url: "https://science.nasa.gov/universe/overview/" },
+  ],
+  bbEnergy: [
+    { label: "NASA Science: Dark Energy", url: "https://science.nasa.gov/dark-energy/" },
+    { label: "NASA Science: Dark Matter & Dark Energy", url: "https://science.nasa.gov/universe/dark-matter-dark-energy/" },
+    { label: "NASA Science: WMAP Overview", url: "https://science.nasa.gov/mission/wmap/wmap-overview/" },
+  ],
+  bbFuture: [
+    { label: "NASA Science: Universe Overview", url: "https://science.nasa.gov/universe/overview/" },
+    { label: "NASA Science: Star Types", url: "https://science.nasa.gov/universe/stars/types/" },
+    { label: "ESA/Hubble: Hubble casts doubt on certainty of galactic collision (2025)", url: "https://esahubble.org/news/heic2508/" },
   ],
   nebWhat: [
     { label: "NASA Space Place: What Is a Nebula?", url: "https://spaceplace.nasa.gov/nebula/en/" },
@@ -510,6 +600,29 @@ export function personalNumbers(ctx) {
     giantLives: twoDigits(SUN_GIANT_IN / Math.max(age, 1)),
     ...compactNumbers(ctx, age),
     ...galaxyNumbers(ctx, age),
+    ...beyondNumbers(ctx, age),
+  };
+}
+// Part IV: galaxies, clusters, the observable universe and the Big Bang, against the visitor's life. The numbers are those of the sources
+// of the steps: the Sombrero Galaxy 28 million light years, the Whirlpool 31 million, the Hubble Deep Field 1995, the cluster of Webb's first
+// deep field as it was 4.6 billion years ago, M87 in the Virgo cluster 54 million, Zwicky 1933, the Bullet Cluster 2006, COBE 1992, the
+// universe 13.8 billion years old and the Sun 4.6 billion, the record galaxy of June 2025, 200 million dark years, dark energy found in 1998,
+// the Sun a red giant in about 5 billion years.
+function beyondNumbers(ctx, age) {
+  const thisYear = ctx.thisYear ?? new Date().getFullYear();
+  const born = ctx.age != null ? ctx.birthYear ?? thisYear - Math.floor(age) : null;
+  const since = (year) => (born != null ? born - year : null);
+  const times = (years) => twoDigits(years / Math.max(age, 1));
+  return {
+    sombreroTimes: times(28e6), whirlTimes: times(31e6), smacsTimes: times(4.6e9), virgoTimes: times(54e6), darkTimes: times(200e6), giantTimes: times(5e9),
+    hdfBefore: since(1995), hdfAgo: thisYear - 1995,
+    zwickyBefore: since(1933), zwickyAgo: thisYear - 1933,
+    bulletBefore: since(2006), bulletAgo: thisYear - 2006,
+    cobeBefore: since(1992), cobeAgo: thisYear - 1992,
+    recordBefore: since(2025), recordAgo: thisYear - 2025,
+    energyBefore: since(1998), energyAgo: thisYear - 1998,
+    universeSeconds: (age / 13.8e9) * 365.25 * 86400, // the visitor's life if the universe's 13.8 billion years were one year
+    lifeMinutes: twoDigits(age * 365.25 * 1440),
   };
 }
 // Part III: nebulae, the Milky Way and its neighbours, against the visitor's life. The distances and years are those of the sources of the
@@ -722,6 +835,27 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // Part IV: beyond the Milky Way
+  galWhat: [{ id: "galaxyWhat" }, { id: "milkyIsOne" }, { id: "sombrero" }],
+  galTypes: [{ id: "galaxyTypes" }, { id: "ellipticalOld" }, { id: "spiralYoung" }],
+  galWhirl: [{ id: "whirlWhere" }, { id: "whirlCompanion" }, { id: "whirlDist" }],
+  galHubble: [{ id: "hdfCount" }, { id: "hdfWhere" }, { id: "hdfSize" }],
+  galWebb: [{ id: "webbDate" }, { id: "webbSand" }, { id: "webbAgo" }],
+  clWhat: [{ id: "clusterWhat" }, { id: "clusterBiggest" }, { id: "virgoCount" }],
+  clGas: [{ id: "hotGas" }, { id: "gasMass" }, { id: "gasXray" }],
+  clDark: [{ id: "zwicky" }, { id: "darkShare" }, { id: "darkLight" }],
+  clLens: [{ id: "lensWhat" }, { id: "lensEinstein" }, { id: "bullet" }],
+  clWeb: [{ id: "cosmicWeb" }, { id: "voids" }, { id: "superclusters" }],
+  obsBack: [{ id: "lookBack" }, { id: "seeOld" }, { id: "yourStarSeen" }],
+  obsExpand: [{ id: "expanding" }, { id: "speedingUp" }, { id: "stretched" }],
+  obsCmb: [{ id: "cmbWhen" }, { id: "cmbCobe" }, { id: "cmbDiffer" }],
+  obsAge: [{ id: "universeAge" }, { id: "ageWmap" }, { id: "sunInYear" }],
+  obsFar: [{ id: "farRecord" }, { id: "farWhen" }, { id: "farOld" }],
+  bbStart: [{ id: "bbBegin" }, { id: "bbSoup" }, { id: "bbForever" }],
+  bbElements: [{ id: "firstElements" }, { id: "heliumFive" }, { id: "elementsStop" }],
+  bbDark: [{ id: "darkAges" }, { id: "firstGalaxies" }, { id: "darkLong" }],
+  bbEnergy: [{ id: "acceleration" }, { id: "nobel2011" }, { id: "composition" }],
+  bbFuture: [{ id: "expandForever" }, { id: "sunFuture" }, { id: "andromedaFuture" }],
   // Nebulae
   nebWhat: [{ id: "nebulaWhat" }, { id: "nebulaDeath" }, { id: "nebulaBirth" }],
   nebPillars: [{ id: "pillarsWhere" }, { id: "pillarsDist" }, { id: "pillarsWebb" }],
@@ -820,7 +954,7 @@ export const passed = (right, total, path) => total > 0 && right / total >= PATH
 
 export const LEARN_TEXT = {
   en: {
-    parts: { basics: "Part I, Foundations of planetary science", starLives: "Part II, The life of stars", galaxy: "Part III, Our home galaxy", sky: "Reading the sky" },
+    parts: { basics: "Part I, Foundations of planetary science", starLives: "Part II, The life of stars", galaxy: "Part III, Our home galaxy", beyond: "Part IV, Beyond the Milky Way", sky: "Reading the sky" },
     paths: {
       solar: { title: "Our Solar System", goal: "You can explain how our Solar System is built and tell its main bodies apart." },
       alpha: { title: "Our nearest stars: Alpha Centauri", goal: "You can describe the star system closest to us, its planet Proxima b, and how far away it really is." },
@@ -835,6 +969,10 @@ export const LEARN_TEXT = {
       nebula: { title: "Nebulae", goal: "You know what nebulae are, where stars are born in them and how dying stars leave them behind." },
       milky: { title: "The Milky Way", goal: "You can describe our galaxy: its shape and size, where the Sun lies in it, how it travels round the centre, and how Gaia mapped it." },
       local: { title: "The galactic neighbourhood", goal: "You know the galaxies near ours, the Local Group, and what science says about the future with Andromeda." },
+      galaxies: { title: "Galaxies", goal: "You know what galaxies are, their kinds, how they meet, and what the deep fields of Hubble and Webb showed." },
+      clusters: { title: "Galaxy clusters", goal: "You know galaxy clusters, their hot gas, the dark matter in them, how they bend light, and the cosmic web." },
+      observable: { title: "The observable universe", goal: "You know why looking far means looking back, that the universe expands, its oldest light, its age, and the farthest galaxy." },
+      bigbang: { title: "Big Bang and future", goal: "You know how the universe began, its first elements and dark ages, dark energy, and what science says about the future." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -1123,6 +1261,306 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
         ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
+      },
+      galWhat: {
+        title: "What is a galaxy?", goal: "You know what a galaxy is.",
+        text: [
+          "According to NASA galaxies consist of stars, planets and vast clouds of gas and dust, all bound together by gravity. The Milky Way is one of them.",
+          "The Sombrero Galaxy (M104) is a spiral galaxy, according to NASA 28 million light years away in the constellation Virgo.",
+        ],
+        task: "Look at the constellation Virgo: the Sombrero Galaxy lies in its direction.",
+        remember: [
+          "A galaxy is stars, planets, gas and dust bound together by gravity.",
+          "The Milky Way is one galaxy among many.",
+          "The Sombrero Galaxy is a spiral galaxy 28 million light years away.",
+        ],
+        you: (n) => `The light of the Sombrero Galaxy is 28 million years on its way: about ${n} times your life so far.`,
+        ref: (n) => `The light of the Sombrero Galaxy is 28 million years on its way: about ${n} times a life of 30 years.`,
+      },
+      galTypes: {
+        title: "Kinds of galaxies", goal: "You know the main kinds of galaxies.",
+        text: [
+          "According to NASA most galaxies are spirals or ellipticals; galaxies with no clear shape are called irregular. Lenticular galaxies are a kind of cross between spirals and ellipticals.",
+          "The stars of elliptical galaxies are generally older than those in spiral galaxies. In spirals the youngest stars form in the gas-rich arms.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "Most galaxies are spirals or ellipticals; others are irregular.",
+          "The stars of ellipticals are generally older.",
+          "In spirals new stars form in the gas-rich arms.",
+        ],
+        you: () => "You live in a spiral: the Milky Way. New stars are still forming in its arms.",
+        ref: () => "We live in a spiral: the Milky Way. New stars are still forming in its arms.",
+      },
+      galWhirl: {
+        title: "Galaxies meet", goal: "You know that galaxies can come close to each other.",
+        text: [
+          "The Whirlpool Galaxy (M51) is, according to NASA, 31 million light years away in the constellation Canes Venatici.",
+          "It is having a close encounter with NGC 5195, a small, yellowish galaxy that appears to be tugging on one of its arms.",
+        ],
+        task: "Look at the constellation Canes Venatici: the Whirlpool Galaxy lies in its direction.",
+        remember: [
+          "The Whirlpool Galaxy (M51) is 31 million light years away.",
+          "It lies in the constellation Canes Venatici.",
+          "The small galaxy NGC 5195 is tugging on one of its arms.",
+        ],
+        you: (n) => `The light of the Whirlpool is 31 million years on its way: about ${n} times your life so far.`,
+        ref: (n) => `The light of the Whirlpool is 31 million years on its way: about ${n} times a life of 30 years.`,
+      },
+      galHubble: {
+        title: "Hubble's Deep Field", goal: "You know what Hubble saw in a tiny patch of sky.",
+        text: [
+          "In 1995 Hubble looked for a long time at a tiny patch of sky in Ursa Major, near the handle of the Big Dipper: about the size of a pinhead held at arm's length.",
+          "According to NASA the picture captured roughly 3,000 distant galaxies.",
+        ],
+        task: "Look at the constellation Ursa Major: the Deep Field lies near the handle of the Big Dipper.",
+        remember: [
+          "The Hubble Deep Field (1995) shows a tiny patch of sky in Ursa Major.",
+          "It is about the size of a pinhead held at arm's length.",
+          "It captured roughly 3,000 distant galaxies.",
+        ],
+        you: (before, at) => (before != null ? `The Hubble Deep Field was taken in 1995, ${before === "1" ? "a year" : `${before} years`} before you were born.` : at === "0" ? "The Hubble Deep Field was taken in 1995, the year you were born." : `The Hubble Deep Field was taken in 1995, when you were ${at}.`),
+        ref: (n) => `The Hubble Deep Field was taken in 1995, ${n === "1" ? "a year" : `${n} years`} ago.`,
+      },
+      galWebb: {
+        title: "Webb's first deep field", goal: "You know Webb's first deep image.",
+        text: [
+          "On 12 July 2022 ESA and NASA showed Webb's first deep field: thousands of galaxies round the galaxy cluster SMACS 0723, near the constellation Volans in the southern sky.",
+          "The image covers a patch of sky about the size of a grain of sand held at arm's length. The cluster appears as it was 4.6 billion years ago, about when the Sun formed.",
+        ],
+        task: "Look at the constellation Volans: Webb's first deep field lies near it.",
+        remember: [
+          "Webb's first deep field came out on 12 July 2022.",
+          "It shows thousands of galaxies in a patch like a grain of sand at arm's length.",
+          "The cluster SMACS 0723 appears as it was 4.6 billion years ago.",
+        ],
+        you: (n) => `The light of SMACS 0723 is 4.6 billion years old: about ${n} times your life so far.`,
+        ref: (n) => `The light of SMACS 0723 is 4.6 billion years old: about ${n} times a life of 30 years.`,
+      },
+      clWhat: {
+        title: "Galaxy clusters", goal: "You know what a galaxy cluster is.",
+        text: [
+          "According to NASA galaxy clusters contain hundreds to thousands of galaxies, bound together by gravity. According to NASA's Chandra pages they are the largest gravitationally bound objects in the universe.",
+          "Our neighbour is the Virgo cluster with some 2,000 galaxies. At its centre sits the giant galaxy M87, 54 million light years away, whose black hole was the first ever photographed.",
+        ],
+        task: "Look at the constellation Virgo: in its direction lies the Virgo cluster.",
+        remember: [
+          "Galaxy clusters hold hundreds to thousands of galaxies.",
+          "They are the largest gravitationally bound objects in the universe.",
+          "The Virgo cluster has some 2,000 galaxies; M87 sits at its centre.",
+        ],
+        you: (n) => `The light of M87 is 54 million years on its way: about ${n} times your life so far.`,
+        ref: (n) => `The light of M87 is 54 million years on its way: about ${n} times a life of 30 years.`,
+      },
+      clGas: {
+        title: "Hot gas", goal: "You know what fills the space between the galaxies of a cluster.",
+        text: [
+          "Between the galaxies of a cluster lies hot, diffuse gas that is visible only at X-ray wavelengths.",
+          "According to NASA's Chandra pages this gas contains more mass than all the galaxies in the cluster.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "Between the galaxies of a cluster lies hot gas.",
+          "It can only be seen in X-rays.",
+          "It has more mass than all the galaxies of the cluster.",
+        ],
+        you: () => "Your eyes could not see this gas: it glows only in X-rays, which telescopes in space measure.",
+        ref: () => "Our eyes could not see this gas: it glows only in X-rays, which telescopes in space measure.",
+      },
+      clDark: {
+        title: "Dark matter", goal: "You know how dark matter was discovered and how much there is.",
+        text: [
+          "In 1933 Fritz Zwicky noticed that the galaxies of the Coma cluster moved too quickly: there had to be much more mass than could be seen.",
+          "According to NASA this dark matter doesn't absorb, reflect or emit any light. It makes up about 27 % of the universe, ordinary matter only about 5 %.",
+        ],
+        task: "Look at the constellation Coma Berenices: in its direction lies the Coma cluster.",
+        remember: [
+          "In 1933 Fritz Zwicky saw that the galaxies of the Coma cluster moved too quickly.",
+          "Dark matter emits, absorbs and reflects no light.",
+          "It makes up about 27 % of the universe, ordinary matter about 5 %.",
+        ],
+        you: (before, at) => (before != null ? `Zwicky published his paper in 1933, ${before === "1" ? "a year" : `${before} years`} before you were born.` : at === "0" ? "Zwicky published his paper in 1933, the year you were born." : `Zwicky published his paper in 1933, when you were ${at}.`),
+        ref: (n) => `Zwicky published his paper in 1933, ${n === "1" ? "a year" : `${n} years`} ago.`,
+      },
+      clLens: {
+        title: "Gravitational lenses", goal: "You know how a cluster can bend light.",
+        text: [
+          "According to NASA a massive object such as a galaxy cluster warps space and time, as Einstein's theory of general relativity describes. Light from galaxies behind it is bent, distorted and magnified.",
+          "In 2006 NASA's Chandra showed with the Bullet Cluster direct evidence that nearly all of the matter in the clusters is dark.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "A galaxy cluster warps space and time and bends light.",
+          "Light from galaxies behind it is distorted and magnified.",
+          "The Bullet Cluster (2006) gave direct evidence of dark matter.",
+        ],
+        you: (before, at) => (before != null ? `The Bullet Cluster was shown in 2006, ${before === "1" ? "a year" : `${before} years`} before you were born.` : at === "0" ? "The Bullet Cluster was shown in 2006, the year you were born." : `The Bullet Cluster was shown in 2006, when you were ${at}.`),
+        ref: (n) => `The Bullet Cluster was shown in 2006, ${n === "1" ? "a year" : `${n} years`} ago.`,
+      },
+      clWeb: {
+        title: "The cosmic web", goal: "You know how galaxies are arranged on the largest scale.",
+        text: [
+          "According to NASA galaxies and clusters are arranged in twisting, threadlike structures called the cosmic web, with voids of space in between.",
+          "Groupings of superclusters can form walls or sheets of galaxies. Superclusters are typically not gravitationally bound to each other.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "Galaxies are arranged in a cosmic web of threads.",
+          "Between the threads lie voids.",
+          "Superclusters can form walls or sheets of galaxies.",
+        ],
+        you: () => "Your galaxy too is a knot in this web: the Milky Way belongs to the Local Group.",
+        ref: () => "Our galaxy too is a knot in this web: the Milky Way belongs to the Local Group.",
+      },
+      obsBack: {
+        title: "Looking back in time", goal: "You know why looking far means looking into the past.",
+        text: [
+          "Light needs time. According to NASA looking out in space is like looking back in time: the farther away something is, the older the light we see from it.",
+          "The Sun we see as it was about 8 minutes ago, Proxima Centauri as it was 4.24 years ago, the Andromeda Galaxy as it was 2.5 million years ago.",
+        ],
+        task: "Look at your star: you see it as it was when you were born.",
+        remember: [
+          "Light needs time to reach us.",
+          "Looking out in space is looking back in time.",
+          "The farther away, the older the light.",
+        ],
+        you: (name, ly) => `Your star ${name} is ${ly} light years away: you see it as it was about when you were born.`,
+        ref: () => "Proxima Centauri is 4.24 light years away: you see it as it was 4.24 years ago.",
+      },
+      obsExpand: {
+        title: "The universe expands", goal: "You know that the universe is expanding.",
+        text: [
+          "According to NASA the universe is expanding, and the expansion is speeding up.",
+          "As space stretches, the light travelling through it stretches too, to longer, redder wavelengths. That is why Webb looks at the earliest galaxies in infrared light.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "The universe is expanding.",
+          "The expansion is speeding up.",
+          "Light from far away is stretched to longer wavelengths.",
+        ],
+        you: () => "The light of the farthest galaxies has been stretched on its way to you, longer than your whole life.",
+        ref: () => "The light of the farthest galaxies has been stretched on its way to us.",
+      },
+      obsCmb: {
+        title: "The oldest light", goal: "You know the oldest light of the universe.",
+        text: [
+          "The oldest light we can see comes from around 380,000 years after the Big Bang, according to NASA and ESA; NASA's WMAP page says about 375,000. It is called the cosmic microwave background.",
+          "In 1992 NASA's COBE discovered tiny patterns in it; WMAP and ESA's Planck later mapped it.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "The oldest light comes from about 380,000 years after the Big Bang.",
+          "It is the cosmic microwave background.",
+          "COBE (1992), WMAP and Planck mapped it.",
+        ],
+        you: (before, at) => (before != null ? `COBE made its discovery in 1992, ${before === "1" ? "a year" : `${before} years`} before you were born.` : at === "0" ? "COBE made its discovery in 1992, the year you were born." : `COBE made its discovery in 1992, when you were ${at}.`),
+        ref: (n) => `COBE made its discovery in 1992, ${n === "1" ? "a year" : `${n} years`} ago.`,
+      },
+      obsAge: {
+        title: "13.8 billion years", goal: "You know how old the universe is.",
+        text: [
+          "According to NASA the universe is about 13.8 billion years old; NASA's WMAP page gives 13.77 billion, to within a half percent.",
+          "The Sun is about 4.6 billion years old. If the universe's whole life were one year, the Sun would have formed at the start of September (worked out).",
+        ],
+        task: "Look at the Sun: it came only in the last third of the universe's time.",
+        remember: [
+          "The universe is about 13.8 billion years old.",
+          "WMAP measured 13.77 billion years.",
+          "The Sun came in the last third of that time.",
+        ],
+        you: (sec) => `If the universe's 13.8 billion years were one year, your life so far would be the last ${sec} seconds before midnight. (Worked out.)`,
+        ref: (sec) => `If the universe's 13.8 billion years were one year, a life of 30 years would be the last ${sec} seconds before midnight. (Worked out.)`,
+      },
+      obsFar: {
+        title: "The farthest galaxy", goal: "You know the farthest galaxy known.",
+        text: [
+          "According to NASA Webb found JADES-GS-z14-0 at a redshift of 14.32. In June 2025 MoM-z14 took the record, at a redshift of 14.44.",
+          "We see MoM-z14 as it was about 280 million years after the Big Bang: its light is older than the Sun and the Earth.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "Webb finds the farthest galaxies.",
+          "MoM-z14 is the record holder since June 2025.",
+          "We see it as it was about 280 million years after the Big Bang.",
+        ],
+        you: (before, at) => (before != null ? `MoM-z14 took the record in 2025, ${before === "1" ? "a year" : `${before} years`} before you were born.` : at === "0" ? "MoM-z14 took the record in 2025, the year you were born." : `MoM-z14 took the record in 2025, when you were ${at}.`),
+        ref: (n) => `MoM-z14 took the record in 2025, ${n === "1" ? "a year" : `${n} years`} ago.`,
+      },
+      bbStart: {
+        title: "The beginning", goal: "You know how the universe began.",
+        text: [
+          "According to NASA the universe began some 13.8 billion years ago with a rapid expansion we call the big bang.",
+          "One second after the big bang the universe was an extremely hot soup of light and particles. Cosmologists suggest it's likely the universe will continue to expand forever.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "The universe began about 13.8 billion years ago.",
+          "We call the beginning the big bang: a rapid expansion.",
+          "One second later it was an extremely hot soup of light and particles.",
+        ],
+        you: () => "Everything you see began in this expansion: the Sun, the Earth and the matter you are made of.",
+        ref: () => "Everything we see began in this expansion: the Sun, the Earth and the matter we are made of.",
+      },
+      bbElements: {
+        title: "The first elements", goal: "You know which elements formed first.",
+        text: [
+          "According to NASA the big bang produced the earliest elements: hydrogen, helium, and traces of lithium and beryllium. After five minutes most of today's helium had formed.",
+          "Then the universe had expanded and cooled enough that further element formation stopped. The heavier elements came later, from the stars of the path on the life of stars.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "The first elements were hydrogen, helium and traces of lithium and beryllium.",
+          "Most of today's helium formed in the first five minutes.",
+          "Then the universe was too cool for more elements.",
+        ],
+        you: (n) => `Most of today's helium formed in five minutes. You have lived about ${n} minutes.`,
+        ref: (n) => `Most of today's helium formed in five minutes. A life of 30 years is about ${n} minutes.`,
+      },
+      bbDark: {
+        title: "The dark ages", goal: "You know that the universe was dark before the first stars.",
+        text: [
+          "After the oldest light, according to NASA, the universe remained dark for the next 200 million years.",
+          "Over several hundred million years the first stars collected into the first galaxies. Webb looks for exactly their light.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "After the oldest light the universe remained dark.",
+          "The dark time lasted about 200 million years.",
+          "Then the first stars collected into the first galaxies.",
+        ],
+        you: (n) => `The dark ages lasted about 200 million years: about ${n} times your life so far.`,
+        ref: (n) => `The dark ages lasted about 200 million years: about ${n} times a life of 30 years.`,
+      },
+      bbEnergy: {
+        title: "Dark energy", goal: "You know that the expansion is speeding up, and why that surprised everyone.",
+        text: [
+          "In 1998 two teams of astronomers found with distant supernovae that the universe is expanding at an accelerated rate. Adam Riess, Saul Perlmutter and Brian Schmidt won the 2011 Nobel Prize in Physics for it.",
+          "The cause is called dark energy. According to NASA it makes up about 68 % of the universe, dark matter 27 %, normal matter 5 %; other NASA pages give 68.3 to 70 % for dark energy.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "Since 1998 we know that the expansion is speeding up.",
+          "The cause is called dark energy, about 68 % of the universe.",
+          "Dark matter is about 27 %, normal matter about 5 %.",
+        ],
+        you: (before, at) => (before != null ? `The acceleration was found in 1998, ${before === "1" ? "a year" : `${before} years`} before you were born.` : at === "0" ? "The acceleration was found in 1998, the year you were born." : `The acceleration was found in 1998, when you were ${at}.`),
+        ref: (n) => `The acceleration was found in 1998, ${n === "1" ? "a year" : `${n} years`} ago.`,
+      },
+      bbFuture: {
+        title: "And the future?", goal: "You know what science says about the future, and how sure it is.",
+        text: [
+          "According to NASA cosmologists suggest it's likely the universe will continue to expand forever. The Sun will become a red giant in about 5 billion years.",
+          "And the Milky Way and Andromeda? The 2025 study gives only a 50-50 chance of a collision within 10 billion years. The future is a forecast: it holds as long as the data hold.",
+        ],
+        task: "Look at the Sun: in about 5 billion years it will be a red giant.",
+        remember: [
+          "The universe will likely continue to expand forever.",
+          "The Sun will become a red giant in about 5 billion years.",
+          "Forecasts can change with new data.",
+        ],
+        you: (n) => `5 billion years until the red giant: about ${n} times your life so far.`,
+        ref: (n) => `5 billion years until the red giant: about ${n} times a life of 30 years.`,
       },
       nebWhat: {
         title: "What is a nebula?", goal: "You know what a nebula is and the two ways nebulae come about.",
@@ -2010,6 +2448,66 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
       kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
       rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
+      galaxyWhat: { q: "What is a galaxy, according to NASA?", o: ["Stars, planets, gas and dust bound by gravity", "A single giant star", "A cloud of water"], e: "Stars, planets and vast clouds of gas and dust, all bound together by gravity." },
+      milkyIsOne: { q: "What is the Milky Way?", o: ["One galaxy among many", "The only galaxy", "A planet"], e: "One galaxy among many: our own." },
+      sombrero: { q: "How far away is the Sombrero Galaxy, according to NASA?", o: ["28 million light years", "28 light years", "28 billion light years"], e: "28 million light years, in Virgo." },
+      galaxyTypes: { q: "Which kinds are most galaxies?", o: ["Spirals and ellipticals", "Squares and triangles", "Rings only"], e: "Most are spirals or ellipticals; others are irregular." },
+      ellipticalOld: { q: "Which galaxies generally have older stars?", o: ["Ellipticals", "Spirals", "Both the same"], e: "Ellipticals: their stars are generally older than those in spirals." },
+      spiralYoung: { q: "Where do the youngest stars of a spiral form?", o: ["In the gas-rich arms", "In the empty middle", "Outside the galaxy"], e: "In the gas-rich arms." },
+      whirlWhere: { q: "In which constellation is the Whirlpool Galaxy?", o: ["Canes Venatici", "Orion", "Taurus"], e: "In Canes Venatici, 31 million light years away." },
+      whirlCompanion: { q: "What is the Whirlpool Galaxy having a close encounter with?", o: ["The small galaxy NGC 5195", "The Sun", "A black hole in the Milky Way"], e: "With NGC 5195, a small, yellowish galaxy." },
+      whirlDist: { q: "How far away is the Whirlpool Galaxy, according to NASA?", o: ["31 million light years", "31 light years", "31 billion light years"], e: "31 million light years." },
+      hdfCount: { q: "About how many galaxies did the Hubble Deep Field capture?", o: ["Roughly 3,000", "About 30", "Exactly 1"], e: "Roughly 3,000 distant galaxies." },
+      hdfWhere: { q: "Where in the sky is the Hubble Deep Field?", o: ["In Ursa Major, near the handle of the Big Dipper", "In Orion's belt", "At the South Pole of the sky"], e: "In Ursa Major, near the handle of the Big Dipper." },
+      hdfSize: { q: "How big is the patch of sky of the Hubble Deep Field?", o: ["About a pinhead held at arm's length", "Half the sky", "As big as the full Moon"], e: "About the size of a pinhead held at arm's length." },
+      webbDate: { q: "When did Webb's first deep field come out?", o: ["On 12 July 2022", "In 1995", "In 1969"], e: "On 12 July 2022." },
+      webbSand: { q: "How big is the patch of sky of Webb's first deep field?", o: ["About a grain of sand held at arm's length", "As big as the Milky Way", "The whole sky"], e: "About the size of a grain of sand held at arm's length." },
+      webbAgo: { q: "As it was when do we see the cluster SMACS 0723?", o: ["4.6 billion years ago", "4.6 years ago", "Today"], e: "As it was 4.6 billion years ago." },
+      clusterWhat: { q: "How many galaxies does a galaxy cluster hold?", o: ["Hundreds to thousands", "Two", "Exactly one"], e: "Hundreds to thousands, bound together by gravity." },
+      clusterBiggest: { q: "What are galaxy clusters, according to NASA's Chandra pages?", o: ["The largest gravitationally bound objects in the universe", "Small groups of stars", "Clouds of the Earth"], e: "The largest gravitationally bound objects in the universe." },
+      virgoCount: { q: "About how many galaxies has the Virgo cluster?", o: ["Some 2,000", "About 20", "About 20 billion"], e: "Some 2,000; M87 sits at its centre." },
+      hotGas: { q: "What lies between the galaxies of a cluster?", o: ["Hot, diffuse gas", "Liquid water", "Nothing at all"], e: "Hot, diffuse gas." },
+      gasMass: { q: "How much mass does this gas have?", o: ["More than all the galaxies of the cluster", "Almost none", "As much as one star"], e: "More mass than all the galaxies in the cluster." },
+      gasXray: { q: "In which light can the hot gas be seen?", o: ["Only in X-rays", "With the naked eye", "Only in radio waves from the Earth"], e: "Only at X-ray wavelengths." },
+      zwicky: { q: "What did Fritz Zwicky notice in 1933?", o: ["The galaxies of the Coma cluster moved too quickly", "A new planet", "The first black hole"], e: "The galaxies of the Coma cluster moved too quickly." },
+      darkShare: { q: "How much of the universe is dark matter, according to NASA?", o: ["About 27 %", "About 99 %", "About 1 %"], e: "About 27 %; ordinary matter about 5 %." },
+      darkLight: { q: "Does dark matter give off light?", o: ["No, it emits, absorbs and reflects no light", "Yes, it glows red", "Only at night"], e: "No: it doesn't absorb, reflect or emit any light." },
+      lensWhat: { q: "What does a galaxy cluster do to light from galaxies behind it?", o: ["It bends, distorts and magnifies it", "It switches it off", "Nothing"], e: "It bends, distorts and magnifies it." },
+      lensEinstein: { q: "Which theory describes how mass warps space and time?", o: ["Einstein's general relativity", "The theory of the zodiac", "Newton's colours"], e: "Einstein's theory of general relativity." },
+      bullet: { q: "What did the Bullet Cluster show in 2006?", o: ["Direct evidence of dark matter", "A new comet", "The age of the Sun"], e: "Direct evidence that nearly all of the matter in the clusters is dark." },
+      cosmicWeb: { q: "How are galaxies arranged on the largest scale?", o: ["In a cosmic web of threads", "In a straight line", "Evenly like a grid"], e: "In twisting, threadlike structures: the cosmic web." },
+      voids: { q: "What lies between the threads of the cosmic web?", o: ["Voids of space", "Dense walls of stars", "Water"], e: "Voids of space." },
+      superclusters: { q: "What can groupings of superclusters form?", o: ["Walls or sheets of galaxies", "New planets", "Black holes only"], e: "Walls or sheets of galaxies." },
+      lookBack: { q: "Why is looking far into space looking back in time?", o: ["Because light takes time to reach us", "Because clocks stop in space", "Because stars are old"], e: "Because light takes time: the farther, the older the light." },
+      seeOld: { q: "As it was when do we see the Sun?", o: ["About 8 minutes ago", "Right now, with no delay", "A year ago"], e: "As it was about 8 minutes ago." },
+      yourStarSeen: { q: "A star is 30 light years away. As it was when do we see it?", o: ["30 years ago", "30 minutes ago", "Today"], e: "As it was 30 years ago." },
+      expanding: { q: "What is the universe doing, according to NASA?", o: ["Expanding", "Shrinking", "Standing still"], e: "Expanding." },
+      speedingUp: { q: "Is the expansion slowing down or speeding up?", o: ["Speeding up", "Slowing down", "It has stopped"], e: "Speeding up." },
+      stretched: { q: "What happens to light that travels through expanding space?", o: ["It stretches to longer wavelengths", "It gets bluer", "It stops"], e: "It stretches to longer, redder wavelengths." },
+      cmbWhen: { q: "From when does the oldest light we can see come?", o: ["About 380,000 years after the Big Bang", "One second after the Big Bang", "From the birth of the Sun"], e: "About 380,000 years after the Big Bang (NASA, ESA); NASA's WMAP page says 375,000." },
+      cmbCobe: { q: "Which NASA satellite discovered patterns in this light in 1992?", o: ["COBE", "Kepler", "Voyager 1"], e: "COBE." },
+      cmbDiffer: { q: "What is this oldest light called?", o: ["The cosmic microwave background", "The Orion Nebula", "Starlight of the Sun"], e: "The cosmic microwave background." },
+      universeAge: { q: "How old is the universe, according to NASA?", o: ["About 13.8 billion years", "About 4.6 billion years", "About 6,000 years"], e: "About 13.8 billion years." },
+      ageWmap: { q: "Which age did WMAP measure?", o: ["13.77 billion years", "13.77 million years", "1.377 billion years"], e: "13.77 billion years, to within a half percent." },
+      sunInYear: { q: "If the universe's life were one year, when would the Sun have formed?", o: ["At the start of September", "On 1 January", "On 31 December"], e: "At the start of September (worked out from 4.6 and 13.8 billion years)." },
+      farRecord: { q: "Which galaxy holds the distance record since June 2025?", o: ["MoM-z14", "Andromeda", "M87"], e: "MoM-z14, at a redshift of 14.44." },
+      farWhen: { q: "As it was when do we see MoM-z14?", o: ["About 280 million years after the Big Bang", "Today", "1,000 years ago"], e: "About 280 million years after the Big Bang." },
+      farOld: { q: "Which telescope finds the farthest galaxies?", o: ["Webb", "Galileo's telescope", "Your eye"], e: "The Webb space telescope." },
+      bbBegin: { q: "How did the universe begin, according to NASA?", o: ["With a rapid expansion we call the big bang", "As a cold rock", "It has always been the same"], e: "With a rapid expansion we call the big bang, some 13.8 billion years ago." },
+      bbSoup: { q: "What was the universe one second after the big bang?", o: ["An extremely hot soup of light and particles", "A cold, dark sea", "A ready-made galaxy"], e: "An extremely hot soup of light and particles." },
+      bbForever: { q: "What do cosmologists think is likely for the universe?", o: ["It will continue to expand forever", "It will stop tomorrow", "It is shrinking"], e: "That it will likely continue to expand forever." },
+      firstElements: { q: "Which elements formed first?", o: ["Hydrogen, helium, traces of lithium and beryllium", "Iron and gold", "Oxygen and carbon"], e: "Hydrogen, helium, and traces of lithium and beryllium." },
+      heliumFive: { q: "When had most of today's helium formed?", o: ["After five minutes", "After five billion years", "Only in the Sun"], e: "After five minutes." },
+      elementsStop: { q: "Why did the forming of elements stop?", o: ["The universe had expanded and cooled", "The stars switched it off", "It never stopped"], e: "The universe had expanded and cooled enough." },
+      darkAges: { q: "What came after the oldest light?", o: ["Dark ages without stars", "Many suns at once", "The Solar System"], e: "The universe remained dark for about 200 million years." },
+      firstGalaxies: { q: "What did the first stars collect into?", o: ["The first galaxies", "The planets", "Black holes only"], e: "Into the first galaxies, over several hundred million years." },
+      darkLong: { q: "About how long did the dark ages last, according to NASA?", o: ["About 200 million years", "About 200 years", "About 2 billion years"], e: "About 200 million years." },
+      acceleration: { q: "What did two teams find in 1998?", o: ["The expansion of the universe is speeding up", "The universe is shrinking", "The first exoplanet"], e: "That the universe is expanding at an accelerated rate." },
+      nobel2011: { q: "Who won the 2011 Nobel Prize in Physics for it?", o: ["Riess, Perlmutter and Schmidt", "Einstein and Hubble", "Galileo"], e: "Adam Riess, Saul Perlmutter and Brian Schmidt." },
+      composition: { q: "What is the universe made of, according to NASA?", o: ["About 68 % dark energy, 27 % dark matter, 5 % normal matter", "100 % stars", "Half planets, half stars"], e: "About 68 % dark energy, 27 % dark matter and 5 % normal matter." },
+      expandForever: { q: "What is likely for the far future of the universe, according to NASA?", o: ["It will continue to expand forever", "It will be gone in a year", "It will turn into one star"], e: "It will likely continue to expand forever." },
+      sunFuture: { q: "What will the Sun become in about 5 billion years?", o: ["A red giant", "A black hole", "A planet"], e: "A red giant." },
+      andromedaFuture: { q: "What did the 2025 study say about the Milky Way and Andromeda?", o: ["Only a 50-50 chance of a collision within 10 billion years", "They will certainly collide tomorrow", "They are moving apart"], e: "Only a 50-50 chance of a collision within 10 billion years." },
       nebulaWhat: { q: "What is a nebula, according to NASA?", o: ["A giant cloud of dust and gas in space", "A planet covered in fog", "A small star"], e: "A giant cloud of dust and gas in space." },
       nebulaDeath: { q: "Where do some nebulae come from?", o: ["From the gas and dust of an exploding dying star", "From the oceans of planets", "From the Moon"], e: "From the gas and dust thrown out by the explosion of a dying star, such as a supernova." },
       nebulaBirth: { q: "What happens in other nebulae?", o: ["New stars begin to form", "Planets die", "Nothing at all"], e: "New stars begin to form." },
@@ -2156,7 +2654,7 @@ export const LEARN_TEXT = {
     },
   },
   de: {
-    parts: { basics: "Teil I, Grundlagen der Planetenwissenschaft", starLives: "Teil II, Das Leben der Sterne", galaxy: "Teil III, Unsere Heimatgalaxie", sky: "Den Himmel lesen" },
+    parts: { basics: "Teil I, Grundlagen der Planetenwissenschaft", starLives: "Teil II, Das Leben der Sterne", galaxy: "Teil III, Unsere Heimatgalaxie", beyond: "Teil IV, Jenseits der Milchstraße", sky: "Den Himmel lesen" },
     paths: {
       solar: { title: "Unser Sonnensystem", goal: "Du kannst erklären, wie unser Sonnensystem aufgebaut ist, und seine wichtigsten Himmelskörper unterscheiden." },
       alpha: { title: "Unsere nächsten Sterne: Alpha Centauri", goal: "Du kannst das Sternsystem beschreiben, das uns am nächsten ist, seinen Planeten Proxima b und wie weit weg es wirklich ist." },
@@ -2171,6 +2669,10 @@ export const LEARN_TEXT = {
       nebula: { title: "Nebel", goal: "Du weißt, was Nebel sind, wie in ihnen Sterne entstehen und wie sterbende Sterne sie hinterlassen." },
       milky: { title: "Die Milchstraße", goal: "Du kannst unsere Galaxie beschreiben: ihre Form und Größe, wo die Sonne in ihr liegt, wie sie um die Mitte reist und wie Gaia sie vermessen hat." },
       local: { title: "Die galaktische Nachbarschaft", goal: "Du kennst die Galaxien in unserer Nähe, die Lokale Gruppe und was die Forschung über die Zukunft mit Andromeda sagt." },
+      galaxies: { title: "Galaxien", goal: "Du weißt, was Galaxien sind, welche Arten es gibt, wie sie sich begegnen und was die tiefen Felder von Hubble und Webb gezeigt haben." },
+      clusters: { title: "Galaxienhaufen", goal: "Du kennst Galaxienhaufen, ihr heißes Gas, die Dunkle Materie darin, wie sie Licht ablenken, und das kosmische Netz." },
+      observable: { title: "Das beobachtbare Universum", goal: "Du weißt, warum ein Blick in die Ferne ein Blick zurück ist, dass sich das Universum ausdehnt, sein ältestes Licht, sein Alter und die fernste Galaxie." },
+      bigbang: { title: "Urknall und Zukunft", goal: "Du weißt, wie das Universum begann, seine ersten Elemente und dunklen Zeiten, die Dunkle Energie und was die Forschung über die Zukunft sagt." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -2457,6 +2959,306 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
         ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
+      },
+      galWhat: {
+        title: "Was ist eine Galaxie?", goal: "Du weißt, was eine Galaxie ist.",
+        text: [
+          "Laut NASA bestehen Galaxien aus Sternen, Planeten und riesigen Wolken aus Gas und Staub, alle von der Schwerkraft zusammengehalten. Die Milchstraße ist eine davon.",
+          "Die Sombrerogalaxie (M104) ist eine Spiralgalaxie, laut NASA 28 Millionen Lichtjahre entfernt im Sternbild Jungfrau.",
+        ],
+        task: "Sieh dir das Sternbild Jungfrau an: In seiner Richtung liegt die Sombrerogalaxie.",
+        remember: [
+          "Eine Galaxie sind Sterne, Planeten, Gas und Staub, von der Schwerkraft zusammengehalten.",
+          "Die Milchstraße ist eine Galaxie unter vielen.",
+          "Die Sombrerogalaxie ist eine Spiralgalaxie, 28 Millionen Lichtjahre entfernt.",
+        ],
+        you: (n) => `Das Licht der Sombrerogalaxie ist 28 Millionen Jahre unterwegs: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Das Licht der Sombrerogalaxie ist 28 Millionen Jahre unterwegs: etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      galTypes: {
+        title: "Arten von Galaxien", goal: "Du kennst die wichtigsten Arten von Galaxien.",
+        text: [
+          "Laut NASA sind die meisten Galaxien Spiralen oder Ellipsen; Galaxien ohne klare Form heißen irregulär. Linsenförmige Galaxien sind eine Art Mischung aus Spiralen und Ellipsen.",
+          "Die Sterne elliptischer Galaxien sind im Allgemeinen älter als die in Spiralgalaxien. In Spiralen entstehen die jüngsten Sterne in den gasreichen Armen.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Die meisten Galaxien sind Spiralen oder Ellipsen, andere irregulär.",
+          "Die Sterne elliptischer Galaxien sind im Allgemeinen älter.",
+          "In Spiralen entstehen neue Sterne in den gasreichen Armen.",
+        ],
+        you: () => "Du wohnst in einer Spirale: der Milchstraße. In ihren Armen entstehen noch heute neue Sterne.",
+        ref: () => "Wir wohnen in einer Spirale: der Milchstraße. In ihren Armen entstehen noch heute neue Sterne.",
+      },
+      galWhirl: {
+        title: "Galaxien begegnen sich", goal: "Du weißt, dass Galaxien einander nahe kommen können.",
+        text: [
+          "Die Whirlpool-Galaxie (M51) ist laut NASA 31 Millionen Lichtjahre entfernt, im Sternbild Jagdhunde.",
+          "Sie hat eine enge Begegnung mit NGC 5195, einer kleinen, gelblichen Galaxie, die an einem ihrer Arme zu ziehen scheint.",
+        ],
+        task: "Sieh dir das Sternbild Jagdhunde an: In seiner Richtung liegt die Whirlpool-Galaxie.",
+        remember: [
+          "Die Whirlpool-Galaxie (M51) ist 31 Millionen Lichtjahre entfernt.",
+          "Sie liegt im Sternbild Jagdhunde.",
+          "Die kleine Galaxie NGC 5195 zieht an einem ihrer Arme.",
+        ],
+        you: (n) => `Das Licht der Whirlpool-Galaxie ist 31 Millionen Jahre unterwegs: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Das Licht der Whirlpool-Galaxie ist 31 Millionen Jahre unterwegs: etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      galHubble: {
+        title: "Hubbles tiefes Feld", goal: "Du weißt, was Hubble in einem winzigen Stück Himmel sah.",
+        text: [
+          "1995 schaute Hubble lange auf ein winziges Stück Himmel im Großen Bären, nahe dem Griff des Großen Wagens: etwa so groß wie ein Stecknadelkopf auf Armeslänge.",
+          "Laut NASA fing das Bild rund 3.000 ferne Galaxien ein.",
+        ],
+        task: "Sieh dir das Sternbild Großer Bär an: Das tiefe Feld liegt nahe dem Griff des Großen Wagens.",
+        remember: [
+          "Das Hubble Deep Field (1995) zeigt ein winziges Stück Himmel im Großen Bären.",
+          "Es ist etwa so groß wie ein Stecknadelkopf auf Armeslänge.",
+          "Es zeigt rund 3.000 ferne Galaxien.",
+        ],
+        you: (before, at) => (before != null ? `Das Hubble Deep Field entstand 1995, ${before === "1" ? "ein Jahr" : `${before} Jahre`} vor deiner Geburt.` : at === "0" ? "Das Hubble Deep Field entstand 1995, im Jahr deiner Geburt." : `Das Hubble Deep Field entstand 1995, als du ${at === "1" ? "ein Jahr" : `${at} Jahre`} alt warst.`),
+        ref: (n) => `Das Hubble Deep Field entstand 1995, ${n === "1" ? "vor einem Jahr" : `vor ${n} Jahren`}.`,
+      },
+      galWebb: {
+        title: "Webbs erstes tiefes Feld", goal: "Du kennst Webbs erstes tiefes Bild.",
+        text: [
+          "Am 12. Juli 2022 zeigten ESA und NASA Webbs erstes tiefes Feld: Tausende Galaxien um den Galaxienhaufen SMACS 0723, nahe dem Sternbild Fliegender Fisch am Südhimmel.",
+          "Das Bild deckt ein Stück Himmel so groß wie ein Sandkorn auf Armeslänge. Der Haufen erscheint, wie er vor 4,6 Milliarden Jahren war, etwa als die Sonne entstand.",
+        ],
+        task: "Sieh dir das Sternbild Fliegender Fisch an: Nahe dabei liegt Webbs erstes tiefes Feld.",
+        remember: [
+          "Webbs erstes tiefes Feld erschien am 12. Juli 2022.",
+          "Es zeigt Tausende Galaxien in einem Stück so groß wie ein Sandkorn auf Armeslänge.",
+          "Der Haufen SMACS 0723 erscheint, wie er vor 4,6 Milliarden Jahren war.",
+        ],
+        you: (n) => `Das Licht von SMACS 0723 ist 4,6 Milliarden Jahre alt: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Das Licht von SMACS 0723 ist 4,6 Milliarden Jahre alt: etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      clWhat: {
+        title: "Galaxienhaufen", goal: "Du weißt, was ein Galaxienhaufen ist.",
+        text: [
+          "Laut NASA enthalten Galaxienhaufen Hunderte bis Tausende Galaxien, von der Schwerkraft zusammengehalten. Laut den Chandra-Seiten der NASA sind sie die größten durch Schwerkraft gebundenen Objekte im Universum.",
+          "Unser Nachbar ist der Virgohaufen mit etwa 2.000 Galaxien. In seiner Mitte sitzt die Riesengalaxie M87, 54 Millionen Lichtjahre entfernt, deren Schwarzes Loch als erstes fotografiert wurde.",
+        ],
+        task: "Sieh dir das Sternbild Jungfrau an: In seiner Richtung liegt der Virgohaufen.",
+        remember: [
+          "Galaxienhaufen enthalten Hunderte bis Tausende Galaxien.",
+          "Sie sind die größten durch Schwerkraft gebundenen Objekte im Universum.",
+          "Der Virgohaufen hat etwa 2.000 Galaxien; M87 sitzt in seiner Mitte.",
+        ],
+        you: (n) => `Das Licht von M87 ist 54 Millionen Jahre unterwegs: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Das Licht von M87 ist 54 Millionen Jahre unterwegs: etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      clGas: {
+        title: "Heißes Gas", goal: "Du weißt, was den Raum zwischen den Galaxien eines Haufens füllt.",
+        text: [
+          "Zwischen den Galaxien eines Haufens liegt heißes, dünnes Gas, das nur im Röntgenlicht sichtbar ist.",
+          "Laut den Chandra-Seiten der NASA enthält dieses Gas mehr Masse als alle Galaxien des Haufens.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Zwischen den Galaxien eines Haufens liegt heißes Gas.",
+          "Man sieht es nur im Röntgenlicht.",
+          "Es hat mehr Masse als alle Galaxien des Haufens.",
+        ],
+        you: () => "Deine Augen könnten dieses Gas nicht sehen: Es leuchtet nur im Röntgenlicht, das Teleskope im All messen.",
+        ref: () => "Unsere Augen könnten dieses Gas nicht sehen: Es leuchtet nur im Röntgenlicht, das Teleskope im All messen.",
+      },
+      clDark: {
+        title: "Dunkle Materie", goal: "Du weißt, wie die Dunkle Materie entdeckt wurde und wie viel es davon gibt.",
+        text: [
+          "1933 bemerkte Fritz Zwicky, dass sich die Galaxien des Coma-Haufens zu schnell bewegten: Es musste viel mehr Masse geben, als man sah.",
+          "Laut NASA absorbiert, reflektiert und sendet diese Dunkle Materie kein Licht. Sie macht etwa 27 % des Universums aus, gewöhnliche Materie nur etwa 5 %.",
+        ],
+        task: "Sieh dir das Sternbild Haar der Berenike an: In seiner Richtung liegt der Coma-Haufen.",
+        remember: [
+          "1933 sah Fritz Zwicky, dass sich die Galaxien des Coma-Haufens zu schnell bewegten.",
+          "Dunkle Materie sendet, absorbiert und reflektiert kein Licht.",
+          "Sie macht etwa 27 % des Universums aus, gewöhnliche Materie etwa 5 %.",
+        ],
+        you: (before, at) => (before != null ? `Zwicky veröffentlichte seine Arbeit 1933, ${before === "1" ? "ein Jahr" : `${before} Jahre`} vor deiner Geburt.` : at === "0" ? "Zwicky veröffentlichte seine Arbeit 1933, im Jahr deiner Geburt." : `Zwicky veröffentlichte seine Arbeit 1933, als du ${at === "1" ? "ein Jahr" : `${at} Jahre`} alt warst.`),
+        ref: (n) => `Zwicky veröffentlichte seine Arbeit 1933, ${n === "1" ? "vor einem Jahr" : `vor ${n} Jahren`}.`,
+      },
+      clLens: {
+        title: "Gravitationslinsen", goal: "Du weißt, wie ein Haufen Licht ablenken kann.",
+        text: [
+          "Laut NASA verzerrt ein massereiches Objekt wie ein Galaxienhaufen Raum und Zeit, wie Einsteins Allgemeine Relativitätstheorie es beschreibt. Licht von Galaxien dahinter wird abgelenkt, verzerrt und vergrößert.",
+          "2006 zeigte Chandra der NASA am Bullet-Haufen einen direkten Beleg, dass fast die ganze Materie in den Haufen dunkel ist.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Ein Galaxienhaufen verzerrt Raum und Zeit und lenkt Licht ab.",
+          "Licht von Galaxien dahinter wird verzerrt und vergrößert.",
+          "Der Bullet-Haufen (2006) gab einen direkten Beleg für Dunkle Materie.",
+        ],
+        you: (before, at) => (before != null ? `Der Bullet-Haufen wurde 2006 gezeigt, ${before === "1" ? "ein Jahr" : `${before} Jahre`} vor deiner Geburt.` : at === "0" ? "Der Bullet-Haufen wurde 2006 gezeigt, im Jahr deiner Geburt." : `Der Bullet-Haufen wurde 2006 gezeigt, als du ${at === "1" ? "ein Jahr" : `${at} Jahre`} alt warst.`),
+        ref: (n) => `Der Bullet-Haufen wurde 2006 gezeigt, ${n === "1" ? "vor einem Jahr" : `vor ${n} Jahren`}.`,
+      },
+      clWeb: {
+        title: "Das kosmische Netz", goal: "Du weißt, wie Galaxien im größten Maßstab angeordnet sind.",
+        text: [
+          "Laut NASA sind Galaxien und Haufen in verdrehten, fadenartigen Strukturen angeordnet, dem kosmischen Netz, mit leeren Räumen dazwischen.",
+          "Gruppen von Superhaufen können Wände oder Flächen aus Galaxien bilden. Superhaufen sind in der Regel nicht durch Schwerkraft aneinander gebunden.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Galaxien sind in einem kosmischen Netz aus Fäden angeordnet.",
+          "Zwischen den Fäden liegen leere Räume.",
+          "Superhaufen können Wände oder Flächen aus Galaxien bilden.",
+        ],
+        you: () => "Auch deine Galaxie ist ein Knoten in diesem Netz: Die Milchstraße gehört zur Lokalen Gruppe.",
+        ref: () => "Auch unsere Galaxie ist ein Knoten in diesem Netz: Die Milchstraße gehört zur Lokalen Gruppe.",
+      },
+      obsBack: {
+        title: "Ein Blick zurück in der Zeit", goal: "Du weißt, warum ein Blick in die Ferne ein Blick in die Vergangenheit ist.",
+        text: [
+          "Licht braucht Zeit. Laut NASA ist ein Blick hinaus ins All wie ein Blick zurück in der Zeit: Je weiter etwas entfernt ist, desto älter ist das Licht, das wir von ihm sehen.",
+          "Die Sonne sehen wir, wie sie vor etwa 8 Minuten war, Proxima Centauri wie vor 4,24 Jahren, die Andromedagalaxie wie vor 2,5 Millionen Jahren.",
+        ],
+        task: "Sieh dir deinen Stern an: Du siehst ihn, wie er bei deiner Geburt war.",
+        remember: [
+          "Licht braucht Zeit, um zu uns zu kommen.",
+          "Ein Blick ins All ist ein Blick zurück in der Zeit.",
+          "Je weiter weg, desto älter das Licht.",
+        ],
+        you: (name, ly) => `Dein Stern ${name} ist ${ly} Lichtjahre entfernt: Du siehst ihn, wie er etwa bei deiner Geburt war.`,
+        ref: () => "Proxima Centauri ist 4,24 Lichtjahre entfernt: Du siehst ihn, wie er vor 4,24 Jahren war.",
+      },
+      obsExpand: {
+        title: "Das Universum dehnt sich aus", goal: "Du weißt, dass sich das Universum ausdehnt.",
+        text: [
+          "Laut NASA dehnt sich das Universum aus, und die Ausdehnung wird schneller.",
+          "Wenn sich der Raum dehnt, dehnt sich auch das Licht, das durch ihn reist, zu längeren, röteren Wellen. Darum blickt Webb im Infrarotlicht auf die frühesten Galaxien.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Das Universum dehnt sich aus.",
+          "Die Ausdehnung wird schneller.",
+          "Licht aus großer Ferne wird zu längeren Wellen gedehnt.",
+        ],
+        you: () => "Das Licht der fernsten Galaxien wurde auf seinem Weg zu dir gedehnt, länger als dein ganzes Leben.",
+        ref: () => "Das Licht der fernsten Galaxien wurde auf seinem Weg zu uns gedehnt.",
+      },
+      obsCmb: {
+        title: "Das älteste Licht", goal: "Du kennst das älteste Licht des Universums.",
+        text: [
+          "Das älteste Licht, das wir sehen können, stammt laut NASA und ESA aus der Zeit etwa 380.000 Jahre nach dem Urknall; die WMAP-Seite der NASA sagt etwa 375.000. Es heißt kosmische Hintergrundstrahlung.",
+          "1992 entdeckte COBE der NASA winzige Muster darin; WMAP und Planck der ESA haben sie später kartiert.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Das älteste Licht stammt aus etwa 380.000 Jahren nach dem Urknall.",
+          "Es ist die kosmische Hintergrundstrahlung.",
+          "COBE (1992), WMAP und Planck haben sie kartiert.",
+        ],
+        you: (before, at) => (before != null ? `COBE machte seine Entdeckung 1992, ${before === "1" ? "ein Jahr" : `${before} Jahre`} vor deiner Geburt.` : at === "0" ? "COBE machte seine Entdeckung 1992, im Jahr deiner Geburt." : `COBE machte seine Entdeckung 1992, als du ${at === "1" ? "ein Jahr" : `${at} Jahre`} alt warst.`),
+        ref: (n) => `COBE machte seine Entdeckung 1992, ${n === "1" ? "vor einem Jahr" : `vor ${n} Jahren`}.`,
+      },
+      obsAge: {
+        title: "13,8 Milliarden Jahre", goal: "Du weißt, wie alt das Universum ist.",
+        text: [
+          "Laut NASA ist das Universum etwa 13,8 Milliarden Jahre alt; die WMAP-Seite der NASA nennt 13,77 Milliarden, auf ein halbes Prozent genau.",
+          "Die Sonne ist etwa 4,6 Milliarden Jahre alt. Wäre das ganze Leben des Universums ein Jahr, wäre die Sonne Anfang September entstanden (gerechnet).",
+        ],
+        task: "Sieh dir die Sonne an: Sie kam erst im letzten Drittel der Zeit des Universums.",
+        remember: [
+          "Das Universum ist etwa 13,8 Milliarden Jahre alt.",
+          "WMAP hat 13,77 Milliarden Jahre gemessen.",
+          "Die Sonne kam im letzten Drittel dieser Zeit.",
+        ],
+        you: (sec) => `Wären die 13,8 Milliarden Jahre des Universums ein Jahr, wäre dein bisheriges Leben die letzten ${sec} Sekunden vor Mitternacht. (Gerechnet.)`,
+        ref: (sec) => `Wären die 13,8 Milliarden Jahre des Universums ein Jahr, wäre ein Leben von 30 Jahren die letzten ${sec} Sekunden vor Mitternacht. (Gerechnet.)`,
+      },
+      obsFar: {
+        title: "Die fernste Galaxie", goal: "Du kennst die fernste bekannte Galaxie.",
+        text: [
+          "Laut NASA fand Webb JADES-GS-z14-0 mit einer Rotverschiebung von 14,32. Im Juni 2025 übernahm MoM-z14 den Rekord, mit einer Rotverschiebung von 14,44.",
+          "Wir sehen MoM-z14, wie es etwa 280 Millionen Jahre nach dem Urknall war: Sein Licht ist älter als die Sonne und die Erde.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Webb findet die fernsten Galaxien.",
+          "MoM-z14 hält den Rekord seit Juni 2025.",
+          "Wir sehen es, wie es etwa 280 Millionen Jahre nach dem Urknall war.",
+        ],
+        you: (before, at) => (before != null ? `MoM-z14 übernahm den Rekord 2025, ${before === "1" ? "ein Jahr" : `${before} Jahre`} vor deiner Geburt.` : at === "0" ? "MoM-z14 übernahm den Rekord 2025, im Jahr deiner Geburt." : `MoM-z14 übernahm den Rekord 2025, als du ${at === "1" ? "ein Jahr" : `${at} Jahre`} alt warst.`),
+        ref: (n) => `MoM-z14 übernahm den Rekord 2025, ${n === "1" ? "vor einem Jahr" : `vor ${n} Jahren`}.`,
+      },
+      bbStart: {
+        title: "Der Anfang", goal: "Du weißt, wie das Universum begann.",
+        text: [
+          "Laut NASA begann das Universum vor etwa 13,8 Milliarden Jahren mit einer schnellen Ausdehnung, die wir Urknall nennen.",
+          "Eine Sekunde nach dem Urknall war das Universum eine extrem heiße Suppe aus Licht und Teilchen. Die Kosmologie hält es für wahrscheinlich, dass sich das Universum für immer weiter ausdehnt.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Das Universum begann vor etwa 13,8 Milliarden Jahren.",
+          "Den Anfang nennen wir Urknall: eine schnelle Ausdehnung.",
+          "Eine Sekunde danach war es eine extrem heiße Suppe aus Licht und Teilchen.",
+        ],
+        you: () => "Alles, was du siehst, begann in dieser Ausdehnung: die Sonne, die Erde und die Materie, aus der du bist.",
+        ref: () => "Alles, was wir sehen, begann in dieser Ausdehnung: die Sonne, die Erde und die Materie, aus der wir sind.",
+      },
+      bbElements: {
+        title: "Die ersten Elemente", goal: "Du weißt, welche Elemente zuerst entstanden.",
+        text: [
+          "Laut NASA entstanden im Urknall die ersten Elemente: Wasserstoff, Helium und Spuren von Lithium und Beryllium. Nach fünf Minuten war das meiste heutige Helium entstanden.",
+          "Dann hatte sich das Universum so weit ausgedehnt und abgekühlt, dass keine weiteren Elemente mehr entstanden. Die schwereren Elemente kamen später, aus den Sternen des Pfads über das Leben der Sterne.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Die ersten Elemente waren Wasserstoff, Helium und Spuren von Lithium und Beryllium.",
+          "Das meiste heutige Helium entstand in den ersten fünf Minuten.",
+          "Danach war das Universum zu kühl für weitere Elemente.",
+        ],
+        you: (n) => `Das meiste heutige Helium entstand in fünf Minuten. Du lebst schon etwa ${n} Minuten.`,
+        ref: (n) => `Das meiste heutige Helium entstand in fünf Minuten. Ein Leben von 30 Jahren sind etwa ${n} Minuten.`,
+      },
+      bbDark: {
+        title: "Die dunklen Zeiten", goal: "Du weißt, dass das Universum vor den ersten Sternen dunkel war.",
+        text: [
+          "Nach dem ältesten Licht blieb das Universum laut NASA die nächsten 200 Millionen Jahre dunkel.",
+          "Über mehrere hundert Millionen Jahre sammelten sich die ersten Sterne zu den ersten Galaxien. Genau nach ihrem Licht sucht Webb.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Nach dem ältesten Licht blieb das Universum dunkel.",
+          "Die dunkle Zeit dauerte etwa 200 Millionen Jahre.",
+          "Dann sammelten sich die ersten Sterne zu den ersten Galaxien.",
+        ],
+        you: (n) => `Die dunklen Zeiten dauerten etwa 200 Millionen Jahre: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `Die dunklen Zeiten dauerten etwa 200 Millionen Jahre: etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      bbEnergy: {
+        title: "Dunkle Energie", goal: "Du weißt, dass die Ausdehnung schneller wird, und warum das alle überrascht hat.",
+        text: [
+          "1998 fanden zwei Teams mit fernen Supernovae, dass sich das Universum beschleunigt ausdehnt. Adam Riess, Saul Perlmutter und Brian Schmidt bekamen dafür 2011 den Nobelpreis für Physik.",
+          "Die Ursache heißt Dunkle Energie. Laut NASA macht sie etwa 68 % des Universums aus, Dunkle Materie 27 %, normale Materie 5 %; andere NASA-Seiten nennen 68,3 bis 70 % für die Dunkle Energie.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Seit 1998 wissen wir, dass die Ausdehnung schneller wird.",
+          "Die Ursache heißt Dunkle Energie, etwa 68 % des Universums.",
+          "Dunkle Materie sind etwa 27 %, normale Materie etwa 5 %.",
+        ],
+        you: (before, at) => (before != null ? `Die Beschleunigung wurde 1998 entdeckt, ${before === "1" ? "ein Jahr" : `${before} Jahre`} vor deiner Geburt.` : at === "0" ? "Die Beschleunigung wurde 1998 entdeckt, im Jahr deiner Geburt." : `Die Beschleunigung wurde 1998 entdeckt, als du ${at === "1" ? "ein Jahr" : `${at} Jahre`} alt warst.`),
+        ref: (n) => `Die Beschleunigung wurde 1998 entdeckt, ${n === "1" ? "vor einem Jahr" : `vor ${n} Jahren`}.`,
+      },
+      bbFuture: {
+        title: "Und die Zukunft?", goal: "Du weißt, was die Forschung über die Zukunft sagt und wie sicher das ist.",
+        text: [
+          "Laut NASA hält die Kosmologie es für wahrscheinlich, dass sich das Universum für immer weiter ausdehnt. Die Sonne wird in etwa 5 Milliarden Jahren ein Roter Riese.",
+          "Und Milchstraße und Andromeda? Die Studie von 2025 gibt nur 50 zu 50 für einen Zusammenstoß in 10 Milliarden Jahren. Die Zukunft ist eine Vorhersage: Sie gilt, solange die Daten sie tragen.",
+        ],
+        task: "Sieh dir die Sonne an: In etwa 5 Milliarden Jahren wird sie ein Roter Riese.",
+        remember: [
+          "Das Universum dehnt sich wahrscheinlich für immer weiter aus.",
+          "Die Sonne wird in etwa 5 Milliarden Jahren ein Roter Riese.",
+          "Vorhersagen können sich mit neuen Daten ändern.",
+        ],
+        you: (n) => `5 Milliarden Jahre bis zum Roten Riesen: etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `5 Milliarden Jahre bis zum Roten Riesen: etwa ${n}-mal ein Leben von 30 Jahren.`,
       },
       nebWhat: {
         title: "Was ist ein Nebel?", goal: "Du weißt, was ein Nebel ist und auf welche zwei Arten Nebel entstehen.",
@@ -3344,6 +4146,66 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
       kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
       rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
+      galaxyWhat: { q: "Was ist eine Galaxie laut NASA?", o: ["Sterne, Planeten, Gas und Staub, von der Schwerkraft gehalten", "Ein einziger riesiger Stern", "Eine Wolke aus Wasser"], e: "Sterne, Planeten und riesige Wolken aus Gas und Staub, von der Schwerkraft zusammengehalten." },
+      milkyIsOne: { q: "Was ist die Milchstraße?", o: ["Eine Galaxie unter vielen", "Die einzige Galaxie", "Ein Planet"], e: "Eine Galaxie unter vielen: unsere eigene." },
+      sombrero: { q: "Wie weit ist die Sombrerogalaxie laut NASA entfernt?", o: ["28 Millionen Lichtjahre", "28 Lichtjahre", "28 Milliarden Lichtjahre"], e: "28 Millionen Lichtjahre, in der Jungfrau." },
+      galaxyTypes: { q: "Welche Arten sind die meisten Galaxien?", o: ["Spiralen und Ellipsen", "Quadrate und Dreiecke", "Nur Ringe"], e: "Die meisten sind Spiralen oder Ellipsen, andere irregulär." },
+      ellipticalOld: { q: "Welche Galaxien haben im Allgemeinen ältere Sterne?", o: ["Elliptische", "Spiralen", "Beide gleich"], e: "Elliptische: Ihre Sterne sind im Allgemeinen älter als die in Spiralen." },
+      spiralYoung: { q: "Wo entstehen die jüngsten Sterne einer Spirale?", o: ["In den gasreichen Armen", "In der leeren Mitte", "Außerhalb der Galaxie"], e: "In den gasreichen Armen." },
+      whirlWhere: { q: "In welchem Sternbild liegt die Whirlpool-Galaxie?", o: ["Jagdhunde", "Orion", "Stier"], e: "In den Jagdhunden, 31 Millionen Lichtjahre entfernt." },
+      whirlCompanion: { q: "Mit wem hat die Whirlpool-Galaxie eine enge Begegnung?", o: ["Mit der kleinen Galaxie NGC 5195", "Mit der Sonne", "Mit einem Schwarzen Loch der Milchstraße"], e: "Mit NGC 5195, einer kleinen, gelblichen Galaxie." },
+      whirlDist: { q: "Wie weit ist die Whirlpool-Galaxie laut NASA entfernt?", o: ["31 Millionen Lichtjahre", "31 Lichtjahre", "31 Milliarden Lichtjahre"], e: "31 Millionen Lichtjahre." },
+      hdfCount: { q: "Wie viele Galaxien fing das Hubble Deep Field etwa ein?", o: ["Rund 3.000", "Etwa 30", "Genau 1"], e: "Rund 3.000 ferne Galaxien." },
+      hdfWhere: { q: "Wo am Himmel liegt das Hubble Deep Field?", o: ["Im Großen Bären, nahe dem Griff des Großen Wagens", "Im Gürtel des Orion", "Am Südpol des Himmels"], e: "Im Großen Bären, nahe dem Griff des Großen Wagens." },
+      hdfSize: { q: "Wie groß ist das Stück Himmel des Hubble Deep Field?", o: ["Etwa ein Stecknadelkopf auf Armeslänge", "Der halbe Himmel", "So groß wie der Vollmond"], e: "Etwa so groß wie ein Stecknadelkopf auf Armeslänge." },
+      webbDate: { q: "Wann erschien Webbs erstes tiefes Feld?", o: ["Am 12. Juli 2022", "1995", "1969"], e: "Am 12. Juli 2022." },
+      webbSand: { q: "Wie groß ist das Stück Himmel von Webbs erstem tiefen Feld?", o: ["Etwa ein Sandkorn auf Armeslänge", "So groß wie die Milchstraße", "Der ganze Himmel"], e: "Etwa so groß wie ein Sandkorn auf Armeslänge." },
+      webbAgo: { q: "Wie er wann war, sehen wir den Haufen SMACS 0723?", o: ["Vor 4,6 Milliarden Jahren", "Vor 4,6 Jahren", "Heute"], e: "Wie er vor 4,6 Milliarden Jahren war." },
+      clusterWhat: { q: "Wie viele Galaxien enthält ein Galaxienhaufen?", o: ["Hunderte bis Tausende", "Zwei", "Genau eine"], e: "Hunderte bis Tausende, von der Schwerkraft zusammengehalten." },
+      clusterBiggest: { q: "Was sind Galaxienhaufen laut den Chandra-Seiten der NASA?", o: ["Die größten durch Schwerkraft gebundenen Objekte im Universum", "Kleine Gruppen von Sternen", "Wolken der Erde"], e: "Die größten durch Schwerkraft gebundenen Objekte im Universum." },
+      virgoCount: { q: "Wie viele Galaxien hat der Virgohaufen etwa?", o: ["Etwa 2.000", "Etwa 20", "Etwa 20 Milliarden"], e: "Etwa 2.000; M87 sitzt in seiner Mitte." },
+      hotGas: { q: "Was liegt zwischen den Galaxien eines Haufens?", o: ["Heißes, dünnes Gas", "Flüssiges Wasser", "Gar nichts"], e: "Heißes, dünnes Gas." },
+      gasMass: { q: "Wie viel Masse hat dieses Gas?", o: ["Mehr als alle Galaxien des Haufens", "Fast keine", "So viel wie ein Stern"], e: "Mehr Masse als alle Galaxien des Haufens." },
+      gasXray: { q: "In welchem Licht sieht man das heiße Gas?", o: ["Nur im Röntgenlicht", "Mit bloßem Auge", "Nur in Radiowellen von der Erde"], e: "Nur im Röntgenlicht." },
+      zwicky: { q: "Was bemerkte Fritz Zwicky 1933?", o: ["Die Galaxien des Coma-Haufens bewegten sich zu schnell", "Einen neuen Planeten", "Das erste Schwarze Loch"], e: "Die Galaxien des Coma-Haufens bewegten sich zu schnell." },
+      darkShare: { q: "Wie viel des Universums ist laut NASA Dunkle Materie?", o: ["Etwa 27 %", "Etwa 99 %", "Etwa 1 %"], e: "Etwa 27 %; gewöhnliche Materie etwa 5 %." },
+      darkLight: { q: "Sendet Dunkle Materie Licht aus?", o: ["Nein, sie sendet, absorbiert und reflektiert kein Licht", "Ja, sie leuchtet rot", "Nur nachts"], e: "Nein: Sie absorbiert, reflektiert und sendet kein Licht." },
+      lensWhat: { q: "Was macht ein Galaxienhaufen mit dem Licht von Galaxien dahinter?", o: ["Er lenkt es ab, verzerrt und vergrößert es", "Er schaltet es aus", "Nichts"], e: "Er lenkt es ab, verzerrt und vergrößert es." },
+      lensEinstein: { q: "Welche Theorie beschreibt, wie Masse Raum und Zeit verzerrt?", o: ["Einsteins Allgemeine Relativitätstheorie", "Die Lehre der Sternzeichen", "Newtons Farbenlehre"], e: "Einsteins Allgemeine Relativitätstheorie." },
+      bullet: { q: "Was zeigte der Bullet-Haufen 2006?", o: ["Einen direkten Beleg für Dunkle Materie", "Einen neuen Kometen", "Das Alter der Sonne"], e: "Einen direkten Beleg, dass fast die ganze Materie in den Haufen dunkel ist." },
+      cosmicWeb: { q: "Wie sind Galaxien im größten Maßstab angeordnet?", o: ["In einem kosmischen Netz aus Fäden", "In einer geraden Linie", "Gleichmäßig wie ein Gitter"], e: "In verdrehten, fadenartigen Strukturen: dem kosmischen Netz." },
+      voids: { q: "Was liegt zwischen den Fäden des kosmischen Netzes?", o: ["Leere Räume", "Dichte Wände aus Sternen", "Wasser"], e: "Leere Räume." },
+      superclusters: { q: "Was können Gruppen von Superhaufen bilden?", o: ["Wände oder Flächen aus Galaxien", "Neue Planeten", "Nur Schwarze Löcher"], e: "Wände oder Flächen aus Galaxien." },
+      lookBack: { q: "Warum ist ein Blick weit ins All ein Blick zurück in der Zeit?", o: ["Weil Licht Zeit braucht, um zu uns zu kommen", "Weil Uhren im All stehen bleiben", "Weil Sterne alt sind"], e: "Weil Licht Zeit braucht: Je weiter weg, desto älter das Licht." },
+      seeOld: { q: "Wie sie wann war, sehen wir die Sonne?", o: ["Vor etwa 8 Minuten", "Genau jetzt, ohne Verzögerung", "Vor einem Jahr"], e: "Wie sie vor etwa 8 Minuten war." },
+      yourStarSeen: { q: "Ein Stern ist 30 Lichtjahre entfernt. Wie er wann war, sehen wir ihn?", o: ["Vor 30 Jahren", "Vor 30 Minuten", "Heute"], e: "Wie er vor 30 Jahren war." },
+      expanding: { q: "Was macht das Universum laut NASA?", o: ["Es dehnt sich aus", "Es schrumpft", "Es steht still"], e: "Es dehnt sich aus." },
+      speedingUp: { q: "Wird die Ausdehnung langsamer oder schneller?", o: ["Schneller", "Langsamer", "Sie hat aufgehört"], e: "Schneller." },
+      stretched: { q: "Was passiert mit Licht, das durch sich ausdehnenden Raum reist?", o: ["Es wird zu längeren Wellen gedehnt", "Es wird blauer", "Es bleibt stehen"], e: "Es wird zu längeren, röteren Wellen gedehnt." },
+      cmbWhen: { q: "Aus welcher Zeit stammt das älteste Licht, das wir sehen können?", o: ["Etwa 380.000 Jahre nach dem Urknall", "Eine Sekunde nach dem Urknall", "Von der Geburt der Sonne"], e: "Etwa 380.000 Jahre nach dem Urknall (NASA, ESA); die WMAP-Seite der NASA sagt 375.000." },
+      cmbCobe: { q: "Welcher NASA-Satellit entdeckte 1992 Muster in diesem Licht?", o: ["COBE", "Kepler", "Voyager 1"], e: "COBE." },
+      cmbDiffer: { q: "Wie heißt dieses älteste Licht?", o: ["Kosmische Hintergrundstrahlung", "Orionnebel", "Sonnenlicht"], e: "Kosmische Hintergrundstrahlung." },
+      universeAge: { q: "Wie alt ist das Universum laut NASA?", o: ["Etwa 13,8 Milliarden Jahre", "Etwa 4,6 Milliarden Jahre", "Etwa 6.000 Jahre"], e: "Etwa 13,8 Milliarden Jahre." },
+      ageWmap: { q: "Welches Alter hat WMAP gemessen?", o: ["13,77 Milliarden Jahre", "13,77 Millionen Jahre", "1,377 Milliarden Jahre"], e: "13,77 Milliarden Jahre, auf ein halbes Prozent genau." },
+      sunInYear: { q: "Wäre das Leben des Universums ein Jahr, wann wäre die Sonne entstanden?", o: ["Anfang September", "Am 1. Januar", "Am 31. Dezember"], e: "Anfang September (gerechnet aus 4,6 und 13,8 Milliarden Jahren)." },
+      farRecord: { q: "Welche Galaxie hält seit Juni 2025 den Entfernungsrekord?", o: ["MoM-z14", "Andromeda", "M87"], e: "MoM-z14, mit einer Rotverschiebung von 14,44." },
+      farWhen: { q: "Wie es wann war, sehen wir MoM-z14?", o: ["Etwa 280 Millionen Jahre nach dem Urknall", "Heute", "Vor 1.000 Jahren"], e: "Etwa 280 Millionen Jahre nach dem Urknall." },
+      farOld: { q: "Welches Teleskop findet die fernsten Galaxien?", o: ["Webb", "Galileis Fernrohr", "Dein Auge"], e: "Das Weltraumteleskop Webb." },
+      bbBegin: { q: "Wie begann das Universum laut NASA?", o: ["Mit einer schnellen Ausdehnung, die wir Urknall nennen", "Als kalter Felsen", "Es war immer gleich"], e: "Mit einer schnellen Ausdehnung, die wir Urknall nennen, vor etwa 13,8 Milliarden Jahren." },
+      bbSoup: { q: "Was war das Universum eine Sekunde nach dem Urknall?", o: ["Eine extrem heiße Suppe aus Licht und Teilchen", "Ein kaltes, dunkles Meer", "Eine fertige Galaxie"], e: "Eine extrem heiße Suppe aus Licht und Teilchen." },
+      bbForever: { q: "Was hält die Kosmologie für das Universum für wahrscheinlich?", o: ["Dass es sich für immer weiter ausdehnt", "Dass es morgen stehen bleibt", "Dass es schrumpft"], e: "Dass es sich wahrscheinlich für immer weiter ausdehnt." },
+      firstElements: { q: "Welche Elemente entstanden zuerst?", o: ["Wasserstoff, Helium, Spuren von Lithium und Beryllium", "Eisen und Gold", "Sauerstoff und Kohlenstoff"], e: "Wasserstoff, Helium und Spuren von Lithium und Beryllium." },
+      heliumFive: { q: "Wann war das meiste heutige Helium entstanden?", o: ["Nach fünf Minuten", "Nach fünf Milliarden Jahren", "Nur in der Sonne"], e: "Nach fünf Minuten." },
+      elementsStop: { q: "Warum entstanden keine weiteren Elemente mehr?", o: ["Das Universum hatte sich ausgedehnt und abgekühlt", "Die Sterne schalteten es ab", "Es hörte nie auf"], e: "Das Universum hatte sich weit genug ausgedehnt und abgekühlt." },
+      darkAges: { q: "Was kam nach dem ältesten Licht?", o: ["Dunkle Zeiten ohne Sterne", "Viele Sonnen auf einmal", "Das Sonnensystem"], e: "Das Universum blieb etwa 200 Millionen Jahre dunkel." },
+      firstGalaxies: { q: "Wozu sammelten sich die ersten Sterne?", o: ["Zu den ersten Galaxien", "Zu den Planeten", "Nur zu Schwarzen Löchern"], e: "Zu den ersten Galaxien, über mehrere hundert Millionen Jahre." },
+      darkLong: { q: "Wie lange dauerten die dunklen Zeiten laut NASA etwa?", o: ["Etwa 200 Millionen Jahre", "Etwa 200 Jahre", "Etwa 2 Milliarden Jahre"], e: "Etwa 200 Millionen Jahre." },
+      acceleration: { q: "Was fanden zwei Teams 1998?", o: ["Die Ausdehnung des Universums wird schneller", "Das Universum schrumpft", "Den ersten Exoplaneten"], e: "Dass sich das Universum beschleunigt ausdehnt." },
+      nobel2011: { q: "Wer bekam dafür 2011 den Nobelpreis für Physik?", o: ["Riess, Perlmutter und Schmidt", "Einstein und Hubble", "Galilei"], e: "Adam Riess, Saul Perlmutter und Brian Schmidt." },
+      composition: { q: "Woraus besteht das Universum laut NASA?", o: ["Etwa 68 % Dunkle Energie, 27 % Dunkle Materie, 5 % normale Materie", "Zu 100 % aus Sternen", "Halb Planeten, halb Sterne"], e: "Etwa 68 % Dunkle Energie, 27 % Dunkle Materie und 5 % normale Materie." },
+      expandForever: { q: "Was ist laut NASA für die ferne Zukunft des Universums wahrscheinlich?", o: ["Es dehnt sich für immer weiter aus", "Es ist in einem Jahr verschwunden", "Es wird zu einem einzigen Stern"], e: "Es dehnt sich wahrscheinlich für immer weiter aus." },
+      sunFuture: { q: "Was wird die Sonne in etwa 5 Milliarden Jahren?", o: ["Ein Roter Riese", "Ein Schwarzes Loch", "Ein Planet"], e: "Ein Roter Riese." },
+      andromedaFuture: { q: "Was sagte die Studie von 2025 über Milchstraße und Andromeda?", o: ["Nur 50 zu 50 für einen Zusammenstoß in 10 Milliarden Jahren", "Sie stoßen morgen sicher zusammen", "Sie entfernen sich"], e: "Nur 50 zu 50 für einen Zusammenstoß in 10 Milliarden Jahren." },
       nebulaWhat: { q: "Was ist ein Nebel laut NASA?", o: ["Eine riesige Wolke aus Staub und Gas im All", "Ein Planet voller Nebel", "Ein kleiner Stern"], e: "Eine riesige Wolke aus Staub und Gas im All." },
       nebulaDeath: { q: "Woher stammen manche Nebel?", o: ["Aus Gas und Staub eines explodierenden sterbenden Sterns", "Aus den Meeren von Planeten", "Vom Mond"], e: "Aus dem Gas und Staub, den die Explosion eines sterbenden Sterns hinausschleudert, etwa eine Supernova." },
       nebulaBirth: { q: "Was passiert in anderen Nebeln?", o: ["Neue Sterne beginnen zu entstehen", "Planeten sterben", "Gar nichts"], e: "Neue Sterne beginnen zu entstehen." },
@@ -3490,7 +4352,7 @@ export const LEARN_TEXT = {
     },
   },
   ja: {
-    parts: { basics: "第1部　惑星科学の基礎", starLives: "第2部　恒星の一生", galaxy: "第3部　私たちの銀河", sky: "空を読む" },
+    parts: { basics: "第1部　惑星科学の基礎", starLives: "第2部　恒星の一生", galaxy: "第3部　私たちの銀河", beyond: "第4部　天の川銀河のかなたへ", sky: "空を読む" },
     paths: {
       solar: { title: "私たちの太陽系", goal: "太陽系のしくみを説明し、おもな天体を見分けられるようになります。" },
       alpha: { title: "いちばん近い星たち：ケンタウルス座アルファ星", goal: "私たちにいちばん近い恒星系、その惑星プロキシマb、そしてそれが実際にどれほど遠いかを説明できます。" },
@@ -3505,6 +4367,10 @@ export const LEARN_TEXT = {
       nebula: { title: "星雲", goal: "星雲とは何か、その中で恒星がどう生まれ、死にゆく恒星がどう星雲を残すのかを知っています。" },
       milky: { title: "天の川銀河", goal: "私たちの銀河の形と大きさ、太陽の場所、中心をまわる旅、そしてガイアの地図を説明できます。" },
       local: { title: "銀河のご近所", goal: "近くの銀河、局所銀河群、そしてアンドロメダとの未来について科学が言っていることを知っています。" },
+      galaxies: { title: "銀河", goal: "銀河とは何か、その種類、銀河どうしの出会い、そしてハッブルとウェッブのディープフィールドが見せたものを知っています。" },
+      clusters: { title: "銀河団", goal: "銀河団、その熱いガス、暗黒物質、光を曲げるしくみ、そして宇宙の網を知っています。" },
+      observable: { title: "観測できる宇宙", goal: "遠くを見ることが過去を見ることである理由、宇宙の膨張、いちばん古い光、宇宙の年齢、いちばん遠い銀河を知っています。" },
+      bigbang: { title: "ビッグバンと未来", goal: "宇宙の始まり、最初の元素と暗黒時代、ダークエネルギー、そして未来について科学が言っていることを知っています。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -3791,6 +4657,306 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
         ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
+      },
+      galWhat: {
+        title: "銀河とは？", goal: "銀河とは何かを知っています。",
+        text: [
+          "NASAによると、銀河は恒星、惑星、ガスとちりの巨大な雲が、重力でひとつにまとまったものです。天の川銀河もそのひとつです。",
+          "ソンブレロ銀河（M104）は渦巻銀河で、NASAによると、おとめ座の方向に2800万光年はなれています。",
+        ],
+        task: "おとめ座を見てみましょう。その方向にソンブレロ銀河があります。",
+        remember: [
+          "銀河は、重力でまとまった恒星、惑星、ガス、ちりです。",
+          "天の川銀河は、たくさんの銀河のひとつです。",
+          "ソンブレロ銀河は2800万光年はなれた渦巻銀河です。",
+        ],
+        you: (n) => `ソンブレロ銀河の光は2800万年かけて来ます。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `ソンブレロ銀河の光は2800万年かけて来ます。30年の人生の約${n}倍です。`,
+      },
+      galTypes: {
+        title: "銀河の種類", goal: "おもな銀河の種類を知っています。",
+        text: [
+          "NASAによると、ほとんどの銀河は渦巻銀河か楕円銀河です。はっきりした形のないものは不規則銀河とよばれます。レンズ状銀河は、渦巻銀河と楕円銀河のあいだのようなものです。",
+          "楕円銀河の恒星は、ふつう渦巻銀河の恒星より古いです。渦巻銀河では、いちばん若い恒星がガスの多い腕で生まれます。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "ほとんどの銀河は渦巻銀河か楕円銀河で、ほかは不規則銀河です。",
+          "楕円銀河の恒星は、ふつうより古いです。",
+          "渦巻銀河では、ガスの多い腕で新しい恒星が生まれます。",
+        ],
+        you: () => "あなたは渦巻銀河、天の川銀河に住んでいます。その腕では今も新しい恒星が生まれています。",
+        ref: () => "私たちは渦巻銀河、天の川銀河に住んでいます。その腕では今も新しい恒星が生まれています。",
+      },
+      galWhirl: {
+        title: "銀河の出会い", goal: "銀河どうしが近づくことがあると知っています。",
+        text: [
+          "子持ち銀河（M51）は、NASAによると、りょうけん座の方向に3100万光年はなれています。",
+          "小さな黄色っぽい銀河NGC 5195と近くで出会っていて、その腕のひとつを引っぱっているように見えます。",
+        ],
+        task: "りょうけん座を見てみましょう。その方向に子持ち銀河があります。",
+        remember: [
+          "子持ち銀河（M51）は3100万光年はなれています。",
+          "りょうけん座にあります。",
+          "小さな銀河NGC 5195が、その腕のひとつを引っぱっています。",
+        ],
+        you: (n) => `子持ち銀河の光は3100万年かけて来ます。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `子持ち銀河の光は3100万年かけて来ます。30年の人生の約${n}倍です。`,
+      },
+      galHubble: {
+        title: "ハッブル・ディープ・フィールド", goal: "ハッブルが空の小さな一角に見たものを知っています。",
+        text: [
+          "1995年、ハッブルは、おおぐま座の北斗七星の柄の近くにある空の小さな一角を長く見つめました。うでをのばして持った針の頭くらいの大きさです。",
+          "NASAによると、その画像には約3,000個の遠い銀河が写っていました。",
+        ],
+        task: "おおぐま座を見てみましょう。ディープ・フィールドは北斗七星の柄の近くにあります。",
+        remember: [
+          "ハッブル・ディープ・フィールド（1995年）は、おおぐま座の空の小さな一角です。",
+          "うでをのばした針の頭くらいの大きさです。",
+          "約3,000個の遠い銀河が写っています。",
+        ],
+        you: (before, at) => (before != null ? `ハッブル・ディープ・フィールドは1995年に撮影されました、あなたが生まれる${before}年前のことです。` : at === "0" ? "ハッブル・ディープ・フィールドは1995年に撮影されました、あなたが生まれた年のことです。" : `ハッブル・ディープ・フィールドは1995年に撮影されました、あなたが${at}歳のときのことです。`),
+        ref: (n) => `ハッブル・ディープ・フィールドは1995年に撮影されました、いまから${n}年前のことです。`,
+      },
+      galWebb: {
+        title: "ウェッブの最初のディープ・フィールド", goal: "ウェッブの最初の深い画像を知っています。",
+        text: [
+          "2022年7月12日、ESAとNASAはウェッブの最初のディープ・フィールドを発表しました。南の空のとびうお座の近くにある銀河団SMACS 0723のまわりに、何千もの銀河が写っています。",
+          "画像の広さは、うでをのばして持った砂つぶくらいの空です。銀河団は46億年前、太陽が生まれたころの姿で見えています。",
+        ],
+        task: "とびうお座を見てみましょう。ウェッブの最初のディープ・フィールドはその近くにあります。",
+        remember: [
+          "ウェッブの最初のディープ・フィールドは2022年7月12日に発表されました。",
+          "うでをのばした砂つぶほどの空に、何千もの銀河が写っています。",
+          "銀河団SMACS 0723は46億年前の姿で見えています。",
+        ],
+        you: (n) => `SMACS 0723の光は46億年前のものです。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `SMACS 0723の光は46億年前のものです。30年の人生の約${n}倍です。`,
+      },
+      clWhat: {
+        title: "銀河団", goal: "銀河団とは何かを知っています。",
+        text: [
+          "NASAによると、銀河団には数百から数千の銀河があり、重力でまとまっています。NASAのチャンドラのページによると、宇宙で重力でまとまったいちばん大きな天体です。",
+          "となりのおとめ座銀河団には約2,000の銀河があります。その中心には巨大銀河M87があり、5400万光年はなれています。そのブラックホールは、はじめて撮影されたブラックホールです。",
+        ],
+        task: "おとめ座を見てみましょう。その方向におとめ座銀河団があります。",
+        remember: [
+          "銀河団には数百から数千の銀河があります。",
+          "宇宙で重力でまとまったいちばん大きな天体です。",
+          "おとめ座銀河団には約2,000の銀河があり、中心にM87があります。",
+        ],
+        you: (n) => `M87の光は5400万年かけて来ます。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `M87の光は5400万年かけて来ます。30年の人生の約${n}倍です。`,
+      },
+      clGas: {
+        title: "熱いガス", goal: "銀河団の銀河のあいだに何があるかを知っています。",
+        text: [
+          "銀河団の銀河のあいだには、X線でしか見えない、熱くてうすいガスがあります。",
+          "NASAのチャンドラのページによると、このガスには、銀河団のすべての銀河より多くの質量があります。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "銀河団の銀河のあいだには熱いガスがあります。",
+          "X線でしか見えません。",
+          "銀河団のすべての銀河より多くの質量があります。",
+        ],
+        you: () => "あなたの目ではこのガスは見えません。宇宙の望遠鏡が測るX線でしか光らないからです。",
+        ref: () => "私たちの目ではこのガスは見えません。宇宙の望遠鏡が測るX線でしか光らないからです。",
+      },
+      clDark: {
+        title: "暗黒物質", goal: "暗黒物質がどう見つかり、どれくらいあるかを知っています。",
+        text: [
+          "1933年、フリッツ・ツビッキーは、かみのけ座銀河団の銀河が速く動きすぎていることに気づきました。見えるよりずっと多くの質量があるはずでした。",
+          "NASAによると、この暗黒物質は光を吸収も反射も放射もしません。宇宙の約27 %をしめ、ふつうの物質は約5 %だけです。",
+        ],
+        task: "かみのけ座を見てみましょう。その方向にかみのけ座銀河団があります。",
+        remember: [
+          "1933年、ツビッキーは、かみのけ座銀河団の銀河が速く動きすぎていると気づきました。",
+          "暗黒物質は光を放射も吸収も反射もしません。",
+          "宇宙の約27 %をしめ、ふつうの物質は約5 %です。",
+        ],
+        you: (before, at) => (before != null ? `ツビッキーが論文を発表したのは1933年、あなたが生まれる${before}年前のことです。` : at === "0" ? "ツビッキーが論文を発表したのは1933年、あなたが生まれた年のことです。" : `ツビッキーが論文を発表したのは1933年、あなたが${at}歳のときのことです。`),
+        ref: (n) => `ツビッキーが論文を発表したのは1933年、いまから${n}年前のことです。`,
+      },
+      clLens: {
+        title: "重力レンズ", goal: "銀河団が光を曲げるしくみを知っています。",
+        text: [
+          "NASAによると、銀河団のような重い天体は、アインシュタインの一般相対性理論のとおり、空間と時間をゆがめます。その後ろの銀河の光は、曲げられ、ゆがめられ、拡大されます。",
+          "2006年、NASAのチャンドラは弾丸銀河団で、銀河団の物質のほとんどが暗黒物質だという直接の証拠を示しました。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "銀河団は空間と時間をゆがめ、光を曲げます。",
+          "後ろの銀河の光は、ゆがめられ拡大されます。",
+          "弾丸銀河団（2006年）は暗黒物質の直接の証拠になりました。",
+        ],
+        you: (before, at) => (before != null ? `弾丸銀河団が発表されたのは2006年、あなたが生まれる${before}年前のことです。` : at === "0" ? "弾丸銀河団が発表されたのは2006年、あなたが生まれた年のことです。" : `弾丸銀河団が発表されたのは2006年、あなたが${at}歳のときのことです。`),
+        ref: (n) => `弾丸銀河団が発表されたのは2006年、いまから${n}年前のことです。`,
+      },
+      clWeb: {
+        title: "宇宙の網", goal: "いちばん大きなスケールで銀河がどうならんでいるかを知っています。",
+        text: [
+          "NASAによると、銀河や銀河団は、宇宙の網とよばれる、ねじれた糸のような構造にならび、そのあいだには何もない空間があります。",
+          "超銀河団のグループは、銀河の壁や面をつくることがあります。超銀河団どうしは、ふつう重力でつながっていません。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "銀河は、糸でできた宇宙の網にならんでいます。",
+          "糸のあいだには何もない空間があります。",
+          "超銀河団は銀河の壁や面をつくることがあります。",
+        ],
+        you: () => "あなたの銀河も、この網の結び目のひとつです。天の川銀河は局所銀河群に属しています。",
+        ref: () => "私たちの銀河も、この網の結び目のひとつです。天の川銀河は局所銀河群に属しています。",
+      },
+      obsBack: {
+        title: "時間をさかのぼって見る", goal: "遠くを見ることが過去を見ることである理由を知っています。",
+        text: [
+          "光には時間がかかります。NASAによると、宇宙を遠くまで見ることは、時間をさかのぼって見るようなものです。遠いものほど、私たちが見る光は古いのです。",
+          "太陽は約8分前の姿、プロキシマ・ケンタウリは4.24年前の姿、アンドロメダ銀河は250万年前の姿で見えています。",
+        ],
+        task: "あなたの星を見てみましょう。あなたが生まれたころの姿で見えています。",
+        remember: [
+          "光が私たちにとどくには時間がかかります。",
+          "宇宙を見ることは、時間をさかのぼって見ることです。",
+          "遠いものほど、光は古くなります。",
+        ],
+        you: (name, ly) => `あなたの星${name}は${ly}光年はなれています。あなたが生まれたころの姿で見えています。`,
+        ref: () => "プロキシマ・ケンタウリは4.24光年はなれています。4.24年前の姿で見えています。",
+      },
+      obsExpand: {
+        title: "宇宙は膨張している", goal: "宇宙が膨張していることを知っています。",
+        text: [
+          "NASAによると、宇宙は膨張していて、その膨張は速くなっています。",
+          "空間がのびると、その中を進む光ものびて、長く、赤い波長になります。だからウェッブは、いちばん古い銀河を赤外線で見るのです。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "宇宙は膨張しています。",
+          "膨張は速くなっています。",
+          "遠くからの光は、長い波長にのびています。",
+        ],
+        you: () => "いちばん遠い銀河の光は、あなたの一生よりずっと長い旅のあいだにのびてきました。",
+        ref: () => "いちばん遠い銀河の光は、私たちにとどくまでの旅のあいだにのびてきました。",
+      },
+      obsCmb: {
+        title: "いちばん古い光", goal: "宇宙でいちばん古い光を知っています。",
+        text: [
+          "私たちが見られるいちばん古い光は、NASAとESAによると、ビッグバンから約38万年後のものです。NASAのWMAPのページは約37万5000年としています。宇宙マイクロ波背景放射とよばれます。",
+          "1992年、NASAのCOBEがその中に小さな模様を見つけ、のちにWMAPとESAのプランクがそれを地図にしました。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "いちばん古い光は、ビッグバンから約38万年後のものです。",
+          "それは宇宙マイクロ波背景放射です。",
+          "COBE（1992年）、WMAP、プランクがそれを地図にしました。",
+        ],
+        you: (before, at) => (before != null ? `COBEの発見は1992年、あなたが生まれる${before}年前のことです。` : at === "0" ? "COBEの発見は1992年、あなたが生まれた年のことです。" : `COBEの発見は1992年、あなたが${at}歳のときのことです。`),
+        ref: (n) => `COBEの発見は1992年、いまから${n}年前のことです。`,
+      },
+      obsAge: {
+        title: "138億年", goal: "宇宙の年齢を知っています。",
+        text: [
+          "NASAによると、宇宙は約138億歳です。NASAのWMAPのページは、0.5パーセントの精度で137.7億年としています。",
+          "太陽は約46億歳です。宇宙の一生を1年とすると、太陽が生まれたのは9月のはじめです（計算）。",
+        ],
+        task: "太陽を見てみましょう。宇宙の時間の最後の3分の1になって生まれました。",
+        remember: [
+          "宇宙は約138億歳です。",
+          "WMAPは137.7億年と測りました。",
+          "太陽は、その時間の最後の3分の1に生まれました。",
+        ],
+        you: (sec) => `宇宙の138億年を1年とすると、あなたのこれまでの人生は、大みそかの真夜中前の最後の${sec}秒です。（計算）`,
+        ref: (sec) => `宇宙の138億年を1年とすると、30年の人生は、大みそかの真夜中前の最後の${sec}秒です。（計算）`,
+      },
+      obsFar: {
+        title: "いちばん遠い銀河", goal: "知られているいちばん遠い銀河を知っています。",
+        text: [
+          "NASAによると、ウェッブは赤方偏移14.32のJADES-GS-z14-0を見つけました。2025年6月には、赤方偏移14.44のMoM-z14が記録をぬりかえました。",
+          "私たちはMoM-z14を、ビッグバンから約2億8000万年後の姿で見ています。その光は、太陽や地球より古いのです。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "ウェッブはいちばん遠い銀河を見つけます。",
+          "MoM-z14は2025年6月から記録をもっています。",
+          "ビッグバンから約2億8000万年後の姿で見えています。",
+        ],
+        you: (before, at) => (before != null ? `MoM-z14が記録をぬりかえたのは2025年、あなたが生まれる${before}年前のことです。` : at === "0" ? "MoM-z14が記録をぬりかえたのは2025年、あなたが生まれた年のことです。" : `MoM-z14が記録をぬりかえたのは2025年、あなたが${at}歳のときのことです。`),
+        ref: (n) => `MoM-z14が記録をぬりかえたのは2025年、いまから${n}年前のことです。`,
+      },
+      bbStart: {
+        title: "はじまり", goal: "宇宙がどう始まったのかを知っています。",
+        text: [
+          "NASAによると、宇宙は約138億年前、私たちがビッグバンとよぶ急速な膨張で始まりました。",
+          "ビッグバンの1秒後、宇宙は光と粒子でできた、とても熱いスープでした。宇宙論の研究者は、宇宙はおそらく永遠に膨張しつづけると考えています。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "宇宙は約138億年前に始まりました。",
+          "そのはじまりをビッグバン、急速な膨張とよびます。",
+          "1秒後には、光と粒子のとても熱いスープでした。",
+        ],
+        you: () => "あなたが見るものすべては、この膨張から始まりました。太陽も、地球も、あなたをつくる物質も。",
+        ref: () => "私たちが見るものすべては、この膨張から始まりました。太陽も、地球も、私たちをつくる物質も。",
+      },
+      bbElements: {
+        title: "最初の元素", goal: "最初にできた元素を知っています。",
+        text: [
+          "NASAによると、ビッグバンで最初の元素ができました。水素、ヘリウム、そしてわずかなリチウムとベリリウムです。5分後には、今あるヘリウムのほとんどができていました。",
+          "その後、宇宙は膨張して冷え、それ以上の元素はできなくなりました。重い元素は、のちに恒星の一生のパスの恒星の中でできました。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "最初の元素は、水素、ヘリウム、わずかなリチウムとベリリウムです。",
+          "今あるヘリウムのほとんどは最初の5分でできました。",
+          "そのあと宇宙は冷えて、元素はできなくなりました。",
+        ],
+        you: (n) => `今あるヘリウムのほとんどは5分でできました。あなたはもう約${n}分生きています。`,
+        ref: (n) => `今あるヘリウムのほとんどは5分でできました。30年の人生は約${n}分です。`,
+      },
+      bbDark: {
+        title: "暗黒時代", goal: "最初の恒星の前、宇宙が暗かったことを知っています。",
+        text: [
+          "NASAによると、いちばん古い光のあと、宇宙はその後2億年のあいだ暗いままでした。",
+          "数億年かけて、最初の恒星が集まって最初の銀河になりました。ウェッブがさがしているのは、まさにその光です。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "いちばん古い光のあと、宇宙は暗いままでした。",
+          "暗い時代は約2億年つづきました。",
+          "そのあと最初の恒星が集まって最初の銀河になりました。",
+        ],
+        you: (n) => `暗黒時代は約2億年つづきました。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `暗黒時代は約2億年つづきました。30年の人生の約${n}倍です。`,
+      },
+      bbEnergy: {
+        title: "ダークエネルギー", goal: "膨張が速くなっていること、そしてそれがなぜ驚きだったのかを知っています。",
+        text: [
+          "1998年、2つの研究チームが遠い超新星を使って、宇宙の膨張が加速していることを発見しました。アダム・リース、ソール・パールマッター、ブライアン・シュミットは、2011年のノーベル物理学賞を受けました。",
+          "その原因はダークエネルギーとよばれます。NASAによると、宇宙の約68 %をしめ、暗黒物質は27 %、ふつうの物質は5 %です。NASAのほかのページは、ダークエネルギーを68.3〜70 %としています。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "1998年から、膨張が速くなっていることがわかっています。",
+          "その原因はダークエネルギーとよばれ、宇宙の約68 %です。",
+          "暗黒物質は約27 %、ふつうの物質は約5 %です。",
+        ],
+        you: (before, at) => (before != null ? `加速が発見されたのは1998年、あなたが生まれる${before}年前のことです。` : at === "0" ? "加速が発見されたのは1998年、あなたが生まれた年のことです。" : `加速が発見されたのは1998年、あなたが${at}歳のときのことです。`),
+        ref: (n) => `加速が発見されたのは1998年、いまから${n}年前のことです。`,
+      },
+      bbFuture: {
+        title: "そして未来は？", goal: "未来について科学が言っていることと、それがどれくらい確かなのかを知っています。",
+        text: [
+          "NASAによると、宇宙論の研究者は、宇宙はおそらく永遠に膨張しつづけると考えています。太陽は約50億年後に赤色巨星になります。",
+          "では天の川銀河とアンドロメダは？2025年の研究では、100億年のうちに衝突する確率は50パーセントだけです。未来は予測で、データが支えるかぎり正しいとされます。",
+        ],
+        task: "太陽を見てみましょう。約50億年後には赤色巨星になります。",
+        remember: [
+          "宇宙はおそらく永遠に膨張しつづけます。",
+          "太陽は約50億年後に赤色巨星になります。",
+          "予測は新しいデータで変わることがあります。",
+        ],
+        you: (n) => `赤色巨星までの50億年。あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `赤色巨星までの50億年。30年の人生の約${n}倍です。`,
       },
       nebWhat: {
         title: "星雲とは？", goal: "星雲とは何か、星雲ができる2つのしかたを知っています。",
@@ -4678,6 +5844,66 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
       kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
       rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
+      galaxyWhat: { q: "NASAによると、銀河とは何ですか？", o: ["重力でまとまった恒星、惑星、ガス、ちり", "1つの巨大な恒星", "水の雲"], e: "恒星、惑星、ガスとちりの巨大な雲が、重力でまとまったものです。" },
+      milkyIsOne: { q: "天の川銀河とは何ですか？", o: ["たくさんの銀河のひとつ", "ただひとつの銀河", "惑星"], e: "たくさんの銀河のひとつ、私たちの銀河です。" },
+      sombrero: { q: "NASAによると、ソンブレロ銀河までの距離は？", o: ["2800万光年", "28光年", "280億光年"], e: "2800万光年で、おとめ座にあります。" },
+      galaxyTypes: { q: "ほとんどの銀河はどの種類ですか？", o: ["渦巻銀河と楕円銀河", "四角と三角", "環だけ"], e: "ほとんどは渦巻銀河か楕円銀河で、ほかは不規則銀河です。" },
+      ellipticalOld: { q: "ふつう、より古い恒星をもつのはどの銀河ですか？", o: ["楕円銀河", "渦巻銀河", "どちらも同じ"], e: "楕円銀河です。その恒星はふつう渦巻銀河の恒星より古いです。" },
+      spiralYoung: { q: "渦巻銀河のいちばん若い恒星はどこで生まれますか？", o: ["ガスの多い腕", "からっぽの中心", "銀河の外"], e: "ガスの多い腕です。" },
+      whirlWhere: { q: "子持ち銀河はどの星座にありますか？", o: ["りょうけん座", "オリオン座", "おうし座"], e: "りょうけん座で、3100万光年はなれています。" },
+      whirlCompanion: { q: "子持ち銀河は何と近くで出会っていますか？", o: ["小さな銀河NGC 5195", "太陽", "天の川銀河のブラックホール"], e: "小さな黄色っぽい銀河、NGC 5195です。" },
+      whirlDist: { q: "NASAによると、子持ち銀河までの距離は？", o: ["3100万光年", "31光年", "310億光年"], e: "3100万光年です。" },
+      hdfCount: { q: "ハッブル・ディープ・フィールドには約何個の銀河が写っていましたか？", o: ["約3,000個", "約30個", "ちょうど1個"], e: "約3,000個の遠い銀河です。" },
+      hdfWhere: { q: "ハッブル・ディープ・フィールドは空のどこにありますか？", o: ["おおぐま座、北斗七星の柄の近く", "オリオンのベルト", "空の南極"], e: "おおぐま座の、北斗七星の柄の近くです。" },
+      hdfSize: { q: "ハッブル・ディープ・フィールドの空の広さは？", o: ["うでをのばした針の頭くらい", "空の半分", "満月くらい"], e: "うでをのばして持った針の頭くらいです。" },
+      webbDate: { q: "ウェッブの最初のディープ・フィールドが発表されたのはいつですか？", o: ["2022年7月12日", "1995年", "1969年"], e: "2022年7月12日です。" },
+      webbSand: { q: "ウェッブの最初のディープ・フィールドの空の広さは？", o: ["うでをのばした砂つぶくらい", "天の川銀河くらい", "空全体"], e: "うでをのばして持った砂つぶくらいです。" },
+      webbAgo: { q: "銀河団SMACS 0723は、いつの姿で見えていますか？", o: ["46億年前", "4.6年前", "今日"], e: "46億年前の姿です。" },
+      clusterWhat: { q: "銀河団にはいくつの銀河がありますか？", o: ["数百から数千", "2つ", "ちょうど1つ"], e: "数百から数千で、重力でまとまっています。" },
+      clusterBiggest: { q: "NASAのチャンドラのページによると、銀河団とは？", o: ["宇宙で重力でまとまったいちばん大きな天体", "恒星の小さなグループ", "地球の雲"], e: "宇宙で重力でまとまったいちばん大きな天体です。" },
+      virgoCount: { q: "おとめ座銀河団には約いくつの銀河がありますか？", o: ["約2,000", "約20", "約200億"], e: "約2,000で、中心にM87があります。" },
+      hotGas: { q: "銀河団の銀河のあいだには何がありますか？", o: ["熱くてうすいガス", "液体の水", "何もない"], e: "熱くてうすいガスです。" },
+      gasMass: { q: "このガスにはどれくらいの質量がありますか？", o: ["銀河団のすべての銀河より多い", "ほとんどない", "恒星1つ分"], e: "銀河団のすべての銀河より多くの質量があります。" },
+      gasXray: { q: "熱いガスはどんな光で見えますか？", o: ["X線だけ", "肉眼で", "地球からの電波だけ"], e: "X線だけです。" },
+      zwicky: { q: "1933年、フリッツ・ツビッキーは何に気づきましたか？", o: ["かみのけ座銀河団の銀河が速く動きすぎている", "新しい惑星", "最初のブラックホール"], e: "かみのけ座銀河団の銀河が速く動きすぎていることです。" },
+      darkShare: { q: "NASAによると、宇宙の何パーセントが暗黒物質ですか？", o: ["約27 %", "約99 %", "約1 %"], e: "約27 %で、ふつうの物質は約5 %です。" },
+      darkLight: { q: "暗黒物質は光を出しますか？", o: ["いいえ、光を放射も吸収も反射もしない", "はい、赤く光る", "夜だけ"], e: "いいえ。光を吸収も反射も放射もしません。" },
+      lensWhat: { q: "銀河団は、その後ろの銀河の光に何をしますか？", o: ["曲げ、ゆがめ、拡大する", "消す", "何もしない"], e: "曲げ、ゆがめ、拡大します。" },
+      lensEinstein: { q: "質量が空間と時間をゆがめることを説明する理論は？", o: ["アインシュタインの一般相対性理論", "星占いの理論", "ニュートンの色彩論"], e: "アインシュタインの一般相対性理論です。" },
+      bullet: { q: "2006年、弾丸銀河団は何を示しましたか？", o: ["暗黒物質の直接の証拠", "新しい彗星", "太陽の年齢"], e: "銀河団の物質のほとんどが暗黒物質だという直接の証拠です。" },
+      cosmicWeb: { q: "いちばん大きなスケールで、銀河はどうならんでいますか？", o: ["糸でできた宇宙の網", "まっすぐな一列", "ごばんの目のように均等"], e: "ねじれた糸のような構造、宇宙の網です。" },
+      voids: { q: "宇宙の網の糸のあいだには何がありますか？", o: ["何もない空間", "恒星の厚い壁", "水"], e: "何もない空間です。" },
+      superclusters: { q: "超銀河団のグループは何をつくることがありますか？", o: ["銀河の壁や面", "新しい惑星", "ブラックホールだけ"], e: "銀河の壁や面です。" },
+      lookBack: { q: "宇宙を遠くまで見ることが、時間をさかのぼることになるのはなぜですか？", o: ["光がとどくのに時間がかかるから", "宇宙では時計が止まるから", "恒星が古いから"], e: "光には時間がかかるからです。遠いほど光は古くなります。" },
+      seeOld: { q: "太陽は、いつの姿で見えていますか？", o: ["約8分前", "ちょうど今、おくれなし", "1年前"], e: "約8分前の姿です。" },
+      yourStarSeen: { q: "30光年はなれた恒星は、いつの姿で見えていますか？", o: ["30年前", "30分前", "今日"], e: "30年前の姿です。" },
+      expanding: { q: "NASAによると、宇宙は何をしていますか？", o: ["膨張している", "ちぢんでいる", "止まっている"], e: "膨張しています。" },
+      speedingUp: { q: "膨張はおそくなっていますか、速くなっていますか？", o: ["速くなっている", "おそくなっている", "止まった"], e: "速くなっています。" },
+      stretched: { q: "膨張する空間を進む光はどうなりますか？", o: ["長い波長にのびる", "青くなる", "止まる"], e: "長く、赤い波長にのびます。" },
+      cmbWhen: { q: "私たちが見られるいちばん古い光は、いつのものですか？", o: ["ビッグバンから約38万年後", "ビッグバンの1秒後", "太陽の誕生"], e: "ビッグバンから約38万年後です（NASA、ESA）。NASAのWMAPのページは37万5000年としています。" },
+      cmbCobe: { q: "1992年にこの光の中の模様を見つけたNASAの衛星は？", o: ["COBE", "ケプラー", "ボイジャー1号"], e: "COBEです。" },
+      cmbDiffer: { q: "このいちばん古い光は何とよばれますか？", o: ["宇宙マイクロ波背景放射", "オリオン大星雲", "太陽の光"], e: "宇宙マイクロ波背景放射です。" },
+      universeAge: { q: "NASAによると、宇宙は何歳ですか？", o: ["約138億歳", "約46億歳", "約6,000歳"], e: "約138億歳です。" },
+      ageWmap: { q: "WMAPが測った年齢は？", o: ["137.7億年", "1377万年", "13.77億年"], e: "0.5パーセントの精度で137.7億年です。" },
+      sunInYear: { q: "宇宙の一生を1年とすると、太陽はいつ生まれましたか？", o: ["9月のはじめ", "1月1日", "12月31日"], e: "9月のはじめです（46億年と138億年から計算）。" },
+      farRecord: { q: "2025年6月から距離の記録をもっている銀河は？", o: ["MoM-z14", "アンドロメダ", "M87"], e: "赤方偏移14.44のMoM-z14です。" },
+      farWhen: { q: "MoM-z14は、いつの姿で見えていますか？", o: ["ビッグバンから約2億8000万年後", "今日", "1,000年前"], e: "ビッグバンから約2億8000万年後の姿です。" },
+      farOld: { q: "いちばん遠い銀河を見つける望遠鏡は？", o: ["ウェッブ", "ガリレオの望遠鏡", "あなたの目"], e: "ウェッブ宇宙望遠鏡です。" },
+      bbBegin: { q: "NASAによると、宇宙はどう始まりましたか？", o: ["ビッグバンとよぶ急速な膨張で", "冷たい岩として", "ずっと同じだった"], e: "約138億年前、ビッグバンとよぶ急速な膨張で始まりました。" },
+      bbSoup: { q: "ビッグバンの1秒後、宇宙はどんなものでしたか？", o: ["光と粒子のとても熱いスープ", "冷たく暗い海", "できあがった銀河"], e: "光と粒子のとても熱いスープでした。" },
+      bbForever: { q: "宇宙論の研究者は、宇宙についてどう考えていますか？", o: ["おそらく永遠に膨張しつづける", "明日止まる", "ちぢんでいる"], e: "おそらく永遠に膨張しつづけると考えています。" },
+      firstElements: { q: "最初にできた元素は？", o: ["水素、ヘリウム、わずかなリチウムとベリリウム", "鉄と金", "酸素と炭素"], e: "水素、ヘリウム、わずかなリチウムとベリリウムです。" },
+      heliumFive: { q: "今あるヘリウムのほとんどはいつできましたか？", o: ["5分後", "50億年後", "太陽の中だけ"], e: "5分後です。" },
+      elementsStop: { q: "元素ができなくなったのはなぜですか？", o: ["宇宙が膨張して冷えたから", "恒星が止めたから", "止まらなかった"], e: "宇宙が十分に膨張して冷えたからです。" },
+      darkAges: { q: "いちばん古い光のあとに来たのは？", o: ["恒星のない暗黒時代", "たくさんの太陽", "太陽系"], e: "宇宙は約2億年のあいだ暗いままでした。" },
+      firstGalaxies: { q: "最初の恒星は何に集まりましたか？", o: ["最初の銀河", "惑星", "ブラックホールだけ"], e: "数億年かけて、最初の銀河に集まりました。" },
+      darkLong: { q: "NASAによると、暗黒時代は約どれくらいつづきましたか？", o: ["約2億年", "約200年", "約20億年"], e: "約2億年です。" },
+      acceleration: { q: "1998年、2つのチームは何を見つけましたか？", o: ["宇宙の膨張が速くなっている", "宇宙がちぢんでいる", "最初の系外惑星"], e: "宇宙の膨張が加速していることです。" },
+      nobel2011: { q: "それで2011年のノーベル物理学賞を受けたのは？", o: ["リース、パールマッター、シュミット", "アインシュタインとハッブル", "ガリレオ"], e: "アダム・リース、ソール・パールマッター、ブライアン・シュミットです。" },
+      composition: { q: "NASAによると、宇宙は何でできていますか？", o: ["ダークエネルギー約68 %、暗黒物質27 %、ふつうの物質5 %", "100 %恒星", "半分惑星、半分恒星"], e: "ダークエネルギー約68 %、暗黒物質27 %、ふつうの物質5 %です。" },
+      expandForever: { q: "NASAによると、宇宙の遠い未来はどうなりそうですか？", o: ["永遠に膨張しつづける", "1年でなくなる", "1つの恒星になる"], e: "おそらく永遠に膨張しつづけます。" },
+      sunFuture: { q: "太陽は約50億年後に何になりますか？", o: ["赤色巨星", "ブラックホール", "惑星"], e: "赤色巨星です。" },
+      andromedaFuture: { q: "2025年の研究は、天の川とアンドロメダについて何と言いましたか？", o: ["100億年のうちに衝突する確率は50パーセントだけ", "明日かならず衝突する", "はなれていく"], e: "100億年のうちに衝突する確率は50パーセントだけです。" },
       nebulaWhat: { q: "NASAによると、星雲とは何ですか？", o: ["宇宙にあるちりとガスの巨大な雲", "霧でおおわれた惑星", "小さな恒星"], e: "宇宙にあるちりとガスの巨大な雲です。" },
       nebulaDeath: { q: "星雲の中には、何からできたものがありますか？", o: ["爆発した死にゆく恒星のガスとちり", "惑星の海", "月"], e: "超新星のような、死にゆく恒星の爆発で放り出されたガスとちりです。" },
       nebulaBirth: { q: "ほかの星雲では何が起きていますか？", o: ["新しい恒星が生まれはじめている", "惑星が死んでいる", "何も起きていない"], e: "新しい恒星が生まれはじめています。" },
@@ -4824,7 +6050,7 @@ export const LEARN_TEXT = {
     },
   },
   bg: {
-    parts: { basics: "Част I, Основи на планетологията", starLives: "Част II, Животът на звездите", galaxy: "Част III, Нашата галактика", sky: "Да четем небето" },
+    parts: { basics: "Част I, Основи на планетологията", starLives: "Част II, Животът на звездите", galaxy: "Част III, Нашата галактика", beyond: "Част IV, Отвъд Млечния път", sky: "Да четем небето" },
     paths: {
       solar: { title: "Нашата Слънчева система", goal: "Можеш да обясниш как е устроена Слънчевата система и да различаваш основните ѝ тела." },
       alpha: { title: "Най-близките ни звезди: Алфа Кентавър", goal: "Можеш да опишеш най-близката до нас звездна система, нейната планета Проксима b и колко далеч е тя всъщност." },
@@ -4839,6 +6065,10 @@ export const LEARN_TEXT = {
       nebula: { title: "Мъглявини", goal: "Знаеш какво са мъглявините, как в тях се раждат звезди и как умиращите звезди ги оставят след себе си." },
       milky: { title: "Млечният път", goal: "Можеш да опишеш нашата галактика: формата и размера ѝ, къде е Слънцето в нея, как обикаля центъра и как Гая я е измерила." },
       local: { title: "Галактическото съседство", goal: "Познаваш галактиките около нашата, Местната група и какво казва науката за бъдещето с Андромеда." },
+      galaxies: { title: "Галактики", goal: "Знаеш какво са галактиките, видовете им, как се срещат и какво показаха дълбоките полета на „Хъбъл“ и „Уеб“." },
+      clusters: { title: "Галактически купове", goal: "Познаваш галактическите купове, горещия им газ, тъмната материя в тях, как огъват светлината и космическата мрежа." },
+      observable: { title: "Наблюдаемата Вселена", goal: "Знаеш защо да гледаш далеч значи да гледаш назад, че Вселената се разширява, най-старата ѝ светлина, възрастта ѝ и най-далечната галактика." },
+      bigbang: { title: "Големият взрив и бъдещето", goal: "Знаеш как е започнала Вселената, първите ѝ елементи и тъмни времена, тъмната енергия и какво казва науката за бъдещето." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -5125,6 +6355,306 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
+      },
+      galWhat: {
+        title: "Какво е галактика?", goal: "Знаеш какво е галактика.",
+        text: [
+          "Според НАСА галактиките се състоят от звезди, планети и огромни облаци от газ и прах, всички държани заедно от гравитацията. Млечният път е една от тях.",
+          "Галактиката Сомбреро (M104) е спирална галактика, според НАСА на 28 милиона светлинни години в съзвездието Дева.",
+        ],
+        task: "Разгледай съзвездието Дева: в неговата посока е галактиката Сомбреро.",
+        remember: [
+          "Галактиката е звезди, планети, газ и прах, държани заедно от гравитацията.",
+          "Млечният път е една галактика сред много.",
+          "Сомбреро е спирална галактика на 28 милиона светлинни години.",
+        ],
+        you: (n) => `Светлината на Сомбреро пътува 28 милиона години: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Светлината на Сомбреро пътува 28 милиона години: около ${n} пъти един живот от 30 години.`,
+      },
+      galTypes: {
+        title: "Видове галактики", goal: "Познаваш основните видове галактики.",
+        text: [
+          "Според НАСА повечето галактики са спирални или елиптични; галактиките без ясна форма се наричат неправилни. Лещовидните галактики са нещо средно между спиралните и елиптичните.",
+          "Звездите на елиптичните галактики обикновено са по-стари от тези в спиралните. В спиралните най-младите звезди се раждат в ръкавите, богати на газ.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Повечето галактики са спирални или елиптични, други са неправилни.",
+          "Звездите на елиптичните галактики обикновено са по-стари.",
+          "В спиралните нови звезди се раждат в ръкавите, богати на газ.",
+        ],
+        you: () => "Живееш в спирала: Млечния път. В ръкавите ѝ и днес се раждат нови звезди.",
+        ref: () => "Живеем в спирала: Млечния път. В ръкавите ѝ и днес се раждат нови звезди.",
+      },
+      galWhirl: {
+        title: "Галактиките се срещат", goal: "Знаеш, че галактиките могат да се доближат една до друга.",
+        text: [
+          "Галактиката Водовъртеж (M51) според НАСА е на 31 милиона светлинни години, в съзвездието Ловджийски кучета.",
+          "Тя има близка среща с NGC 5195, малка жълтеникава галактика, която сякаш дърпа един от ръкавите ѝ.",
+        ],
+        task: "Разгледай съзвездието Ловджийски кучета: в неговата посока е галактиката Водовъртеж.",
+        remember: [
+          "Галактиката Водовъртеж (M51) е на 31 милиона светлинни години.",
+          "Тя е в съзвездието Ловджийски кучета.",
+          "Малката галактика NGC 5195 дърпа един от ръкавите ѝ.",
+        ],
+        you: (n) => `Светлината на Водовъртежа пътува 31 милиона години: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Светлината на Водовъртежа пътува 31 милиона години: около ${n} пъти един живот от 30 години.`,
+      },
+      galHubble: {
+        title: "Дълбокото поле на „Хъбъл“", goal: "Знаеш какво видя „Хъбъл“ в едно мъничко парче небе.",
+        text: [
+          "През 1995 г. „Хъбъл“ гледа дълго мъничко парче небе в Голямата мечка, близо до дръжката на Голямата кола: колкото главичка на карфица на една ръка разстояние.",
+          "Според НАСА снимката улавя около 3000 далечни галактики.",
+        ],
+        task: "Разгледай съзвездието Голяма мечка: дълбокото поле е близо до дръжката на Голямата кола.",
+        remember: [
+          "Hubble Deep Field (1995 г.) показва мъничко парче небе в Голямата мечка.",
+          "То е колкото главичка на карфица на една ръка разстояние.",
+          "Улавя около 3000 далечни галактики.",
+        ],
+        you: (before, at) => (before != null ? `Hubble Deep Field е заснето през 1995 г., ${before === "1" ? "една година" : `${before} години`} преди раждането ти.` : at === "0" ? "Hubble Deep Field е заснето през 1995 г., в годината на раждането ти." : `Hubble Deep Field е заснето през 1995 г., ${at === "1" ? "на една година" : `на твоите ${at} години`}.`),
+        ref: (n) => `Hubble Deep Field е заснето през 1995 г., ${n === "1" ? "преди една година" : `преди ${n} години`}.`,
+      },
+      galWebb: {
+        title: "Първото дълбоко поле на „Уеб“", goal: "Познаваш първото дълбоко изображение на „Уеб“.",
+        text: [
+          "На 12 юли 2022 г. ЕКА и НАСА показват първото дълбоко поле на „Уеб“: хиляди галактики около галактическия куп SMACS 0723, близо до съзвездието Летяща риба на южното небе.",
+          "Снимката покрива парче небе колкото песъчинка на една ръка разстояние. Купът изглежда такъв, какъвто е бил преди 4,6 милиарда години, около раждането на Слънцето.",
+        ],
+        task: "Разгледай съзвездието Летяща риба: близо до него е първото дълбоко поле на „Уеб“.",
+        remember: [
+          "Първото дълбоко поле на „Уеб“ излиза на 12 юли 2022 г.",
+          "Показва хиляди галактики в парче колкото песъчинка на една ръка разстояние.",
+          "Купът SMACS 0723 изглежда такъв, какъвто е бил преди 4,6 милиарда години.",
+        ],
+        you: (n) => `Светлината на SMACS 0723 е на 4,6 милиарда години: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Светлината на SMACS 0723 е на 4,6 милиарда години: около ${n} пъти един живот от 30 години.`,
+      },
+      clWhat: {
+        title: "Галактически купове", goal: "Знаеш какво е галактически куп.",
+        text: [
+          "Според НАСА галактическите купове съдържат от стотици до хиляди галактики, държани заедно от гравитацията. Според страниците на „Чандра“ на НАСА те са най-големите гравитационно свързани обекти във Вселената.",
+          "Наш съсед е купът в Дева с около 2000 галактики. В центъра му е гигантската галактика M87, на 54 милиона светлинни години, чиято черна дупка е първата снимана.",
+        ],
+        task: "Разгледай съзвездието Дева: в неговата посока е купът в Дева.",
+        remember: [
+          "Галактическите купове съдържат от стотици до хиляди галактики.",
+          "Те са най-големите гравитационно свързани обекти във Вселената.",
+          "Купът в Дева има около 2000 галактики; M87 е в центъра му.",
+        ],
+        you: (n) => `Светлината на M87 пътува 54 милиона години: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Светлината на M87 пътува 54 милиона години: около ${n} пъти един живот от 30 години.`,
+      },
+      clGas: {
+        title: "Горещ газ", goal: "Знаеш какво запълва пространството между галактиките на един куп.",
+        text: [
+          "Между галактиките на един куп има горещ, разреден газ, който се вижда само в рентгенови лъчи.",
+          "Според страниците на „Чандра“ на НАСА този газ съдържа повече маса от всички галактики в купа.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Между галактиките на един куп има горещ газ.",
+          "Той се вижда само в рентгенови лъчи.",
+          "Има повече маса от всички галактики в купа.",
+        ],
+        you: () => "Очите ти не биха видели този газ: той свети само в рентгенови лъчи, които измерват телескопи в космоса.",
+        ref: () => "Очите ни не биха видели този газ: той свети само в рентгенови лъчи, които измерват телескопи в космоса.",
+      },
+      clDark: {
+        title: "Тъмна материя", goal: "Знаеш как е открита тъмната материя и колко има от нея.",
+        text: [
+          "През 1933 г. Фриц Цвики забелязва, че галактиките в купа Кома се движат твърде бързо: трябвало е да има много повече маса, отколкото се вижда.",
+          "Според НАСА тази тъмна материя не поглъща, не отразява и не излъчва светлина. Тя е около 27 % от Вселената, обикновената материя само около 5 %.",
+        ],
+        task: "Разгледай съзвездието Косите на Вероника: в неговата посока е купът Кома.",
+        remember: [
+          "През 1933 г. Цвики вижда, че галактиките в купа Кома се движат твърде бързо.",
+          "Тъмната материя не излъчва, не поглъща и не отразява светлина.",
+          "Тя е около 27 % от Вселената, обикновената материя около 5 %.",
+        ],
+        you: (before, at) => (before != null ? `Цвики публикува статията си през 1933 г., ${before === "1" ? "една година" : `${before} години`} преди раждането ти.` : at === "0" ? "Цвики публикува статията си през 1933 г., в годината на раждането ти." : `Цвики публикува статията си през 1933 г., ${at === "1" ? "на една година" : `на твоите ${at} години`}.`),
+        ref: (n) => `Цвики публикува статията си през 1933 г., ${n === "1" ? "преди една година" : `преди ${n} години`}.`,
+      },
+      clLens: {
+        title: "Гравитационни лещи", goal: "Знаеш как един куп може да огъне светлината.",
+        text: [
+          "Според НАСА масивен обект като галактически куп изкривява пространството и времето, както описва общата теория на относителността на Айнщайн. Светлината от галактики зад него се огъва, изкривява и увеличава.",
+          "През 2006 г. „Чандра“ на НАСА показва с купа Куршум пряко доказателство, че почти цялата материя в куповете е тъмна.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Галактическият куп изкривява пространството и времето и огъва светлината.",
+          "Светлината от галактики зад него се изкривява и увеличава.",
+          "Купът Куршум (2006 г.) дава пряко доказателство за тъмната материя.",
+        ],
+        you: (before, at) => (before != null ? `Купът Куршум е показан през 2006 г., ${before === "1" ? "една година" : `${before} години`} преди раждането ти.` : at === "0" ? "Купът Куршум е показан през 2006 г., в годината на раждането ти." : `Купът Куршум е показан през 2006 г., ${at === "1" ? "на една година" : `на твоите ${at} години`}.`),
+        ref: (n) => `Купът Куршум е показан през 2006 г., ${n === "1" ? "преди една година" : `преди ${n} години`}.`,
+      },
+      clWeb: {
+        title: "Космическата мрежа", goal: "Знаеш как са подредени галактиките в най-голям мащаб.",
+        text: [
+          "Според НАСА галактиките и куповете са подредени в усукани, нишковидни структури, наречени космическа мрежа, с празни пространства между тях.",
+          "Групи свръхкупове може да образуват стени или пластове от галактики. Свръхкуповете обикновено не са гравитационно свързани помежду си.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Галактиките са подредени в космическа мрежа от нишки.",
+          "Между нишките има празни пространства.",
+          "Свръхкуповете може да образуват стени или пластове от галактики.",
+        ],
+        you: () => "И твоята галактика е възел в тази мрежа: Млечният път принадлежи към Местната група.",
+        ref: () => "И нашата галактика е възел в тази мрежа: Млечният път принадлежи към Местната група.",
+      },
+      obsBack: {
+        title: "Поглед назад във времето", goal: "Знаеш защо погледът надалеч е поглед в миналото.",
+        text: [
+          "Светлината има нужда от време. Според НАСА да гледаш навън в космоса е като да гледаш назад във времето: колкото по-далеч е нещо, толкова по-стара е светлината, която виждаме от него.",
+          "Слънцето виждаме такова, каквото е било преди около 8 минути, Проксима Кентавър преди 4,24 години, галактиката Андромеда преди 2,5 милиона години.",
+        ],
+        task: "Разгледай своята звезда: виждаш я такава, каквато е била при раждането ти.",
+        remember: [
+          "Светлината има нужда от време, за да стигне до нас.",
+          "Погледът в космоса е поглед назад във времето.",
+          "Колкото по-далеч, толкова по-стара е светлината.",
+        ],
+        you: (name, ly) => `Твоята звезда ${name} е на ${ly} светлинни години: виждаш я такава, каквато е била около раждането ти.`,
+        ref: () => "Проксима Кентавър е на 4,24 светлинни години: виждаш я такава, каквато е била преди 4,24 години.",
+      },
+      obsExpand: {
+        title: "Вселената се разширява", goal: "Знаеш, че Вселената се разширява.",
+        text: [
+          "Според НАСА Вселената се разширява, а разширяването се ускорява.",
+          "Когато пространството се разтяга, се разтяга и светлината, която пътува през него, към по-дълги, по-червени вълни. Затова „Уеб“ гледа най-ранните галактики в инфрачервена светлина.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Вселената се разширява.",
+          "Разширяването се ускорява.",
+          "Светлината отдалеч е разтеглена към по-дълги вълни.",
+        ],
+        you: () => "Светлината на най-далечните галактики се е разтегнала по пътя си към теб, по-дълго от целия ти живот.",
+        ref: () => "Светлината на най-далечните галактики се е разтегнала по пътя си към нас.",
+      },
+      obsCmb: {
+        title: "Най-старата светлина", goal: "Познаваш най-старата светлина на Вселената.",
+        text: [
+          "Най-старата светлина, която можем да видим, според НАСА и ЕКА идва от около 380 000 години след Големия взрив; страницата на WMAP на НАСА казва около 375 000. Тя се нарича космическо микровълново фоново лъчение.",
+          "През 1992 г. COBE на НАСА открива мънички шарки в него; WMAP и „Планк“ на ЕКА по-късно го картографират.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Най-старата светлина е от около 380 000 години след Големия взрив.",
+          "Тя е космическото микровълново фоново лъчение.",
+          "COBE (1992 г.), WMAP и „Планк“ го картографират.",
+        ],
+        you: (before, at) => (before != null ? `COBE прави откритието си през 1992 г., ${before === "1" ? "една година" : `${before} години`} преди раждането ти.` : at === "0" ? "COBE прави откритието си през 1992 г., в годината на раждането ти." : `COBE прави откритието си през 1992 г., ${at === "1" ? "на една година" : `на твоите ${at} години`}.`),
+        ref: (n) => `COBE прави откритието си през 1992 г., ${n === "1" ? "преди една година" : `преди ${n} години`}.`,
+      },
+      obsAge: {
+        title: "13,8 милиарда години", goal: "Знаеш колко стара е Вселената.",
+        text: [
+          "Според НАСА Вселената е на около 13,8 милиарда години; страницата на WMAP на НАСА дава 13,77 милиарда, с точност до половин процент.",
+          "Слънцето е на около 4,6 милиарда години. Ако целият живот на Вселената беше една година, Слънцето щеше да се роди в началото на септември (изчислено).",
+        ],
+        task: "Разгледай Слънцето: то идва едва в последната третина от времето на Вселената.",
+        remember: [
+          "Вселената е на около 13,8 милиарда години.",
+          "WMAP измерва 13,77 милиарда години.",
+          "Слънцето идва в последната третина от това време.",
+        ],
+        you: (sec) => `Ако 13,8-те милиарда години на Вселената бяха една година, досегашният ти живот щеше да е последните ${sec} секунди преди полунощ. (Изчислено.)`,
+        ref: (sec) => `Ако 13,8-те милиарда години на Вселената бяха една година, един живот от 30 години щеше да е последните ${sec} секунди преди полунощ. (Изчислено.)`,
+      },
+      obsFar: {
+        title: "Най-далечната галактика", goal: "Познаваш най-далечната известна галактика.",
+        text: [
+          "Според НАСА „Уеб“ открива JADES-GS-z14-0 с червено отместване 14,32. През юни 2025 г. MoM-z14 поема рекорда, с червено отместване 14,44.",
+          "Виждаме MoM-z14 такава, каквато е била около 280 милиона години след Големия взрив: светлината ѝ е по-стара от Слънцето и Земята.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "„Уеб“ открива най-далечните галактики.",
+          "MoM-z14 държи рекорда от юни 2025 г.",
+          "Виждаме я такава, каквато е била около 280 милиона години след Големия взрив.",
+        ],
+        you: (before, at) => (before != null ? `MoM-z14 поема рекорда през 2025 г., ${before === "1" ? "една година" : `${before} години`} преди раждането ти.` : at === "0" ? "MoM-z14 поема рекорда през 2025 г., в годината на раждането ти." : `MoM-z14 поема рекорда през 2025 г., ${at === "1" ? "на една година" : `на твоите ${at} години`}.`),
+        ref: (n) => `MoM-z14 поема рекорда през 2025 г., ${n === "1" ? "преди една година" : `преди ${n} години`}.`,
+      },
+      bbStart: {
+        title: "Началото", goal: "Знаеш как е започнала Вселената.",
+        text: [
+          "Според НАСА Вселената е започнала преди около 13,8 милиарда години с бързо разширяване, което наричаме Голям взрив.",
+          "Една секунда след Големия взрив Вселената е изключително гореща супа от светлина и частици. Космолозите смятат за вероятно, че Вселената ще продължи да се разширява вечно.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Вселената е започнала преди около 13,8 милиарда години.",
+          "Началото наричаме Голям взрив: бързо разширяване.",
+          "Секунда по-късно тя е изключително гореща супа от светлина и частици.",
+        ],
+        you: () => "Всичко, което виждаш, е започнало в това разширяване: Слънцето, Земята и материята, от която си.",
+        ref: () => "Всичко, което виждаме, е започнало в това разширяване: Слънцето, Земята и материята, от която сме.",
+      },
+      bbElements: {
+        title: "Първите елементи", goal: "Знаеш кои елементи са се образували първи.",
+        text: [
+          "Според НАСА Големият взрив създава първите елементи: водород, хелий и следи от литий и берилий. След пет минути повечето от днешния хелий вече е образуван.",
+          "После Вселената се е разширила и изстинала достатъчно, за да спре образуването на нови елементи. По-тежките елементи идват по-късно, от звездите от пътеката за живота на звездите.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Първите елементи са водород, хелий и следи от литий и берилий.",
+          "Повечето от днешния хелий се образува през първите пет минути.",
+          "След това Вселената е твърде студена за още елементи.",
+        ],
+        you: (n) => `Повечето от днешния хелий се образува за пет минути. Ти живееш вече около ${n} минути.`,
+        ref: (n) => `Повечето от днешния хелий се образува за пет минути. Един живот от 30 години е около ${n} минути.`,
+      },
+      bbDark: {
+        title: "Тъмните времена", goal: "Знаеш, че Вселената е била тъмна преди първите звезди.",
+        text: [
+          "След най-старата светлина според НАСА Вселената остава тъмна през следващите 200 милиона години.",
+          "За няколкостотин милиона години първите звезди се събират в първите галактики. Точно тяхната светлина търси „Уеб“.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "След най-старата светлина Вселената остава тъмна.",
+          "Тъмното време трае около 200 милиона години.",
+          "После първите звезди се събират в първите галактики.",
+        ],
+        you: (n) => `Тъмните времена траят около 200 милиона години: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `Тъмните времена траят около 200 милиона години: около ${n} пъти един живот от 30 години.`,
+      },
+      bbEnergy: {
+        title: "Тъмна енергия", goal: "Знаеш, че разширяването се ускорява, и защо това изненадва всички.",
+        text: [
+          "През 1998 г. два екипа откриват с далечни свръхнови, че Вселената се разширява ускорено. Адам Рийс, Сол Пърлмътър и Браян Шмит получават за това Нобеловата награда за физика през 2011 г.",
+          "Причината се нарича тъмна енергия. Според НАСА тя е около 68 % от Вселената, тъмната материя 27 %, нормалната материя 5 %; други страници на НАСА дават 68,3 до 70 % за тъмната енергия.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "От 1998 г. знаем, че разширяването се ускорява.",
+          "Причината се нарича тъмна енергия, около 68 % от Вселената.",
+          "Тъмната материя е около 27 %, нормалната материя около 5 %.",
+        ],
+        you: (before, at) => (before != null ? `Ускорението е открито през 1998 г., ${before === "1" ? "една година" : `${before} години`} преди раждането ти.` : at === "0" ? "Ускорението е открито през 1998 г., в годината на раждането ти." : `Ускорението е открито през 1998 г., ${at === "1" ? "на една година" : `на твоите ${at} години`}.`),
+        ref: (n) => `Ускорението е открито през 1998 г., ${n === "1" ? "преди една година" : `преди ${n} години`}.`,
+      },
+      bbFuture: {
+        title: "А бъдещето?", goal: "Знаеш какво казва науката за бъдещето и колко е сигурно.",
+        text: [
+          "Според НАСА космолозите смятат за вероятно, че Вселената ще продължи да се разширява вечно. Слънцето ще стане червен гигант след около 5 милиарда години.",
+          "А Млечният път и Андромеда? Проучването от 2025 г. дава само 50 на 50 за сблъсък в рамките на 10 милиарда години. Бъдещето е прогноза: тя важи, докато данните я подкрепят.",
+        ],
+        task: "Разгледай Слънцето: след около 5 милиарда години то ще е червен гигант.",
+        remember: [
+          "Вселената вероятно ще продължи да се разширява вечно.",
+          "Слънцето ще стане червен гигант след около 5 милиарда години.",
+          "Прогнозите може да се променят с нови данни.",
+        ],
+        you: (n) => `5-те милиарда години до червения гигант: около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `5-те милиарда години до червения гигант: около ${n} пъти един живот от 30 години.`,
       },
       nebWhat: {
         title: "Какво е мъглявина?", goal: "Знаеш какво е мъглявина и двата начина, по които се образуват мъглявини.",
@@ -6012,6 +7542,66 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
       kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
       rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
+      galaxyWhat: { q: "Какво е галактика според НАСА?", o: ["Звезди, планети, газ и прах, държани от гравитацията", "Една огромна звезда", "Облак от вода"], e: "Звезди, планети и огромни облаци от газ и прах, държани заедно от гравитацията." },
+      milkyIsOne: { q: "Какво е Млечният път?", o: ["Една галактика сред много", "Единствената галактика", "Планета"], e: "Една галактика сред много: нашата." },
+      sombrero: { q: "Колко далеч е галактиката Сомбреро според НАСА?", o: ["28 милиона светлинни години", "28 светлинни години", "28 милиарда светлинни години"], e: "28 милиона светлинни години, в Дева." },
+      galaxyTypes: { q: "Какви са повечето галактики?", o: ["Спирални и елиптични", "Квадратни и триъгълни", "Само пръстеновидни"], e: "Повечето са спирални или елиптични, други са неправилни." },
+      ellipticalOld: { q: "Кои галактики обикновено имат по-стари звезди?", o: ["Елиптичните", "Спиралните", "Еднакво"], e: "Елиптичните: звездите им обикновено са по-стари от тези в спиралните." },
+      spiralYoung: { q: "Къде се раждат най-младите звезди на спиралната галактика?", o: ["В ръкавите, богати на газ", "В празната среда", "Извън галактиката"], e: "В ръкавите, богати на газ." },
+      whirlWhere: { q: "В кое съзвездие е галактиката Водовъртеж?", o: ["Ловджийски кучета", "Орион", "Телец"], e: "В Ловджийски кучета, на 31 милиона светлинни години." },
+      whirlCompanion: { q: "С какво има близка среща галактиката Водовъртеж?", o: ["С малката галактика NGC 5195", "Със Слънцето", "С черна дупка в Млечния път"], e: "С NGC 5195, малка жълтеникава галактика." },
+      whirlDist: { q: "Колко далеч е галактиката Водовъртеж според НАСА?", o: ["31 милиона светлинни години", "31 светлинни години", "31 милиарда светлинни години"], e: "31 милиона светлинни години." },
+      hdfCount: { q: "Около колко галактики улавя Hubble Deep Field?", o: ["Около 3000", "Около 30", "Точно 1"], e: "Около 3000 далечни галактики." },
+      hdfWhere: { q: "Къде на небето е Hubble Deep Field?", o: ["В Голямата мечка, близо до дръжката на Голямата кола", "В пояса на Орион", "На южния полюс на небето"], e: "В Голямата мечка, близо до дръжката на Голямата кола." },
+      hdfSize: { q: "Колко голямо е парчето небе на Hubble Deep Field?", o: ["Колкото главичка на карфица на една ръка разстояние", "Половината небе", "Колкото пълната Луна"], e: "Колкото главичка на карфица на една ръка разстояние." },
+      webbDate: { q: "Кога излиза първото дълбоко поле на „Уеб“?", o: ["На 12 юли 2022 г.", "През 1995 г.", "През 1969 г."], e: "На 12 юли 2022 г." },
+      webbSand: { q: "Колко голямо е парчето небе на първото дълбоко поле на „Уеб“?", o: ["Колкото песъчинка на една ръка разстояние", "Колкото Млечния път", "Цялото небе"], e: "Колкото песъчинка на една ръка разстояние." },
+      webbAgo: { q: "Какъв, от кога, виждаме купа SMACS 0723?", o: ["Такъв, какъвто е бил преди 4,6 милиарда години", "Преди 4,6 години", "Днешен"], e: "Такъв, какъвто е бил преди 4,6 милиарда години." },
+      clusterWhat: { q: "Колко галактики съдържа един галактически куп?", o: ["От стотици до хиляди", "Две", "Точно една"], e: "От стотици до хиляди, държани заедно от гравитацията." },
+      clusterBiggest: { q: "Какво са галактическите купове според страниците на „Чандра“ на НАСА?", o: ["Най-големите гравитационно свързани обекти във Вселената", "Малки групи звезди", "Облаци на Земята"], e: "Най-големите гравитационно свързани обекти във Вселената." },
+      virgoCount: { q: "Около колко галактики има купът в Дева?", o: ["Около 2000", "Около 20", "Около 20 милиарда"], e: "Около 2000; M87 е в центъра му." },
+      hotGas: { q: "Какво има между галактиките на един куп?", o: ["Горещ, разреден газ", "Течна вода", "Нищо"], e: "Горещ, разреден газ." },
+      gasMass: { q: "Колко маса има този газ?", o: ["Повече от всички галактики в купа", "Почти никаква", "Колкото една звезда"], e: "Повече маса от всички галактики в купа." },
+      gasXray: { q: "В каква светлина се вижда горещият газ?", o: ["Само в рентгенови лъчи", "С просто око", "Само в радиовълни от Земята"], e: "Само в рентгенови лъчи." },
+      zwicky: { q: "Какво забелязва Фриц Цвики през 1933 г.?", o: ["Галактиките в купа Кома се движат твърде бързо", "Нова планета", "Първата черна дупка"], e: "Галактиките в купа Кома се движат твърде бързо." },
+      darkShare: { q: "Каква част от Вселената е тъмна материя според НАСА?", o: ["Около 27 %", "Около 99 %", "Около 1 %"], e: "Около 27 %; обикновената материя около 5 %." },
+      darkLight: { q: "Излъчва ли светлина тъмната материя?", o: ["Не, не излъчва, не поглъща и не отразява светлина", "Да, свети в червено", "Само нощем"], e: "Не: тя не поглъща, не отразява и не излъчва светлина." },
+      lensWhat: { q: "Какво прави галактическият куп със светлината от галактики зад него?", o: ["Огъва, изкривява и увеличава я", "Изключва я", "Нищо"], e: "Огъва, изкривява и увеличава я." },
+      lensEinstein: { q: "Коя теория описва как масата изкривява пространството и времето?", o: ["Общата теория на относителността на Айнщайн", "Учението за зодиите", "Теорията на цветовете на Нютон"], e: "Общата теория на относителността на Айнщайн." },
+      bullet: { q: "Какво показва купът Куршум през 2006 г.?", o: ["Пряко доказателство за тъмната материя", "Нова комета", "Възрастта на Слънцето"], e: "Пряко доказателство, че почти цялата материя в куповете е тъмна." },
+      cosmicWeb: { q: "Как са подредени галактиките в най-голям мащаб?", o: ["В космическа мрежа от нишки", "В права линия", "Равномерно като решетка"], e: "В усукани, нишковидни структури: космическата мрежа." },
+      voids: { q: "Какво има между нишките на космическата мрежа?", o: ["Празни пространства", "Плътни стени от звезди", "Вода"], e: "Празни пространства." },
+      superclusters: { q: "Какво може да образуват групи свръхкупове?", o: ["Стени или пластове от галактики", "Нови планети", "Само черни дупки"], e: "Стени или пластове от галактики." },
+      lookBack: { q: "Защо погледът далеч в космоса е поглед назад във времето?", o: ["Защото на светлината ѝ трябва време да стигне до нас", "Защото часовниците спират в космоса", "Защото звездите са стари"], e: "Защото светлината има нужда от време: колкото по-далеч, толкова по-стара е светлината." },
+      seeOld: { q: "Какво, от кога, виждаме Слънцето?", o: ["Такова, каквото е било преди около 8 минути", "Точно сега, без закъснение", "Преди година"], e: "Такова, каквото е било преди около 8 минути." },
+      yourStarSeen: { q: "Една звезда е на 30 светлинни години. Каква, от кога, я виждаме?", o: ["Каквато е била преди 30 години", "Преди 30 минути", "Днешна"], e: "Каквато е била преди 30 години." },
+      expanding: { q: "Какво прави Вселената според НАСА?", o: ["Разширява се", "Свива се", "Стои на място"], e: "Разширява се." },
+      speedingUp: { q: "Разширяването забавя ли се, или се ускорява?", o: ["Ускорява се", "Забавя се", "Спряло е"], e: "Ускорява се." },
+      stretched: { q: "Какво става със светлината, която пътува през разширяващо се пространство?", o: ["Разтяга се към по-дълги вълни", "Става по-синя", "Спира"], e: "Разтяга се към по-дълги, по-червени вълни." },
+      cmbWhen: { q: "От кога е най-старата светлина, която можем да видим?", o: ["От около 380 000 години след Големия взрив", "От една секунда след Големия взрив", "От раждането на Слънцето"], e: "От около 380 000 години след Големия взрив (НАСА, ЕКА); страницата на WMAP на НАСА казва 375 000." },
+      cmbCobe: { q: "Кой спътник на НАСА открива шарки в тази светлина през 1992 г.?", o: ["COBE", "„Кеплер“", "„Вояджър 1“"], e: "COBE." },
+      cmbDiffer: { q: "Как се нарича тази най-стара светлина?", o: ["Космическо микровълново фоново лъчение", "Мъглявината Орион", "Слънчевата светлина"], e: "Космическо микровълново фоново лъчение." },
+      universeAge: { q: "На колко години е Вселената според НАСА?", o: ["На около 13,8 милиарда години", "На около 4,6 милиарда години", "На около 6000 години"], e: "На около 13,8 милиарда години." },
+      ageWmap: { q: "Каква възраст измерва WMAP?", o: ["13,77 милиарда години", "13,77 милиона години", "1,377 милиарда години"], e: "13,77 милиарда години, с точност до половин процент." },
+      sunInYear: { q: "Ако животът на Вселената беше една година, кога щеше да се роди Слънцето?", o: ["В началото на септември", "На 1 януари", "На 31 декември"], e: "В началото на септември (изчислено от 4,6 и 13,8 милиарда години)." },
+      farRecord: { q: "Коя галактика държи рекорда за разстояние от юни 2025 г.?", o: ["MoM-z14", "Андромеда", "M87"], e: "MoM-z14, с червено отместване 14,44." },
+      farWhen: { q: "Каква, от кога, виждаме MoM-z14?", o: ["Каквато е била около 280 милиона години след Големия взрив", "Днешна", "Отпреди 1000 години"], e: "Каквато е била около 280 милиона години след Големия взрив." },
+      farOld: { q: "Кой телескоп открива най-далечните галактики?", o: ["„Уеб“", "Телескопът на Галилей", "Окото ти"], e: "Космическият телескоп „Уеб“." },
+      bbBegin: { q: "Как е започнала Вселената според НАСА?", o: ["С бързо разширяване, което наричаме Голям взрив", "Като студена скала", "Винаги е била същата"], e: "С бързо разширяване, което наричаме Голям взрив, преди около 13,8 милиарда години." },
+      bbSoup: { q: "Какво е била Вселената една секунда след Големия взрив?", o: ["Изключително гореща супа от светлина и частици", "Студено тъмно море", "Готова галактика"], e: "Изключително гореща супа от светлина и частици." },
+      bbForever: { q: "Какво смятат космолозите за вероятно за Вселената?", o: ["Че ще продължи да се разширява вечно", "Че утре ще спре", "Че се свива"], e: "Че вероятно ще продължи да се разширява вечно." },
+      firstElements: { q: "Кои елементи са се образували първи?", o: ["Водород, хелий, следи от литий и берилий", "Желязо и злато", "Кислород и въглерод"], e: "Водород, хелий и следи от литий и берилий." },
+      heliumFive: { q: "Кога повечето от днешния хелий вече е бил образуван?", o: ["След пет минути", "След пет милиарда години", "Само в Слънцето"], e: "След пет минути." },
+      elementsStop: { q: "Защо са спрели да се образуват нови елементи?", o: ["Вселената се е разширила и изстинала", "Звездите са го спрели", "Никога не е спирало"], e: "Вселената се е разширила и изстинала достатъчно." },
+      darkAges: { q: "Какво идва след най-старата светлина?", o: ["Тъмни времена без звезди", "Много слънца наведнъж", "Слънчевата система"], e: "Вселената остава тъмна около 200 милиона години." },
+      firstGalaxies: { q: "В какво се събират първите звезди?", o: ["В първите галактики", "В планетите", "Само в черни дупки"], e: "В първите галактики, за няколкостотин милиона години." },
+      darkLong: { q: "Около колко траят тъмните времена според НАСА?", o: ["Около 200 милиона години", "Около 200 години", "Около 2 милиарда години"], e: "Около 200 милиона години." },
+      acceleration: { q: "Какво откриват два екипа през 1998 г.?", o: ["Разширяването на Вселената се ускорява", "Вселената се свива", "Първата екзопланета"], e: "Че Вселената се разширява ускорено." },
+      nobel2011: { q: "Кой получава за това Нобеловата награда за физика през 2011 г.?", o: ["Рийс, Пърлмътър и Шмит", "Айнщайн и Хъбъл", "Галилей"], e: "Адам Рийс, Сол Пърлмътър и Браян Шмит." },
+      composition: { q: "От какво е Вселената според НАСА?", o: ["Около 68 % тъмна енергия, 27 % тъмна материя, 5 % нормална материя", "100 % звезди", "Половин планети, половин звезди"], e: "Около 68 % тъмна енергия, 27 % тъмна материя и 5 % нормална материя." },
+      expandForever: { q: "Какво е вероятно за далечното бъдеще на Вселената според НАСА?", o: ["Ще продължи да се разширява вечно", "Ще изчезне след година", "Ще стане една звезда"], e: "Вероятно ще продължи да се разширява вечно." },
+      sunFuture: { q: "Какво ще стане Слънцето след около 5 милиарда години?", o: ["Червен гигант", "Черна дупка", "Планета"], e: "Червен гигант." },
+      andromedaFuture: { q: "Какво казва проучването от 2025 г. за Млечния път и Андромеда?", o: ["Само 50 на 50 за сблъсък в рамките на 10 милиарда години", "Утре със сигурност ще се сблъскат", "Отдалечават се"], e: "Само 50 на 50 за сблъсък в рамките на 10 милиарда години." },
       nebulaWhat: { q: "Какво е мъглявина според НАСА?", o: ["Огромен облак от прах и газ в космоса", "Планета, покрита с мъгла", "Малка звезда"], e: "Огромен облак от прах и газ в космоса." },
       nebulaDeath: { q: "Откъде идват някои мъглявини?", o: ["От газа и праха на избухваща умираща звезда", "От моретата на планети", "От Луната"], e: "От газа и праха, изхвърлени при експлозията на умираща звезда, например свръхнова." },
       nebulaBirth: { q: "Какво става в други мъглявини?", o: ["Започват да се образуват нови звезди", "Умират планети", "Нищо"], e: "Започват да се образуват нови звезди." },
@@ -6169,6 +7759,28 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  if (["galaxies", "clusters", "observable", "bigbang"].some((p) => PATHS[p].steps.includes(step))) {
+    const f = nums.you ? s.you : s.ref;
+    const when = (before, ago) => (before == null ? s.ref(fmt(ago)) : s.you(before > 0 ? fmt(before) : null, before <= 0 ? fmt(Math.abs(before)) : null));
+    switch (step) {
+      case "galWhat": return f(fmt(nums.sombreroTimes));
+      case "galWhirl": return f(fmt(nums.whirlTimes));
+      case "galHubble": return when(nums.hdfBefore, nums.hdfAgo);
+      case "galWebb": return f(fmt(nums.smacsTimes));
+      case "clWhat": return f(fmt(nums.virgoTimes));
+      case "clDark": return when(nums.zwickyBefore, nums.zwickyAgo);
+      case "clLens": return when(nums.bulletBefore, nums.bulletAgo);
+      case "obsBack": return nums.star ? s.you(nums.star.name, fmt(nums.star.dist, 1)) : s.ref();
+      case "obsCmb": return when(nums.cobeBefore, nums.cobeAgo);
+      case "obsAge": return f(fmt(nums.universeSeconds, 2));
+      case "obsFar": return when(nums.recordBefore, nums.recordAgo);
+      case "bbElements": return f(fmt(nums.lifeMinutes));
+      case "bbDark": return f(fmt(nums.darkTimes));
+      case "bbEnergy": return when(nums.energyBefore, nums.energyAgo);
+      case "bbFuture": return f(fmt(nums.giantTimes));
+      default: return f();
+    }
+  }
   if (PATHS.nebula.steps.includes(step) || PATHS.milky.steps.includes(step) || PATHS.local.steps.includes(step)) {
     const f = nums.you ? s.you : s.ref;
     // an event before the birth, in its year, or at an age; without a year of birth: how long ago
@@ -6331,6 +7943,12 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
+  const BEYOND_PICTURE = {
+    galWhat: 6000, galTypes: 4500, galWhirl: 9000, galHubble: 12000, galWebb: 15000,
+    clWhat: 5000, clGas: 40000, clDark: 3000, clLens: 9000, clWeb: 7000,
+    obsBack: 5772, obsExpand: 3500, obsCmb: 3000, obsAge: 5772, obsFar: 30000,
+    bbStart: 40000, bbElements: 20000, bbDark: 3000, bbEnergy: 9000, bbFuture: 3500,
+  }; // the temperatures of the stars drawn
   const GALAXY_PICTURE = {
     nebWhat: 20000, nebPillars: 25000, nebDark: 15000, nebRing: 60000, nebCrab: 30000,
     mwWhat: 6500, mwArm: 5772, mwOrbit: 5772, mwBand: 8000, mwGaia: 7000,
@@ -6343,7 +7961,8 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const NAME_PICTURE = { nameLetters: 3050, nameStars: 5790, nameGreek: 9600, nameCatalog: 2566, nameStories: 5770 }; // the temperatures of the stars drawn
   const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
-    GALAXY_PICTURE[step] ? starCanvas(GALAXY_PICTURE[step], "uni-orb small star", 28)
+    BEYOND_PICTURE[step] ? starCanvas(BEYOND_PICTURE[step], "uni-orb small star", 28)
+    : GALAXY_PICTURE[step] ? starCanvas(GALAXY_PICTURE[step], "uni-orb small star", 28)
     : COMPACT_PICTURE[step] ? starCanvas(COMPACT_PICTURE[step], "uni-orb small star", 28)
     : LIFE_PICTURE[step] ? starCanvas(LIFE_PICTURE[step], "uni-orb small star", 28)
     : BIRTH_PICTURE[step] ? starCanvas(BIRTH_PICTURE[step], "uni-orb small star", 28)
@@ -6417,6 +8036,8 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   // the task of a step, with "figure:birth" and "figure:birthSign" turned into the visitor's constellations (zodNumbers)
   const taskOf = (step) => {
     const task = TASKS[step];
+    // "yourStar": the visitor's star (from the year of birth), or Proxima Centauri without one
+    if (task === "yourStar") return personalNumbers(personal()).star?.name ?? "Proxima Cen";
     if (task !== "figure:birth" && task !== "figure:birthSign") return task;
     const n = personalNumbers(personal());
     return `figure:${task === "figure:birth" ? n.zodReal : n.zodSign}`;
@@ -6440,6 +8061,10 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     : path === "nebula" ? starCanvas(20000, `${cls} star`, size)
     : path === "milky" ? starCanvas(6500, `${cls} star`, size)
     : path === "local" ? starCanvas(9000, `${cls} star`, size)
+    : path === "galaxies" ? starCanvas(6000, `${cls} star`, size)
+    : path === "clusters" ? starCanvas(5000, `${cls} star`, size)
+    : path === "observable" ? starCanvas(3000, `${cls} star`, size)
+    : path === "bigbang" ? starCanvas(40000, `${cls} star`, size)
     : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);

@@ -166,6 +166,26 @@ export const BADGES = [
     ja: ["星座はかせ", "「星座と黄道十二宮」の最終テストに合格した"], bg: ["Познавач на съзвездията", "Издържа финалния тест на „Съзвездия и зодии“"],
   },
   {
+    id: "galaxies-scholar", count: (t) => (t.learnPaths?.includes("galaxies") ? 1 : 0), need: 1,
+    en: ["Galaxy collector", "Passed the final test of Galaxies"], de: ["Galaxiensammler", "Den Abschlusstest von „Galaxien“ bestanden"],
+    ja: ["銀河コレクター", "「銀河」の最終テストに合格した"], bg: ["Събирач на галактики", "Издържа финалния тест на „Галактики“"],
+  },
+  {
+    id: "clusters-scholar", count: (t) => (t.learnPaths?.includes("clusters") ? 1 : 0), need: 1,
+    en: ["Web weaver", "Passed the final test of Galaxy clusters"], de: ["Netzweber", "Den Abschlusstest von „Galaxienhaufen“ bestanden"],
+    ja: ["網をあむ人", "「銀河団」の最終テストに合格した"], bg: ["Тъкач на мрежата", "Издържа финалния тест на „Галактически купове“"],
+  },
+  {
+    id: "observable-scholar", count: (t) => (t.learnPaths?.includes("observable") ? 1 : 0), need: 1,
+    en: ["Time traveller", "Passed the final test of The observable universe"], de: ["Zeitreisender", "Den Abschlusstest von „Das beobachtbare Universum“ bestanden"],
+    ja: ["時間の旅人", "「観測できる宇宙」の最終テストに合格した"], bg: ["Пътешественик във времето", "Издържа финалния тест на „Наблюдаемата Вселена“"],
+  },
+  {
+    id: "bigbang-scholar", count: (t) => (t.learnPaths?.includes("bigbang") ? 1 : 0), need: 1,
+    en: ["Cosmologist", "Passed the final test of Big Bang and future"], de: ["Kosmologe", "Den Abschlusstest von „Urknall und Zukunft“ bestanden"],
+    ja: ["宇宙論の学び手", "「ビッグバンと未来」の最終テストに合格した"], bg: ["Космолог", "Издържа финалния тест на „Големият взрив и бъдещето“"],
+  },
+  {
     id: "nebula-scholar", count: (t) => (t.learnPaths?.includes("nebula") ? 1 : 0), need: 1,
     en: ["Nebula watcher", "Passed the final test of Nebulae"], de: ["Nebelbeobachter", "Den Abschlusstest von „Nebel“ bestanden"],
     ja: ["星雲ウォッチャー", "「星雲」の最終テストに合格した"], bg: ["Наблюдател на мъглявини", "Издържа финалния тест на „Мъглявини“"],

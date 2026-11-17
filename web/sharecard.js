@@ -465,6 +465,66 @@ const EMBLEM = {
     g.stroke();
     for (const [i, [x, y]] of stars.entries()) drawStar(g, r * x, r * y, r * (i === 2 ? 0.16 : 0.1), starColor(i === 2 ? 4000 : 9600));
   },
+  // galaxies: a spiral galaxy at a slant, with a small elliptical one beside it
+  "galaxies-scholar": (g, r) => {
+    const blob = (x, y, rx, ry, tilt, inner, outer) => {
+      g.save();
+      g.translate(x, y);
+      g.rotate(tilt);
+      g.scale(1, ry / rx);
+      const c = g.createRadialGradient(0, 0, 0, 0, 0, rx);
+      c.addColorStop(0, inner);
+      c.addColorStop(1, outer);
+      g.fillStyle = c;
+      g.beginPath();
+      g.arc(0, 0, rx, 0, Math.PI * 2);
+      g.fill();
+      g.restore();
+    };
+    blob(r * 0.9, r * 0.95, r * 0.6, r * 0.24, -0.4, "rgba(255,245,220,0.95)", "rgba(110,150,255,0)");
+    blob(r * 1.5, r * 1.4, r * 0.18, r * 0.13, 0.3, "rgba(255,220,170,0.9)", "rgba(255,180,120,0)");
+  },
+  // galaxy clusters: many small galaxies tied by faint threads
+  "clusters-scholar": (g, r) => {
+    const pts = [[0.6, 0.7], [0.95, 0.55], [1.35, 0.8], [1.2, 1.25], [0.75, 1.3], [1.0, 0.95], [1.5, 1.35]];
+    g.strokeStyle = "rgba(124,255,178,0.35)";
+    g.lineWidth = r * 0.025;
+    g.beginPath();
+    for (const [i, [x, y]] of pts.entries()) (i ? g.lineTo : g.moveTo).call(g, r * x, r * y);
+    g.stroke();
+    for (const [x, y] of pts) drawStar(g, r * x, r * y, r * 0.08, starColor(6000));
+  },
+  // the observable universe: rings of light going out from the middle, older the farther
+  "observable-scholar": (g, r) => {
+    for (const [i, color] of ["rgba(255,120,80,0.5)", "rgba(255,190,120,0.55)", "rgba(200,220,255,0.6)"].entries()) {
+      g.strokeStyle = color;
+      g.lineWidth = r * 0.05;
+      g.beginPath();
+      g.arc(r, r, r * (0.62 - i * 0.18), 0, Math.PI * 2);
+      g.stroke();
+    }
+    drawStar(g, r, r, r * 0.1, starColor(5772));
+  },
+  // big bang and future: a bright point bursting outwards
+  "bigbang-scholar": (g, r) => {
+    const c = g.createRadialGradient(r, r, 0, r, r, r * 0.7);
+    c.addColorStop(0, "rgba(255,255,255,1)");
+    c.addColorStop(0.25, "rgba(255,220,150,0.8)");
+    c.addColorStop(1, "rgba(255,80,60,0)");
+    g.fillStyle = c;
+    g.beginPath();
+    g.arc(r, r, r * 0.7, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = "rgba(255,230,180,0.7)";
+    g.lineWidth = r * 0.03;
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      g.beginPath();
+      g.moveTo(r + Math.cos(a) * r * 0.3, r + Math.sin(a) * r * 0.3);
+      g.lineTo(r + Math.cos(a) * r * 0.62, r + Math.sin(a) * r * 0.62);
+      g.stroke();
+    }
+  },
   // nebulae: a glowing cloud of gas in red and blue with a young star in it
   "nebula-scholar": (g, r) => {
     for (const [x, y, rad, color] of [[0.8, 0.85, 0.5, "rgba(255,90,140,0.55)"], [1.2, 1.15, 0.5, "rgba(90,160,255,0.5)"], [1.0, 1.0, 0.35, "rgba(255,200,120,0.4)"]]) {
