@@ -3558,6 +3558,48 @@ function buildSolarMenu() {
   }
   buildVisitorMenu();
   buildStarMenu();
+  buildBodyBar();
+}
+
+// The real scale makes the planets tiny dots far apart (path 1, "Small bodies, scale and distances"): a bar with the Sun and every body
+// of the Solar System. A click flies to it; the camera stands outside its orbit, a little to the side, and looks in at it with the Sun
+// behind, so that the distance to the Sun can be seen. The Sun itself is shown from close by.
+function buildBodyBar() {
+  const bar = document.getElementById("body-bar");
+  bar.hidden = !realScale;
+  if (!realScale) return;
+  bar.replaceChildren();
+  for (const name of ["Sun", ...SOLAR_BODIES.map((p) => p.name)]) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = name === "Sun" ? sunLabel() : name === "Earth" ? UI[lang].earthShort : solarName(name, lang);
+    if (current?.system === solar ? current.planet.pl_name === name : name === "Sun" && !current) b.classList.add("on");
+    b.addEventListener("click", () => {
+      track("body-bar");
+      flyInward(name);
+      buildBodyBar();
+    });
+    bar.append(b);
+  }
+}
+function flyInward(name) {
+  const centre = solar.group.getWorldPosition(new THREE.Vector3());
+  if (name === "Sun") {
+    leaveCloseup();
+    current = null;
+    ring.visible = false;
+    return flyToView({ target: centre, position: centre.clone().addScaledVector(VIEW_DIRECTION.clone().normalize(), SUN_RADIUS * 5) });
+  }
+  const body = solar.bodies.find((b) => b.name === name);
+  if (!body) return;
+  selectBody(solar, body); // its story and the close-up, which follows the planet; its flight is replaced here
+  const follow = body.mesh;
+  const at = follow.getWorldPosition(new THREE.Vector3());
+  const toSun = centre.clone().sub(at).normalize();
+  const side = toSun.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
+  const direction = toSun.multiplyScalar(-0.8).addScaledVector(side, 0.55).add(new THREE.Vector3(0, 0.15, 0)).normalize();
+  const radius = follow.geometry.parameters.radius * follow.scale.x;
+  startFlight(() => follow.getWorldPosition(new THREE.Vector3()), radius * 5, direction, false);
 }
 
 // The deep Gaia layer: about a million bright stars (G < 11, up to 16,000 light years away) from src/fetch_gaia_bright.py and
@@ -4032,6 +4074,7 @@ function setRealScale(on) {
   flyTo({ star: EARTH.star, system: solar }); // the camera would be lost otherwise: show the Solar System
   current = null;
   ring.visible = false;
+  buildBodyBar();
 }
 document.getElementById("scale").addEventListener("click", () => setRealScale(!realScale));
 
