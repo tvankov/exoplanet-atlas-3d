@@ -5875,6 +5875,22 @@ const learn = initLearn({
 // Framed views of the Solar System for the steps of path 1: how far the camera stands from the Sun (map units), seen from the usual
 // direction. The orbits are squeezed (0.3 times the square root of the AU): Mercury 0.19, Mars 0.37, Neptune 1.64, Pluto 1.89.
 const SOLAR_VIEWS = { "view:sun": 0.32, "view:inner": 0.95, "view:outer": 3.0, "view:solar": 3.9 };
+// The moons of path 1: from behind Jupiter and a little to the side, Jupiter big with its moons round it and the Sun beside it in the
+// background (the view the camera has after a trip out to Jupiter). Jupiter is chosen, as a click on it would do.
+function moonsView() {
+  const body = solar.bodies.find((b) => b.name === "Jupiter");
+  selectBody(solar, body);
+  const jupiter = body.mesh.getWorldPosition(new THREE.Vector3());
+  const sun = solar.group.getWorldPosition(new THREE.Vector3());
+  const r = body.mesh.geometry.parameters.radius * body.mesh.scale.x;
+  const out = jupiter.clone().sub(sun).normalize(); // away from the Sun
+  const side = out.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
+  const position = jupiter.clone().addScaledVector(out, r * 6).addScaledVector(side, r * 3).add(new THREE.Vector3(0, r * 1.2, 0));
+  // look between Jupiter and the Sun, closer to Jupiter: Jupiter near the middle, the Sun at the edge
+  const toJupiter = jupiter.clone().sub(position).normalize();
+  const toSun = sun.clone().sub(position).normalize();
+  return { position, target: position.clone().add(toJupiter.multiplyScalar(2.2).add(toSun).normalize().multiplyScalar(r * 6)) };
+}
 // "sky:<id>": the view from the Earth into a constellation, its figure drawn bright as in the atlas (constellations.js); the figure goes
 // again when a step shows something else
 let learnFigure = false;
@@ -5895,6 +5911,7 @@ function learnShow(where) {
     return flyToView(views.earth);
   }
   clearLearnFigure();
+  if (where === "view:moons" && !realScale) return flyToView(moonsView());
   if (SOLAR_VIEWS[where]) {
     showPlace({ kind: "star", star: SUN_POINT }); // the Solar System in view and Earth chosen, as for the Sun
     if (realScale) return;

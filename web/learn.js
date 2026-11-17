@@ -58,7 +58,7 @@ export const TASKS = {
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
 // and Alpha Centauri A and B from the side, with lines and their distances (main.js).
 export const VIEWS = {
-  sun: "view:sun", inner: "view:inner", outer: "view:outer", moons: "Jupiter", scale: "view:solar",
+  sun: "view:sun", inner: "view:inner", outer: "view:outer", moons: "view:moons", scale: "view:solar",
   neighbors: "view:neighborhood", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
