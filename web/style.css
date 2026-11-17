@@ -4759,3 +4759,16 @@ input.uni-date {
 #universe-body button.learn-place:hover {
   border-bottom-style: solid;
 }
+
+/* the title of a part of the plan above its learning paths */
+#universe-body .learn-part {
+  margin: 18px 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9fb4d9;
+}
+#universe-body .learn-part:first-child {
+  margin-top: 4px;
+}

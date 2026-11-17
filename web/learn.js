@@ -55,6 +55,13 @@ export const VIEWS = {
   lifeMain: "Sun", lifeMass: "Proxima Cen", lifeGiant: "Sun", lifeWhite: "WD 1856+534", lifeNova: "Sun",
   nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: "Earth", bhCenter: "Earth", bhImage: "Earth",
 };
+// The parts of the plan the paths belong to, in the order of the list (learn.js, listView); "sky" are the paths beside the plan
+export const PARTS = [
+  { id: "basics", paths: ["solar", "alpha", "exo", "hab"] },
+  { id: "starLives", paths: ["stars", "birth", "life", "compact"] },
+  { id: "galaxy", paths: ["nebula", "milky", "local"] },
+  { id: "sky", paths: ["zod", "names"] },
+];
 export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70", life: "Sun", compact: "PSR B1257+12" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
@@ -696,6 +703,7 @@ export const passed = (right, total, path) => total > 0 && right / total >= PATH
 
 export const LEARN_TEXT = {
   en: {
+    parts: { basics: "Part I, Foundations of planetary science", starLives: "Part II, The life of stars", galaxy: "Part III, Our home galaxy", sky: "Reading the sky" },
     paths: {
       solar: { title: "Our Solar System", goal: "You can explain how our Solar System is built and tell its main bodies apart." },
       alpha: { title: "Our nearest stars: Alpha Centauri", goal: "You can describe the star system closest to us, its planet Proxima b, and how far away it really is." },
@@ -1758,6 +1766,7 @@ export const LEARN_TEXT = {
     },
   },
   de: {
+    parts: { basics: "Teil I, Grundlagen der Planetenwissenschaft", starLives: "Teil II, Das Leben der Sterne", galaxy: "Teil III, Unsere Heimatgalaxie", sky: "Den Himmel lesen" },
     paths: {
       solar: { title: "Unser Sonnensystem", goal: "Du kannst erklären, wie unser Sonnensystem aufgebaut ist, und seine wichtigsten Himmelskörper unterscheiden." },
       alpha: { title: "Unsere nächsten Sterne: Alpha Centauri", goal: "Du kannst das Sternsystem beschreiben, das uns am nächsten ist, seinen Planeten Proxima b und wie weit weg es wirklich ist." },
@@ -2818,6 +2827,7 @@ export const LEARN_TEXT = {
     },
   },
   ja: {
+    parts: { basics: "第1部　惑星科学の基礎", starLives: "第2部　恒星の一生", galaxy: "第3部　私たちの銀河", sky: "空を読む" },
     paths: {
       solar: { title: "私たちの太陽系", goal: "太陽系のしくみを説明し、おもな天体を見分けられるようになります。" },
       alpha: { title: "いちばん近い星たち：ケンタウルス座アルファ星", goal: "私たちにいちばん近い恒星系、その惑星プロキシマb、そしてそれが実際にどれほど遠いかを説明できます。" },
@@ -3878,6 +3888,7 @@ export const LEARN_TEXT = {
     },
   },
   bg: {
+    parts: { basics: "Част I, Основи на планетологията", starLives: "Част II, Животът на звездите", galaxy: "Част III, Нашата галактика", sky: "Да четем небето" },
     paths: {
       solar: { title: "Нашата Слънчева система", goal: "Можеш да обясниш как е устроена Слънчевата система и да различаваш основните ѝ тела." },
       alpha: { title: "Най-близките ни звезди: Алфа Кентавър", goal: "Можеш да опишеш най-близката до нас звездна система, нейната планета Проксима b и колко далеч е тя всъщност." },
@@ -5218,8 +5229,18 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   // all the paths: a card each, its picture in a ring of its progress
   function listView(onChange) {
     const tx = t();
+    // the paths by the parts of the plan, each part with its title; a part without a path yet is left out
+    const out = [];
+    for (const part of PARTS) {
+      const paths = part.paths.filter((p) => PATHS[p]);
+      if (paths.length) out.push(el("h4", "learn-part", tx.parts[part.id]), cards(paths));
+    }
+    return out;
+  }
+  function cards(paths) {
+    const tx = t();
     const list = el("div", "learn-cards");
-    for (const path of Object.keys(PATHS)) {
+    for (const path of paths) {
       const all = PATHS[path].steps.length;
       const done = doneOf(path);
       const passedIt = has("learnPaths", path);
@@ -5234,7 +5255,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
       card.addEventListener("click", () => (choose(path), (view = "path"), show?.(PATH_VIEWS[path]), track(`learn-path-${path}`), onChange?.()));
       list.append(card);
     }
-    return [list];
+    return list;
   }
 
   function pathView(onChange) {

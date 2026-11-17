@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES, GENITIVE, catalogOf, celsius, starClassOf, PROXIMA_INFO, fateOf } from "../web/learn.js";
+import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES, GENITIVE, catalogOf, celsius, starClassOf, PROXIMA_INFO, fateOf, PARTS } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -405,4 +405,10 @@ test("neutron stars and black holes: the visitor's star against a neutron star, 
   }
   const t = testQuestions("compact", you, "bg", 0);
   assert.equal(new Set(t.map((q) => q.id)).size, 10);
+});
+
+test("every learning path belongs to exactly one part of the plan, and every part has a title in every language", () => {
+  const all = PARTS.flatMap((p) => p.paths);
+  for (const path of Object.keys(PATHS)) assert.equal(all.filter((p) => p === path).length, 1, path);
+  for (const lang of LANGS) for (const part of PARTS) assert.ok(LEARN_TEXT[lang].parts[part.id]?.length > 3, `${lang} ${part.id}`);
 });
