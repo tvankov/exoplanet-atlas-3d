@@ -63,7 +63,9 @@ def star_id(lon, lat):
         key = f"x{unmatched}"
         stars[key] = [round(ra, 3), round(lat, 3), None, None, None, 0]
         return key
-    row = hip.iloc[i]
+    # A close pair (Alpha Centauri A and B are 15 arcseconds apart): the figure means the brighter star, not the one a little nearer to the end
+    close = hip_tree.query_ball_point(vec(np.array([ra]), np.array([lat]))[0], dist + chord(0.01))
+    row = min((hip.iloc[j] for j in close), key=lambda r: r.hp_mag)
     key = str(int(row.hip))
     if key not in stars:
         plx = max(float(row.plx), 0.3)

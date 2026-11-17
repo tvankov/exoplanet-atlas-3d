@@ -217,3 +217,17 @@ test("from a place to its step: the Solar System by name, the places of the step
   }
   for (const lang of LANGS) assert.ok(LEARN_TEXT[lang].placeLabel, lang);
 });
+
+test("the Centaur of path 2 is drawn through Alpha Centauri A, the bright star of the pair, with its name (not B, 15 arcseconds beside it)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const data = JSON.parse(readFileSync(new URL("../web/data/constellations.json", import.meta.url), "utf-8"));
+  const names = JSON.parse(readFileSync(new URL("../web/data/star-names.json", import.meta.url), "utf-8"));
+  const cen = data.constellations.find((c) => c.id === "Cen");
+  const ids = cen.lines.flat();
+  assert.ok(ids.includes("71683"), "Alpha Centauri A is in the figure");
+  assert.ok(!ids.includes("71681"), "B is not");
+  const [, , dist, mag] = data.stars["71683"];
+  assert.ok(mag < 0.5, `bright: ${mag}`);
+  assert.ok(dist > 4.2 && dist < 4.5, `about 4.3 light years: ${dist}`);
+  assert.equal(names["71683"], "Alpha Centauri A");
+});
