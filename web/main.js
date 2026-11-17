@@ -5833,6 +5833,11 @@ const learn = initLearn({
     star: myStar?.current() ?? null,
     birthYear: myStar?.current()?.year ?? null,
     // the path of the names: the planets round the visitor's star (or round Proxima), as the NASA table names them
+    // the path of the stars: the temperature (kelvin), radius (radii of the Sun) and type of a star, as the NASA table gives them
+    starInfo: (host) => {
+      const s = stars.find((x) => x.hostname === host);
+      return s ? { teff: s.teff_missing ? null : s.st_teff, rad: s.rad_missing ? null : s.st_rad, spec: s.st_spectype || null } : null;
+    },
     planetsOf: (host) => stars.find((s) => s.hostname === host)?.planets.map((p) => p.pl_name) ?? [],
     birthDate: storedBirthDate(), // the path of the constellations: the sign and the constellation of the Sun at the birth (only in this browser)
     figureInfo: (id) => {

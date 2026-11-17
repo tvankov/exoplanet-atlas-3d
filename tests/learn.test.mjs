@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES, GENITIVE, catalogOf } from "../web/learn.js";
+import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES, GENITIVE, catalogOf, celsius, starClassOf, PROXIMA_INFO } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -119,7 +119,7 @@ test("every step has 3 to 5 facts to remember in every language, and its sources
       assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
     }
     assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
-    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu|www\.iau\.org|heasarc\.gsfc\.nasa\.gov|starchild\.gsfc\.nasa\.gov|www\.jpl\.nasa\.gov|www\.cosmos\.esa\.int)\//, `${step}: ${src.url}`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|spaceplace\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu|www\.iau\.org|heasarc\.gsfc\.nasa\.gov|starchild\.gsfc\.nasa\.gov|www\.jpl\.nasa\.gov|www.cosmos.esa.int|imagine.gsfc.nasa.gov)\//, `${step}: ${src.url}`);
   }
 });
 
@@ -325,5 +325,28 @@ test("names in space: the visitor's star and its planets, the catalogue of its n
   }
   assert.equal(TASKS.nameGreek, "figure:Cen");
   const t = testQuestions("names", you, "bg", 0);
+  assert.equal(new Set(t.map((q) => q.id)).size, 10);
+});
+
+test("understanding stars: the temperature, size and class of the visitor's star from the table, and Proxima without a year of birth", () => {
+  assert.equal(celsius(2566), 2300);
+  assert.equal(celsius(5761), 5500);
+  assert.deepEqual(["K5", "M5.5 V", "G0 V", "", null, "DA"].map(starClassOf), ["K", "M", "G", null, null, null]);
+  const info = { "GJ 680": { teff: 3563, rad: 0.45933, spec: "K5" }, "HD 18438": { teff: 3860, rad: 88.475, spec: null } };
+  const of = (name) => personalNumbers({ age: 31.4, years: YEARS, star: { name, dist: 31.6, year: 1995 }, starInfo: (h) => info[h] ?? null });
+  assert.ok(personalLine("starColor", of("GJ 680"), "de").includes("etwa 3.300 °C heiß, kühler als die Sonne"));
+  assert.ok(personalLine("starClass", of("GJ 680"), "de").includes("Typ K5") && personalLine("starClass", of("GJ 680"), "de").includes("orange"));
+  assert.ok(personalLine("starSize", of("GJ 680"), "de").includes("etwa 46 % des Sonnenradius"));
+  assert.ok(personalLine("starSize", of("HD 18438"), "de").includes("88,5-mal so groß"));
+  assert.ok(personalLine("starHosts", of("GJ 680"), "de").includes("Orange Zwerge"));
+  assert.ok(personalLine("starClass", of("HD 18438"), "de").includes("keinen Typ"));
+  // without a year of birth: Proxima Centauri, with its values from the table
+  assert.ok(personalLine("starSize", nobody, "en").includes("Proxima Centauri has about 14 %"));
+  assert.ok(personalLine("starClass", nobody, "de").includes(PROXIMA_INFO.spec));
+  for (const lang of LANGS) for (const step of PATHS.stars.steps) for (const nums of [you, nobody, of("GJ 680"), of("HD 18438"), of("Nowhere")]) {
+    const line = personalLine(step, nums, lang);
+    assert.ok(line && !/undefined|null|NaN/.test(line), `${lang} ${step}: ${line}`);
+  }
+  const t = testQuestions("stars", you, "ja", 0);
   assert.equal(new Set(t.map((q) => q.id)).size, 10);
 });

@@ -166,6 +166,11 @@ export const BADGES = [
     ja: ["星座はかせ", "「星座と黄道十二宮」の最終テストに合格した"], bg: ["Познавач на съзвездията", "Издържа финалния тест на „Съзвездия и зодии“"],
   },
   {
+    id: "stars-scholar", count: (t) => (t.learnPaths?.includes("stars") ? 1 : 0), need: 1,
+    en: ["Star reader", "Passed the final test of Understanding stars"], de: ["Sternkenner", "Den Abschlusstest von „Sterne verstehen“ bestanden"],
+    ja: ["恒星はかせ", "「恒星を知る」の最終テストに合格した"], bg: ["Познавач на звездите", "Издържа финалния тест на „Да разберем звездите“"],
+  },
+  {
     id: "names-scholar", count: (t) => (t.learnPaths?.includes("names") ? 1 : 0), need: 1,
     en: ["Name reader", "Passed the final test of Names in space"], de: ["Namenleser", "Den Abschlusstest von „Namen im All“ bestanden"],
     ja: ["名前を読む人", "「宇宙の名前」の最終テストに合格した"], bg: ["Четец на имена", "Издържа финалния тест на „Имена в космоса“"],

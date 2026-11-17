@@ -465,6 +465,14 @@ const EMBLEM = {
     g.stroke();
     for (const [i, [x, y]] of stars.entries()) drawStar(g, r * x, r * y, r * (i === 2 ? 0.16 : 0.1), starColor(i === 2 ? 4000 : 9600));
   },
+  // understanding stars: the seven classes in a row, from a hot blue O star to a cool red M star
+  "stars-scholar": (g, r) => {
+    const temps = [30000, 15000, 9000, 6800, 5700, 4400, 3000];
+    for (const [i, t] of temps.entries()) {
+      const a = Math.PI * (0.85 + (i / 6) * 1.3); // along an arc over the medal
+      drawStar(g, r + Math.cos(a) * r * 0.5, r * 1.1 + Math.sin(a) * r * 0.5, r * (0.17 - i * 0.012), starColor(t));
+    }
+  },
   // names in space: a star with its capital A and a planet with its small b
   "names-scholar": async (g, r) => {
     drawStar(g, r * 0.72, r * 0.95, r * 0.36, starColor(5772));

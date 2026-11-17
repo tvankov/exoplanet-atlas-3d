@@ -21,6 +21,7 @@ export const PATHS = {
   hab: { steps: ["habWhat", "habZone", "habWater", "habAtmos", "habIngredients", "habExtreme", "habLife"], minutes: 35, testSize: 10, pass: 0.7 },
   zod: { steps: ["zodWhat", "zodPath", "zodShift", "zodScience", "zodLight"], minutes: 25, testSize: 10, pass: 0.7 },
   names: { steps: ["nameLetters", "nameStars", "nameGreek", "nameCatalog", "nameStories"], minutes: 25, testSize: 10, pass: 0.7 },
+  stars: { steps: ["starWhat", "starColor", "starClass", "starSize", "starHosts"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -31,6 +32,7 @@ export const TASKS = {
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
   zodWhat: "figure:birth", zodPath: "figure:Oph", zodShift: "figure:birthSign", zodScience: null, zodLight: "figure:birth",
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "figure:Cen", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
+  starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -42,8 +44,9 @@ export const VIEWS = {
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
   zodWhat: "Earth", zodPath: "Sun", zodShift: "Sun", zodScience: "Earth", zodLight: "Earth",
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "Earth", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
+  starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -222,6 +225,25 @@ export const SOURCES = {
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
   ],
+  starWhat: [
+    { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
+    { label: "NASA Imagine the Universe: Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/stars1.html" },
+    { label: "NASA Science: Sun Facts", url: "https://science.nasa.gov/sun/facts/" },
+  ],
+  starColor: [
+    { label: "NASA Science: Stars in an Exoplanet World", url: "https://science.nasa.gov/exoplanets/stars/" },
+    { label: "NASA Science: Sun Facts", url: "https://science.nasa.gov/sun/facts/" },
+  ],
+  starClass: [
+    { label: "NASA Science: Stars in an Exoplanet World", url: "https://science.nasa.gov/exoplanets/stars/" },
+  ],
+  starSize: [
+    { label: "NASA Science: Star Types", url: "https://science.nasa.gov/universe/stars/types/" },
+    { label: "NASA Science: Stars in an Exoplanet World", url: "https://science.nasa.gov/exoplanets/stars/" },
+  ],
+  starHosts: [
+    { label: "NASA Science: Stars in an Exoplanet World", url: "https://science.nasa.gov/exoplanets/stars/" },
+  ],
   nameLetters: [
     { label: "NASA Science: How do exoplanets get their names?", url: "https://science.nasa.gov/exoplanets/how-do-exoplanets-get-their-names/" },
   ],
@@ -333,8 +355,23 @@ export function personalNumbers(ctx) {
     ...exoNumbers(ctx, age),
     ...zodNumbers(ctx),
     ...nameNumbers(ctx, age),
+    ...starNumbers(ctx),
   };
 }
+// Understanding stars: the temperature, the radius and the spectral type of the visitor's star, from the NASA table of the map
+// (ctx.starInfo(host): { teff in kelvin, rad in radii of the Sun, spec }, main.js). Without a year of birth the sentences speak of Proxima
+// Centauri, with its values from the same table (PROXIMA_INFO).
+export const PROXIMA_INFO = { teff: 2900, rad: 0.141, spec: "M5.5 V" };
+const SUN_SURFACE_C = 5500; // NASA, Sun Facts: "a relatively cool 10,000 °F (5,500 °C)"
+function starNumbers(ctx) {
+  const name = ctx.age != null ? ctx.star?.name ?? null : null;
+  const info = name ? ctx.starInfo?.(name) ?? null : null;
+  return { starName: name, starTeff: info?.teff ?? null, starRad: info?.rad ?? null, starSpec: info?.spec ?? null };
+}
+// The class of a spectral type: its first letter (O, B, A, F, G, K, M), or null
+export const starClassOf = (spec) => /^[OBAFGKM]/.exec(spec ?? "")?.[0] ?? null;
+// A temperature in kelvin as degrees Celsius, rounded to hundreds (the table gives kelvin; 0 °C is 273.15 K)
+export const celsius = (k) => Math.round((k - 273.15) / 100) * 100;
 // Names in space: the name of the visitor's star ("Your star", from the year of birth) and the planets the NASA table knows round it
 // (ctx.planetsOf(host), main.js); without a year of birth Proxima Centauri. The light of Alpha Centauri A and B (4.37 light years, as in the
 // lines of the neighbourhood) and the year 51 Pegasi b was found (1995, NASA), against the visitor's age.
@@ -454,6 +491,12 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // Understanding stars
+  starWhat: [{ id: "starGas" }, { id: "starFusion" }, { id: "starGravity" }],
+  starColor: [{ id: "colorTemp" }, { id: "blueHot" }, { id: "sunTemp" }],
+  starClass: [{ id: "classOrder" }, { id: "sunClass" }, { id: "mColor" }],
+  starSize: [{ id: "commonStars" }, { id: "sunLike" }, { id: "proximaSize" }],
+  starHosts: [{ id: "orangeLife" }, { id: "redLong" }, { id: "bakedDry" }],
   // Names in space
   nameLetters: [{ id: "firstLetter" }, { id: "sameTime" }, { id: "letterOrder" }],
   nameStars: [{ id: "capitals" }, { id: "hostA" }, { id: "starOrPlanet" }],
@@ -517,6 +560,7 @@ export const LEARN_TEXT = {
       hab: { title: "The search for habitable worlds", goal: "You know what makes a planet possibly habitable, and why the habitable zone alone does not mean life." },
       zod: { title: "Constellations and zodiac signs", goal: "You can explain what a constellation is, why your zodiac sign and the sky disagree, and what the light of your constellation tells you." },
       names: { title: "Names in space", goal: "You can read the names of planets and stars: the letters, the Greek letters, the catalogues and the names with a story." },
+      stars: { title: "Understanding stars", goal: "You can explain what a star is, what its colour says, how stars are sorted, and which stars are good homes for planets." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -805,6 +849,87 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
         ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
+      },
+      starWhat: {
+        title: "What is a star?", goal: "You know what a star is and where its light comes from.",
+        text: [
+          "According to NASA stars are giant balls of hot gas, held together by their own gravity. The Sun is one of them: the star closest to us.",
+          "Deep in its core a star squeezes the nuclei of hydrogen atoms together to form helium. This fusion releases the energy that makes the star shine. The Sun has done this for about 4.6 billion years.",
+        ],
+        task: "Look at the Sun, the star closest to us.",
+        remember: [
+          "A star is a giant ball of hot gas, held together by its own gravity.",
+          "In its core hydrogen is fused into helium; that makes it shine.",
+          "The Sun is a star, the one closest to us.",
+        ],
+        you: (n) => `Since you were born the Earth has gone round the Sun ${n} times. All that time the Sun has fused hydrogen into helium in its core: that is its light.`,
+        ref: (n) => `In ${n} years the Earth goes round the Sun ${n} times. All that time the Sun fuses hydrogen into helium in its core: that is its light.`,
+      },
+      starColor: {
+        title: "Colour and temperature", goal: "You can tell from the colour of a star whether it is hot or cool.",
+        text: [
+          "According to NASA stars vary in colour because they vary in temperature: hotter stars look blue or white, cooler stars orange or red.",
+          "The surface of the Sun is about 5,500 °C. TRAPPIST-1 is much cooler: the NASA table of this map gives it 2,566 kelvin, about 2,300 °C. That is why it glows red.",
+        ],
+        task: "Look at TRAPPIST-1, a cool red star.",
+        remember: [
+          "The colour of a star shows its temperature.",
+          "Hot stars look blue or white, cool stars orange or red.",
+          "The surface of the Sun is about 5,500 °C.",
+        ],
+        you: (name, c, hotter) => `Your star ${name} is about ${c} °C on its surface, ${hotter ? "hotter" : "cooler"} than the Sun (about 5,500 °C).`,
+        ref: (name, c, hotter) => `${name} is about ${c} °C on its surface, ${hotter ? "hotter" : "cooler"} than the Sun (about 5,500 °C).`,
+        none: (name) => `The table gives no temperature for ${name}.`,
+      },
+      starClass: {
+        title: "The classes of stars", goal: "You can sort a star by its letter: O, B, A, F, G, K, M.",
+        text: [
+          "Astronomers sort stars into classes with letters, from the hottest to the coolest: O (blue), B (blue-white), A (white), F (yellow-white), G (yellow), K (orange) and M (red).",
+          "According to NASA the Sun is a G-type yellow dwarf. 51 Pegasi is a G star too: round it the first planet round a star like the Sun was found.",
+        ],
+        task: "Look at 51 Pegasi, a G star like the Sun.",
+        remember: [
+          "The classes from hot to cool: O, B, A, F, G, K, M.",
+          "O stars are blue, M stars red.",
+          "The Sun is a G star, a yellow dwarf.",
+        ],
+        colors: { O: "blue", B: "blue-white", A: "white", F: "yellow-white", G: "yellow", K: "orange", M: "red" },
+        you: (name, spec, color) => `Your star ${name} has the type ${spec} in the table: the first letter is its class, its colour ${color}.`,
+        ref: (name, spec, color) => `${name} has the type ${spec} in the table: the first letter is its class, its colour ${color}.`,
+        none: (name) => `The table gives no type for ${name}.`,
+      },
+      starSize: {
+        title: "Big and small", goal: "You know how different the sizes of stars are, and which stars are the most common.",
+        text: [
+          "Stars come in very different sizes. Proxima Centauri is a red dwarf: the NASA table of this map gives it 0.141 times the radius of the Sun, about a seventh. The biggest star of the map with a planet, HD 18438, is about 88 times as big as the Sun.",
+          "Red dwarfs are the most common stars. NASA gives their share of the stars of the Milky Way as about 73 % on one page and 75 % on another; stars like the Sun are only about 6 %.",
+        ],
+        task: "Look at Proxima Centauri, a small red dwarf.",
+        remember: [
+          "Stars have very different sizes, from small red dwarfs to giants.",
+          "About three quarters of the stars of the Milky Way are red dwarfs.",
+          "Only about 6 % are stars like the Sun.",
+        ],
+        you: (name, x, small) => (small ? `Your star ${name} has about ${x} % of the radius of the Sun.` : `Your star ${name} is about ${x} times as big as the Sun.`),
+        ref: (name, x, small) => (small ? `${name} has about ${x} % of the radius of the Sun.` : `${name} is about ${x} times as big as the Sun.`),
+        none: (name) => `The table gives no size for ${name}.`,
+      },
+      starHosts: {
+        title: "Stars as homes for planets", goal: "You know which stars NASA thinks are good homes for life.",
+        text: [
+          "According to NASA stars a little cooler than the Sun, the orange dwarfs of class K, are considered better for advanced life.",
+          "Red dwarfs (class M) live even longer: NASA gives more than 100 billion years. But planets in their habitable zone can be baked bone dry. TOI-700, an M star, has a planet in its zone all the same.",
+        ],
+        task: "Look at TOI-700, a red dwarf with a planet in its habitable zone.",
+        remember: [
+          "Orange dwarfs (class K) are considered good for advanced life.",
+          "Red dwarfs (class M) live longest, more than 100 billion years.",
+          "Planets in the zone of a red dwarf can be baked dry.",
+        ],
+        hint: { G: "It is similar to the Sun.", K: "According to NASA orange dwarfs like it are considered better for advanced life.", M: "Red dwarfs like it live very long, but planets in their zone can be baked dry." },
+        you: (name, cls, hint) => `Your star ${name} is a star of class ${cls}, and at least one planet goes round it. ${hint}`.trim(),
+        ref: (name, cls, hint) => `${name} is a star of class ${cls}, and two planets go round it. ${hint}`.trim(),
+        none: (name) => `The table gives no type for ${name}.`,
       },
       nameLetters: {
         title: "Planets get letters", goal: "You can read the name of an exoplanet: the star and a letter.",
@@ -1157,6 +1282,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
       kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
       rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
+      starGas: { q: "What is a star, according to NASA?", o: ["A giant ball of hot gas", "A big rock that shines", "A hole in the sky"], e: "A giant ball of hot gas, held together by its own gravity." },
+      starFusion: { q: "What happens in the core of a star?", o: ["Hydrogen is fused into helium", "Iron burns like coal", "Nothing, the light comes from the surface"], e: "Hydrogen nuclei are squeezed together into helium; that releases the energy of its light." },
+      starGravity: { q: "What holds a star together?", o: ["Its own gravity", "A hard shell", "The magnetic field of the Earth"], e: "Its own gravity." },
+      colorTemp: { q: "Why do stars have different colours?", o: ["Because they have different temperatures", "Because of their names", "Because some are made of glass"], e: "Because they have different temperatures." },
+      blueHot: { q: "Which stars are hotter?", o: ["Blue and white ones", "Red ones", "Orange ones"], e: "Blue and white stars are hotter, orange and red ones cooler." },
+      sunTemp: { q: "How hot is the surface of the Sun, according to NASA?", o: ["About 5,500 °C", "About 55 °C", "About 5.5 million °C"], e: "About 5,500 °C." },
+      classOrder: { q: "What is the order of the classes of stars, from hot to cool?", o: ["O, B, A, F, G, K, M", "A, B, C, D, E, F, G", "M, K, G, F, A, B, O"], e: "O, B, A, F, G, K, M." },
+      sunClass: { q: "Which class is the Sun?", o: ["G, a yellow dwarf", "M, a red dwarf", "O, a blue giant"], e: "G: a yellow dwarf." },
+      mColor: { q: "What colour are stars of class M?", o: ["Red", "Blue", "White"], e: "Red: M stars are the coolest." },
+      commonStars: { q: "Which stars are the most common in the Milky Way?", o: ["Red dwarfs", "Stars like the Sun", "Blue giants"], e: "Red dwarfs, about three quarters of all stars." },
+      sunLike: { q: "About how many stars of the Milky Way are like the Sun, according to NASA?", o: ["About 6 %", "About 60 %", "Every second one"], e: "Only about 6 %." },
+      proximaSize: { q: "How big is Proxima Centauri compared with the Sun?", o: ["About a seventh of its radius", "Twice as big", "Exactly as big"], e: "About a seventh: 0.141 times the radius of the Sun." },
+      orangeLife: { q: "Which stars does NASA consider better for advanced life?", o: ["Orange dwarfs of class K", "Blue giants of class O", "No star at all"], e: "Orange dwarfs of class K, a little cooler than the Sun." },
+      redLong: { q: "Which stars live the longest?", o: ["Red dwarfs, more than 100 billion years", "Blue giants", "Stars like the Sun"], e: "Red dwarfs: NASA gives more than 100 billion years." },
+      bakedDry: { q: "What can happen to planets in the habitable zone of a red dwarf?", o: ["They can be baked bone dry", "They turn into stars", "Nothing at all"], e: "They can be baked bone dry." },
       firstLetter: { q: "What is the first planet found round a star called?", o: ["The star's name with b", "The star's name with a", "The star's name with 1"], e: "b: the star itself is the undeclared A." },
       sameTime: { q: "Several planets of a star are found at the same time. Which one gets the b?", o: ["The one closest to the star", "The biggest", "The one farthest out"], e: "The one closest to the star." },
       letterOrder: { q: "What do the letters b, c, d follow?", o: ["The order of discovery", "The size of the planets", "Their colour"], e: "The order of discovery: Proxima d goes round closer than b, but was found later." },
@@ -1205,6 +1345,7 @@ export const LEARN_TEXT = {
       hab: { title: "Die Suche nach bewohnbaren Welten", goal: "Du weißt, was einen Planeten möglicherweise bewohnbar macht und warum die bewohnbare Zone allein noch kein Leben bedeutet." },
       zod: { title: "Sternbilder und Sternzeichen", goal: "Du kannst erklären, was ein Sternbild ist, warum dein Sternzeichen und der Himmel nicht übereinstimmen und was dir das Licht deines Sternbilds erzählt." },
       names: { title: "Namen im All", goal: "Du kannst die Namen von Planeten und Sternen lesen: die Buchstaben, die griechischen Buchstaben, die Kataloge und die Namen mit Geschichte." },
+      stars: { title: "Sterne verstehen", goal: "Du kannst erklären, was ein Stern ist, was seine Farbe verrät, wie man Sterne ordnet und welche Sterne gute Heimaten für Planeten sind." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -1491,6 +1632,87 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
         ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
+      },
+      starWhat: {
+        title: "Was ist ein Stern?", goal: "Du weißt, was ein Stern ist und woher sein Licht kommt.",
+        text: [
+          "Laut NASA sind Sterne riesige Kugeln aus heißem Gas, die von ihrer eigenen Schwerkraft zusammengehalten werden. Die Sonne ist einer davon: der Stern, der uns am nächsten ist.",
+          "Tief in seinem Kern presst ein Stern die Kerne von Wasserstoffatomen zu Helium zusammen. Diese Kernfusion setzt die Energie frei, mit der er leuchtet. Die Sonne tut das seit etwa 4,6 Milliarden Jahren.",
+        ],
+        task: "Sieh dir die Sonne an, den Stern, der uns am nächsten ist.",
+        remember: [
+          "Ein Stern ist eine riesige Kugel aus heißem Gas, von seiner eigenen Schwerkraft zusammengehalten.",
+          "In seinem Kern verschmilzt Wasserstoff zu Helium; davon leuchtet er.",
+          "Die Sonne ist ein Stern, der uns am nächsten.",
+        ],
+        you: (n) => `Seit deiner Geburt ist die Erde ${n}-mal um die Sonne gelaufen. Die ganze Zeit hat die Sonne in ihrem Kern Wasserstoff zu Helium verschmolzen: Das ist ihr Licht.`,
+        ref: (n) => `In ${n} Jahren läuft die Erde ${n}-mal um die Sonne. Die ganze Zeit verschmilzt die Sonne in ihrem Kern Wasserstoff zu Helium: Das ist ihr Licht.`,
+      },
+      starColor: {
+        title: "Farbe und Temperatur", goal: "Du kannst an der Farbe eines Sterns erkennen, ob er heiß oder kühl ist.",
+        text: [
+          "Laut NASA haben Sterne verschiedene Farben, weil sie verschieden heiß sind: Heißere Sterne sehen blau oder weiß aus, kühlere orange oder rot.",
+          "Die Oberfläche der Sonne ist etwa 5.500 °C heiß. TRAPPIST-1 ist viel kühler: Die NASA-Tabelle dieser Karte gibt 2.566 Kelvin an, etwa 2.300 °C. Darum leuchtet er rot.",
+        ],
+        task: "Sieh dir TRAPPIST-1 an, einen kühlen roten Stern.",
+        remember: [
+          "Die Farbe eines Sterns zeigt seine Temperatur.",
+          "Heiße Sterne sehen blau oder weiß aus, kühle orange oder rot.",
+          "Die Oberfläche der Sonne ist etwa 5.500 °C heiß.",
+        ],
+        you: (name, c, hotter) => `Dein Stern ${name} ist an der Oberfläche etwa ${c} °C heiß, ${hotter ? "heißer" : "kühler"} als die Sonne (etwa 5.500 °C).`,
+        ref: (name, c, hotter) => `${name} ist an der Oberfläche etwa ${c} °C heiß, ${hotter ? "heißer" : "kühler"} als die Sonne (etwa 5.500 °C).`,
+        none: (name) => `Für ${name} nennt die Tabelle keine Temperatur.`,
+      },
+      starClass: {
+        title: "Die Klassen der Sterne", goal: "Du kannst einen Stern nach seinem Buchstaben einordnen: O, B, A, F, G, K, M.",
+        text: [
+          "Die Astronomie ordnet Sterne in Klassen mit Buchstaben, vom heißesten zum kühlsten: O (blau), B (blauweiß), A (weiß), F (gelbweiß), G (gelb), K (orange) und M (rot).",
+          "Laut NASA ist die Sonne ein gelber Zwerg der Klasse G. Auch 51 Pegasi ist ein G-Stern: Um ihn wurde der erste Planet um einen sonnenähnlichen Stern gefunden.",
+        ],
+        task: "Sieh dir 51 Pegasi an, einen G-Stern wie die Sonne.",
+        remember: [
+          "Die Klassen von heiß nach kühl: O, B, A, F, G, K, M.",
+          "O-Sterne sind blau, M-Sterne rot.",
+          "Die Sonne ist ein G-Stern, ein gelber Zwerg.",
+        ],
+        colors: { O: "blau", B: "blauweiß", A: "weiß", F: "gelbweiß", G: "gelb", K: "orange", M: "rot" },
+        you: (name, spec, color) => `Dein Stern ${name} hat in der Tabelle den Typ ${spec}: Der erste Buchstabe ist seine Klasse, seine Farbe ${color}.`,
+        ref: (name, spec, color) => `${name} hat in der Tabelle den Typ ${spec}: Der erste Buchstabe ist seine Klasse, seine Farbe ${color}.`,
+        none: (name) => `Für ${name} nennt die Tabelle keinen Typ.`,
+      },
+      starSize: {
+        title: "Groß und klein", goal: "Du weißt, wie verschieden groß Sterne sind und welche am häufigsten sind.",
+        text: [
+          "Sterne sind sehr verschieden groß. Proxima Centauri ist ein roter Zwerg: Die NASA-Tabelle dieser Karte gibt ihm das 0,141-Fache des Sonnenradius, etwa ein Siebtel. Der größte Stern der Karte mit einem Planeten, HD 18438, ist etwa 88-mal so groß wie die Sonne.",
+          "Rote Zwerge sind die häufigsten Sterne. Ihren Anteil an den Sternen der Milchstraße gibt die NASA auf einer Seite mit etwa 73 %, auf einer anderen mit 75 % an; Sterne wie die Sonne sind nur etwa 6 %.",
+        ],
+        task: "Sieh dir Proxima Centauri an, einen kleinen roten Zwerg.",
+        remember: [
+          "Sterne sind sehr verschieden groß, von kleinen roten Zwergen bis zu Riesen.",
+          "Etwa drei Viertel der Sterne der Milchstraße sind rote Zwerge.",
+          "Nur etwa 6 % sind Sterne wie die Sonne.",
+        ],
+        you: (name, x, small) => (small ? `Dein Stern ${name} hat etwa ${x} % des Sonnenradius.` : `Dein Stern ${name} ist etwa ${x}-mal so groß wie die Sonne.`),
+        ref: (name, x, small) => (small ? `${name} hat etwa ${x} % des Sonnenradius.` : `${name} ist etwa ${x}-mal so groß wie die Sonne.`),
+        none: (name) => `Für ${name} nennt die Tabelle keine Größe.`,
+      },
+      starHosts: {
+        title: "Sterne als Heimat für Planeten", goal: "Du weißt, welche Sterne die NASA für gute Heimaten von Leben hält.",
+        text: [
+          "Laut NASA gelten Sterne, die etwas kühler sind als die Sonne, die orangen Zwerge der Klasse K, als besser für höheres Leben.",
+          "Rote Zwerge (Klasse M) leben noch länger: Die NASA nennt mehr als 100 Milliarden Jahre. Aber Planeten in ihrer bewohnbaren Zone können völlig austrocknen. Trotzdem hat TOI-700, ein M-Stern, einen Planeten in seiner Zone.",
+        ],
+        task: "Sieh dir TOI-700 an, einen roten Zwerg mit einem Planeten in der bewohnbaren Zone.",
+        remember: [
+          "Orange Zwerge (Klasse K) gelten als gut für höheres Leben.",
+          "Rote Zwerge (Klasse M) leben am längsten, mehr als 100 Milliarden Jahre.",
+          "Planeten in der Zone eines roten Zwergs können austrocknen.",
+        ],
+        hint: { G: "Er ist der Sonne ähnlich.", K: "Orange Zwerge wie er gelten laut NASA als besser für höheres Leben.", M: "Rote Zwerge wie er leben sehr lange, aber Planeten in ihrer Zone können austrocknen." },
+        you: (name, cls, hint) => `Dein Stern ${name} ist ein Stern der Klasse ${cls}, und mindestens ein Planet kreist um ihn. ${hint}`.trim(),
+        ref: (name, cls, hint) => `${name} ist ein Stern der Klasse ${cls}, und zwei Planeten kreisen um ihn. ${hint}`.trim(),
+        none: (name) => `Für ${name} nennt die Tabelle keinen Typ.`,
       },
       nameLetters: {
         title: "Planeten bekommen Buchstaben", goal: "Du kannst den Namen eines Exoplaneten lesen: Stern und Buchstabe.",
@@ -1843,6 +2065,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
       kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
       rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
+      starGas: { q: "Was ist ein Stern laut NASA?", o: ["Eine riesige Kugel aus heißem Gas", "Ein großer leuchtender Felsen", "Ein Loch im Himmel"], e: "Eine riesige Kugel aus heißem Gas, von ihrer eigenen Schwerkraft zusammengehalten." },
+      starFusion: { q: "Was passiert im Kern eines Sterns?", o: ["Wasserstoff verschmilzt zu Helium", "Eisen brennt wie Kohle", "Nichts, das Licht kommt von der Oberfläche"], e: "Wasserstoffkerne werden zu Helium zusammengepresst; das setzt die Energie seines Lichts frei." },
+      starGravity: { q: "Was hält einen Stern zusammen?", o: ["Seine eigene Schwerkraft", "Eine harte Schale", "Das Magnetfeld der Erde"], e: "Seine eigene Schwerkraft." },
+      colorTemp: { q: "Warum haben Sterne verschiedene Farben?", o: ["Weil sie verschieden heiß sind", "Wegen ihrer Namen", "Weil manche aus Glas sind"], e: "Weil sie verschieden heiß sind." },
+      blueHot: { q: "Welche Sterne sind heißer?", o: ["Blaue und weiße", "Rote", "Orange"], e: "Blaue und weiße Sterne sind heißer, orange und rote kühler." },
+      sunTemp: { q: "Wie heiß ist die Oberfläche der Sonne laut NASA?", o: ["Etwa 5.500 °C", "Etwa 55 °C", "Etwa 5,5 Millionen °C"], e: "Etwa 5.500 °C." },
+      classOrder: { q: "Wie lautet die Reihenfolge der Sternklassen von heiß nach kühl?", o: ["O, B, A, F, G, K, M", "A, B, C, D, E, F, G", "M, K, G, F, A, B, O"], e: "O, B, A, F, G, K, M." },
+      sunClass: { q: "Welche Klasse hat die Sonne?", o: ["G, ein gelber Zwerg", "M, ein roter Zwerg", "O, ein blauer Riese"], e: "G: ein gelber Zwerg." },
+      mColor: { q: "Welche Farbe haben Sterne der Klasse M?", o: ["Rot", "Blau", "Weiß"], e: "Rot: M-Sterne sind die kühlsten." },
+      commonStars: { q: "Welche Sterne sind in der Milchstraße am häufigsten?", o: ["Rote Zwerge", "Sterne wie die Sonne", "Blaue Riesen"], e: "Rote Zwerge, etwa drei Viertel aller Sterne." },
+      sunLike: { q: "Wie viele Sterne der Milchstraße sind laut NASA etwa wie die Sonne?", o: ["Etwa 6 %", "Etwa 60 %", "Jeder zweite"], e: "Nur etwa 6 %." },
+      proximaSize: { q: "Wie groß ist Proxima Centauri im Vergleich zur Sonne?", o: ["Etwa ein Siebtel ihres Radius", "Doppelt so groß", "Genau gleich groß"], e: "Etwa ein Siebtel: das 0,141-Fache des Sonnenradius." },
+      orangeLife: { q: "Welche Sterne hält die NASA für besser für höheres Leben?", o: ["Orange Zwerge der Klasse K", "Blaue Riesen der Klasse O", "Gar keine"], e: "Orange Zwerge der Klasse K, etwas kühler als die Sonne." },
+      redLong: { q: "Welche Sterne leben am längsten?", o: ["Rote Zwerge, mehr als 100 Milliarden Jahre", "Blaue Riesen", "Sterne wie die Sonne"], e: "Rote Zwerge: Die NASA nennt mehr als 100 Milliarden Jahre." },
+      bakedDry: { q: "Was kann Planeten in der bewohnbaren Zone eines roten Zwergs passieren?", o: ["Sie können völlig austrocknen", "Sie werden zu Sternen", "Gar nichts"], e: "Sie können völlig austrocknen." },
       firstLetter: { q: "Wie heißt der erste gefundene Planet eines Sterns?", o: ["Name des Sterns mit b", "Name des Sterns mit a", "Name des Sterns mit 1"], e: "b: Der Stern selbst ist das ungenannte A." },
       sameTime: { q: "Mehrere Planeten eines Sterns werden zur gleichen Zeit gefunden. Welcher bekommt das b?", o: ["Der dem Stern am nächsten ist", "Der größte", "Der äußerste"], e: "Der Planet, der dem Stern am nächsten ist." },
       letterOrder: { q: "Wonach richten sich die Buchstaben b, c, d?", o: ["Nach der Reihenfolge der Entdeckung", "Nach der Größe der Planeten", "Nach ihrer Farbe"], e: "Nach der Reihenfolge der Entdeckung: Proxima d kreist näher als b, wurde aber später gefunden." },
@@ -1891,6 +2128,7 @@ export const LEARN_TEXT = {
       hab: { title: "住める世界をさがして", goal: "惑星が住める可能性をもつ条件と、ハビタブルゾーンにあるだけでは生命を意味しない理由がわかります。" },
       zod: { title: "星座と黄道十二宮", goal: "星座とは何か、星占いの星座と実際の空がなぜずれるのか、そしてあなたの星座の光が何を語るのかを説明できます。" },
       names: { title: "宇宙の名前", goal: "惑星や恒星の名前が読めます。アルファベット、ギリシャ文字、カタログ、そして物語のある名前です。" },
+      stars: { title: "恒星を知る", goal: "恒星とは何か、色が何を語るか、恒星をどう分けるか、そしてどの恒星が惑星にとってよい家なのかを説明できます。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -2177,6 +2415,87 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
         ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
+      },
+      starWhat: {
+        title: "恒星とは？", goal: "恒星とは何か、その光がどこから来るのかを知っています。",
+        text: [
+          "NASAによると、恒星は熱いガスでできた巨大な球で、自分の重力でまとまっています。太陽もそのひとつで、私たちにいちばん近い恒星です。",
+          "恒星は中心の奥深くで、水素の原子核をおしつけてヘリウムにします。この核融合で出るエネルギーで、恒星は輝きます。太陽はこれを約46億年つづけています。",
+        ],
+        task: "私たちにいちばん近い恒星、太陽を見てみましょう。",
+        remember: [
+          "恒星は熱いガスの巨大な球で、自分の重力でまとまっています。",
+          "中心で水素がヘリウムに融合し、それで輝きます。",
+          "太陽は恒星で、私たちにいちばん近い恒星です。",
+        ],
+        you: (n) => `あなたが生まれてから、地球は太陽のまわりを${n}回まわりました。そのあいだずっと、太陽は中心で水素をヘリウムに融合してきました。それが太陽の光です。`,
+        ref: (n) => `${n}年で地球は太陽のまわりを${n}回まわります。そのあいだずっと、太陽は中心で水素をヘリウムに融合しています。それが太陽の光です。`,
+      },
+      starColor: {
+        title: "色と温度", goal: "恒星の色から、熱いか冷たいかがわかります。",
+        text: [
+          "NASAによると、恒星の色がちがうのは温度がちがうからです。熱い恒星は青や白に、冷たい恒星はオレンジや赤に見えます。",
+          "太陽の表面は約5,500 °Cです。TRAPPIST-1はずっと冷たく、この地図のNASAの表では2,566ケルビン、約2,300 °Cです。だから赤く光ります。",
+        ],
+        task: "冷たい赤い恒星、TRAPPIST-1を見てみましょう。",
+        remember: [
+          "恒星の色は、その温度を示します。",
+          "熱い恒星は青や白、冷たい恒星はオレンジや赤に見えます。",
+          "太陽の表面は約5,500 °Cです。",
+        ],
+        you: (name, c, hotter) => `あなたの星${name}の表面は約${c} °Cで、太陽（約5,500 °C）より${hotter ? "熱い" : "冷たい"}です。`,
+        ref: (name, c, hotter) => `${name}の表面は約${c} °Cで、太陽（約5,500 °C）より${hotter ? "熱い" : "冷たい"}です。`,
+        none: (name) => `表には${name}の温度がありません。`,
+      },
+      starClass: {
+        title: "恒星のクラス", goal: "恒星を文字で分けられます：O、B、A、F、G、K、M。",
+        text: [
+          "天文学では、恒星をいちばん熱いものから冷たいものへ、文字のクラスに分けます。O（青）、B（青白）、A（白）、F（黄白）、G（黄）、K（オレンジ）、M（赤）です。",
+          "NASAによると、太陽はGクラスの黄色わい星です。ペガスス座51番星もG型の恒星で、そのまわりで、太陽に似た恒星をまわる最初の惑星が見つかりました。",
+        ],
+        task: "太陽と同じG型の恒星、ペガスス座51番星を見てみましょう。",
+        remember: [
+          "熱い順のクラス：O、B、A、F、G、K、M。",
+          "O型の恒星は青く、M型は赤い。",
+          "太陽はG型の恒星、黄色わい星です。",
+        ],
+        colors: { O: "青", B: "青白", A: "白", F: "黄白", G: "黄", K: "オレンジ", M: "赤" },
+        you: (name, spec, color) => `表では、あなたの星${name}のタイプは${spec}です。最初の文字がクラスで、色は${color}です。`,
+        ref: (name, spec, color) => `表では、${name}のタイプは${spec}です。最初の文字がクラスで、色は${color}です。`,
+        none: (name) => `表には${name}のタイプがありません。`,
+      },
+      starSize: {
+        title: "大きい星、小さい星", goal: "恒星の大きさがどれほどちがうか、どの恒星がいちばん多いかを知っています。",
+        text: [
+          "恒星の大きさはさまざまです。プロキシマ・ケンタウリは赤色わい星で、この地図のNASAの表では太陽の半径の0.141倍、約7分の1です。惑星をもつ恒星で地図の中でいちばん大きいHD 18438は、太陽の約88倍の大きさです。",
+          "いちばん多いのは赤色わい星です。天の川銀河の恒星にしめる割合を、NASAはあるページで約73 %、別のページで75 %としています。太陽のような恒星は約6 %だけです。",
+        ],
+        task: "小さな赤色わい星、プロキシマ・ケンタウリを見てみましょう。",
+        remember: [
+          "恒星の大きさは、小さな赤色わい星から巨星までさまざまです。",
+          "天の川銀河の恒星の約4分の3は赤色わい星です。",
+          "太陽のような恒星は約6 %だけです。",
+        ],
+        you: (name, x, small) => (small ? `あなたの星${name}の半径は、太陽の約${x} %です。` : `あなたの星${name}は、太陽の約${x}倍の大きさです。`),
+        ref: (name, x, small) => (small ? `${name}の半径は、太陽の約${x} %です。` : `${name}は、太陽の約${x}倍の大きさです。`),
+        none: (name) => `表には${name}の大きさがありません。`,
+      },
+      starHosts: {
+        title: "惑星の家としての恒星", goal: "NASAが生命によい家と考える恒星を知っています。",
+        text: [
+          "NASAによると、太陽より少し冷たいK型のオレンジわい星は、高度な生命により向いていると考えられています。",
+          "赤色わい星（M型）はもっと長生きで、NASAは1000億年以上としています。でも、そのハビタブルゾーンの惑星はからからに干上がることがあります。それでもM型のTOI-700には、ゾーンの中に惑星があります。",
+        ],
+        task: "ハビタブルゾーンに惑星をもつ赤色わい星、TOI-700を見てみましょう。",
+        remember: [
+          "オレンジわい星（K型）は高度な生命に向いていると考えられています。",
+          "赤色わい星（M型）はいちばん長生きで、1000億年以上です。",
+          "赤色わい星のゾーンの惑星は干上がることがあります。",
+        ],
+        hint: { G: "太陽に似ています。", K: "NASAによると、このようなオレンジわい星は高度な生命により向いていると考えられています。", M: "このような赤色わい星はとても長生きですが、ゾーンの惑星は干上がることがあります。" },
+        you: (name, cls, hint) => `あなたの星${name}は${cls}型の恒星で、少なくとも1つの惑星がまわっています。${hint}`,
+        ref: (name, cls, hint) => `${name}は${cls}型の恒星で、2つの惑星がまわっています。${hint}`,
+        none: (name) => `表には${name}のタイプがありません。`,
       },
       nameLetters: {
         title: "惑星にはアルファベット", goal: "系外惑星の名前が読めます。恒星の名前とアルファベットです。",
@@ -2529,6 +2848,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
       kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
       rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
+      starGas: { q: "NASAによると、恒星とは何ですか？", o: ["熱いガスの巨大な球", "光る大きな岩", "空の穴"], e: "熱いガスの巨大な球で、自分の重力でまとまっています。" },
+      starFusion: { q: "恒星の中心では何が起きていますか？", o: ["水素がヘリウムに融合している", "鉄が石炭のように燃えている", "何も起きず、光は表面から来る"], e: "水素の原子核がおしつけられてヘリウムになり、光のエネルギーが出ます。" },
+      starGravity: { q: "恒星をまとめているものは何ですか？", o: ["自分の重力", "かたい殻", "地球の磁場"], e: "自分の重力です。" },
+      colorTemp: { q: "恒星の色がちがうのはなぜですか？", o: ["温度がちがうから", "名前のせい", "ガラスでできた星があるから"], e: "温度がちがうからです。" },
+      blueHot: { q: "熱いのはどの恒星ですか？", o: ["青や白の恒星", "赤い恒星", "オレンジの恒星"], e: "青や白の恒星が熱く、オレンジや赤の恒星は冷たいです。" },
+      sunTemp: { q: "NASAによると、太陽の表面は何度ですか？", o: ["約5,500 °C", "約55 °C", "約550万 °C"], e: "約5,500 °Cです。" },
+      classOrder: { q: "熱い順の恒星のクラスはどれですか？", o: ["O、B、A、F、G、K、M", "A、B、C、D、E、F、G", "M、K、G、F、A、B、O"], e: "O、B、A、F、G、K、Mです。" },
+      sunClass: { q: "太陽はどのクラスですか？", o: ["G、黄色わい星", "M、赤色わい星", "O、青色巨星"], e: "Gで、黄色わい星です。" },
+      mColor: { q: "M型の恒星は何色ですか？", o: ["赤", "青", "白"], e: "赤です。M型はいちばん冷たい恒星です。" },
+      commonStars: { q: "天の川銀河でいちばん多い恒星はどれですか？", o: ["赤色わい星", "太陽のような恒星", "青色巨星"], e: "赤色わい星で、すべての恒星の約4分の3です。" },
+      sunLike: { q: "NASAによると、天の川銀河の恒星のうち、太陽のような恒星はどれくらいですか？", o: ["約6 %", "約60 %", "2つに1つ"], e: "約6 %だけです。" },
+      proximaSize: { q: "プロキシマ・ケンタウリは太陽とくらべてどれくらいの大きさですか？", o: ["半径が約7分の1", "2倍", "まったく同じ"], e: "約7分の1、太陽の半径の0.141倍です。" },
+      orangeLife: { q: "NASAが高度な生命により向いていると考える恒星はどれですか？", o: ["K型のオレンジわい星", "O型の青色巨星", "どれもない"], e: "太陽より少し冷たい、K型のオレンジわい星です。" },
+      redLong: { q: "いちばん長生きなのはどの恒星ですか？", o: ["赤色わい星、1000億年以上", "青色巨星", "太陽のような恒星"], e: "赤色わい星です。NASAは1000億年以上としています。" },
+      bakedDry: { q: "赤色わい星のハビタブルゾーンの惑星には、何が起こることがありますか？", o: ["からからに干上がる", "恒星になる", "何も起こらない"], e: "からからに干上がることがあります。" },
       firstLetter: { q: "ある恒星のまわりで最初に見つかった惑星は、何と呼ばれますか？", o: ["恒星の名前＋b", "恒星の名前＋a", "恒星の名前＋1"], e: "bです。恒星そのものが書かれないAです。" },
       sameTime: { q: "ひとつの恒星の惑星がいくつか同時に見つかりました。bになるのはどれですか？", o: ["恒星にいちばん近い惑星", "いちばん大きい惑星", "いちばん外側の惑星"], e: "恒星にいちばん近い惑星です。" },
       letterOrder: { q: "b、c、dの文字は何の順番ですか？", o: ["見つかった順番", "惑星の大きさの順番", "色の順番"], e: "見つかった順番です。プロキシマdはbより近くを回っていますが、あとから見つかりました。" },
@@ -2577,6 +2911,7 @@ export const LEARN_TEXT = {
       hab: { title: "Търсенето на обитаеми светове", goal: "Знаеш какво прави една планета вероятно обитаема и защо самата обитаема зона още не означава живот." },
       zod: { title: "Съзвездия и зодии", goal: "Можеш да обясниш какво е съзвездие, защо зодията ти и небето не съвпадат и какво ти разказва светлината на твоето съзвездие." },
       names: { title: "Имена в космоса", goal: "Можеш да четеш имената на планети и звезди: буквите, гръцките букви, каталозите и имената с история." },
+      stars: { title: "Да разберем звездите", goal: "Можеш да обясниш какво е звезда, какво казва цветът ѝ, как се подреждат звездите и кои звезди са добър дом за планети." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -2863,6 +3198,87 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
+      },
+      starWhat: {
+        title: "Какво е звезда?", goal: "Знаеш какво е звезда и откъде идва светлината ѝ.",
+        text: [
+          "Според НАСА звездите са огромни кълба от горещ газ, които собствената им гравитация държи заедно. Слънцето е една от тях: най-близката до нас звезда.",
+          "Дълбоко в ядрото си звездата притиска ядрата на водородни атоми и образува хелий. Този ядрен синтез освобождава енергията, с която тя свети. Слънцето го прави от около 4,6 милиарда години.",
+        ],
+        task: "Разгледай Слънцето, най-близката до нас звезда.",
+        remember: [
+          "Звездата е огромно кълбо от горещ газ, държано заедно от собствената му гравитация.",
+          "В ядрото ѝ водородът се слива в хелий; от това тя свети.",
+          "Слънцето е звезда, най-близката до нас.",
+        ],
+        you: (n) => `От раждането ти Земята е обиколила Слънцето ${n} пъти. През цялото това време Слънцето е сливало водород в хелий в ядрото си: това е светлината му.`,
+        ref: (n) => `За ${n} години Земята обикаля Слънцето ${n} пъти. През цялото това време Слънцето слива водород в хелий в ядрото си: това е светлината му.`,
+      },
+      starColor: {
+        title: "Цвят и температура", goal: "Можеш да познаеш по цвета на звездата дали е гореща или хладна.",
+        text: [
+          "Според НАСА звездите имат различни цветове, защото са с различна температура: по-горещите изглеждат сини или бели, по-хладните оранжеви или червени.",
+          "Повърхността на Слънцето е около 5500 °C. TRAPPIST-1 е много по-хладна: таблицата на НАСА в тази карта ѝ дава 2566 келвина, около 2300 °C. Затова свети в червено.",
+        ],
+        task: "Разгледай TRAPPIST-1, хладна червена звезда.",
+        remember: [
+          "Цветът на звездата показва температурата ѝ.",
+          "Горещите звезди изглеждат сини или бели, хладните оранжеви или червени.",
+          "Повърхността на Слънцето е около 5500 °C.",
+        ],
+        you: (name, c, hotter) => `Твоята звезда ${name} е около ${c} °C на повърхността, ${hotter ? "по-гореща" : "по-хладна"} от Слънцето (около 5500 °C).`,
+        ref: (name, c, hotter) => `${name} е около ${c} °C на повърхността, ${hotter ? "по-гореща" : "по-хладна"} от Слънцето (около 5500 °C).`,
+        none: (name) => `Таблицата не дава температура за ${name}.`,
+      },
+      starClass: {
+        title: "Класовете на звездите", goal: "Можеш да подредиш звезда по буквата ѝ: O, B, A, F, G, K, M.",
+        text: [
+          "Астрономията подрежда звездите в класове с букви, от най-горещите към най-хладните: O (синя), B (синьо-бяла), A (бяла), F (жълто-бяла), G (жълта), K (оранжева) и M (червена).",
+          "Според НАСА Слънцето е жълто джудже от клас G. И 51 Пегас е звезда от клас G: около нея е открита първата планета около звезда като Слънцето.",
+        ],
+        task: "Разгледай 51 Пегас, звезда от клас G като Слънцето.",
+        remember: [
+          "Класовете от горещо към хладно: O, B, A, F, G, K, M.",
+          "Звездите O са сини, звездите M червени.",
+          "Слънцето е звезда от клас G, жълто джудже.",
+        ],
+        colors: { O: "синя", B: "синьо-бяла", A: "бяла", F: "жълто-бяла", G: "жълта", K: "оранжева", M: "червена" },
+        you: (name, spec, color) => `В таблицата твоята звезда ${name} е от тип ${spec}: първата буква е класът ѝ, цветът ѝ е ${color}.`,
+        ref: (name, spec, color) => `В таблицата ${name} е от тип ${spec}: първата буква е класът ѝ, цветът ѝ е ${color}.`,
+        none: (name) => `Таблицата не дава тип за ${name}.`,
+      },
+      starSize: {
+        title: "Големи и малки", goal: "Знаеш колко различни по размер са звездите и кои са най-чести.",
+        text: [
+          "Звездите са много различни по размер. Проксима Кентавър е червено джудже: таблицата на НАСА в тази карта ѝ дава 0,141 от радиуса на Слънцето, около една седма. Най-голямата звезда с планета в картата, HD 18438, е около 88 пъти по-голяма от Слънцето.",
+          "Червените джуджета са най-честите звезди. НАСА дава дела им сред звездите на Млечния път на една страница около 73 %, на друга 75 %; звездите като Слънцето са само около 6 %.",
+        ],
+        task: "Разгледай Проксима Кентавър, малко червено джудже.",
+        remember: [
+          "Звездите са много различни по размер, от малки червени джуджета до гиганти.",
+          "Около три четвърти от звездите на Млечния път са червени джуджета.",
+          "Само около 6 % са звезди като Слънцето.",
+        ],
+        you: (name, x, small) => (small ? `Твоята звезда ${name} има около ${x} % от радиуса на Слънцето.` : `Твоята звезда ${name} е около ${x} пъти по-голяма от Слънцето.`),
+        ref: (name, x, small) => (small ? `${name} има около ${x} % от радиуса на Слънцето.` : `${name} е около ${x} пъти по-голяма от Слънцето.`),
+        none: (name) => `Таблицата не дава размер за ${name}.`,
+      },
+      starHosts: {
+        title: "Звездите като дом за планети", goal: "Знаеш кои звезди НАСА смята за добър дом за живот.",
+        text: [
+          "Според НАСА звездите, малко по-хладни от Слънцето, оранжевите джуджета от клас K, се смятат за по-добри за развит живот.",
+          "Червените джуджета (клас M) живеят още по-дълго: НАСА дава над 100 милиарда години. Но планетите в обитаемата им зона може напълно да изсъхнат. Въпреки това TOI-700, звезда M, има планета в зоната си.",
+        ],
+        task: "Разгледай TOI-700, червено джудже с планета в обитаемата зона.",
+        remember: [
+          "Оранжевите джуджета (клас K) се смятат за добри за развит живот.",
+          "Червените джуджета (клас M) живеят най-дълго, над 100 милиарда години.",
+          "Планетите в зоната на червено джудже може да изсъхнат.",
+        ],
+        hint: { G: "Тя прилича на Слънцето.", K: "Според НАСА оранжеви джуджета като нея се смятат за по-добри за развит живот.", M: "Червени джуджета като нея живеят много дълго, но планетите в зоната им може да изсъхнат." },
+        you: (name, cls, hint) => `Твоята звезда ${name} е звезда от клас ${cls} и около нея обикаля поне една планета. ${hint}`.trim(),
+        ref: (name, cls, hint) => `${name} е звезда от клас ${cls} и около нея обикалят две планети. ${hint}`.trim(),
+        none: (name) => `Таблицата не дава тип за ${name}.`,
       },
       nameLetters: {
         title: "Планетите получават букви", goal: "Можеш да прочетеш името на екзопланета: звездата и една буква.",
@@ -3215,6 +3631,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
       kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
       rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
+      starGas: { q: "Какво е звезда според НАСА?", o: ["Огромно кълбо от горещ газ", "Голяма светеща скала", "Дупка в небето"], e: "Огромно кълбо от горещ газ, държано заедно от собствената си гравитация." },
+      starFusion: { q: "Какво става в ядрото на една звезда?", o: ["Водородът се слива в хелий", "Желязото гори като въглища", "Нищо, светлината идва от повърхността"], e: "Водородните ядра се притискат в хелий; това освобождава енергията на светлината ѝ." },
+      starGravity: { q: "Какво държи звездата заедно?", o: ["Собствената ѝ гравитация", "Твърда обвивка", "Магнитното поле на Земята"], e: "Собствената ѝ гравитация." },
+      colorTemp: { q: "Защо звездите имат различни цветове?", o: ["Защото са с различна температура", "Заради имената си", "Защото някои са от стъкло"], e: "Защото са с различна температура." },
+      blueHot: { q: "Кои звезди са по-горещи?", o: ["Сините и белите", "Червените", "Оранжевите"], e: "Сините и белите звезди са по-горещи, оранжевите и червените по-хладни." },
+      sunTemp: { q: "Колко гореща е повърхността на Слънцето според НАСА?", o: ["Около 5500 °C", "Около 55 °C", "Около 5,5 милиона °C"], e: "Около 5500 °C." },
+      classOrder: { q: "Какъв е редът на звездните класове от горещо към хладно?", o: ["O, B, A, F, G, K, M", "A, B, C, D, E, F, G", "M, K, G, F, A, B, O"], e: "O, B, A, F, G, K, M." },
+      sunClass: { q: "От кой клас е Слънцето?", o: ["G, жълто джудже", "M, червено джудже", "O, син гигант"], e: "G: жълто джудже." },
+      mColor: { q: "Какъв цвят са звездите от клас M?", o: ["Червени", "Сини", "Бели"], e: "Червени: звездите M са най-хладните." },
+      commonStars: { q: "Кои звезди са най-чести в Млечния път?", o: ["Червените джуджета", "Звездите като Слънцето", "Сините гиганти"], e: "Червените джуджета, около три четвърти от всички звезди." },
+      sunLike: { q: "Колко от звездите на Млечния път са като Слънцето според НАСА?", o: ["Около 6 %", "Около 60 %", "Всяка втора"], e: "Само около 6 %." },
+      proximaSize: { q: "Колко голяма е Проксима Кентавър в сравнение със Слънцето?", o: ["Около една седма от радиуса му", "Два пъти по-голяма", "Точно толкова голяма"], e: "Около една седма: 0,141 от радиуса на Слънцето." },
+      orangeLife: { q: "Кои звезди НАСА смята за по-добри за развит живот?", o: ["Оранжевите джуджета от клас K", "Сините гиганти от клас O", "Никои"], e: "Оранжевите джуджета от клас K, малко по-хладни от Слънцето." },
+      redLong: { q: "Кои звезди живеят най-дълго?", o: ["Червените джуджета, над 100 милиарда години", "Сините гиганти", "Звездите като Слънцето"], e: "Червените джуджета: НАСА дава над 100 милиарда години." },
+      bakedDry: { q: "Какво може да се случи с планетите в обитаемата зона на червено джудже?", o: ["Може напълно да изсъхнат", "Стават звезди", "Нищо"], e: "Може напълно да изсъхнат." },
       firstLetter: { q: "Как се казва първата открита планета около една звезда?", o: ["Името на звездата с b", "Името на звездата с a", "Името на звездата с 1"], e: "b: самата звезда е неизписаното A." },
       sameTime: { q: "Няколко планети на една звезда са открити едновременно. Коя получава b?", o: ["Най-близката до звездата", "Най-голямата", "Най-външната"], e: "Най-близката до звездата." },
       letterOrder: { q: "По какво се подреждат буквите b, c, d?", o: ["По реда на откриване", "По големината на планетите", "По цвета им"], e: "По реда на откриване: Проксима d обикаля по-близо от b, но е открита по-късно." },
@@ -3267,6 +3698,26 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  if (PATHS.stars.steps.includes(step)) {
+    if (step === "starWhat") return (nums.you ? s.you : s.ref)(fmt(nums.orbits));
+    // the visitor's star with its value from the table, or Proxima Centauri
+    const mine = nums.starName != null;
+    const info = mine ? { teff: nums.starTeff, rad: nums.starRad, spec: nums.starSpec } : PROXIMA_INFO;
+    const name = mine ? nums.starName : "Proxima Centauri";
+    const f = mine ? s.you : s.ref;
+    const cls = starClassOf(info.spec);
+    if (step === "starColor") {
+      if (info.teff == null) return s.none(name);
+      const c = celsius(info.teff);
+      return f(name, fmt(c), c > SUN_SURFACE_C);
+    }
+    if (step === "starClass") return cls ? f(name, info.spec, s.colors[cls]) : s.none(name);
+    if (step === "starSize") {
+      if (info.rad == null) return s.none(name);
+      return f(name, info.rad < 1 ? fmt(Math.round(info.rad * 100)) : fmt(info.rad, 1), info.rad < 1);
+    }
+    return cls ? f(name, cls, s.hint[cls] ?? "") : s.none(name);
+  }
   if (PATHS.names.steps.includes(step)) {
     if (step === "nameLetters") {
       const list = nums.namePlanets.join(", ");
@@ -3350,10 +3801,12 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
+  const STAR_PICTURE = { starWhat: 5772, starColor: 2566, starClass: 5761, starSize: 2900, starHosts: 3459 }; // the temperatures of the stars drawn
   const NAME_PICTURE = { nameLetters: 3050, nameStars: 5790, nameGreek: 9600, nameCatalog: 2566, nameStories: 5770 }; // the temperatures of the stars drawn
   const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
-    NAME_PICTURE[step] ? starCanvas(NAME_PICTURE[step], "uni-orb small star", 28)
+    STAR_PICTURE[step] ? starCanvas(STAR_PICTURE[step], "uni-orb small star", 28)
+    : NAME_PICTURE[step] ? starCanvas(NAME_PICTURE[step], "uni-orb small star", 28)
     : ZOD_PICTURE[step] ? starCanvas(ZOD_PICTURE[step], "uni-orb small star", 28)
     : ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
     : step === "proximaB" ? planetCanvas({ temp: 218 }, "uni-orb small", 28)
@@ -3438,6 +3891,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     path === "alpha" ? starCanvas(5790, `${cls} star`, size)
     : path === "zod" ? starCanvas(9600, `${cls} star`, size)
     : path === "names" ? starCanvas(3050, `${cls} star`, size)
+    : path === "stars" ? starCanvas(9000, `${cls} star`, size)
     : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);
