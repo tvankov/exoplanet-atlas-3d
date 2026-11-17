@@ -5870,9 +5870,32 @@ const learn = initLearn({
 });
 // The picture of a learning path or step, or of a place named in its text (learn.js): the camera flies there, My Universe stays open beside
 // it. A place is a name resolvePlace knows, "moon:<id>" or "view:neighborhood" (the lines of path 2).
+// Framed views of the Solar System for the steps of path 1: how far the camera stands from the Sun (map units), seen from the usual
+// direction. The orbits are squeezed (0.3 times the square root of the AU): Mercury 0.19, Mars 0.37, Neptune 1.64, Pluto 1.89.
+const SOLAR_VIEWS = { "view:sun": 0.32, "view:inner": 0.95, "view:outer": 3.0, "view:solar": 3.9 };
+// A view moved sideways so that its target sits in the middle of the free part of the screen, left of My Universe (on a wide screen the
+// picture stays centred on the window, see layoutView, and the panel would cover the right half of what a step shows)
+function besidePanel(view) {
+  const panel = document.getElementById("profile-panel");
+  const w = window.innerWidth;
+  if (panel.hidden || w <= 640) return view;
+  const left = panel.getBoundingClientRect().left;
+  if (left < w / 2 + 150) return view; // the panel reaches over the middle: layoutView centres the picture beside it already
+  const px = w / 2 - left / 2; // how far the middle of the free part lies left of the middle of the window
+  const forward = view.target.clone().sub(view.position);
+  const perPx = (2 * forward.length() * Math.tan((camera.fov * Math.PI) / 360)) / window.innerHeight;
+  const shift = forward.normalize().cross(camera.up).normalize().multiplyScalar(px * perPx);
+  return { position: view.position.clone().add(shift), target: view.target.clone().add(shift) };
+}
 function learnShow(where) {
   const view = showNeighborhood(where === "view:neighborhood");
   if (view) return flyToView(view);
+  if (SOLAR_VIEWS[where]) {
+    showPlace({ kind: "star", star: SUN_POINT }); // the Solar System in view and Earth chosen, as for the Sun
+    if (realScale) return;
+    const centre = solar.group.getWorldPosition(new THREE.Vector3());
+    return flyToView(besidePanel({ target: centre, position: centre.clone().add(VIEW_DIRECTION.clone().normalize().multiplyScalar(SOLAR_VIEWS[where])) }));
+  }
   if (where.startsWith("moon:")) {
     // a moon of the Solar System (a link in the text of a step)
     const id = where.slice(5);
