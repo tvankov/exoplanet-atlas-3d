@@ -2673,13 +2673,33 @@ function exoSystem(star) {
     const c = star.companion;
     const r = (drawnStarRadius(star.st_rad) * c.st_rad) / star.st_rad; // the real ratio of the two radii
     const body = starBody(c.color, c.hostname, r);
-    body.position.set(COMPANION_PLACE, 0, 0);
+    // in the real direction from the star, as the sky shows the pair (Hipparcos positions), at the drawn distance
+    body.position.copy(skyDirection(c).sub(skyDirection(star)).normalize().multiplyScalar(COMPANION_PLACE));
     body.add(starGlow(c.color, r * 7));
     const label = labelSprite(c.hostname);
     body.add(label);
     system.group.add(body);
     system.companion = body;
     system.viewDistance = Math.max(system.viewDistance, 1.8 * COMPANION_PLACE); // both in the picture
+  }
+  // the neighbour of the same star system (Proxima beside A and B, and the other way round): only one system is drawn at a time, so the
+  // other is marked with a ring and its name, in its direction, just outside the drawn system; a click flies there
+  const neighbour = NEIGHBOURS[star.hostname] && stars.find((s) => s.hostname === NEIGHBOURS[star.hostname].to);
+  if (neighbour && !real) {
+    const n = NEIGHBOURS[star.hostname];
+    const reach = 1.3 * Math.max(outer, star.companion ? COMPANION_PLACE : 0);
+    // the direction seen from above: its up and down part is shrunk, else the mark (from Proxima, A and B lie below) hides under the cards at
+    // the bottom of the screen
+    const dir = toMapPosition(neighbour, new THREE.Vector3()).sub(toMapPosition(star, new THREE.Vector3()));
+    dir.y *= 0.2;
+    const at = dir.normalize().multiplyScalar(reach);
+    const ring = greenRing();
+    ring.position.copy(at);
+    const label = labelSprite(`${n.label} · ${fmt(n.ly, 1)} ${UI[lang].lightYears}`);
+    label.position.copy(at);
+    system.group.add(ring, label);
+    system.neighbour = { star: neighbour, hit: ring, dir: dir.clone() };
+    system.viewDistance = Math.max(system.viewDistance, 1.9 * reach); // the mark in the picture too
   }
   system.star = star; // a click on one of its planets needs the star data for the story
   return system;
@@ -2811,10 +2831,16 @@ let activeExo = null; // the one exoplanet system that exists at a time
 // planets on one line. The ring follows the chosen planet while it moves.
 const VIEW_DIRECTION = new THREE.Vector3(0, 0.8, 0.6);
 
+// The usual view looks from above and from the front. A system with a marked neighbour is looked at from the side of the line to it, so that
+// the mark lies left or right of the star and not under the cards at the bottom of the screen.
+function viewDirectionOf(system) {
+  const d = system.neighbour?.dir;
+  return d ? new THREE.Vector3(d.z, 0, -d.x).normalize().multiplyScalar(0.6).setY(0.8) : VIEW_DIRECTION;
+}
 function flyTo({ star, system }) {
   const target = toMapPosition(star, new THREE.Vector3());
   system.group.position.copy(target);
-  startFlight(() => target, system.viewDistance);
+  startFlight(() => target, system.viewDistance, viewDirectionOf(system));
   ring.visible = true;
 }
 
@@ -3172,6 +3198,13 @@ canvas.addEventListener("pointerup", (e) => {
 
 function pickPlanet(x, y) {
   const systems = [solar, activeExo].filter((s) => s?.group.visible);
+  if (activeExo?.neighbour && activeExo.group.visible) {
+    raycaster.setFromCamera(new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1), camera);
+    if (raycaster.intersectObject(activeExo.neighbour.hit, false).length) {
+      track("neighbour-click");
+      return showPlace({ kind: "star", star: activeExo.neighbour.star });
+    }
+  }
   const moons = systems.flatMap((s) => s.bodies.flatMap((b) => (b.moons ?? []).map((moon) => ({ system: s, body: b, moon }))));
   const targets = [...systems.flatMap((s) => s.bodies.map((b) => b.hit)), ...moons.map((m) => m.moon.hit)];
   raycaster.setFromCamera(new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1), camera);
@@ -5084,7 +5117,7 @@ function showLoneStar(star) {
   }
   const target = toMapPosition(star, new THREE.Vector3());
   activeExo.group.position.copy(target);
-  startFlight(() => target, activeExo.viewDistance);
+  startFlight(() => target, activeExo.viewDistance, viewDirectionOf(activeExo));
 }
 
 // The camera cuts away everything closer than its near plane (0.01). A trip ends 1.5 radii from a planet that is 0.0135 wide
@@ -5394,6 +5427,20 @@ ALPHA_CEN[1].companion = ALPHA_CEN[0];
 // the two, with their distances (learn.js, neighborhoodText). On the map the two long lines lie close together and the green one is short:
 // that is the point, Proxima and the pair are one system, 0.2 light years apart, and both are more than 4 light years from us.
 let neighborhood = null;
+// a small green ring that keeps its size on the screen (a mark, not a body)
+function greenRing() {
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const g = c.getContext("2d");
+  g.strokeStyle = "#7cffb2";
+  g.lineWidth = 5;
+  g.beginPath();
+  g.arc(32, 32, 24, 0, Math.PI * 2);
+  g.stroke();
+  const ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), sizeAttenuation: false, depthTest: false, transparent: true }));
+  ring.scale.set(0.03, 0.03, 1);
+  return ring;
+}
 function showNeighborhood(on) {
   if (neighborhood) {
     scene.remove(neighborhood);
@@ -5429,18 +5476,8 @@ function showNeighborhood(on) {
   const pair = p.clone().add(ab).multiplyScalar(0.5);
   label(tx.system, pair.clone().add(new THREE.Vector3(0, 0.12, 0)));
   // a small green ring round Proxima and round A and B: from the side the green line between them is only a few pixels long
-  const ringCanvas = document.createElement("canvas");
-  ringCanvas.width = ringCanvas.height = 64;
-  const g = ringCanvas.getContext("2d");
-  g.strokeStyle = "#7cffb2";
-  g.lineWidth = 5;
-  g.beginPath();
-  g.arc(32, 32, 24, 0, Math.PI * 2);
-  g.stroke();
-  const ringMap = new THREE.CanvasTexture(ringCanvas);
   for (const at of [p, ab]) {
-    const ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringMap, sizeAttenuation: false, depthTest: false, transparent: true }));
-    ring.scale.set(0.03, 0.03, 1);
+    const ring = greenRing();
     ring.position.copy(at);
     group.add(ring);
   }
@@ -5457,6 +5494,20 @@ function showNeighborhood(on) {
   const shift = right.multiplyScalar(0.75).add(up.multiplyScalar(-0.35));
   return { position: position.add(shift), target: mid.add(shift) };
 }
+
+// The stars of one system that are drawn one at a time (see exoSystem): the other is marked. 0.2 light years between Proxima and A, B, worked
+// out from their positions (about 12,900 AU).
+const NEIGHBOURS = {
+  "Proxima Cen": { to: "Alpha Centauri A", label: "Alpha Centauri A, B", ly: 0.2 },
+  "Alpha Centauri A": { to: "Proxima Cen", label: "Proxima Centauri", ly: 0.2 },
+  "Alpha Centauri B": { to: "Proxima Cen", label: "Proxima Centauri", ly: 0.2 },
+};
+// The direction of a star on the sky as a direction of the map (the axes as in toMapPosition), from its right ascension and declination.
+const skyDirection = (s) => {
+  const ra = s.ra * DEG;
+  const dec = s.dec * DEG;
+  return new THREE.Vector3(Math.cos(dec) * Math.cos(ra), Math.sin(dec), -Math.cos(dec) * Math.sin(ra));
+};
 
 // Where the companion is drawn beside its star (map units): a picture place, not the distance. In reality the two are 11 to 35 times as far
 // apart as the Earth and the Sun, and they go round each other in about 80 years. The two sizes are in the real ratio (B has 71 % of the
