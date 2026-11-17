@@ -388,3 +388,21 @@ test("life and death of stars: the visitor's life against the Sun's, and the fat
   const t = testQuestions("life", you, "de", 0);
   assert.equal(new Set(t.map((q) => q.id)).size, 10);
 });
+
+test("neutron stars and black holes: the visitor's star against a neutron star, a pulsar's blinks, Sagittarius A* and the first image", () => {
+  const at = (y) => personalNumbers({ age: 2026 - y, years: YEARS, star: { name: "GJ 680", dist: 31, year: y }, birthYear: y, thisYear: 2026, starInfo: () => ({ mass: 0.456 }) });
+  const n = at(1995);
+  assert.ok(personalLine("nsWhat", n, "de").includes("0,46-Fache der Sonnenmasse"));
+  assert.ok(personalLine("nsPulsar", n, "de").includes("etwa 980.000.000-mal"));
+  assert.ok(personalLine("bhWhat", n, "de").includes("31 Lichtjahre"));
+  assert.ok(personalLine("bhCenter", n, "de").includes("rund 26.969 Jahre vor deiner Geburt"));
+  assert.ok(personalLine("bhImage", n, "de").includes("als du 24 Jahre alt warst"));
+  assert.ok(personalLine("bhImage", at(2019), "de").includes("im Jahr deiner Geburt"));
+  assert.ok(personalLine("bhImage", at(2021), "de").includes("2 Jahre vor deiner Geburt"));
+  for (const lang of LANGS) for (const step of PATHS.compact.steps) for (const nums of [you, nobody, n, at(2019)]) {
+    const line = personalLine(step, nums, lang);
+    assert.ok(line && !/undefined|null|NaN|-0/.test(line), `${lang} ${step}: ${line}`);
+  }
+  const t = testQuestions("compact", you, "bg", 0);
+  assert.equal(new Set(t.map((q) => q.id)).size, 10);
+});

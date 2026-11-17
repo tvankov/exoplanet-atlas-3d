@@ -166,6 +166,11 @@ export const BADGES = [
     ja: ["星座はかせ", "「星座と黄道十二宮」の最終テストに合格した"], bg: ["Познавач на съзвездията", "Издържа финалния тест на „Съзвездия и зодии“"],
   },
   {
+    id: "compact-scholar", count: (t) => (t.learnPaths?.includes("compact") ? 1 : 0), need: 1,
+    en: ["Gravity explorer", "Passed the final test of Neutron stars and black holes"], de: ["Schwerkraftforscher", "Den Abschlusstest von „Neutronensterne und Schwarze Löcher“ bestanden"],
+    ja: ["重力の探検家", "「中性子星とブラックホール」の最終テストに合格した"], bg: ["Изследовател на гравитацията", "Издържа финалния тест на „Неутронни звезди и черни дупки“"],
+  },
+  {
     id: "life-scholar", count: (t) => (t.learnPaths?.includes("life") ? 1 : 0), need: 1,
     en: ["Star chronicler", "Passed the final test of Life and death of stars"], de: ["Sternenchronist", "Den Abschlusstest von „Leben und Tod der Sterne“ bestanden"],
     ja: ["星の一生の語り手", "「星の一生と死」の最終テストに合格した"], bg: ["Летописец на звездите", "Издържа финалния тест на „Животът и смъртта на звездите“"],

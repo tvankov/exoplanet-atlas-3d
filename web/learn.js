@@ -24,6 +24,7 @@ export const PATHS = {
   stars: { steps: ["starWhat", "starColor", "starClass", "starSize", "starHosts"], minutes: 25, testSize: 10, pass: 0.7 },
   birth: { steps: ["birthCloud", "birthProto", "birthDisk", "birthCluster", "birthSun"], minutes: 25, testSize: 10, pass: 0.7 },
   life: { steps: ["lifeMain", "lifeMass", "lifeGiant", "lifeWhite", "lifeNova"], minutes: 25, testSize: 10, pass: 0.7 },
+  compact: { steps: ["nsWhat", "nsPulsar", "bhWhat", "bhCenter", "bhImage"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -37,6 +38,7 @@ export const TASKS = {
   starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
   birthCloud: "figure:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "figure:Tau", birthSun: "Sun",
   lifeMain: "Sun", lifeMass: "Proxima Cen", lifeGiant: "Sun", lifeWhite: "WD 1856+534", lifeNova: null,
+  nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: null, bhCenter: "figure:Sgr", bhImage: "figure:Vir",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -51,8 +53,9 @@ export const VIEWS = {
   starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
   birthCloud: "Earth", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "Earth", birthSun: "Sun",
   lifeMain: "Sun", lifeMass: "Proxima Cen", lifeGiant: "Sun", lifeWhite: "WD 1856+534", lifeNova: "Sun",
+  nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: "Earth", bhCenter: "Earth", bhImage: "Earth",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70", life: "Sun" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70", life: "Sun", compact: "PSR B1257+12" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -230,6 +233,27 @@ export const SOURCES = {
   exoStrange: [
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
+  ],
+  nsWhat: [
+    { label: "NASA Imagine the Universe: Neutron Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/neutron_stars1.html" },
+    { label: "NASA Science: Star Types", url: "https://science.nasa.gov/universe/stars/types/" },
+  ],
+  nsPulsar: [
+    { label: "NASA Imagine the Universe: Neutron Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/neutron_stars1.html" },
+    { label: "NASA Science: Exoplanet Catalog, PSR B1257+12 b", url: "https://science.nasa.gov/exoplanet-catalog/psr-b125712-b/" },
+  ],
+  bhWhat: [
+    { label: "NASA Science: Black Holes", url: "https://science.nasa.gov/universe/black-holes/" },
+    { label: "NASA Science: Black Hole Types", url: "https://science.nasa.gov/universe/black-holes/types/" },
+  ],
+  bhCenter: [
+    { label: "NASA Science: Black Hole Types", url: "https://science.nasa.gov/universe/black-holes/types/" },
+    { label: "NASA Science: Black Holes", url: "https://science.nasa.gov/universe/black-holes/" },
+    { label: "ESO: Astronomers reveal first image of the black hole at the heart of our galaxy (2022)", url: "https://www.eso.org/public/news/eso2208-eht-mw/" },
+  ],
+  bhImage: [
+    { label: "ESO: Astronomers Capture First Image of a Black Hole (2019)", url: "https://www.eso.org/public/news/eso1907/" },
+    { label: "ESO: Astronomers reveal first image of the black hole at the heart of our galaxy (2022)", url: "https://www.eso.org/public/news/eso2208-eht-mw/" },
   ],
   lifeMain: [
     { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
@@ -410,6 +434,22 @@ export function personalNumbers(ctx) {
     ...birthNumbers(ctx, age),
     sunYearSeconds: (age / SUN_MAIN_YEARS) * 365.25 * 86400, // the visitor's life if the Sun's 10 billion years were one year
     giantLives: twoDigits(SUN_GIANT_IN / Math.max(age, 1)),
+    ...compactNumbers(ctx, age),
+  };
+}
+// Neutron stars and black holes: the blinks of a pulsar that blinks once a second, over the visitor's life (worked out), the light of the
+// region of Sagittarius A* (about 27,000 light years, ESO) against the visitor's life, and the year of the first image of a black hole
+// (2019, ESO).
+const SGR_A_LY = 27000;
+const EHT_IMAGE = 2019;
+function compactNumbers(ctx, age) {
+  const thisYear = ctx.thisYear ?? new Date().getFullYear();
+  const born = ctx.age != null ? ctx.birthYear ?? thisYear - Math.floor(age) : null;
+  return {
+    pulsarBlinks: twoDigits(age * 365.25 * 86400),
+    sgrBefore: Math.round(SGR_A_LY - age),
+    ehtBefore: born != null ? born - EHT_IMAGE : null, // years the image was shown before the birth (below 0: at that age)
+    ehtAgo: thisYear - EHT_IMAGE,
   };
 }
 // Life and death of stars: about 10 billion years of the Sun on the main sequence (NASA Imagine), a red giant in about 5 billion years
@@ -576,6 +616,12 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // Neutron stars and black holes
+  nsWhat: [{ id: "nsForm" }, { id: "nsSize" }, { id: "nsSugar" }],
+  nsPulsar: [{ id: "pulsarWhat" }, { id: "lighthouse" }, { id: "pulseTime" }],
+  bhWhat: [{ id: "noLight" }, { id: "noVacuum" }, { id: "sunSwap" }],
+  bhCenter: [{ id: "smbh" }, { id: "sgrMass" }, { id: "sgrDist" }],
+  bhImage: [{ id: "firstImage" }, { id: "m87Dist" }, { id: "sgrImage" }],
   // Life and death of stars
   lifeMain: [{ id: "mainSequence" }, { id: "longestPhase" }, { id: "sunMidway" }],
   lifeMass: [{ id: "massFuel" }, { id: "massiveShort" }, { id: "lowMassLong" }],
@@ -660,6 +706,7 @@ export const LEARN_TEXT = {
       stars: { title: "Understanding stars", goal: "You can explain what a star is, what its colour says, how stars are sorted, and which stars are good homes for planets." },
       birth: { title: "The birth of stars", goal: "You can explain how a star is born from a cloud of gas and dust, how planets form round it, and how the Sun was born." },
       life: { title: "Life and death of stars", goal: "You can explain how a star lives, why its mass decides its life, and how stars end: as white dwarfs or in a supernova." },
+      compact: { title: "Neutron stars and black holes", goal: "You can explain what neutron stars, pulsars and black holes are, where the black hole of the Milky Way sits, and how it was photographed." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -948,6 +995,82 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
         ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
+      },
+      nsWhat: {
+        title: "Neutron stars", goal: "You know what a neutron star is and how dense it is.",
+        text: [
+          "According to NASA neutron stars form when a massive star runs out of fuel and collapses. They pack more mass than the Sun into a sphere only about 20 kilometres across.",
+          "Their material is unimaginably dense: according to NASA one sugar cube of it would weigh about 1 trillion kilograms. The map has neutron stars with planets, for example PSR B0329+54.",
+        ],
+        task: "Look at PSR B0329+54, a neutron star with a planet.",
+        remember: [
+          "A neutron star forms when a massive star runs out of fuel and collapses.",
+          "It packs more mass than the Sun into a sphere about 20 km across.",
+          "A sugar cube of its material would weigh about 1 trillion kilograms.",
+        ],
+        you: (name, m) => `Your star ${name} has ${m} times the mass of the Sun and is far bigger than a city. A neutron star packs more than a whole Sun into about 20 km.`,
+        ref: (name, m) => `${name} has ${m} times the mass of the Sun and is far bigger than a city. A neutron star packs more than a whole Sun into about 20 km.`,
+        none: () => "A neutron star packs more than a whole Sun into about 20 km.",
+      },
+      nsPulsar: {
+        title: "Pulsars", goal: "You know what a pulsar is and why it blinks.",
+        text: [
+          "According to NASA pulsars are rotating neutron stars that send out pulses of radiation. You can think of one like a lighthouse: its beam sweeps past us again and again. The time between the pulses is typically milliseconds to seconds.",
+          "Round the pulsar PSR B1257+12 planets were found; NASA counts them among the first to be discovered. The NASA table of this map gives 1992 for two of them and 1994 for the third.",
+        ],
+        task: "Look at PSR B1257+12, a pulsar with three planets.",
+        remember: [
+          "A pulsar is a rotating neutron star that sends out pulses of radiation.",
+          "It works like a lighthouse: its beam sweeps past us.",
+          "Its pulses come every few milliseconds to seconds.",
+        ],
+        you: (n) => `A pulsar that blinks once a second would have blinked about ${n} times since you were born. (Worked out.)`,
+        ref: (n) => `A pulsar that blinks once a second blinks about ${n} times in 30 years. (Worked out.)`,
+      },
+      bhWhat: {
+        title: "What is a black hole?", goal: "You know what a black hole is, and what it is not.",
+        text: [
+          "According to NASA a black hole's gravity is so strong that nothing, not even light, can escape. A star with more than eight times the mass of the Sun can leave one behind: its core collapses into a stellar-mass black hole.",
+          "But black holes are no cosmic vacuum cleaners: according to NASA they don't suck in other matter. If the Sun were replaced by a black hole of the same mass, the planets would stay in their orbits.",
+        ],
+        task: "There is no task in the 3D view for this step: a black hole cannot be seen. Answer the questions, then the step is done.",
+        remember: [
+          "From a black hole nothing escapes, not even light.",
+          "The core of a very heavy star can collapse into a black hole.",
+          "Black holes don't suck in matter; the planets would keep their orbits.",
+        ],
+        you: (ly) => `Light is so fast that in your life it has come ${ly} light years far. Out of a black hole it does not come.`,
+        ref: (ly) => `Light is so fast that in ${ly} years it comes ${ly} light years far. Out of a black hole it does not come.`,
+      },
+      bhCenter: {
+        title: "The black hole in our middle", goal: "You know the black hole at the centre of the Milky Way.",
+        text: [
+          "According to NASA supermassive black holes have hundreds of thousands to billions of times the mass of the Sun, and galaxies have one at their centre.",
+          "Ours is called Sagittarius A*. According to ESO it is four million times more massive than the Sun and about 27,000 light years away, in the direction of the constellation Sagittarius.",
+        ],
+        task: "Look at the constellation Sagittarius: in its direction lies the centre of the Milky Way.",
+        remember: [
+          "Supermassive black holes sit at the centres of galaxies.",
+          "Sagittarius A* is four million times more massive than the Sun.",
+          "It is about 27,000 light years away, towards Sagittarius.",
+        ],
+        you: (before) => `Light from the region of Sagittarius A* that arrives today is about 27,000 years on its way: it set off about ${before} years before you were born.`,
+        ref: () => "Light from the region of Sagittarius A* that arrives today is about 27,000 years on its way.",
+      },
+      bhImage: {
+        title: "The first image of a black hole", goal: "You know how black holes were photographed.",
+        text: [
+          "On 10 April 2019 the Event Horizon Telescope showed the first image of a black hole: the one in the galaxy M87, according to ESO 55 million light years away and 6.5 billion times the mass of the Sun. It shows a ring-like structure with a dark central region.",
+          "On 12 May 2022 followed the first image of Sagittarius A*, the black hole at the centre of our own Milky Way.",
+        ],
+        task: "Look at the constellation Virgo: in its direction lies the galaxy M87.",
+        remember: [
+          "The first image of a black hole was shown on 10 April 2019 (M87).",
+          "It shows a ring-like structure with a dark central region.",
+          "The image of Sagittarius A* followed on 12 May 2022.",
+        ],
+        you: (before, at) => (before != null ? `The first image of a black hole was shown in 2019, ${before} years before you were born.` : at === "0" ? "The first image of a black hole was shown in 2019, the year you were born." : `The first image of a black hole was shown in 2019, when you were ${at}.`),
+        ref: (ago) => `The first image of a black hole was shown in 2019, ${ago} years ago.`,
       },
       lifeMain: {
         title: "The main sequence", goal: "You know the longest phase in the life of a star.",
@@ -1534,6 +1657,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
       kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
       rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
+      nsForm: { q: "How does a neutron star form, according to NASA?", o: ["A massive star runs out of fuel and collapses", "Two planets collide", "A comet freezes"], e: "A massive star runs out of fuel and collapses." },
+      nsSize: { q: "About how big is a neutron star across?", o: ["About 20 km", "About as big as the Sun", "About 20 m"], e: "About 20 kilometres, with more mass than the Sun." },
+      nsSugar: { q: "How much would a sugar cube of neutron star material weigh, according to NASA?", o: ["About 1 trillion kilograms", "About one gram", "About one tonne"], e: "About 1 trillion kilograms." },
+      pulsarWhat: { q: "What is a pulsar?", o: ["A rotating neutron star that sends out pulses of radiation", "A planet that blinks", "A young star"], e: "A rotating neutron star that sends out pulses of radiation." },
+      lighthouse: { q: "What can you compare a pulsar with, according to NASA?", o: ["A lighthouse", "A candle", "A mirror"], e: "A lighthouse: its beam sweeps past us again and again." },
+      pulseTime: { q: "How much time lies between the pulses of a pulsar, typically?", o: ["Milliseconds to seconds", "Years", "Centuries"], e: "Typically milliseconds to seconds." },
+      noLight: { q: "What can escape from a black hole?", o: ["Nothing, not even light", "Only light", "Everything that is fast enough"], e: "Nothing, not even light." },
+      noVacuum: { q: "Do black holes suck in everything round them, according to NASA?", o: ["No, they don't suck in other matter", "Yes, like a vacuum cleaner", "Only planets"], e: "No: black holes don't suck in other matter." },
+      sunSwap: { q: "If the Sun were replaced by a black hole of the same mass, what would the planets do?", o: ["Stay in their orbits", "Fall in at once", "Fly away"], e: "They would stay in their orbits." },
+      smbh: { q: "How heavy are supermassive black holes, according to NASA?", o: ["Hundreds of thousands to billions of times the Sun", "As heavy as the Earth", "As heavy as the Moon"], e: "Hundreds of thousands to billions of times the mass of the Sun." },
+      sgrMass: { q: "How massive is Sagittarius A*, according to ESO?", o: ["Four million times the Sun", "As massive as the Sun", "Four times the Sun"], e: "Four million times more massive than the Sun." },
+      sgrDist: { q: "How far away is Sagittarius A*, according to ESO?", o: ["About 27,000 light years", "About 27 light years", "About 27 million light years"], e: "About 27,000 light years, in the direction of Sagittarius." },
+      firstImage: { q: "When was the first image of a black hole shown?", o: ["On 10 April 2019", "In 1969", "In 2001"], e: "On 10 April 2019: the black hole in M87." },
+      m87Dist: { q: "How far away is the black hole in M87, according to ESO?", o: ["55 million light years", "55 light years", "55 billion light years"], e: "55 million light years." },
+      sgrImage: { q: "When was the first image of Sagittarius A* shown?", o: ["On 12 May 2022", "On 10 April 2019", "In 1995"], e: "On 12 May 2022." },
       mainSequence: { q: "What does a star do on the main sequence?", o: ["It stably fuses hydrogen into helium", "It explodes", "It cools down slowly"], e: "It stably fuses hydrogen into helium in its core." },
       longestPhase: { q: "Which is the longest phase of a star's life?", o: ["The main sequence", "The red giant", "The supernova"], e: "The main sequence." },
       sunMidway: { q: "Where is the Sun in its life?", o: ["Roughly midway through its main sequence", "At its very end", "Just born"], e: "Roughly midway through its about 10 billion years on the main sequence." },
@@ -1630,6 +1768,7 @@ export const LEARN_TEXT = {
       stars: { title: "Sterne verstehen", goal: "Du kannst erklären, was ein Stern ist, was seine Farbe verrät, wie man Sterne ordnet und welche Sterne gute Heimaten für Planeten sind." },
       birth: { title: "Die Geburt der Sterne", goal: "Du kannst erklären, wie ein Stern aus einer Wolke aus Gas und Staub entsteht, wie um ihn Planeten wachsen und wie die Sonne entstand." },
       life: { title: "Leben und Tod der Sterne", goal: "Du kannst erklären, wie ein Stern lebt, warum seine Masse über sein Leben entscheidet und wie Sterne enden: als Weiße Zwerge oder in einer Supernova." },
+      compact: { title: "Neutronensterne und Schwarze Löcher", goal: "Du kannst erklären, was Neutronensterne, Pulsare und Schwarze Löcher sind, wo das Schwarze Loch der Milchstraße sitzt und wie es fotografiert wurde." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -1916,6 +2055,82 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
         ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
+      },
+      nsWhat: {
+        title: "Neutronensterne", goal: "Du weißt, was ein Neutronenstern ist und wie dicht er ist.",
+        text: [
+          "Laut NASA entstehen Neutronensterne, wenn einem massereichen Stern der Brennstoff ausgeht und er in sich zusammenstürzt. Sie packen mehr Masse als die Sonne in eine Kugel von nur etwa 20 Kilometern Durchmesser.",
+          "Ihr Material ist unvorstellbar dicht: Laut NASA wöge ein Würfelzucker davon etwa 1 Billion Kilogramm. Die Karte hat Neutronensterne mit Planeten, zum Beispiel PSR B0329+54.",
+        ],
+        task: "Sieh dir PSR B0329+54 an, einen Neutronenstern mit einem Planeten.",
+        remember: [
+          "Ein Neutronenstern entsteht, wenn einem massereichen Stern der Brennstoff ausgeht und er zusammenstürzt.",
+          "Er packt mehr Masse als die Sonne in eine Kugel von etwa 20 km.",
+          "Ein Würfelzucker seines Materials wöge etwa 1 Billion Kilogramm.",
+        ],
+        you: (name, m) => `Dein Stern ${name} hat das ${m}-Fache der Sonnenmasse und ist viel größer als eine Stadt. Ein Neutronenstern packt mehr als eine ganze Sonne in etwa 20 km.`,
+        ref: (name, m) => `${name} hat das ${m}-Fache der Sonnenmasse und ist viel größer als eine Stadt. Ein Neutronenstern packt mehr als eine ganze Sonne in etwa 20 km.`,
+        none: () => "Ein Neutronenstern packt mehr als eine ganze Sonne in etwa 20 km.",
+      },
+      nsPulsar: {
+        title: "Pulsare", goal: "Du weißt, was ein Pulsar ist und warum er blinkt.",
+        text: [
+          "Laut NASA sind Pulsare sich drehende Neutronensterne, die Strahlungspulse aussenden. Man kann sie sich wie einen Leuchtturm vorstellen: Ihr Strahl streicht immer wieder an uns vorbei. Zwischen den Pulsen liegen meist Millisekunden bis Sekunden.",
+          "Um den Pulsar PSR B1257+12 wurden Planeten gefunden; die NASA zählt sie zu den ersten entdeckten. Die NASA-Tabelle dieser Karte nennt für zwei von ihnen 1992, für den dritten 1994.",
+        ],
+        task: "Sieh dir PSR B1257+12 an, einen Pulsar mit drei Planeten.",
+        remember: [
+          "Ein Pulsar ist ein sich drehender Neutronenstern, der Strahlungspulse aussendet.",
+          "Er wirkt wie ein Leuchtturm: Sein Strahl streicht an uns vorbei.",
+          "Seine Pulse kommen alle paar Millisekunden bis Sekunden.",
+        ],
+        you: (n) => `Ein Pulsar, der einmal pro Sekunde blinkt, hätte seit deiner Geburt etwa ${n}-mal geblinkt. (Gerechnet.)`,
+        ref: (n) => `Ein Pulsar, der einmal pro Sekunde blinkt, blinkt in 30 Jahren etwa ${n}-mal. (Gerechnet.)`,
+      },
+      bhWhat: {
+        title: "Was ist ein Schwarzes Loch?", goal: "Du weißt, was ein Schwarzes Loch ist und was es nicht ist.",
+        text: [
+          "Laut NASA ist die Schwerkraft eines Schwarzen Lochs so stark, dass nichts entkommt, nicht einmal Licht. Ein Stern mit mehr als der achtfachen Sonnenmasse kann eines hinterlassen: Sein Kern stürzt zu einem stellaren Schwarzen Loch zusammen.",
+          "Aber Schwarze Löcher sind keine kosmischen Staubsauger: Laut NASA saugen sie keine andere Materie an. Würde man die Sonne durch ein Schwarzes Loch gleicher Masse ersetzen, blieben die Planeten auf ihren Bahnen.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht: Ein Schwarzes Loch kann man nicht sehen. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Aus einem Schwarzen Loch entkommt nichts, nicht einmal Licht.",
+          "Der Kern eines sehr schweren Sterns kann zu einem Schwarzen Loch zusammenstürzen.",
+          "Schwarze Löcher saugen keine Materie an; die Planeten blieben auf ihren Bahnen.",
+        ],
+        you: (ly) => `Licht ist so schnell, dass es in deinem Leben ${ly} Lichtjahre weit gekommen ist. Aus einem Schwarzen Loch kommt es nicht heraus.`,
+        ref: (ly) => `Licht ist so schnell, dass es in ${ly} Jahren ${ly} Lichtjahre weit kommt. Aus einem Schwarzen Loch kommt es nicht heraus.`,
+      },
+      bhCenter: {
+        title: "Das Schwarze Loch in unserer Mitte", goal: "Du kennst das Schwarze Loch im Zentrum der Milchstraße.",
+        text: [
+          "Laut NASA haben supermassereiche Schwarze Löcher das Hunderttausend- bis Milliardenfache der Sonnenmasse, und Galaxien haben eines in ihrem Zentrum.",
+          "Unseres heißt Sagittarius A*. Laut ESO ist es viermillionenmal massereicher als die Sonne und etwa 27.000 Lichtjahre entfernt, in Richtung des Sternbilds Schütze.",
+        ],
+        task: "Sieh dir das Sternbild Schütze an: In seiner Richtung liegt das Zentrum der Milchstraße.",
+        remember: [
+          "Supermassereiche Schwarze Löcher sitzen in den Zentren von Galaxien.",
+          "Sagittarius A* ist viermillionenmal massereicher als die Sonne.",
+          "Es ist etwa 27.000 Lichtjahre entfernt, in Richtung Schütze.",
+        ],
+        you: (before) => `Licht aus der Gegend von Sagittarius A*, das heute ankommt, ist etwa 27.000 Jahre unterwegs: Es flog rund ${before} Jahre vor deiner Geburt los.`,
+        ref: () => "Licht aus der Gegend von Sagittarius A*, das heute ankommt, ist etwa 27.000 Jahre unterwegs.",
+      },
+      bhImage: {
+        title: "Das erste Bild eines Schwarzen Lochs", goal: "Du weißt, wie Schwarze Löcher fotografiert wurden.",
+        text: [
+          "Am 10. April 2019 zeigte das Event Horizon Telescope das erste Bild eines Schwarzen Lochs: das in der Galaxie M87, laut ESO 55 Millionen Lichtjahre entfernt und 6,5 Milliarden Sonnenmassen schwer. Es zeigt eine ringartige Struktur mit einer dunklen Mitte.",
+          "Am 12. Mai 2022 folgte das erste Bild von Sagittarius A*, dem Schwarzen Loch im Zentrum unserer eigenen Milchstraße.",
+        ],
+        task: "Sieh dir das Sternbild Jungfrau an: In seiner Richtung liegt die Galaxie M87.",
+        remember: [
+          "Das erste Bild eines Schwarzen Lochs wurde am 10. April 2019 gezeigt (M87).",
+          "Es zeigt eine ringartige Struktur mit einer dunklen Mitte.",
+          "Das Bild von Sagittarius A* folgte am 12. Mai 2022.",
+        ],
+        you: (before, at) => (before != null ? `Das erste Bild eines Schwarzen Lochs wurde 2019 gezeigt, ${before} Jahre vor deiner Geburt.` : at === "0" ? "Das erste Bild eines Schwarzen Lochs wurde 2019 gezeigt, im Jahr deiner Geburt." : `Das erste Bild eines Schwarzen Lochs wurde 2019 gezeigt, als du ${at} Jahre alt warst.`),
+        ref: (ago) => `Das erste Bild eines Schwarzen Lochs wurde 2019 gezeigt, vor ${ago} Jahren.`,
       },
       lifeMain: {
         title: "Die Hauptreihe", goal: "Du kennst die längste Phase im Leben eines Sterns.",
@@ -2502,6 +2717,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
       kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
       rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
+      nsForm: { q: "Wie entsteht laut NASA ein Neutronenstern?", o: ["Einem massereichen Stern geht der Brennstoff aus und er stürzt zusammen", "Zwei Planeten stoßen zusammen", "Ein Komet gefriert"], e: "Einem massereichen Stern geht der Brennstoff aus, und er stürzt zusammen." },
+      nsSize: { q: "Wie groß ist ein Neutronenstern etwa im Durchmesser?", o: ["Etwa 20 km", "Etwa so groß wie die Sonne", "Etwa 20 m"], e: "Etwa 20 Kilometer, mit mehr Masse als die Sonne." },
+      nsSugar: { q: "Wie schwer wäre laut NASA ein Würfelzucker Neutronenstern-Material?", o: ["Etwa 1 Billion Kilogramm", "Etwa ein Gramm", "Etwa eine Tonne"], e: "Etwa 1 Billion Kilogramm." },
+      pulsarWhat: { q: "Was ist ein Pulsar?", o: ["Ein sich drehender Neutronenstern, der Strahlungspulse aussendet", "Ein blinkender Planet", "Ein junger Stern"], e: "Ein sich drehender Neutronenstern, der Strahlungspulse aussendet." },
+      lighthouse: { q: "Womit kann man einen Pulsar laut NASA vergleichen?", o: ["Mit einem Leuchtturm", "Mit einer Kerze", "Mit einem Spiegel"], e: "Mit einem Leuchtturm: Sein Strahl streicht immer wieder an uns vorbei." },
+      pulseTime: { q: "Wie viel Zeit liegt meist zwischen den Pulsen eines Pulsars?", o: ["Millisekunden bis Sekunden", "Jahre", "Jahrhunderte"], e: "Meist Millisekunden bis Sekunden." },
+      noLight: { q: "Was kann einem Schwarzen Loch entkommen?", o: ["Nichts, nicht einmal Licht", "Nur Licht", "Alles, was schnell genug ist"], e: "Nichts, nicht einmal Licht." },
+      noVacuum: { q: "Saugen Schwarze Löcher laut NASA alles um sich herum an?", o: ["Nein, sie saugen keine andere Materie an", "Ja, wie ein Staubsauger", "Nur Planeten"], e: "Nein: Schwarze Löcher saugen keine andere Materie an." },
+      sunSwap: { q: "Würde man die Sonne durch ein Schwarzes Loch gleicher Masse ersetzen, was täten die Planeten?", o: ["Sie blieben auf ihren Bahnen", "Sie fielen sofort hinein", "Sie flögen davon"], e: "Sie blieben auf ihren Bahnen." },
+      smbh: { q: "Wie schwer sind supermassereiche Schwarze Löcher laut NASA?", o: ["Hunderttausend- bis milliardenfach die Sonne", "So schwer wie die Erde", "So schwer wie der Mond"], e: "Das Hunderttausend- bis Milliardenfache der Sonnenmasse." },
+      sgrMass: { q: "Wie massereich ist Sagittarius A* laut ESO?", o: ["Viermillionenmal die Sonne", "So massereich wie die Sonne", "Viermal die Sonne"], e: "Viermillionenmal massereicher als die Sonne." },
+      sgrDist: { q: "Wie weit ist Sagittarius A* laut ESO entfernt?", o: ["Etwa 27.000 Lichtjahre", "Etwa 27 Lichtjahre", "Etwa 27 Millionen Lichtjahre"], e: "Etwa 27.000 Lichtjahre, in Richtung Schütze." },
+      firstImage: { q: "Wann wurde das erste Bild eines Schwarzen Lochs gezeigt?", o: ["Am 10. April 2019", "1969", "2001"], e: "Am 10. April 2019: das Schwarze Loch in M87." },
+      m87Dist: { q: "Wie weit ist das Schwarze Loch in M87 laut ESO entfernt?", o: ["55 Millionen Lichtjahre", "55 Lichtjahre", "55 Milliarden Lichtjahre"], e: "55 Millionen Lichtjahre." },
+      sgrImage: { q: "Wann wurde das erste Bild von Sagittarius A* gezeigt?", o: ["Am 12. Mai 2022", "Am 10. April 2019", "1995"], e: "Am 12. Mai 2022." },
       mainSequence: { q: "Was macht ein Stern auf der Hauptreihe?", o: ["Er verschmilzt gleichmäßig Wasserstoff zu Helium", "Er explodiert", "Er kühlt langsam ab"], e: "Er verschmilzt in seinem Kern gleichmäßig Wasserstoff zu Helium." },
       longestPhase: { q: "Welches ist die längste Phase im Leben eines Sterns?", o: ["Die Hauptreihe", "Der Rote Riese", "Die Supernova"], e: "Die Hauptreihe." },
       sunMidway: { q: "Wo steht die Sonne in ihrem Leben?", o: ["Etwa in der Mitte ihrer Hauptreihe", "Ganz am Ende", "Gerade geboren"], e: "Etwa in der Mitte ihrer rund 10 Milliarden Jahre auf der Hauptreihe." },
@@ -2598,6 +2828,7 @@ export const LEARN_TEXT = {
       stars: { title: "恒星を知る", goal: "恒星とは何か、色が何を語るか、恒星をどう分けるか、そしてどの恒星が惑星にとってよい家なのかを説明できます。" },
       birth: { title: "星の誕生", goal: "ガスとちりの雲から恒星がどう生まれ、そのまわりで惑星がどう育ち、太陽がどう生まれたのかを説明できます。" },
       life: { title: "星の一生と死", goal: "恒星がどう生き、なぜ質量が一生を決め、恒星がどう終わるのか（白色わい星か超新星か）を説明できます。" },
+      compact: { title: "中性子星とブラックホール", goal: "中性子星、パルサー、ブラックホールとは何か、天の川銀河のブラックホールがどこにあり、どう撮影されたのかを説明できます。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -2884,6 +3115,82 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
         ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
+      },
+      nsWhat: {
+        title: "中性子星", goal: "中性子星とは何か、どれほど密度が高いかを知っています。",
+        text: [
+          "NASAによると、中性子星は、重い恒星の燃料がつきてつぶれたときにできます。太陽より大きな質量を、直径わずか約20キロメートルの球におしこめています。",
+          "その物質は想像できないほど密度が高く、NASAによると角砂糖1個分で約1兆キログラムになります。地図には惑星をもつ中性子星があり、たとえばPSR B0329+54です。",
+        ],
+        task: "惑星をもつ中性子星、PSR B0329+54を見てみましょう。",
+        remember: [
+          "中性子星は、重い恒星の燃料がつきてつぶれたときにできます。",
+          "太陽より大きな質量を、直径約20 kmの球におしこめています。",
+          "その物質は角砂糖1個分で約1兆キログラムになります。",
+        ],
+        you: (name, m) => `あなたの星${name}の質量は太陽の${m}倍で、都市よりずっと大きな星です。中性子星は、太陽まるごとより多くの質量を約20 kmにおしこめています。`,
+        ref: (name, m) => `${name}の質量は太陽の${m}倍で、都市よりずっと大きな星です。中性子星は、太陽まるごとより多くの質量を約20 kmにおしこめています。`,
+        none: () => "中性子星は、太陽まるごとより多くの質量を約20 kmにおしこめています。",
+      },
+      nsPulsar: {
+        title: "パルサー", goal: "パルサーとは何か、なぜ点滅するのかを知っています。",
+        text: [
+          "NASAによると、パルサーは放射のパルスを出しながら回転する中性子星です。灯台のようなもので、その光線が何度も私たちの前を通りすぎます。パルスの間隔はふつう数ミリ秒から数秒です。",
+          "パルサーPSR B1257+12のまわりでは惑星が見つかり、NASAはそれを最初に発見された惑星の仲間としています。この地図のNASAの表では、2つが1992年、3つめが1994年です。",
+        ],
+        task: "3つの惑星をもつパルサー、PSR B1257+12を見てみましょう。",
+        remember: [
+          "パルサーは、放射のパルスを出す回転する中性子星です。",
+          "灯台のように、その光線が私たちの前を通りすぎます。",
+          "パルスは数ミリ秒から数秒ごとに来ます。",
+        ],
+        you: (n) => `1秒に1回点滅するパルサーなら、あなたが生まれてから約${n}回点滅したことになります。（計算）`,
+        ref: (n) => `1秒に1回点滅するパルサーは、30年で約${n}回点滅します。（計算）`,
+      },
+      bhWhat: {
+        title: "ブラックホールとは？", goal: "ブラックホールとは何か、そして何でないかを知っています。",
+        text: [
+          "NASAによると、ブラックホールの重力はとても強く、何も、光さえも逃げられません。太陽の8倍をこえる質量の恒星は、ブラックホールを残すことがあります。中心がつぶれて恒星質量ブラックホールになるのです。",
+          "でもブラックホールは宇宙の掃除機ではありません。NASAによると、ほかの物質を吸いこむわけではありません。太陽を同じ質量のブラックホールにおきかえても、惑星は軌道を回りつづけます。",
+        ],
+        task: "このステップには3Dのタスクはありません。ブラックホールは見えないからです。質問に答えれば完了です。",
+        remember: [
+          "ブラックホールからは何も、光さえも逃げられません。",
+          "とても重い恒星の中心は、つぶれてブラックホールになることがあります。",
+          "ブラックホールは物質を吸いこみません。惑星は軌道を回りつづけます。",
+        ],
+        you: (ly) => `光はとても速く、あなたの人生のあいだに${ly}光年進みました。それでもブラックホールからは出られません。`,
+        ref: (ly) => `光はとても速く、${ly}年で${ly}光年進みます。それでもブラックホールからは出られません。`,
+      },
+      bhCenter: {
+        title: "天の川銀河の中心のブラックホール", goal: "天の川銀河の中心にあるブラックホールを知っています。",
+        text: [
+          "NASAによると、超大質量ブラックホールは太陽の数十万倍から数十億倍の質量をもち、銀河の中心にあります。",
+          "私たちの銀河のものはいて座A*とよばれます。ESOによると、太陽の400万倍の質量で、約27,000光年はなれ、いて座の方向にあります。",
+        ],
+        task: "いて座を見てみましょう。その方向に天の川銀河の中心があります。",
+        remember: [
+          "超大質量ブラックホールは銀河の中心にあります。",
+          "いて座A*は太陽の400万倍の質量です。",
+          "約27,000光年はなれた、いて座の方向にあります。",
+        ],
+        you: (before) => `今日とどく、いて座A*のあたりからの光は約27,000年かけて来ました。あなたが生まれる約${before}年前に出発した光です。`,
+        ref: () => "今日とどく、いて座A*のあたりからの光は約27,000年かけて来ました。",
+      },
+      bhImage: {
+        title: "はじめてのブラックホールの画像", goal: "ブラックホールがどう撮影されたのかを知っています。",
+        text: [
+          "2019年4月10日、イベント・ホライズン・テレスコープが、はじめてのブラックホールの画像を発表しました。銀河M87のブラックホールで、ESOによると5500万光年はなれ、太陽の65億倍の質量です。画像には、暗い中心をもつ輪のような構造が写っています。",
+          "2022年5月12日には、私たちの天の川銀河の中心のブラックホール、いて座A*のはじめての画像がつづきました。",
+        ],
+        task: "おとめ座を見てみましょう。その方向に銀河M87があります。",
+        remember: [
+          "はじめてのブラックホールの画像は2019年4月10日に発表されました（M87）。",
+          "暗い中心をもつ輪のような構造が写っています。",
+          "いて座A*の画像は2022年5月12日につづきました。",
+        ],
+        you: (before, at) => (before != null ? `はじめてのブラックホールの画像は2019年、あなたが生まれる${before}年前に発表されました。` : at === "0" ? "はじめてのブラックホールの画像は2019年、あなたが生まれた年に発表されました。" : `はじめてのブラックホールの画像は2019年、あなたが${at}歳のときに発表されました。`),
+        ref: (ago) => `はじめてのブラックホールの画像は2019年、いまから${ago}年前に発表されました。`,
       },
       lifeMain: {
         title: "主系列", goal: "恒星の一生でいちばん長い時期を知っています。",
@@ -3470,6 +3777,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
       kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
       rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
+      nsForm: { q: "NASAによると、中性子星はどうやってできますか？", o: ["重い恒星の燃料がつきてつぶれる", "2つの惑星がぶつかる", "彗星がこおる"], e: "重い恒星の燃料がつきてつぶれたときにできます。" },
+      nsSize: { q: "中性子星の直径はどれくらいですか？", o: ["約20 km", "太陽くらい", "約20 m"], e: "約20キロメートルで、太陽より大きな質量をもっています。" },
+      nsSugar: { q: "NASAによると、中性子星の物質角砂糖1個分の重さは？", o: ["約1兆キログラム", "約1グラム", "約1トン"], e: "約1兆キログラムです。" },
+      pulsarWhat: { q: "パルサーとは何ですか？", o: ["放射のパルスを出す回転する中性子星", "点滅する惑星", "若い恒星"], e: "放射のパルスを出す回転する中性子星です。" },
+      lighthouse: { q: "NASAによると、パルサーは何にたとえられますか？", o: ["灯台", "ろうそく", "鏡"], e: "灯台です。その光線が何度も私たちの前を通りすぎます。" },
+      pulseTime: { q: "パルサーのパルスの間隔はふつうどれくらいですか？", o: ["数ミリ秒から数秒", "数年", "数百年"], e: "ふつう数ミリ秒から数秒です。" },
+      noLight: { q: "ブラックホールから逃げられるものは何ですか？", o: ["何もない、光さえも", "光だけ", "速いものなら何でも"], e: "何もありません。光さえも逃げられません。" },
+      noVacuum: { q: "NASAによると、ブラックホールはまわりのものを何でも吸いこみますか？", o: ["いいえ、ほかの物質を吸いこむわけではない", "はい、掃除機のように", "惑星だけ"], e: "いいえ。ブラックホールはほかの物質を吸いこむわけではありません。" },
+      sunSwap: { q: "太陽を同じ質量のブラックホールにおきかえたら、惑星はどうなりますか？", o: ["軌道を回りつづける", "すぐに落ちこむ", "飛んでいく"], e: "軌道を回りつづけます。" },
+      smbh: { q: "NASAによると、超大質量ブラックホールの質量は？", o: ["太陽の数十万倍から数十億倍", "地球くらい", "月くらい"], e: "太陽の数十万倍から数十億倍です。" },
+      sgrMass: { q: "ESOによると、いて座A*の質量は？", o: ["太陽の400万倍", "太陽と同じ", "太陽の4倍"], e: "太陽の400万倍です。" },
+      sgrDist: { q: "ESOによると、いて座A*までの距離は？", o: ["約27,000光年", "約27光年", "約2700万光年"], e: "約27,000光年で、いて座の方向にあります。" },
+      firstImage: { q: "はじめてのブラックホールの画像が発表されたのはいつですか？", o: ["2019年4月10日", "1969年", "2001年"], e: "2019年4月10日、M87のブラックホールです。" },
+      m87Dist: { q: "ESOによると、M87のブラックホールまでの距離は？", o: ["5500万光年", "55光年", "550億光年"], e: "5500万光年です。" },
+      sgrImage: { q: "いて座A*のはじめての画像が発表されたのはいつですか？", o: ["2022年5月12日", "2019年4月10日", "1995年"], e: "2022年5月12日です。" },
       mainSequence: { q: "主系列の恒星は何をしていますか？", o: ["水素を安定してヘリウムに融合している", "爆発している", "ゆっくり冷えている"], e: "中心で水素を安定してヘリウムに融合しています。" },
       longestPhase: { q: "恒星の一生でいちばん長い時期はどれですか？", o: ["主系列", "赤色巨星", "超新星"], e: "主系列です。" },
       sunMidway: { q: "太陽は一生のどこにいますか？", o: ["主系列のほぼまんなか", "いちばん最後", "生まれたばかり"], e: "約100億年の主系列のほぼまんなかです。" },
@@ -3566,6 +3888,7 @@ export const LEARN_TEXT = {
       stars: { title: "Да разберем звездите", goal: "Можеш да обясниш какво е звезда, какво казва цветът ѝ, как се подреждат звездите и кои звезди са добър дом за планети." },
       birth: { title: "Раждането на звездите", goal: "Можеш да обясниш как от облак газ и прах се ражда звезда, как около нея растат планети и как се е родило Слънцето." },
       life: { title: "Животът и смъртта на звездите", goal: "Можеш да обясниш как живее една звезда, защо масата ѝ решава живота ѝ и как свършват звездите: като бели джуджета или в свръхнова." },
+      compact: { title: "Неутронни звезди и черни дупки", goal: "Можеш да обясниш какво са неутронните звезди, пулсарите и черните дупки, къде е черната дупка на Млечния път и как е снимана." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -3852,6 +4175,82 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
+      },
+      nsWhat: {
+        title: "Неутронни звезди", goal: "Знаеш какво е неутронна звезда и колко е плътна.",
+        text: [
+          "Според НАСА неутронните звезди се образуват, когато на масивна звезда ѝ свърши горивото и тя се срути. Те събират повече маса от Слънцето в кълбо с диаметър само около 20 километра.",
+          "Материята им е невъобразимо плътна: според НАСА една бучка захар от нея би тежала около 1 трилион килограма. Картата има неутронни звезди с планети, например PSR B0329+54.",
+        ],
+        task: "Разгледай PSR B0329+54, неутронна звезда с планета.",
+        remember: [
+          "Неутронната звезда се образува, когато на масивна звезда ѝ свърши горивото и тя се срути.",
+          "Тя събира повече маса от Слънцето в кълбо от около 20 km.",
+          "Бучка захар от материята ѝ би тежала около 1 трилион килограма.",
+        ],
+        you: (name, m) => `Твоята звезда ${name} има ${m} пъти масата на Слънцето и е много по-голяма от град. Неутронната звезда събира повече от цяло Слънце в около 20 km.`,
+        ref: (name, m) => `${name} има ${m} пъти масата на Слънцето и е много по-голяма от град. Неутронната звезда събира повече от цяло Слънце в около 20 km.`,
+        none: () => "Неутронната звезда събира повече от цяло Слънце в около 20 km.",
+      },
+      nsPulsar: {
+        title: "Пулсари", goal: "Знаеш какво е пулсар и защо мига.",
+        text: [
+          "Според НАСА пулсарите са въртящи се неутронни звезди, които изпращат импулси от лъчение. Можеш да си ги представиш като фар: лъчът им минава покрай нас отново и отново. Между импулсите обикновено има от милисекунди до секунди.",
+          "Около пулсара PSR B1257+12 са открити планети; НАСА ги брои сред първите открити. Таблицата на НАСА в тази карта дава 1992 г. за две от тях и 1994 г. за третата.",
+        ],
+        task: "Разгледай PSR B1257+12, пулсар с три планети.",
+        remember: [
+          "Пулсарът е въртяща се неутронна звезда, която изпраща импулси от лъчение.",
+          "Действа като фар: лъчът му минава покрай нас.",
+          "Импулсите му идват на всеки няколко милисекунди до секунди.",
+        ],
+        you: (n) => `Пулсар, който мига веднъж в секунда, би мигнал около ${n} пъти от раждането ти. (Изчислено.)`,
+        ref: (n) => `Пулсар, който мига веднъж в секунда, мига около ${n} пъти за 30 години. (Изчислено.)`,
+      },
+      bhWhat: {
+        title: "Какво е черна дупка?", goal: "Знаеш какво е черна дупка и какво не е.",
+        text: [
+          "Според НАСА гравитацията на черната дупка е толкова силна, че нищо, дори светлината, не може да избяга. Звезда с повече от осем пъти масата на Слънцето може да остави такава: ядрото ѝ се срутва в черна дупка със звездна маса.",
+          "Но черните дупки не са космически прахосмукачки: според НАСА те не засмукват друга материя. Ако Слънцето бъде заменено с черна дупка със същата маса, планетите ще останат на орбитите си.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа: черната дупка не се вижда. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "От черна дупка нищо не избягва, дори светлината.",
+          "Ядрото на много тежка звезда може да се срути в черна дупка.",
+          "Черните дупки не засмукват материя; планетите биха останали на орбитите си.",
+        ],
+        you: (ly) => `Светлината е толкова бърза, че през живота ти е изминала ${ly} светлинни години. От черна дупка не излиза.`,
+        ref: (ly) => `Светлината е толкова бърза, че за ${ly} години изминава ${ly} светлинни години. От черна дупка не излиза.`,
+      },
+      bhCenter: {
+        title: "Черната дупка в нашия център", goal: "Познаваш черната дупка в центъра на Млечния път.",
+        text: [
+          "Според НАСА свръхмасивните черни дупки имат от стотици хиляди до милиарди пъти масата на Слънцето, а галактиките имат по една в центъра си.",
+          "Нашата се казва Стрелец A*. Според ЕЮО тя е четири милиона пъти по-масивна от Слънцето и е на около 27 000 светлинни години, в посока на съзвездието Стрелец.",
+        ],
+        task: "Разгледай съзвездието Стрелец: в неговата посока е центърът на Млечния път.",
+        remember: [
+          "Свръхмасивните черни дупки са в центровете на галактиките.",
+          "Стрелец A* е четири милиона пъти по-масивна от Слънцето.",
+          "Тя е на около 27 000 светлинни години, в посока Стрелец.",
+        ],
+        you: (before) => `Светлината от областта на Стрелец A*, която пристига днес, пътува около 27 000 години: тръгнала е около ${before} години преди раждането ти.`,
+        ref: () => "Светлината от областта на Стрелец A*, която пристига днес, пътува около 27 000 години.",
+      },
+      bhImage: {
+        title: "Първото изображение на черна дупка", goal: "Знаеш как са снимани черните дупки.",
+        text: [
+          "На 10 април 2019 г. Event Horizon Telescope показва първото изображение на черна дупка: тази в галактиката M87, според ЕЮО на 55 милиона светлинни години и с 6,5 милиарда пъти масата на Слънцето. Вижда се пръстеновидна структура с тъмна среда.",
+          "На 12 май 2022 г. следва първото изображение на Стрелец A*, черната дупка в центъра на собствения ни Млечен път.",
+        ],
+        task: "Разгледай съзвездието Дева: в неговата посока е галактиката M87.",
+        remember: [
+          "Първото изображение на черна дупка е показано на 10 април 2019 г. (M87).",
+          "Вижда се пръстеновидна структура с тъмна среда.",
+          "Изображението на Стрелец A* следва на 12 май 2022 г.",
+        ],
+        you: (before, at) => (before != null ? `Първото изображение на черна дупка е показано през 2019 г., ${before} години преди раждането ти.` : at === "0" ? "Първото изображение на черна дупка е показано през 2019 г., в годината на раждането ти." : `Първото изображение на черна дупка е показано през 2019 г., на твоите ${at} години.`),
+        ref: (ago) => `Първото изображение на черна дупка е показано през 2019 г., преди ${ago} години.`,
       },
       lifeMain: {
         title: "Главната последователност", goal: "Знаеш най-дългата фаза в живота на една звезда.",
@@ -4438,6 +4837,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
       kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
       rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
+      nsForm: { q: "Как се образува неутронна звезда според НАСА?", o: ["На масивна звезда ѝ свършва горивото и тя се срутва", "Две планети се сблъскват", "Комета замръзва"], e: "На масивна звезда ѝ свършва горивото и тя се срутва." },
+      nsSize: { q: "Какъв е приблизително диаметърът на неутронна звезда?", o: ["Около 20 km", "Колкото Слънцето", "Около 20 m"], e: "Около 20 километра, с повече маса от Слънцето." },
+      nsSugar: { q: "Колко би тежала според НАСА бучка захар от материя на неутронна звезда?", o: ["Около 1 трилион килограма", "Около един грам", "Около един тон"], e: "Около 1 трилион килограма." },
+      pulsarWhat: { q: "Какво е пулсар?", o: ["Въртяща се неутронна звезда, която изпраща импулси от лъчение", "Мигаща планета", "Млада звезда"], e: "Въртяща се неутронна звезда, която изпраща импулси от лъчение." },
+      lighthouse: { q: "С какво може да се сравни пулсар според НАСА?", o: ["С фар", "Със свещ", "С огледало"], e: "С фар: лъчът му минава покрай нас отново и отново." },
+      pulseTime: { q: "Колко време обикновено има между импулсите на пулсар?", o: ["От милисекунди до секунди", "Години", "Векове"], e: "Обикновено от милисекунди до секунди." },
+      noLight: { q: "Какво може да избяга от черна дупка?", o: ["Нищо, дори светлината", "Само светлината", "Всичко достатъчно бързо"], e: "Нищо, дори светлината." },
+      noVacuum: { q: "Засмукват ли черните дупки всичко около себе си според НАСА?", o: ["Не, не засмукват друга материя", "Да, като прахосмукачка", "Само планети"], e: "Не: черните дупки не засмукват друга материя." },
+      sunSwap: { q: "Ако Слънцето бъде заменено с черна дупка със същата маса, какво ще правят планетите?", o: ["Ще останат на орбитите си", "Веднага ще паднат в нея", "Ще отлетят"], e: "Ще останат на орбитите си." },
+      smbh: { q: "Колко тежки са свръхмасивните черни дупки според НАСА?", o: ["От стотици хиляди до милиарди пъти Слънцето", "Колкото Земята", "Колкото Луната"], e: "От стотици хиляди до милиарди пъти масата на Слънцето." },
+      sgrMass: { q: "Колко масивна е Стрелец A* според ЕЮО?", o: ["Четири милиона пъти Слънцето", "Колкото Слънцето", "Четири пъти Слънцето"], e: "Четири милиона пъти по-масивна от Слънцето." },
+      sgrDist: { q: "Колко далеч е Стрелец A* според ЕЮО?", o: ["Около 27 000 светлинни години", "Около 27 светлинни години", "Около 27 милиона светлинни години"], e: "Около 27 000 светлинни години, в посока Стрелец." },
+      firstImage: { q: "Кога е показано първото изображение на черна дупка?", o: ["На 10 април 2019 г.", "През 1969 г.", "През 2001 г."], e: "На 10 април 2019 г.: черната дупка в M87." },
+      m87Dist: { q: "Колко далеч е черната дупка в M87 според ЕЮО?", o: ["55 милиона светлинни години", "55 светлинни години", "55 милиарда светлинни години"], e: "55 милиона светлинни години." },
+      sgrImage: { q: "Кога е показано първото изображение на Стрелец A*?", o: ["На 12 май 2022 г.", "На 10 април 2019 г.", "През 1995 г."], e: "На 12 май 2022 г." },
       mainSequence: { q: "Какво прави звездата в главната последователност?", o: ["Стабилно слива водород в хелий", "Избухва", "Бавно изстива"], e: "Стабилно слива водород в хелий в ядрото си." },
       longestPhase: { q: "Коя е най-дългата фаза в живота на звездата?", o: ["Главната последователност", "Червеният гигант", "Свръхновата"], e: "Главната последователност." },
       sunMidway: { q: "Къде е Слънцето в живота си?", o: ["Приблизително в средата на главната си последователност", "Съвсем в края", "Току-що родено"], e: "Приблизително в средата на около 10-те си милиарда години в главната последователност." },
@@ -4535,6 +4949,20 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  if (PATHS.compact.steps.includes(step)) {
+    const f = nums.you ? s.you : s.ref;
+    if (step === "nsWhat") {
+      const mine = nums.starName != null;
+      const mass = mine ? nums.starMass : PROXIMA_INFO.mass;
+      const name = mine ? nums.starName : "Proxima Centauri";
+      return mass == null ? s.none(name) : (mine ? s.you : s.ref)(name, fmt(mass, 2));
+    }
+    if (step === "nsPulsar") return f(fmt(nums.pulsarBlinks));
+    if (step === "bhWhat") return f(fmt(nums.orbits));
+    if (step === "bhCenter") return nums.you ? s.you(fmt(nums.sgrBefore)) : s.ref();
+    if (nums.ehtBefore == null) return s.ref(fmt(nums.ehtAgo));
+    return s.you(nums.ehtBefore > 0 ? fmt(nums.ehtBefore) : null, nums.ehtBefore <= 0 ? fmt(Math.abs(nums.ehtBefore)) : null);
+  }
   if (PATHS.life.steps.includes(step)) {
     if (step === "lifeMain") return (nums.you ? s.you : s.ref)(fmt(nums.sunYearSeconds, 2));
     if (step === "lifeGiant") return (nums.you ? s.you : s.ref)(fmt(nums.giantLives));
@@ -4661,13 +5089,15 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
+  const COMPACT_PICTURE = { nsWhat: 30000, nsPulsar: 30000, bhWhat: 3500, bhCenter: 3500, bhImage: 3500 }; // the temperatures of the stars drawn
   const LIFE_PICTURE = { lifeMain: 5772, lifeMass: 2900, lifeGiant: 3500, lifeWhite: 9000, lifeNova: 25000 }; // the temperatures of the stars drawn
   const BIRTH_PICTURE = { birthCloud: 20000, birthProto: 3540, birthDisk: 4109, birthCluster: 12000, birthSun: 5772 }; // the temperatures of the stars drawn
   const STAR_PICTURE = { starWhat: 5772, starColor: 2566, starClass: 5761, starSize: 2900, starHosts: 3459 }; // the temperatures of the stars drawn
   const NAME_PICTURE = { nameLetters: 3050, nameStars: 5790, nameGreek: 9600, nameCatalog: 2566, nameStories: 5770 }; // the temperatures of the stars drawn
   const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
-    LIFE_PICTURE[step] ? starCanvas(LIFE_PICTURE[step], "uni-orb small star", 28)
+    COMPACT_PICTURE[step] ? starCanvas(COMPACT_PICTURE[step], "uni-orb small star", 28)
+    : LIFE_PICTURE[step] ? starCanvas(LIFE_PICTURE[step], "uni-orb small star", 28)
     : BIRTH_PICTURE[step] ? starCanvas(BIRTH_PICTURE[step], "uni-orb small star", 28)
     : STAR_PICTURE[step] ? starCanvas(STAR_PICTURE[step], "uni-orb small star", 28)
     : NAME_PICTURE[step] ? starCanvas(NAME_PICTURE[step], "uni-orb small star", 28)
@@ -4758,6 +5188,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     : path === "stars" ? starCanvas(9000, `${cls} star`, size)
     : path === "birth" ? starCanvas(4109, `${cls} star`, size)
     : path === "life" ? starCanvas(3500, `${cls} star`, size)
+    : path === "compact" ? starCanvas(30000, `${cls} star`, size)
     : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);

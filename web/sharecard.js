@@ -465,6 +465,21 @@ const EMBLEM = {
     g.stroke();
     for (const [i, [x, y]] of stars.entries()) drawStar(g, r * x, r * y, r * (i === 2 ? 0.16 : 0.1), starColor(i === 2 ? 4000 : 9600));
   },
+  // neutron stars and black holes: a glowing ring round a dark middle, as in the first images of a black hole
+  "compact-scholar": (g, r) => {
+    const ring = g.createRadialGradient(r, r, r * 0.22, r, r, r * 0.62);
+    ring.addColorStop(0, "rgba(255,170,80,0)");
+    ring.addColorStop(0.45, "rgba(255,190,100,0.95)");
+    ring.addColorStop(1, "rgba(255,120,40,0)");
+    g.fillStyle = ring;
+    g.beginPath();
+    g.arc(r, r, r * 0.62, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#05060a";
+    g.beginPath();
+    g.arc(r, r, r * 0.24, 0, Math.PI * 2);
+    g.fill();
+  },
   // life and death of stars: a big red giant and the small white dwarf it will leave
   "life-scholar": (g, r) => {
     drawStar(g, r * 0.85, r * 1.0, r * 0.48, starColor(3300));
