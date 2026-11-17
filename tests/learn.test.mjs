@@ -119,7 +119,7 @@ test("every step has 3 to 5 facts to remember in every language, and its sources
       assert.ok(facts.every((f) => typeof f === "string" && f.trim().length > 10 && !f.includes("—")), `${step} ${lang}`);
     }
     assert.ok(SOURCES[step]?.length >= 1, `${step} has a source`);
-    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov)\//, `${step}: ${src.url}`);
+    for (const src of SOURCES[step]) assert.match(src.url, /^https:\/\/(science\.nasa\.gov|www\.nasa\.gov|nssdc\.gsfc\.nasa\.gov|www\.eso\.org|www\.usgs\.gov|oceanexplorer\.noaa\.gov|www\.cfa\.harvard\.edu)\//, `${step}: ${src.url}`);
   }
 });
 
@@ -195,7 +195,7 @@ test("from a place to its step: the Solar System by name, the places of the step
   const solar = (name) => stepsForPlace({ name, solar: true });
   const exo = (o) => stepsForPlace({ solar: false, host: "Some star", ...o });
   assert.deepEqual(solar("Sun"), ["sun"]);
-  assert.deepEqual(solar("Mars"), ["inner"]);
+  assert.deepEqual(solar("Mars"), ["inner", "habIngredients"]);
   assert.deepEqual(solar("Jupiter"), ["outer", "moons", "habWater"]);
   assert.deepEqual(solar("Pluto"), ["moons"]);
   assert.deepEqual(stepsForPlace({ name: "Europa", solar: true, moon: true }), ["moons"]);
@@ -263,4 +263,16 @@ test("the neighbourhood of path 2: its view and the three labels of its lines in
     assert.ok(n.sunAlpha.includes("37"), lang);
     assert.ok(n.system.includes("0") && n.system.includes("2"), lang);
   }
+});
+
+test("paths 3 and 4 have the seven steps of the plan, the rule counts them, and the new steps speak of the visitor", () => {
+  assert.deepEqual(PATHS.exo.steps.slice(5), ["exoSystems", "exoFamous"]);
+  assert.deepEqual(PATHS.hab.steps.slice(4, 6), ["habIngredients", "habExtreme"]);
+  assert.equal(LEARN_TEXT.de.path.rule(7), "7 Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 70 %.");
+  assert.equal(you.trappistBLaps, Math.floor((36.4 * 365.25) / 1.510826));
+  assert.equal(you.kepler16Age, Math.round((36.4 * 365.25) / 228.776));
+  assert.equal(you.rockFactor, Math.round(3e9 / 36.4 / 1e6) * 1e6);
+  assert.ok(personalLine("exoFamous", you, "de").includes("Kepler-16 b"));
+  assert.equal(TASKS.habExtreme, "moon:Europa");
+  for (const lang of LANGS) for (const step of ["exoSystems", "exoFamous", "habIngredients", "habExtreme"]) assert.ok(!personalLine(step, you, lang).includes("undefined"), `${lang} ${step}`);
 });

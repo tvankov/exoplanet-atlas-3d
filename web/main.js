@@ -5846,28 +5846,32 @@ const learn = initLearn({
       planSpeed.dispatchEvent(new Event("change"));
       return togglePlanner(true);
     }
+    if (task.startsWith("moon:")) return learnShow(task); // a moon of the Solar System
     const place = resolvePlace(task);
     if (place) showPlace(place);
   },
   // the picture of an open path or step: the camera flies there, My Universe stays open beside it
-  show: (where) => {
-    const view = showNeighborhood(where === "view:neighborhood");
-    if (view) return flyToView(view);
-    if (where.startsWith("moon:")) {
-      // a moon of the Solar System (a link in the text of a step)
-      const id = where.slice(5);
-      for (const body of solar.bodies) {
-        const moon = body.moons?.find((m) => m.id === id);
-        if (moon) return selectMoon(solar, body, moon);
-      }
-      return;
-    }
-    const place = resolvePlace(where);
-    if (place) showPlace(place);
-  },
+  show: (where) => learnShow(where),
   isRealScale: () => realScale,
   closePanel: () => auth?.close(),
 });
+// The picture of a learning path or step, or of a place named in its text (learn.js): the camera flies there, My Universe stays open beside
+// it. A place is a name resolvePlace knows, "moon:<id>" or "view:neighborhood" (the lines of path 2).
+function learnShow(where) {
+  const view = showNeighborhood(where === "view:neighborhood");
+  if (view) return flyToView(view);
+  if (where.startsWith("moon:")) {
+    // a moon of the Solar System (a link in the text of a step)
+    const id = where.slice(5);
+    for (const body of solar.bodies) {
+      const moon = body.moons?.find((m) => m.id === id);
+      if (moon) return selectMoon(solar, body, moon);
+    }
+    return;
+  }
+  const place = resolvePlace(where);
+  if (place) showPlace(place);
+}
 universe = initUniverse({
   getLang: () => lang,
   learn,

@@ -16,16 +16,16 @@ import { planetCanvas, starCanvas } from "./sharecard.js";
 export const PATHS = {
   solar: { steps: ["sun", "inner", "outer", "moons", "scale"], minutes: 30, testSize: 10, pass: 0.7 },
   alpha: { steps: ["neighbors", "pair", "proxima", "proximaB", "travel"], minutes: 25, testSize: 10, pass: 0.7 },
-  exo: { steps: ["exoWhat", "exoHow", "exoRocky", "exoGiants", "exoStrange"], minutes: 25, testSize: 10, pass: 0.7 },
-  hab: { steps: ["habWhat", "habZone", "habWater", "habAtmos", "habLife"], minutes: 25, testSize: 10, pass: 0.7 },
+  exo: { steps: ["exoWhat", "exoHow", "exoRocky", "exoGiants", "exoStrange", "exoSystems", "exoFamous"], minutes: 35, testSize: 10, pass: 0.7 },
+  hab: { steps: ["habWhat", "habZone", "habWater", "habAtmos", "habIngredients", "habExtreme", "habLife"], minutes: 35, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
 export const TASKS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "realScale",
   neighbors: "figure:Cen", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
-  exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
-  habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
+  exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
+  habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -33,8 +33,8 @@ export const TASKS = {
 export const VIEWS = {
   sun: "Sun", inner: "Mars", outer: "Saturn", moons: "Jupiter", scale: "Neptune",
   neighbors: "view:neighborhood", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
-  exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e",
-  habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habLife: "Proxima Cen b",
+  exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
+  habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
 };
 export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
@@ -47,6 +47,11 @@ const EXO_WORDS = [
   ["Alpha Centauri A", "Alpha Centauri A"],
   ["Alpha Centauri B", "Alpha Centauri B"],
   ["TRAPPIST-1 ?e", "TRAPPIST-1 e"],
+  ["TRAPPIST-1 ?b", "TRAPPIST-1 b"],
+  ["HD 189733 b", "HD 189733 b"],
+  ["Kepler-16 b", "Kepler-16 b"],
+  ["Kepler-90", "KOI-351"],
+  ["KOI-351", "KOI-351"],
   ["TRAPPIST-1", "TRAPPIST-1"],
   ["HD 209458 b", "HD 209458 b"],
   ["TOI-700 d", "TOI-700 d"],
@@ -73,7 +78,7 @@ export const PLACE_WORDS = {
     ...EXO_WORDS,
     ["プロキシマb", "Proxima Cen b"], ["プロキシマ", "Proxima Cen"], ["アルファ・ケンタウリA", "Alpha Centauri A"], ["アルファ・ケンタウリB", "Alpha Centauri B"],
     ["ペガスス座51番星b", "51 Peg b"], ["かに座55番星e", "55 Cnc e"],
-    ["太陽(?!系|をもた|がある)", "Sun"], ["水星", "Mercury"], ["金星", "Venus"], ["地球", "Earth"], ["火星", "Mars"], ["木星", "Jupiter"], ["土星", "Saturn"],
+    ["太陽(?!系|をもた|がある|が2つ)", "Sun"], ["水星", "Mercury"], ["金星", "Venus"], ["地球", "Earth"], ["火星", "Mars"], ["木星", "Jupiter"], ["土星", "Saturn"],
     ["天王星", "Uranus"], ["海王星", "Neptune"], ["ケレス", "Ceres"], ["冥王星", "Pluto"],
     ["エウロパ", "moon:Europa"], ["ガニメデ", "moon:Ganymede"], ["カリスト", "moon:Callisto"],
   ],
@@ -122,11 +127,11 @@ const pathOf = (step) => Object.keys(PATHS).find((p) => PATHS[p].steps.includes(
 // a candidate of the zone to the habitable zone, a rocky world or a mini-Neptune to the rocky worlds, a Neptune or a giant to the giants.
 // The first step of the list that is not done yet wins; when all are done, the first.
 const SOLAR_STEPS = {
-  Sun: ["sun"], Mercury: ["inner"], Venus: ["inner", "habAtmos"], Earth: ["inner", "habWhat"], Mars: ["inner"],
+  Sun: ["sun"], Mercury: ["inner"], Venus: ["inner", "habAtmos"], Earth: ["inner", "habWhat"], Mars: ["inner", "habIngredients"],
   Jupiter: ["outer", "moons", "habWater"], Saturn: ["outer"], Uranus: ["outer", "scale"], Neptune: ["outer", "scale"],
   Ceres: ["moons"], Pluto: ["moons"],
 };
-const HOST_STEPS = { "Proxima Cen": ["proxima", "neighbors"] };
+const HOST_STEPS = { "Proxima Cen": ["proxima", "neighbors"], "KOI-351": ["exoSystems"], "Kepler-16": ["exoFamous"] };
 export function stepsForPlace({ name, host, solar, moon, habitable, radius }) {
   if (moon) return ["moons"];
   if (SOLAR_STEPS[name]) return SOLAR_STEPS[name];
@@ -210,6 +215,14 @@ export const SOURCES = {
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
   ],
+  exoSystems: [
+    { label: "NASA Science: TRAPPIST-1", url: "https://science.nasa.gov/exoplanets/trappist1/" },
+    { label: "NASA: Artificial Intelligence, NASA Data Used to Discover Eighth Planet Circling Distant Star (2017)", url: "https://www.nasa.gov/news-release/artificial-intelligence-nasa-data-used-to-discover-eighth-planet-circling-distant-star/" },
+  ],
+  exoFamous: [
+    { label: "NASA Science: HD 189733 b", url: "https://science.nasa.gov/exoplanet-catalog/hd-189733-b/" },
+    { label: "Center for Astrophysics, Harvard & Smithsonian: From Star Wars to Science Fact, Tatooine-like Planet Discovered (2011)", url: "https://www.cfa.harvard.edu/news/star-wars-science-fact-tatooine-planet-discovered" },
+  ],
   habWhat: [
     { label: "NASA Science: Habitable Zone", url: "https://science.nasa.gov/exoplanets/habitable-zone/" },
     { label: "NASA Science: Can We Find Life?", url: "https://science.nasa.gov/exoplanets/can-we-find-life/" },
@@ -227,13 +240,22 @@ export const SOURCES = {
     { label: "NASA Science: Venus, Facts", url: "https://science.nasa.gov/venus/facts/" },
     { label: "NASA Science: Mars, Facts", url: "https://science.nasa.gov/mars/facts/" },
   ],
+  habIngredients: [
+    { label: "NASA: NASA Finds Ancient Organic Material, Mysterious Methane on Mars (2018)", url: "https://www.nasa.gov/news-release/nasa-finds-ancient-organic-material-mysterious-methane-on-mars/" },
+  ],
+  habExtreme: [
+    { label: "NASA Science: NASA-Funded Research Finds Complex Life Defying Record Heat (2026)", url: "https://science.nasa.gov/science-research/planetary-science/astrobiology/nasa-funded-research-finds-complex-life-defying-record-heat/" },
+    { label: "NOAA Ocean Exploration: What is the difference between cold seeps and hydrothermal vents?", url: "https://oceanexplorer.noaa.gov/ocean-fact/seeps-vents/" },
+  ],
   habLife: [
     { label: "NASA Science: Can We Find Life?", url: "https://science.nasa.gov/exoplanets/can-we-find-life/" },
     { label: "NASA Science: Exoplanet Catalog", url: "https://science.nasa.gov/exoplanets/exoplanet-catalog/" },
   ],
 };
 // The years of the planets of the path Exoplanets, in days, from the catalogue of the map (NASA Exoplanet Archive, web/data/stars.json).
-const EXO_DAYS = { trappist: 6.101013, peg: 4.2307966, cancri: 0.7365474, toi: 37.423457 };
+const EXO_DAYS = { trappist: 6.101013, trappistB: 1.510826, peg: 4.2307966, cancri: 0.7365474, toi: 37.423457, kepler16: 228.776 };
+// The rocks of Gale crater in which Curiosity found organic molecules: about three billion years old (NASA, 2018).
+const GALE_ROCK_YEARS = 3e9;
 const EUROPA_DAYS = MOONS.Jupiter.find((m) => m.id === "Europa").days; // NASA Jovian Satellite Fact Sheet (moons.js)
 // The numbers of Alpha Centauri: the distance of Proxima and the year of Proxima b as in the map (NASA Exoplanet Archive, web/data/stars.json;
 // NASA and ESO round them to 4.2 light years and 11.2 days), the speed of Voyager 1 from NASA (17.0 km/s, August 2024). The time of the trip
@@ -279,6 +301,9 @@ function exoNumbers(ctx, age) {
     trappistAge: Math.round((age * 365.25) / EXO_DAYS.trappist),
     pegAge: Math.round((age * 365.25) / EXO_DAYS.peg),
     cancriAge: Math.round((age * 365.25) / EXO_DAYS.cancri),
+    trappistBLaps: Math.floor((age * 365.25) / EXO_DAYS.trappistB),
+    kepler16Age: Math.round((age * 365.25) / EXO_DAYS.kepler16),
+    rockFactor: Math.round(GALE_ROCK_YEARS / age / 1e6) * 1e6, // how many times as old as the visitor, in whole millions
     // the search for habitable worlds: the candidates of the map (in a habitable zone, see the rule of stars.json) then and now, and three ages
     candidatesAtBirth: found.filter(([year, , candidate]) => candidate && year <= born).length,
     candidatesNow: found.filter(([, , candidate]) => candidate).length,
@@ -328,11 +353,15 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  exoSystems: [{ id: "trappistFit" }, { id: "kepler90Eight" }, { id: "kepler90AI" }, { id: "trappistBLaps", number: "trappistBLaps" }],
+  exoFamous: [{ id: "hdBlue" }, { id: "kepler16Suns" }, { id: "kepler16Saturn" }, { id: "kepler16Age", number: "kepler16Age" }],
   // the search for habitable worlds
   habWhat: [{ id: "hzDef" }, { id: "waterNeed" }, { id: "firstCut" }, { id: "habOrbits", number: "orbits" }],
   habZone: [{ id: "zoneHot" }, { id: "redDwarfZone" }, { id: "toiYear" }, { id: "toiAge", number: "toiAge" }],
   habWater: [{ id: "europaOcean" }, { id: "enceladusJets" }, { id: "bodyWater" }, { id: "europaLaps", number: "europaLaps" }],
   habAtmos: [{ id: "venusGreenhouse" }, { id: "marsThin" }, { id: "venusTemp" }, { id: "venusAge", number: "venusAge" }],
+  habIngredients: [{ id: "lifeNeeds" }, { id: "marsOrganics" }, { id: "organicNotLife" }, { id: "rockFactor", number: "rockFactor" }],
+  habExtreme: [{ id: "extremophile" }, { id: "fireAmoeba" }, { id: "chemosynthesis" }, { id: "tubeWorms" }],
   habLife: [{ id: "onlyEarth" }, { id: "vents" }, { id: "biosignature" }, { id: "candidatesAtBirth", number: "candidatesAtBirth" }],
 };
 
@@ -376,7 +405,7 @@ export const LEARN_TEXT = {
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
-      rule: "5 steps, then a final test with 10 questions; passed from 70 %.",
+      rule: (n) => `${n} steps, then a final test with 10 questions; passed from 70 %.`,
     },
     // the lines of the neighbourhood in the 3D view (main.js): the distances of the NASA table (Proxima), of Kervella et al. 2017 (A and B),
     // and between the two as worked out from these positions (0.20 light years, about 12,900 AU)
@@ -632,6 +661,36 @@ export const LEARN_TEXT = {
         you: (n) => `On 55 Cancri e you would have had ${n} birthdays: a year there lasts less than 18 hours.`,
         ref: (n) => `A person of 30 would have had ${n} birthdays on 55 Cancri e: a year there lasts less than 18 hours.`,
       },
+      exoSystems: {
+        title: "Planetary systems", goal: "You know that many stars have several planets, and you know two special systems.",
+        text: [
+          "Many stars have more than one planet: in this map 1,069 stars have more than one (October 2026). The seven planets of TRAPPIST-1 circle their small star so closely that, according to NASA, all of them would fit inside the orbit of Mercury.",
+          "Around the Sun-like star Kepler-90, eight planets are known, as many as in our Solar System. The eighth was found in 2017 by an artificial neural network from Google that searched the data of the Kepler telescope. In this map the star is listed under its other name, KOI-351.",
+        ],
+        task: "Fly to KOI-351, the star Kepler-90 with its eight planets.",
+        remember: [
+          "Many stars have several planets.",
+          "All seven planets of TRAPPIST-1 would fit inside the orbit of Mercury.",
+          "Kepler-90 has eight planets, as many as our Solar System; the eighth was found in 2017 by artificial intelligence.",
+        ],
+        you: (n, e) => `Since you were born, TRAPPIST-1 b has gone round its star about ${n} times, the Earth round the Sun ${e} times.`,
+        ref: (n, e) => `In 30 years TRAPPIST-1 b goes round its star about ${n} times, the Earth round the Sun ${e} times.`,
+      },
+      exoFamous: {
+        title: "Famous exoplanets", goal: "You know two exoplanets that look different from what you would expect.",
+        text: [
+          "HD 189733 b is a gas giant that goes round its star in 2.2 days. According to NASA it is cobalt blue: its colour comes from a hazy, scorching atmosphere with clouds that contain glass. It was found in 2005 with the radial velocity method.",
+          "Kepler-16 b circles two stars at once, an orange and a red dwarf that go round each other every 41 days. It takes 229 days to go round both and is like Saturn in size and mass. When it was announced in 2011, the researchers compared it to Tatooine from Star Wars, the world with two suns.",
+        ],
+        task: "Fly to HD 189733 b, the blue planet with clouds of glass.",
+        remember: [
+          "HD 189733 b is cobalt blue; its clouds contain glass.",
+          "Kepler-16 b circles two stars, like Tatooine in Star Wars.",
+          "Kepler-16 b is like Saturn in size and mass.",
+        ],
+        you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
+        ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
+      },
       habWhat: {
         title: "What does habitable mean?", goal: "You can explain the habitable zone and why liquid water matters.",
         text: [
@@ -691,6 +750,36 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `On Venus you would be ${n} years old, on a world where the air traps the heat.`,
         ref: (n) => `A person of 30 would be ${n} years old on Venus, on a world where the air traps the heat.`,
+      },
+      habIngredients: {
+        title: "The ingredients of life", goal: "You know what life as we know it needs, and what the rover Curiosity found on Mars.",
+        text: [
+          "Life as we know it needs liquid water, chemical building blocks and a source of energy. NASA calls liquid water an essential ingredient for life as we know it.",
+          "In 2018 the rover Curiosity found organic molecules in three-billion-year-old rock in Gale crater on Mars, the floor of a former lake. According to NASA that lake held all the ingredients needed for life, chemical building blocks and sources of energy. But organic molecules can also form without life: they are no proof of it.",
+        ],
+        task: "Fly to Mars, where Curiosity found the organic molecules.",
+        remember: [
+          "Life as we know it needs liquid water, chemical building blocks and energy.",
+          "In 2018 Curiosity found organic molecules in three-billion-year-old rock on Mars.",
+          "Organic molecules are no proof of life: they can also form without it.",
+        ],
+        you: (n) => `The rock in which Curiosity found the molecules is about three billion years old: about ${n} times as old as you.`,
+        ref: (n) => `The rock in which Curiosity found the molecules is about three billion years old: about ${n} times as old as a person of 30.`,
+      },
+      habExtreme: {
+        title: "Extreme life on Earth", goal: "You know living things that live where we could not.",
+        text: [
+          "Living things that endure at the edges of habitability, at extreme temperatures, acidity or radiation, are called extremophiles. In 2026 NASA reported an amoeba from hot springs in California that still divides at 63 °C: a record for all known living things with a cell nucleus.",
+          "On the sea floor, water hotter than 400 °C streams out of hydrothermal vents. According to NOAA the communities there live mainly on chemosynthesis: bacteria draw energy from chemical reactions, usually without sunlight. Giant tube worms there grow faster than any other sea invertebrate on Earth.",
+        ],
+        task: "Fly to Jupiter's moon Europa: an ocean is thought to lie under its ice. Whether there is life in it, nobody knows.",
+        remember: [
+          "Extremophiles live at extreme temperatures, acidity or radiation.",
+          "An amoeba from hot springs still divides at 63 °C.",
+          "At deep-sea vents whole communities live without sunlight, on chemosynthesis.",
+        ],
+        you: () => "Water at 63 °C would be far too hot for you to bathe in. The amoeba still divides in it.",
+        ref: () => "Water at 63 °C would be far too hot for anyone to bathe in. The amoeba still divides in it.",
       },
       habLife: {
         title: "Is there life out there?", goal: "You know how scientists look for life, and that the answer is still open.",
@@ -781,6 +870,22 @@ export const LEARN_TEXT = {
       onlyEarth: { q: "Where do we know of life so far?", o: ["Only on the Earth", "On Mars", "On Proxima b"], e: "Only on the Earth, so far." },
       vents: { q: "Where does life on the Earth thrive at superheated vents?", o: ["On the ocean floor", "On mountain tops", "In the clouds"], e: "On the ocean floor: a hint that life could exist in strange places elsewhere." },
       biosignature: { q: "Which telescope could get the first glimpses of the gases in the air of Earth-sized exoplanets?", o: ["The James Webb Space Telescope", "Voyager 1", "Galileo's telescope"], e: "The James Webb Space Telescope, launched in 2021." },
+      trappistFit: { q: "Where would all seven planets of TRAPPIST-1 fit, according to NASA?", o: ["Inside the orbit of Mercury", "Inside the orbit of Jupiter", "Only beyond Neptune"], e: "Inside the orbit of Mercury: they circle their small star very closely." },
+      kepler90Eight: { q: "How many planets are known around Kepler-90?", o: ["Eight, as many as in our Solar System", "Two", "Fifty"], e: "Eight, as many as in our Solar System." },
+      kepler90AI: { q: "How was the eighth planet of Kepler-90 found in 2017?", o: ["A neural network from Google searched the Kepler data", "With the naked eye", "A space probe flew there"], e: "An artificial neural network from Google searched the data of the Kepler telescope." },
+      hdBlue: { q: "What colour is HD 189733 b, according to NASA?", o: ["Cobalt blue", "Fiery red", "Grass green"], e: "Cobalt blue: its hazy sky has clouds that contain glass." },
+      kepler16Suns: { q: "What is special about Kepler-16 b?", o: ["It circles two stars", "It has no star", "It is made of diamond"], e: "It circles two stars at once, like Tatooine in Star Wars." },
+      kepler16Saturn: { q: "Which planet of our Solar System is Kepler-16 b like in size and mass?", o: ["Saturn", "Earth", "Mercury"], e: "Saturn." },
+      lifeNeeds: { q: "What did the old lake in Gale crater on Mars hold, according to NASA?", o: ["All the ingredients for life: chemical building blocks and sources of energy", "Living fish", "Only ice"], e: "All the ingredients needed for life; whether there was life is not known." },
+      marsOrganics: { q: "What did Curiosity find in three-billion-year-old rock in 2018?", o: ["Organic molecules", "Fossil bones", "Gold"], e: "Organic molecules, in the mudstone of an old lake." },
+      organicNotLife: { q: "Are organic molecules a proof of life?", o: ["No, they can also form without life", "Yes, always", "Only on Mars"], e: "No: they are often linked with life, but they can also form without it." },
+      extremophile: { q: "What are living things called that live at the edges of habitability?", o: ["Extremophiles", "Exoplanets", "Asteroids"], e: "Extremophiles: they endure extreme temperatures, acidity or radiation." },
+      fireAmoeba: { q: "Up to what temperature does the amoeba from the hot springs of California still divide?", o: ["63 °C", "6 °C", "630 °C"], e: "63 °C, a record for all known living things with a cell nucleus." },
+      chemosynthesis: { q: "Where do the communities at deep-sea vents get their energy from?", o: ["From chemical reactions, usually without sunlight", "From sunlight", "From moonlight"], e: "From chemosynthesis: bacteria draw energy from chemical reactions." },
+      tubeWorms: { q: "Which animals at deep-sea vents grow faster than any other sea invertebrate?", o: ["Giant tube worms", "Jellyfish", "Starfish"], e: "Giant tube worms." },
+      trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
+      kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
+      rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
       habOrbits: { you: "How many times has the Earth carried you round the Sun inside its habitable zone?", ref: "How many times does the Earth carry a person round the Sun in 30 years?", e: (n) => `${n} times: once a year, always inside the habitable zone of the Sun.` },
       toiAge: { you: "How old would you be on TOI-700 d?", ref: "How old would a person of 30 be on TOI-700 d?", e: (n) => `${n}: a year on TOI-700 d lasts 37.4 days.` },
       europaLaps: { you: "How many times has Europa gone round Jupiter since you were born?", ref: "How many times does Europa go round Jupiter in 30 years?", e: (n) => `${n} times: one orbit takes 3.55 days.` },
@@ -797,7 +902,7 @@ export const LEARN_TEXT = {
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
-      rule: "5 Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 70 %.",
+      rule: (n) => `${n} Schritte, dann ein Abschlusstest mit 10 Fragen; bestanden ab 70 %.`,
     },
     neighborhood: {
       sunProxima: "Sonne → Proxima Centauri: 4,24 Lichtjahre",
@@ -1051,6 +1156,36 @@ export const LEARN_TEXT = {
         you: (n) => `Auf 55 Cancri e hättest du schon ${n} Geburtstage gefeiert: Ein Jahr dauert dort weniger als 18 Stunden.`,
         ref: (n) => `Ein 30-jähriger Mensch hätte auf 55 Cancri e schon ${n} Geburtstage gefeiert: Ein Jahr dauert dort weniger als 18 Stunden.`,
       },
+      exoSystems: {
+        title: "Planetensysteme", goal: "Du weißt, dass viele Sterne mehrere Planeten haben, und kennst zwei besondere Systeme.",
+        text: [
+          "Viele Sterne haben mehr als einen Planeten: In dieser Karte sind es 1.069 Sterne (Oktober 2026). Die sieben Planeten von TRAPPIST-1 kreisen so eng um ihren kleinen Stern, dass sie laut NASA alle innerhalb der Bahn des Merkur Platz hätten.",
+          "Um den sonnenähnlichen Stern Kepler-90 kennt man acht Planeten, so viele wie in unserem Sonnensystem. Den achten fand 2017 ein künstliches neuronales Netz von Google, das die Daten des Kepler-Teleskops durchsuchte. In dieser Karte steht der Stern unter seinem zweiten Namen KOI-351.",
+        ],
+        task: "Flieg zu KOI-351, dem Stern Kepler-90 mit seinen acht Planeten.",
+        remember: [
+          "Viele Sterne haben mehrere Planeten.",
+          "Alle sieben Planeten von TRAPPIST-1 hätten innerhalb der Bahn des Merkur Platz.",
+          "Kepler-90 hat acht Planeten, so viele wie unser Sonnensystem; den achten fand 2017 eine künstliche Intelligenz.",
+        ],
+        you: (n, e) => `Seit deiner Geburt ist TRAPPIST-1 b etwa ${n}-mal um seinen Stern gelaufen, die Erde ${e}-mal um die Sonne.`,
+        ref: (n, e) => `In 30 Jahren läuft TRAPPIST-1 b etwa ${n}-mal um seinen Stern, die Erde ${e}-mal um die Sonne.`,
+      },
+      exoFamous: {
+        title: "Berühmte Exoplaneten", goal: "Du kennst zwei Exoplaneten, die anders aussehen, als man denkt.",
+        text: [
+          "HD 189733 b ist ein Gasriese, der in 2,2 Tagen um seinen Stern läuft. Laut NASA ist er kobaltblau: Die Farbe kommt von einer dunstigen, glühend heißen Atmosphäre mit Wolken, die Glas enthalten. Gefunden wurde er 2005 mit der Radialgeschwindigkeitsmethode.",
+          "Kepler-16 b umkreist zwei Sterne zugleich, einen orangen und einen roten Zwerg, die alle 41 Tage umeinander laufen. Für eine Runde um beide braucht er 229 Tage, und in Größe und Masse ähnelt er dem Saturn. Als er 2011 bekanntgegeben wurde, verglichen die Forscher ihn mit Tatooine aus Star Wars, der Welt mit zwei Sonnen.",
+        ],
+        task: "Flieg zu HD 189733 b, dem blauen Planeten mit Wolken aus Glas.",
+        remember: [
+          "HD 189733 b ist kobaltblau; seine Wolken enthalten Glas.",
+          "Kepler-16 b umkreist zwei Sterne, wie Tatooine in Star Wars.",
+          "Kepler-16 b ähnelt in Größe und Masse dem Saturn.",
+        ],
+        you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
+        ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
+      },
       habWhat: {
         title: "Was heißt bewohnbar?", goal: "Du kannst die bewohnbare Zone erklären und warum flüssiges Wasser so wichtig ist.",
         text: [
@@ -1110,6 +1245,36 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `Auf der Venus wärst du ${n} Jahre alt, auf einer Welt, deren Luft die Hitze festhält.`,
         ref: (n) => `Ein 30-jähriger Mensch wäre auf der Venus ${n} Jahre alt, auf einer Welt, deren Luft die Hitze festhält.`,
+      },
+      habIngredients: {
+        title: "Die Zutaten für Leben", goal: "Du weißt, was Leben, wie wir es kennen, braucht, und was der Rover Curiosity auf dem Mars fand.",
+        text: [
+          "Leben, wie wir es kennen, braucht flüssiges Wasser, chemische Bausteine und eine Energiequelle. Die NASA nennt flüssiges Wasser eine unverzichtbare Zutat für Leben, wie wir es kennen.",
+          "2018 fand der Rover Curiosity im Gale-Krater auf dem Mars organische Moleküle in drei Milliarden Jahre altem Gestein, dem Boden eines früheren Sees. Laut NASA hielt dieser See alle Zutaten für Leben bereit, chemische Bausteine und Energiequellen. Aber organische Moleküle können auch ohne Leben entstehen: Sie sind kein Beweis dafür.",
+        ],
+        task: "Flieg zum Mars, wo Curiosity die organischen Moleküle fand.",
+        remember: [
+          "Leben, wie wir es kennen, braucht flüssiges Wasser, chemische Bausteine und Energie.",
+          "Curiosity fand 2018 auf dem Mars organische Moleküle in drei Milliarden Jahre altem Gestein.",
+          "Organische Moleküle sind kein Beweis für Leben: Sie können auch ohne Leben entstehen.",
+        ],
+        you: (n) => `Das Gestein, in dem Curiosity die Moleküle fand, ist etwa drei Milliarden Jahre alt: rund ${n}-mal so alt wie du.`,
+        ref: (n) => `Das Gestein, in dem Curiosity die Moleküle fand, ist etwa drei Milliarden Jahre alt: rund ${n}-mal so alt wie ein Mensch von 30.`,
+      },
+      habExtreme: {
+        title: "Extremes Leben auf der Erde", goal: "Du kennst Lebewesen, die dort leben, wo wir es nicht könnten.",
+        text: [
+          "Lebewesen, die an den Grenzen des Bewohnbaren leben, bei extremen Temperaturen, Säure oder Strahlung, heißen Extremophile. 2026 berichtete die NASA von einer Amöbe aus heißen Quellen in Kalifornien, die sich noch bei 63 °C teilt: ein Rekord für alle bekannten Lebewesen mit Zellkern.",
+          "Am Meeresboden strömt an Hydrothermalquellen über 400 °C heißes Wasser aus. Die Lebensgemeinschaften dort leben laut NOAA vor allem von Chemosynthese: Bakterien gewinnen Energie aus chemischen Reaktionen, meist ohne Sonnenlicht. Riesenröhrenwürmer wachsen dort schneller als alle anderen wirbellosen Meerestiere der Erde.",
+        ],
+        task: "Flieg zum Jupitermond Europa: Unter seinem Eis vermutet man einen Ozean. Ob es darin Leben gibt, weiß niemand.",
+        remember: [
+          "Extremophile leben bei extremen Temperaturen, Säure oder Strahlung.",
+          "Eine Amöbe aus heißen Quellen teilt sich noch bei 63 °C.",
+          "An Tiefseequellen leben ganze Lebensgemeinschaften ohne Sonnenlicht, von Chemosynthese.",
+        ],
+        you: () => "Wasser mit 63 °C wäre für dich viel zu heiß zum Baden. Die Amöbe teilt sich darin noch.",
+        ref: () => "Wasser mit 63 °C wäre für jeden Menschen viel zu heiß zum Baden. Die Amöbe teilt sich darin noch.",
       },
       habLife: {
         title: "Gibt es Leben da draußen?", goal: "Du weißt, wie die Forschung nach Leben sucht und dass die Antwort noch offen ist.",
@@ -1200,6 +1365,22 @@ export const LEARN_TEXT = {
       onlyEarth: { q: "Wo kennen wir bisher Leben?", o: ["Nur auf der Erde", "Auf dem Mars", "Auf Proxima b"], e: "Bisher nur auf der Erde." },
       vents: { q: "Wo gedeiht Leben auf der Erde an superheißen Quellen?", o: ["Am Meeresboden", "Auf Berggipfeln", "In den Wolken"], e: "Am Meeresboden: ein Hinweis, dass Leben auch an seltsamen Orten anderswo existieren könnte." },
       biosignature: { q: "Welches Teleskop könnte erste Blicke auf die Gase in der Luft erdgroßer Exoplaneten werfen?", o: ["Das James-Webb-Weltraumteleskop", "Voyager 1", "Galileis Fernrohr"], e: "Das James-Webb-Weltraumteleskop, gestartet 2021." },
+      trappistFit: { q: "Wo hätten laut NASA alle sieben Planeten von TRAPPIST-1 Platz?", o: ["Innerhalb der Bahn des Merkur", "Innerhalb der Bahn des Jupiter", "Erst jenseits des Neptun"], e: "Innerhalb der Bahn des Merkur: Sie kreisen sehr eng um ihren kleinen Stern." },
+      kepler90Eight: { q: "Wie viele Planeten kennt man um Kepler-90?", o: ["Acht, so viele wie in unserem Sonnensystem", "Zwei", "Fünfzig"], e: "Acht, so viele wie in unserem Sonnensystem." },
+      kepler90AI: { q: "Wie wurde 2017 der achte Planet von Kepler-90 gefunden?", o: ["Ein neuronales Netz von Google durchsuchte die Kepler-Daten", "Mit bloßem Auge", "Eine Raumsonde flog hin"], e: "Ein künstliches neuronales Netz von Google durchsuchte die Daten des Kepler-Teleskops." },
+      hdBlue: { q: "Welche Farbe hat HD 189733 b laut NASA?", o: ["Kobaltblau", "Feuerrot", "Grasgrün"], e: "Kobaltblau: Sein dunstiger Himmel hat Wolken, die Glas enthalten." },
+      kepler16Suns: { q: "Was ist besonders an Kepler-16 b?", o: ["Er umkreist zwei Sterne", "Er hat keinen Stern", "Er besteht aus Diamant"], e: "Er umkreist zwei Sterne zugleich, wie Tatooine in Star Wars." },
+      kepler16Saturn: { q: "Welchem Planeten unseres Sonnensystems ähnelt Kepler-16 b in Größe und Masse?", o: ["Saturn", "Erde", "Merkur"], e: "Saturn." },
+      lifeNeeds: { q: "Was hielt der alte See im Gale-Krater auf dem Mars laut NASA bereit?", o: ["Alle Zutaten für Leben: chemische Bausteine und Energiequellen", "Lebende Fische", "Nur Eis"], e: "Alle Zutaten für Leben; ob es dort Leben gab, weiß man nicht." },
+      marsOrganics: { q: "Was fand Curiosity 2018 in drei Milliarden Jahre altem Gestein?", o: ["Organische Moleküle", "Fossile Knochen", "Gold"], e: "Organische Moleküle, im Tonstein eines alten Sees." },
+      organicNotLife: { q: "Sind organische Moleküle ein Beweis für Leben?", o: ["Nein, sie können auch ohne Leben entstehen", "Ja, immer", "Nur auf dem Mars"], e: "Nein: Man verbindet sie oft mit Leben, aber sie können auch ohne Leben entstehen." },
+      extremophile: { q: "Wie heißen Lebewesen, die an den Grenzen des Bewohnbaren leben?", o: ["Extremophile", "Exoplaneten", "Asteroiden"], e: "Extremophile: Sie halten extreme Temperaturen, Säure oder Strahlung aus." },
+      fireAmoeba: { q: "Bis zu welcher Temperatur teilt sich die Amöbe aus den heißen Quellen Kaliforniens noch?", o: ["63 °C", "6 °C", "630 °C"], e: "63 °C, ein Rekord für alle bekannten Lebewesen mit Zellkern." },
+      chemosynthesis: { q: "Woher nehmen die Lebensgemeinschaften an Tiefseequellen ihre Energie?", o: ["Aus chemischen Reaktionen, meist ohne Sonnenlicht", "Aus dem Sonnenlicht", "Aus dem Mondlicht"], e: "Aus Chemosynthese: Bakterien gewinnen Energie aus chemischen Reaktionen." },
+      tubeWorms: { q: "Welche Tiere an Tiefseequellen wachsen schneller als alle anderen wirbellosen Meerestiere?", o: ["Riesenröhrenwürmer", "Quallen", "Seesterne"], e: "Riesenröhrenwürmer." },
+      trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
+      kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
+      rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
       habOrbits: { you: "Wie oft hat dich die Erde innerhalb ihrer bewohnbaren Zone um die Sonne getragen?", ref: "Wie oft trägt die Erde einen Menschen in 30 Jahren um die Sonne?", e: (n) => `${n}-mal: einmal im Jahr, immer innerhalb der bewohnbaren Zone der Sonne.` },
       toiAge: { you: "Wie alt wärst du auf TOI-700 d?", ref: "Wie alt wäre ein 30-jähriger Mensch auf TOI-700 d?", e: (n) => `${n}: Ein Jahr auf TOI-700 d dauert 37,4 Tage.` },
       europaLaps: { you: "Wie oft ist Europa seit deiner Geburt um Jupiter gelaufen?", ref: "Wie oft läuft Europa in 30 Jahren um Jupiter?", e: (n) => `${n}-mal: Ein Umlauf dauert 3,55 Tage.` },
@@ -1216,7 +1397,7 @@ export const LEARN_TEXT = {
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
-      rule: "5つのステップのあと、10問の最終テスト。70 %以上で合格です。",
+      rule: (n) => `${n}つのステップのあと、10問の最終テスト。70 %以上で合格です。`,
     },
     neighborhood: {
       sunProxima: "太陽 → プロキシマ・ケンタウリ：4.24光年",
@@ -1470,6 +1651,36 @@ export const LEARN_TEXT = {
         you: (n) => `かに座55番星eでは、あなたはもう${n}回誕生日を迎えています。そこでの1年は18時間足らずだからです。`,
         ref: (n) => `30歳の人は、かに座55番星eではもう${n}回誕生日を迎えています。そこでの1年は18時間足らずだからです。`,
       },
+      exoSystems: {
+        title: "惑星系", goal: "多くの恒星が複数の惑星をもつことを知り、2つの特別な惑星系を知っています。",
+        text: [
+          "2つ以上の惑星をもつ恒星はたくさんあります。この地図では1,069個です（2026年10月）。TRAPPIST-1の7つの惑星は小さな恒星のすぐ近くをまわっていて、NASAによると、7つすべてが水星の軌道の内側におさまります。",
+          "太陽に似た恒星Kepler-90には8つの惑星が知られていて、私たちの太陽系と同じ数です。8つめは2017年、ケプラー望遠鏡のデータを調べたGoogleの人工ニューラルネットワークが見つけました。この地図では、この恒星はもうひとつの名前KOI-351で載っています。",
+        ],
+        task: "8つの惑星をもつ恒星Kepler-90、KOI-351へ飛んでみましょう。",
+        remember: [
+          "多くの恒星が複数の惑星をもっています。",
+          "TRAPPIST-1の7つの惑星は、すべて水星の軌道の内側におさまります。",
+          "Kepler-90には太陽系と同じ8つの惑星があり、8つめは2017年に人工知能が見つけました。",
+        ],
+        you: (n, e) => `あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約${n}回まわりました。地球が太陽をまわったのは${e}回です。`,
+        ref: (n, e) => `30年のあいだに、TRAPPIST-1 bは恒星のまわりを約${n}回まわります。地球が太陽をまわるのは${e}回です。`,
+      },
+      exoFamous: {
+        title: "有名な系外惑星", goal: "思っているのとはちがう姿をした系外惑星を2つ知っています。",
+        text: [
+          "HD 189733 bは、2.2日で恒星を1周する巨大ガス惑星です。NASAによると、この惑星はコバルトブルーです。その色は、ガラスをふくむ雲がある、かすんだ灼熱の大気から来ています。2005年に視線速度法で発見されました。",
+          "Kepler-16 bは、41日ごとにたがいをまわるオレンジ色の星と赤色矮星の、2つの恒星を同時にまわっています。2つのまわりを229日で1周し、大きさと質量は土星に似ています。2011年に発表されたとき、研究者たちはこの惑星を、太陽が2つあるスター・ウォーズの惑星タトゥイーンにたとえました。",
+        ],
+        task: "ガラスをふくむ雲をもつ青い惑星、HD 189733 bへ飛んでみましょう。",
+        remember: [
+          "HD 189733 bはコバルトブルーで、雲にはガラスがふくまれています。",
+          "Kepler-16 bは、スター・ウォーズのタトゥイーンのように2つの恒星をまわっています。",
+          "Kepler-16 bは、大きさと質量が土星に似ています。",
+        ],
+        you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
+        ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
+      },
       habWhat: {
         title: "「住める」とはどういうこと？", goal: "ハビタブルゾーンと、液体の水が大切な理由を説明できます。",
         text: [
@@ -1529,6 +1740,36 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `金星では、あなたは${n}歳です。大気が熱を閉じこめる世界で。`,
         ref: (n) => `30歳の人は、金星では${n}歳です。大気が熱を閉じこめる世界で。`,
+      },
+      habIngredients: {
+        title: "生命の材料", goal: "私たちが知っている生命に何が必要か、そして探査車キュリオシティが火星で何を見つけたかを知っています。",
+        text: [
+          "私たちが知っている生命には、液体の水、化学的な材料、そしてエネルギー源が必要です。NASAは、液体の水を、私たちが知っている生命に欠かせない材料と呼んでいます。",
+          "探査車キュリオシティは2018年、火星のゲール・クレーターで、かつての湖の底だった30億年前の岩石から有機分子を見つけました。NASAによると、この湖には化学的な材料やエネルギー源など、生命に必要な材料がすべてそろっていました。ただし、有機分子は生命がなくてもできることがあり、生命の証拠ではありません。",
+        ],
+        task: "キュリオシティが有機分子を見つけた火星へ飛んでみましょう。",
+        remember: [
+          "私たちが知っている生命には、液体の水、化学的な材料、エネルギーが必要です。",
+          "キュリオシティは2018年、火星の30億年前の岩石から有機分子を見つけました。",
+          "有機分子は生命の証拠ではありません。生命がなくてもできることがあります。",
+        ],
+        you: (n) => `キュリオシティが分子を見つけた岩石は約30億年前のもので、あなたの年齢の約${n}倍です。`,
+        ref: (n) => `キュリオシティが分子を見つけた岩石は約30億年前のもので、30歳の人の年齢の約${n}倍です。`,
+      },
+      habExtreme: {
+        title: "地球の極限の生命", goal: "私たちには無理な場所で生きる生き物を知っています。",
+        text: [
+          "極端な温度や酸性度、放射線など、住めるかどうかの限界で生きる生き物を極限環境生物といいます。2026年、NASAは、カリフォルニアの温泉にすむアメーバが63 °Cでもまだ分裂すると伝えました。核をもつ既知のすべての生き物の中での記録です。",
+          "海底の熱水噴出孔からは、400 °Cをこえる熱水が噴き出しています。NOAAによると、そこの生き物たちはおもに化学合成で生きています。細菌が、ふつうは太陽の光のないところで、化学反応からエネルギーを得るのです。ジャイアントチューブワームはそこで、地球上の海の無脊椎動物でいちばん速く成長します。",
+        ],
+        task: "木星の衛星エウロパへ飛んでみましょう。氷の下に海があると考えられています。そこに生命がいるかどうかは、だれにもわかりません。",
+        remember: [
+          "極限環境生物は、極端な温度や酸性度、放射線の中で生きています。",
+          "温泉にすむアメーバは、63 °Cでもまだ分裂します。",
+          "熱水噴出孔では、生き物たちが太陽の光なしに、化学合成で生きています。",
+        ],
+        you: () => "63 °Cのお湯は、あなたがお風呂に入るには熱すぎます。でもこのアメーバは、その中でまだ分裂します。",
+        ref: () => "63 °Cのお湯は、だれにとってもお風呂には熱すぎます。でもこのアメーバは、その中でまだ分裂します。",
       },
       habLife: {
         title: "宇宙に生命はいるの？", goal: "科学者がどのように生命をさがしているか、そしてその答えがまだ出ていないことがわかります。",
@@ -1619,6 +1860,22 @@ export const LEARN_TEXT = {
       onlyEarth: { q: "今のところ、生命が知られているのはどこですか？", o: ["地球だけ", "火星", "プロキシマb"], e: "今のところ地球だけです。" },
       vents: { q: "地球の生命が超高温の噴出口で栄えているのはどこですか？", o: ["海底", "山の頂上", "雲の中"], e: "海底です。ほかのふしぎな場所にも生命がいるかもしれないという手がかりです。" },
       biosignature: { q: "地球ほどの大きさの系外惑星の大気の気体を初めて垣間見るかもしれない望遠鏡はどれですか？", o: ["ジェームズ・ウェッブ宇宙望遠鏡", "ボイジャー1号", "ガリレオの望遠鏡"], e: "2021年に打ち上げられたジェームズ・ウェッブ宇宙望遠鏡です。" },
+      trappistFit: { q: "NASAによると、TRAPPIST-1の7つの惑星はすべてどこにおさまりますか？", o: ["水星の軌道の内側", "木星の軌道の内側", "海王星よりも外側"], e: "水星の軌道の内側です。小さな恒星のすぐ近くをまわっています。" },
+      kepler90Eight: { q: "Kepler-90のまわりには、いくつの惑星が知られていますか？", o: ["8つ。太陽系と同じ数", "2つ", "50個"], e: "8つで、太陽系と同じ数です。" },
+      kepler90AI: { q: "2017年、Kepler-90の8つめの惑星はどうやって見つかりましたか？", o: ["Googleのニューラルネットワークがケプラーのデータを調べた", "肉眼で", "探査機が飛んでいった"], e: "Googleの人工ニューラルネットワークが、ケプラー望遠鏡のデータを調べて見つけました。" },
+      hdBlue: { q: "NASAによると、HD 189733 bは何色ですか？", o: ["コバルトブルー", "炎のような赤", "草のような緑"], e: "コバルトブルーです。かすんだ空には、ガラスをふくむ雲があります。" },
+      kepler16Suns: { q: "Kepler-16 bの特別なところは何ですか？", o: ["2つの恒星をまわっている", "恒星がない", "ダイヤモンドでできている"], e: "スター・ウォーズのタトゥイーンのように、2つの恒星を同時にまわっています。" },
+      kepler16Saturn: { q: "Kepler-16 bは、大きさと質量が太陽系のどの惑星に似ていますか？", o: ["土星", "地球", "水星"], e: "土星です。" },
+      lifeNeeds: { q: "NASAによると、火星のゲール・クレーターにあった昔の湖には何がそろっていましたか？", o: ["化学的な材料やエネルギー源など、生命の材料すべて", "生きた魚", "氷だけ"], e: "生命に必要な材料すべてです。そこに生命がいたかどうかはわかっていません。" },
+      marsOrganics: { q: "2018年、キュリオシティは30億年前の岩石から何を見つけましたか？", o: ["有機分子", "骨の化石", "金"], e: "昔の湖の泥岩から、有機分子を見つけました。" },
+      organicNotLife: { q: "有機分子は生命の証拠ですか？", o: ["いいえ。生命がなくてもできることがある", "はい、いつも", "火星でだけ"], e: "いいえ。よく生命と結びつけられますが、生命がなくてもできることがあります。" },
+      extremophile: { q: "住めるかどうかの限界で生きる生き物を何といいますか？", o: ["極限環境生物", "系外惑星", "小惑星"], e: "極限環境生物です。極端な温度や酸性度、放射線にたえます。" },
+      fireAmoeba: { q: "カリフォルニアの温泉にすむアメーバは、何 °Cまで分裂しますか？", o: ["63 °C", "6 °C", "630 °C"], e: "63 °Cです。核をもつ既知のすべての生き物の中での記録です。" },
+      chemosynthesis: { q: "深海の熱水噴出孔の生き物たちは、どこからエネルギーを得ていますか？", o: ["化学反応から。ふつうは太陽の光なしに", "太陽の光から", "月の光から"], e: "化学合成です。細菌が化学反応からエネルギーを得ます。" },
+      tubeWorms: { q: "熱水噴出孔で、海のほかのどの無脊椎動物よりも速く成長する生き物は？", o: ["ジャイアントチューブワーム", "クラゲ", "ヒトデ"], e: "ジャイアントチューブワームです。" },
+      trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
+      kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
+      rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
       habOrbits: { you: "地球はハビタブルゾーンの中で、あなたを太陽のまわりに何周運びましたか？", ref: "30年のあいだに、地球は人を太陽のまわりに何周運びますか？", e: (n) => `${n}周です。1年に1周、いつも太陽のハビタブルゾーンの中で。` },
       toiAge: { you: "TOI-700 dでは、あなたは何歳ですか？", ref: "30歳の人は、TOI-700 dでは何歳ですか？", e: (n) => `${n}歳です。TOI-700 dの1年は37.4日です。` },
       europaLaps: { you: "あなたが生まれてから、エウロパは木星のまわりを何周しましたか？", ref: "30年のあいだに、エウロパは木星のまわりを何周しますか？", e: (n) => `${n}周です。1周は3.55日です。` },
@@ -1635,7 +1892,7 @@ export const LEARN_TEXT = {
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
-      rule: "5 стъпки, после финален тест с 10 въпроса; издържан от 70 %.",
+      rule: (n) => `${n} стъпки, после финален тест с 10 въпроса; издържан от 70 %.`,
     },
     neighborhood: {
       sunProxima: "Слънце → Проксима Кентавър: 4,24 светлинни години",
@@ -1889,6 +2146,36 @@ export const LEARN_TEXT = {
         you: (n) => `На 55 Рак e вече щеше да имаш ${n} рождени дни: годината там трае по-малко от 18 часа.`,
         ref: (n) => `Човек на 30 години вече щеше да има ${n} рождени дни на 55 Рак e: годината там трае по-малко от 18 часа.`,
       },
+      exoSystems: {
+        title: "Планетни системи", goal: "Знаеш, че много звезди имат по няколко планети, и познаваш две особени системи.",
+        text: [
+          "Много звезди имат повече от една планета: в тази карта такива са 1069 звезди (октомври 2026). Седемте планети на TRAPPIST-1 обикалят толкова близо до малката си звезда, че според НАСА всички биха се събрали вътре в орбитата на Меркурий.",
+          "Около подобната на Слънцето звезда Kepler-90 са известни осем планети, колкото в нашата Слънчева система. Осмата е открита през 2017 г. от изкуствена невронна мрежа на Google, която претърсва данните на телескопа „Кеплер“. В тази карта звездата е записана с другото си име KOI-351.",
+        ],
+        task: "Полети до KOI-351, звездата Kepler-90 с осемте ѝ планети.",
+        remember: [
+          "Много звезди имат по няколко планети.",
+          "Всичките седем планети на TRAPPIST-1 биха се събрали вътре в орбитата на Меркурий.",
+          "Kepler-90 има осем планети, колкото нашата Слънчева система; осмата е открита през 2017 г. от изкуствен интелект.",
+        ],
+        you: (n, e) => `От раждането ти TRAPPIST-1 b е обиколил звездата си около ${n} пъти, а Земята Слънцето ${e} пъти.`,
+        ref: (n, e) => `За 30 години TRAPPIST-1 b обикаля звездата си около ${n} пъти, а Земята Слънцето ${e} пъти.`,
+      },
+      exoFamous: {
+        title: "Прочути екзопланети", goal: "Познаваш две екзопланети, които изглеждат различно от това, което очакваш.",
+        text: [
+          "HD 189733 b е газов гигант, който обикаля звездата си за 2,2 дни. Според НАСА той е кобалтовосин: цветът идва от мъглява, нажежена атмосфера с облаци, които съдържат стъкло. Открит е през 2005 г. по метода на радиалната скорост.",
+          "Kepler-16 b обикаля едновременно две звезди, оранжево и червено джудже, които се обикалят една друга на всеки 41 дни. Една обиколка около двете му отнема 229 дни, а по размер и маса прилича на Сатурн. Когато е обявен през 2011 г., изследователите го сравняват с Татуин от „Междузвездни войни“, светът с две слънца.",
+        ],
+        task: "Полети до HD 189733 b, синята планета с облаци от стъкло.",
+        remember: [
+          "HD 189733 b е кобалтовосин; облаците му съдържат стъкло.",
+          "Kepler-16 b обикаля две звезди, като Татуин в „Междузвездни войни“.",
+          "Kepler-16 b прилича на Сатурн по размер и маса.",
+        ],
+        you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
+        ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
+      },
       habWhat: {
         title: "Какво значи обитаемо?", goal: "Можеш да обясниш обитаемата зона и защо течната вода е толкова важна.",
         text: [
@@ -1948,6 +2235,36 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `На Венера щеше да си на ${n} години, на свят, чийто въздух задържа жегата.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} години на Венера, на свят, чийто въздух задържа жегата.`,
+      },
+      habIngredients: {
+        title: "Съставките на живота", goal: "Знаеш от какво се нуждае животът, какъвто го познаваме, и какво откри роувърът „Кюриосити“ на Марс.",
+        text: [
+          "Животът, какъвто го познаваме, се нуждае от течна вода, химични градивни елементи и източник на енергия. НАСА нарича течната вода незаменима съставка на живота, какъвто го познаваме.",
+          "През 2018 г. роувърът „Кюриосити“ откри в кратера Гейл на Марс органични молекули в скали на три милиарда години, дъното на някогашно езеро. Според НАСА това езеро е съдържало всички съставки за живот, химични градивни елементи и източници на енергия. Но органичните молекули могат да възникнат и без живот: те не са доказателство за него.",
+        ],
+        task: "Полети до Марс, където „Кюриосити“ откри органичните молекули.",
+        remember: [
+          "Животът, какъвто го познаваме, се нуждае от течна вода, химични градивни елементи и енергия.",
+          "През 2018 г. „Кюриосити“ откри на Марс органични молекули в скали на три милиарда години.",
+          "Органичните молекули не са доказателство за живот: могат да възникнат и без него.",
+        ],
+        you: (n) => `Скалите, в които „Кюриосити“ откри молекулите, са на около три милиарда години: около ${n} пъти колкото теб.`,
+        ref: (n) => `Скалите, в които „Кюриосити“ откри молекулите, са на около три милиарда години: около ${n} пъти колкото човек на 30.`,
+      },
+      habExtreme: {
+        title: "Екстремен живот на Земята", goal: "Познаваш живи същества, които живеят там, където ние не бихме могли.",
+        text: [
+          "Живите същества, които живеят на границите на обитаемото, при екстремни температури, киселинност или радиация, се наричат екстремофили. През 2026 г. НАСА съобщи за амеба от горещи извори в Калифорния, която се дели дори при 63 °C: рекорд за всички известни живи същества с клетъчно ядро.",
+          "На морското дъно от хидротермалните извори излиза вода, по-гореща от 400 °C. Според NOAA тамошните общности живеят главно от хемосинтеза: бактерии получават енергия от химични реакции, обикновено без слънчева светлина. Гигантските тръбести червеи там растат по-бързо от всички други морски безгръбначни на Земята.",
+        ],
+        task: "Полети до Европа, луната на Юпитер: под леда ѝ се предполага океан. Дали в него има живот, никой не знае.",
+        remember: [
+          "Екстремофилите живеят при екстремни температури, киселинност или радиация.",
+          "Амеба от горещи извори се дели дори при 63 °C.",
+          "При дълбоководните извори цели общности живеят без слънчева светлина, от хемосинтеза.",
+        ],
+        you: () => "Вода от 63 °C би била твърде гореща за теб, за да се къпеш в нея. Амебата обаче още се дели в нея.",
+        ref: () => "Вода от 63 °C би била твърде гореща за всеки човек, за да се къпе в нея. Амебата обаче още се дели в нея.",
       },
       habLife: {
         title: "Има ли живот там навън?", goal: "Знаеш как учените търсят живот и че отговорът е още открит.",
@@ -2038,6 +2355,22 @@ export const LEARN_TEXT = {
       onlyEarth: { q: "Къде познаваме живот засега?", o: ["Само на Земята", "На Марс", "На Проксима b"], e: "Засега само на Земята." },
       vents: { q: "Къде на Земята животът вирее при свръхгорещи извори?", o: ["На океанското дъно", "По върховете на планините", "В облаците"], e: "На океанското дъно: знак, че животът може да съществува и на странни места другаде." },
       biosignature: { q: "Кой телескоп може за първи път да зърне газовете във въздуха на екзопланети с размера на Земята?", o: ["Космическият телескоп „Джеймс Уеб“", "„Вояджър 1“", "Телескопът на Галилей"], e: "Космическият телескоп „Джеймс Уеб“, изстрелян през 2021 г." },
+      trappistFit: { q: "Според НАСА къде биха се събрали всичките седем планети на TRAPPIST-1?", o: ["Вътре в орбитата на Меркурий", "Вътре в орбитата на Юпитер", "Чак отвъд Нептун"], e: "Вътре в орбитата на Меркурий: те обикалят много близо до малката си звезда." },
+      kepler90Eight: { q: "Колко планети са известни около Kepler-90?", o: ["Осем, колкото в нашата Слънчева система", "Две", "Петдесет"], e: "Осем, колкото в нашата Слънчева система." },
+      kepler90AI: { q: "Как е открита през 2017 г. осмата планета на Kepler-90?", o: ["Невронна мрежа на Google претърсва данните на „Кеплер“", "С просто око", "Космическа сонда лети дотам"], e: "Изкуствена невронна мрежа на Google претърсва данните на телескопа „Кеплер“." },
+      hdBlue: { q: "Какъв цвят е HD 189733 b според НАСА?", o: ["Кобалтовосин", "Огненочервен", "Тревистозелен"], e: "Кобалтовосин: мъгливото му небе има облаци, които съдържат стъкло." },
+      kepler16Suns: { q: "Какво е особеното на Kepler-16 b?", o: ["Обикаля две звезди", "Няма звезда", "Направен е от диамант"], e: "Обикаля едновременно две звезди, като Татуин в „Междузвездни войни“." },
+      kepler16Saturn: { q: "На коя планета от нашата Слънчева система прилича Kepler-16 b по размер и маса?", o: ["Сатурн", "Земята", "Меркурий"], e: "Сатурн." },
+      lifeNeeds: { q: "Какво е съдържало старото езеро в кратера Гейл на Марс според НАСА?", o: ["Всички съставки за живот: химични градивни елементи и източници на енергия", "Живи риби", "Само лед"], e: "Всички съставки, нужни за живот; дали там е имало живот, не се знае." },
+      marsOrganics: { q: "Какво откри „Кюриосити“ през 2018 г. в скали на три милиарда години?", o: ["Органични молекули", "Вкаменени кости", "Злато"], e: "Органични молекули, в глинестата скала на старо езеро." },
+      organicNotLife: { q: "Доказателство за живот ли са органичните молекули?", o: ["Не, могат да възникнат и без живот", "Да, винаги", "Само на Марс"], e: "Не: често ги свързват с живота, но могат да възникнат и без него." },
+      extremophile: { q: "Как се наричат живите същества, които живеят на границите на обитаемото?", o: ["Екстремофили", "Екзопланети", "Астероиди"], e: "Екстремофили: издържат екстремни температури, киселинност или радиация." },
+      fireAmoeba: { q: "До каква температура се дели още амебата от горещите извори в Калифорния?", o: ["63 °C", "6 °C", "630 °C"], e: "63 °C, рекорд за всички известни живи същества с клетъчно ядро." },
+      chemosynthesis: { q: "Откъде получават енергия общностите при дълбоководните извори?", o: ["От химични реакции, обикновено без слънчева светлина", "От слънчевата светлина", "От лунната светлина"], e: "От хемосинтеза: бактерии получават енергия от химични реакции." },
+      tubeWorms: { q: "Кои животни при дълбоководните извори растат по-бързо от всички други морски безгръбначни?", o: ["Гигантските тръбести червеи", "Медузите", "Морските звезди"], e: "Гигантските тръбести червеи." },
+      trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
+      kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
+      rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
       habOrbits: { you: "Колко пъти Земята те е пренесла около Слънцето в своята обитаема зона?", ref: "Колко пъти Земята пренася човек около Слънцето за 30 години?", e: (n) => `${n} пъти: веднъж годишно, винаги в обитаемата зона на Слънцето.` },
       toiAge: { you: "На колко години щеше да си на TOI-700 d?", ref: "На колко години щеше да е на TOI-700 d човек на 30?", e: (n) => `${n}: годината на TOI-700 d трае 37,4 дни.` },
       europaLaps: { you: "Колко пъти Европа е обиколила Юпитер от раждането ти?", ref: "Колко пъти Европа обикаля Юпитер за 30 години?", e: (n) => `${n} пъти: една обиколка трае 3,55 дни.` },
@@ -2057,9 +2390,11 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
-  const hab = { habWhat: "orbits", habZone: "toiAge", habWater: "europaLaps", habAtmos: "venusAge" }[step];
+  if (step === "exoSystems") return (nums.you ? s.you : s.ref)(fmt(nums.trappistBLaps), fmt(nums.orbits));
+  if (step === "habExtreme") return (nums.you ? s.you : s.ref)();
+  const hab = { habWhat: "orbits", habZone: "toiAge", habWater: "europaLaps", habAtmos: "venusAge", habIngredients: "rockFactor" }[step];
   if (hab) return (nums.you ? s.you : s.ref)(fmt(nums[hab]));
-  const exo = { exoHow: "transitSince", exoRocky: "trappistAge", exoGiants: "pegAge", exoStrange: "cancriAge" }[step];
+  const exo = { exoHow: "transitSince", exoRocky: "trappistAge", exoGiants: "pegAge", exoStrange: "cancriAge", exoFamous: "kepler16Age" }[step];
   if (exo) return (nums.you ? s.you : s.ref)(fmt(nums[exo]));
   const alpha = { neighbors: "proximaLeft", pair: "lapShare", proxima: "lightTrips", proximaB: "proximaBAge", travel: "lifetimes" }[step];
   if (alpha) return (nums.you ? s.you : s.ref)(nums[alpha] == null ? null : fmt(nums[alpha]));
@@ -2109,8 +2444,8 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const nums = () => personalNumbers(personal());
 
   // a small picture for each step, from the same drawings as the rest of My Universe
-  const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habLife: { temp: 218 } };
-  const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958 }; // the temperatures of their planets (K)
+  const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
+  const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
   const pictureOf = (step) =>
     ALPHA_PICTURE[step] ? starCanvas(ALPHA_PICTURE[step], "uni-orb small star", 28)
@@ -2252,7 +2587,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     const fill = el("i", "");
     fill.style.width = `${Math.max(2, (doneCount() / steps.length) * 100)}%`;
     bar.append(fill);
-    card.append(head, bar, el("p", "hint", tx.path.rule));
+    card.append(head, bar, el("p", "hint", tx.path.rule(steps.length)));
     const list = el("div", "uni-list");
     const firstOpen = steps.find((s) => !stepDone(s));
     steps.forEach((step, i) => {
