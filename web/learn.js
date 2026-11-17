@@ -23,6 +23,7 @@ export const PATHS = {
   names: { steps: ["nameLetters", "nameStars", "nameGreek", "nameCatalog", "nameStories"], minutes: 25, testSize: 10, pass: 0.7 },
   stars: { steps: ["starWhat", "starColor", "starClass", "starSize", "starHosts"], minutes: 25, testSize: 10, pass: 0.7 },
   birth: { steps: ["birthCloud", "birthProto", "birthDisk", "birthCluster", "birthSun"], minutes: 25, testSize: 10, pass: 0.7 },
+  life: { steps: ["lifeMain", "lifeMass", "lifeGiant", "lifeWhite", "lifeNova"], minutes: 25, testSize: 10, pass: 0.7 },
 };
 // where each task takes the visitor (main.js does it): a place of the map, or the real scale
 // ("figure:<id>" shows a constellation, "plan:<place>" opens the trip planner from the Earth to the place, null: no task)
@@ -35,6 +36,7 @@ export const TASKS = {
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "figure:Cen", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
   starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
   birthCloud: "figure:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "figure:Tau", birthSun: "Sun",
+  lifeMain: "Sun", lifeMass: "Proxima Cen", lifeGiant: "Sun", lifeWhite: "WD 1856+534", lifeNova: null,
 };
 // What the 3D view shows while a path or a step is open (main.js flies there as soon as it is clicked, My Universe stays open): the place
 // of the step. The task above is the visitor's own action; this is only the picture behind the text. "view:neighborhood" is the Sun, Proxima
@@ -48,8 +50,9 @@ export const VIEWS = {
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "Earth", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
   starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
   birthCloud: "Earth", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "Earth", birthSun: "Sun",
+  lifeMain: "Sun", lifeMass: "Proxima Cen", lifeGiant: "Sun", lifeWhite: "WD 1856+534", lifeNova: "Sun",
 };
-export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70" };
+export const PATH_VIEWS = { solar: "Sun", alpha: "view:neighborhood", exo: "51 Peg b", hab: "TOI-700 d", zod: "Earth", names: "Proxima Cen", stars: "Sun", birth: "PDS 70", life: "Sun" };
 // The names in the texts of the steps that are places of the map: a click on one flies there (main.js, show), the step stays open. Per
 // language the forms the texts use (a regular expression each) and the place: a name main.js resolves (a planet, a star, an exoplanet) or
 // "moon:<id>" (moons.js). The first mention of a place in a step is a link, the others stay text. Left out on purpose: the Moon (in German
@@ -228,6 +231,30 @@ export const SOURCES = {
     { label: "NASA Science: 55 Cancri e", url: "https://science.nasa.gov/exoplanet-catalog/55-cancri-e/" },
     { label: "NASA Science: What is an Exoplanet?", url: "https://science.nasa.gov/exoplanets/what-is-an-exoplanet/" },
   ],
+  lifeMain: [
+    { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
+    { label: "NASA Science: Star Types", url: "https://science.nasa.gov/universe/stars/types/" },
+    { label: "NASA Imagine the Universe: Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/stars1.html" },
+  ],
+  lifeMass: [
+    { label: "NASA Imagine the Universe: Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/stars1.html" },
+    { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
+  ],
+  lifeGiant: [
+    { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
+    { label: "NASA Science: Star Types", url: "https://science.nasa.gov/universe/stars/types/" },
+  ],
+  lifeWhite: [
+    { label: "NASA Science: Star Types", url: "https://science.nasa.gov/universe/stars/types/" },
+    { label: "NASA Imagine the Universe: Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/stars1.html" },
+  ],
+  lifeNova: [
+    { label: "NASA Science: Black Hole Types", url: "https://science.nasa.gov/universe/black-holes/types/" },
+    { label: "NASA Imagine the Universe: Stars", url: "https://imagine.gsfc.nasa.gov/science/objects/stars1.html" },
+    { label: "NASA Imagine the Universe: Supernovae", url: "https://imagine.gsfc.nasa.gov/science/objects/supernovae1.html" },
+    { label: "NASA Imagine the Universe: Supernovae (advanced)", url: "https://imagine.gsfc.nasa.gov/science/objects/supernovae2.html" },
+    { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
+  ],
   birthCloud: [
     { label: "NASA Science: Stars", url: "https://science.nasa.gov/universe/stars/" },
     { label: "NASA Science: Hubble Messier Catalog, Messier 42 (Orion Nebula)", url: "https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-42/" },
@@ -381,8 +408,15 @@ export function personalNumbers(ctx) {
     ...nameNumbers(ctx, age),
     ...starNumbers(ctx),
     ...birthNumbers(ctx, age),
+    sunYearSeconds: (age / SUN_MAIN_YEARS) * 365.25 * 86400, // the visitor's life if the Sun's 10 billion years were one year
+    giantLives: twoDigits(SUN_GIANT_IN / Math.max(age, 1)),
   };
 }
+// Life and death of stars: about 10 billion years of the Sun on the main sequence (NASA Imagine), a red giant in about 5 billion years
+// (NASA), white dwarfs from stars up to about 7 times the mass of the Sun (NASA Imagine), a supernova above 8 (NASA; Imagine says 7)
+const SUN_MAIN_YEARS = 1e10;
+const SUN_GIANT_IN = 5e9;
+export const fateOf = (mass) => (mass == null ? null : mass <= 7 ? "white" : mass > 8 ? "nova" : "edge");
 // The birth of stars: the light of the Orion Nebula (about 1,500 light years, NASA) and of the Pleiades (roughly 445, NASA) against the
 // visitor's life, the age of AU Mic (20 to 30 million years, NASA: its middle, 25) as a multiple of the visitor's age, the year PDS 70 b
 // was photographed (2018, ESO), and the age of the Sun (4.6 billion years, NASA) as one day.
@@ -412,12 +446,12 @@ function birthNumbers(ctx, age) {
 // Understanding stars: the temperature, the radius and the spectral type of the visitor's star, from the NASA table of the map
 // (ctx.starInfo(host): { teff in kelvin, rad in radii of the Sun, spec }, main.js). Without a year of birth the sentences speak of Proxima
 // Centauri, with its values from the same table (PROXIMA_INFO).
-export const PROXIMA_INFO = { teff: 2900, rad: 0.141, spec: "M5.5 V" };
+export const PROXIMA_INFO = { teff: 2900, rad: 0.141, spec: "M5.5 V", mass: 0.1221 };
 const SUN_SURFACE_C = 5500; // NASA, Sun Facts: "a relatively cool 10,000 °F (5,500 °C)"
 function starNumbers(ctx) {
   const name = ctx.age != null ? ctx.star?.name ?? null : null;
   const info = name ? ctx.starInfo?.(name) ?? null : null;
-  return { starName: name, starTeff: info?.teff ?? null, starRad: info?.rad ?? null, starSpec: info?.spec ?? null };
+  return { starName: name, starTeff: info?.teff ?? null, starRad: info?.rad ?? null, starSpec: info?.spec ?? null, starMass: info?.mass ?? null };
 }
 // The class of a spectral type: its first letter (O, B, A, F, G, K, M), or null
 export const starClassOf = (spec) => /^[OBAFGKM]/.exec(spec ?? "")?.[0] ?? null;
@@ -542,6 +576,12 @@ export const QUESTIONS = {
   exoRocky: [{ id: "superEarth" }, { id: "terrestrialMade" }, { id: "trappistSeven" }, { id: "trappistAge", number: "trappistAge" }],
   exoGiants: [{ id: "hotJupiter" }, { id: "pegYear" }, { id: "gasGiantSize" }, { id: "pegAge", number: "pegAge" }],
   exoStrange: [{ id: "lavaWorld" }, { id: "rogue" }, { id: "keplerScope" }, { id: "cancriAge", number: "cancriAge" }],
+  // Life and death of stars
+  lifeMain: [{ id: "mainSequence" }, { id: "longestPhase" }, { id: "sunMidway" }],
+  lifeMass: [{ id: "massFuel" }, { id: "massiveShort" }, { id: "lowMassLong" }],
+  lifeGiant: [{ id: "noHydrogen" }, { id: "redGiant" }, { id: "giantWhen" }],
+  lifeWhite: [{ id: "whiteDwarf" }, { id: "teaspoon" }, { id: "planetaryNebula" }],
+  lifeNova: [{ id: "supernova" }, { id: "novaMass" }, { id: "stardust" }],
   // The birth of stars
   birthCloud: [{ id: "molecularCloud" }, { id: "clumpCollapse" }, { id: "orionNursery" }],
   birthProto: [{ id: "protostar" }, { id: "protoHeat" }, { id: "auMicAge" }],
@@ -619,6 +659,7 @@ export const LEARN_TEXT = {
       names: { title: "Names in space", goal: "You can read the names of planets and stars: the letters, the Greek letters, the catalogues and the names with a story." },
       stars: { title: "Understanding stars", goal: "You can explain what a star is, what its colour says, how stars are sorted, and which stars are good homes for planets." },
       birth: { title: "The birth of stars", goal: "You can explain how a star is born from a cloud of gas and dust, how planets form round it, and how the Sun was born." },
+      life: { title: "Life and death of stars", goal: "You can explain how a star lives, why its mass decides its life, and how stars end: as white dwarfs or in a supernova." },
     },
     path: {
       meta: (m) => `about ${m} minutes · for beginners`,
@@ -907,6 +948,84 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `On Kepler-16 b, the world with two suns, you would be ${n} years old: a year there lasts 229 days.`,
         ref: (n) => `A person of 30 would be ${n} on Kepler-16 b, the world with two suns: a year there lasts 229 days.`,
+      },
+      lifeMain: {
+        title: "The main sequence", goal: "You know the longest phase in the life of a star.",
+        text: [
+          "According to NASA stars that are stably fusing hydrogen into helium in their core are called main sequence stars. It is the longest phase of a star's life, and around 90 % of the stars are in it.",
+          "The Sun is one of them, roughly midway through its main sequence stage. According to NASA it will spend about 10 billion years on the main sequence.",
+        ],
+        task: "Look at the Sun, halfway through its main sequence.",
+        remember: [
+          "On the main sequence a star stably fuses hydrogen into helium.",
+          "It is the longest phase of a star's life.",
+          "The Sun is roughly halfway through its about 10 billion years there.",
+        ],
+        you: (sec) => `If the Sun's 10 billion years on the main sequence were one year, your life so far would have lasted about ${sec} seconds. (Worked out.)`,
+        ref: (sec) => `If the Sun's 10 billion years on the main sequence were one year, a life of 30 years would have lasted about ${sec} seconds. (Worked out.)`,
+      },
+      lifeMass: {
+        title: "Mass decides", goal: "You know why heavy stars live short lives and light ones long lives.",
+        text: [
+          "According to NASA a more massive star uses its fuel faster. So the heaviest stars live only a few million years.",
+          "Light stars are thrifty: according to NASA some low-mass stars will shine for trillions of years. Proxima Centauri is such a light star: a red dwarf with about an eighth of the mass of the Sun, by the NASA table of this map.",
+        ],
+        task: "Look at Proxima Centauri, a light red dwarf with a very long life ahead.",
+        remember: [
+          "A more massive star uses its fuel faster.",
+          "The heaviest stars live only a few million years.",
+          "Some light stars shine for trillions of years.",
+        ],
+        you: (name, m, light) => `Your star ${name} has ${m} times the mass of the Sun, ${light ? "less: it uses its fuel more slowly and lives longer than the Sun" : "more: it uses its fuel faster and lives a shorter life than the Sun"}.`,
+        ref: (name, m, light) => `${name} has ${m} times the mass of the Sun, ${light ? "less: it uses its fuel more slowly and lives longer than the Sun" : "more: it uses its fuel faster and lives a shorter life than the Sun"}.`,
+        none: (name) => `The table gives no mass for ${name}.`,
+      },
+      lifeGiant: {
+        title: "The red giant", goal: "You know what happens when a star runs out of hydrogen in its core.",
+        text: [
+          "When the core of a star runs out of hydrogen to fuse into helium, the core starts to collapse, and the star slowly puffs up. According to NASA the result is a red giant.",
+          "This will happen to the Sun too: according to NASA it will become a red giant in about 5 billion years.",
+        ],
+        task: "Look at the Sun: in about 5 billion years it will be a red giant.",
+        remember: [
+          "Without hydrogen in its core the core collapses and the star puffs up.",
+          "The result is a red giant.",
+          "The Sun will become a red giant in about 5 billion years.",
+        ],
+        you: (n) => `5 billion years until the red giant are about ${n} times your life so far.`,
+        ref: (n) => `5 billion years until the red giant are about ${n} times a life of 30 years.`,
+      },
+      lifeWhite: {
+        title: "White dwarfs", goal: "You know how stars like the Sun end.",
+        text: [
+          "When a red giant has shed all its atmosphere, only the core remains: a white dwarf. According to NASA it is usually Earth-sized, and a teaspoon of its material would weigh more than a pickup truck. It gradually cools over billions of years; the shed layers form an expanding cloud, a planetary nebula.",
+          "According to NASA stars up to about 7 times the mass of the Sun end as white dwarfs; the Sun too. The map has white dwarfs with planets: round WD 1856+534 the NASA table knows one, found in 2020.",
+        ],
+        task: "Look at WD 1856+534, a white dwarf with a planet.",
+        remember: [
+          "A white dwarf is the core left of a star, usually Earth-sized.",
+          "A teaspoon of its material would weigh more than a pickup truck.",
+          "Stars up to about 7 times the mass of the Sun end as white dwarfs.",
+        ],
+        you: (name, m, fate) => `Your star ${name} has ${m} times the mass of the Sun: ${fate === "white" ? "it will end as a white dwarf." : fate === "nova" ? "it is heavy enough for a supernova." : "it is near the border between a white dwarf and a supernova."}`,
+        ref: (name, m, fate) => `${name} has ${m} times the mass of the Sun: ${fate === "white" ? "it will end as a white dwarf." : fate === "nova" ? "it is heavy enough for a supernova." : "it is near the border between a white dwarf and a supernova."}`,
+        none: (name) => `The table gives no mass for ${name}.`,
+      },
+      lifeNova: {
+        title: "Supernova and stardust", goal: "You know how heavy stars end and where the elements come from.",
+        text: [
+          "According to NASA a star with more than eight times the mass of the Sun explodes as a supernova at its end; another NASA page puts the border at seven. Its core can collapse into a black hole: more on that in the next path.",
+          "In their cores stars fuse carbon into heavier elements like oxygen, neon and magnesium, and supernovae scatter the elements through space. According to NASA everything on the Earth, our bodies too, is made of elements made in the cores of stars.",
+        ],
+        task: "There is no task in the 3D view for this step. Answer the questions, then the step is done.",
+        remember: [
+          "Stars with more than about eight times the mass of the Sun end in a supernova.",
+          "Stars fuse heavier elements like oxygen; supernovae scatter them.",
+          "According to NASA our bodies too are made of elements from stars.",
+        ],
+        you: (name, m, fate) => `The elements of your body were made in stars. Your star ${name} (${m} masses of the Sun) ${fate === "nova" ? "will one day explode itself." : "is too light to explode as a supernova."}`,
+        ref: (name, m, fate) => `The elements of every human body were made in stars. ${name} (${m} masses of the Sun) ${fate === "nova" ? "will one day explode itself." : "is too light to explode as a supernova."}`,
+        none: () => "The elements of your body were made in stars.",
       },
       birthCloud: {
         title: "Clouds of gas and dust", goal: "You know where stars are born.",
@@ -1415,6 +1534,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "About how many times has TRAPPIST-1 b gone round its star since you were born?", ref: "About how many times does TRAPPIST-1 b go round its star in 30 years?", e: (n) => `About ${n} times: a year there lasts 1.5 days.` },
       kepler16Age: { you: "How old would you be on Kepler-16 b?", ref: "How old would a person of 30 be on Kepler-16 b?", e: (n) => `${n}: a year on Kepler-16 b lasts 229 days.` },
       rockFactor: { you: "About how many times as old as you is the rock in which Curiosity found organic molecules?", ref: "About how many times as old as a person of 30 is the rock in which Curiosity found organic molecules?", e: (n) => `About ${n} times: it is about three billion years old.` },
+      mainSequence: { q: "What does a star do on the main sequence?", o: ["It stably fuses hydrogen into helium", "It explodes", "It cools down slowly"], e: "It stably fuses hydrogen into helium in its core." },
+      longestPhase: { q: "Which is the longest phase of a star's life?", o: ["The main sequence", "The red giant", "The supernova"], e: "The main sequence." },
+      sunMidway: { q: "Where is the Sun in its life?", o: ["Roughly midway through its main sequence", "At its very end", "Just born"], e: "Roughly midway through its about 10 billion years on the main sequence." },
+      massFuel: { q: "Which star uses its fuel faster?", o: ["The more massive one", "The lighter one", "Both the same"], e: "The more massive one." },
+      massiveShort: { q: "How long do the heaviest stars live?", o: ["Only a few million years", "Trillions of years", "Forever"], e: "Only a few million years." },
+      lowMassLong: { q: "How long can some low-mass stars shine, according to NASA?", o: ["Trillions of years", "A few thousand years", "A few days"], e: "Trillions of years." },
+      noHydrogen: { q: "What happens when the core of a star runs out of hydrogen?", o: ["The core collapses and the star puffs up", "The star goes out at once", "Nothing changes"], e: "The core starts to collapse and the star slowly puffs up." },
+      redGiant: { q: "What does a star like the Sun become after the main sequence?", o: ["A red giant", "A black hole", "A planet"], e: "A red giant." },
+      giantWhen: { q: "When will the Sun become a red giant, according to NASA?", o: ["In about 5 billion years", "In about 5,000 years", "Next century"], e: "In about 5 billion years." },
+      whiteDwarf: { q: "What is a white dwarf?", o: ["The core left of a star, usually Earth-sized", "A small white planet", "A young star"], e: "The core left after a red giant has shed its atmosphere, usually Earth-sized." },
+      teaspoon: { q: "How heavy would a teaspoon of white dwarf material be, according to NASA?", o: ["Heavier than a pickup truck", "As heavy as sugar", "Lighter than air"], e: "Heavier than a pickup truck." },
+      planetaryNebula: { q: "What do the layers a dying Sun-like star sheds form?", o: ["A planetary nebula", "New planets at once", "A black hole"], e: "An expanding cloud of dust and gas, a planetary nebula." },
+      supernova: { q: "What is a supernova?", o: ["The explosion of a star", "A new star being born", "A bright planet"], e: "The explosion of a star." },
+      novaMass: { q: "Which stars end in a supernova, according to NASA?", o: ["Stars with more than about 8 times the mass of the Sun", "Every star", "Only red dwarfs"], e: "Stars with more than about eight times the mass of the Sun; another NASA page says seven." },
+      stardust: { q: "Where were the elements of our bodies made, according to NASA?", o: ["In the cores of stars", "On the Moon", "In the oceans of the Earth"], e: "In the cores of stars; supernovae scattered them." },
       molecularCloud: { q: "Where do stars form, according to NASA?", o: ["In large clouds of gas and dust, the molecular clouds", "Inside planets", "In the rings of Saturn"], e: "In large cold clouds of gas and dust, the molecular clouds." },
       clumpCollapse: { q: "What makes clumps in a molecular cloud collapse?", o: ["Gravity", "Wind from the Earth", "Light from the Moon"], e: "Gravity." },
       orionNursery: { q: "What is the Orion Nebula?", o: ["The closest large star-forming region, about 1,500 light years away", "A planet of the Solar System", "A black hole"], e: "The closest large star-forming region to the Earth, about 1,500 light years away." },
@@ -1495,6 +1629,7 @@ export const LEARN_TEXT = {
       names: { title: "Namen im All", goal: "Du kannst die Namen von Planeten und Sternen lesen: die Buchstaben, die griechischen Buchstaben, die Kataloge und die Namen mit Geschichte." },
       stars: { title: "Sterne verstehen", goal: "Du kannst erklären, was ein Stern ist, was seine Farbe verrät, wie man Sterne ordnet und welche Sterne gute Heimaten für Planeten sind." },
       birth: { title: "Die Geburt der Sterne", goal: "Du kannst erklären, wie ein Stern aus einer Wolke aus Gas und Staub entsteht, wie um ihn Planeten wachsen und wie die Sonne entstand." },
+      life: { title: "Leben und Tod der Sterne", goal: "Du kannst erklären, wie ein Stern lebt, warum seine Masse über sein Leben entscheidet und wie Sterne enden: als Weiße Zwerge oder in einer Supernova." },
     },
     path: {
       meta: (m) => `etwa ${m} Minuten · für Einsteiger`,
@@ -1781,6 +1916,84 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `Auf Kepler-16 b, der Welt mit zwei Sonnen, wärst du ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
         ref: (n) => `Ein Mensch von 30 wäre auf Kepler-16 b, der Welt mit zwei Sonnen, ${n} Jahre alt: Ein Jahr dort dauert 229 Tage.`,
+      },
+      lifeMain: {
+        title: "Die Hauptreihe", goal: "Du kennst die längste Phase im Leben eines Sterns.",
+        text: [
+          "Laut NASA heißen Sterne, die in ihrem Kern gleichmäßig Wasserstoff zu Helium verschmelzen, Hauptreihensterne. Es ist die längste Phase im Leben eines Sterns, und rund 90 % der Sterne sind in ihr.",
+          "Die Sonne ist einer davon, etwa in der Mitte ihrer Hauptreihenzeit. Laut NASA verbringt sie etwa 10 Milliarden Jahre auf der Hauptreihe.",
+        ],
+        task: "Sieh dir die Sonne an, in der Mitte ihrer Hauptreihe.",
+        remember: [
+          "Auf der Hauptreihe verschmilzt ein Stern gleichmäßig Wasserstoff zu Helium.",
+          "Es ist die längste Phase im Leben eines Sterns.",
+          "Die Sonne ist etwa in der Mitte ihrer rund 10 Milliarden Jahre dort.",
+        ],
+        you: (sec) => `Wären die 10 Milliarden Hauptreihenjahre der Sonne ein einziges Jahr, dann hätte dein Leben bisher etwa ${sec} Sekunden gedauert. (Gerechnet.)`,
+        ref: (sec) => `Wären die 10 Milliarden Hauptreihenjahre der Sonne ein einziges Jahr, dann hätte ein Leben von 30 Jahren etwa ${sec} Sekunden gedauert. (Gerechnet.)`,
+      },
+      lifeMass: {
+        title: "Die Masse entscheidet", goal: "Du weißt, warum schwere Sterne kurz und leichte lange leben.",
+        text: [
+          "Laut NASA verbraucht ein massereicherer Stern seinen Brennstoff schneller. Darum leben die schwersten Sterne nur wenige Millionen Jahre.",
+          "Leichte Sterne sind sparsam: Laut NASA werden manche massearme Sterne Billionen Jahre leuchten. Proxima Centauri ist so ein leichter Stern: ein roter Zwerg mit etwa einem Achtel der Sonnenmasse, nach der NASA-Tabelle dieser Karte.",
+        ],
+        task: "Sieh dir Proxima Centauri an, einen leichten roten Zwerg mit einem sehr langen Leben vor sich.",
+        remember: [
+          "Ein massereicherer Stern verbraucht seinen Brennstoff schneller.",
+          "Die schwersten Sterne leben nur wenige Millionen Jahre.",
+          "Manche leichten Sterne leuchten Billionen Jahre.",
+        ],
+        you: (name, m, light) => `Dein Stern ${name} hat das ${m}-Fache der Sonnenmasse, ${light ? "weniger: Er verbraucht seinen Brennstoff langsamer und lebt länger als die Sonne" : "mehr: Er verbraucht seinen Brennstoff schneller und lebt kürzer als die Sonne"}.`,
+        ref: (name, m, light) => `${name} hat das ${m}-Fache der Sonnenmasse, ${light ? "weniger: Er verbraucht seinen Brennstoff langsamer und lebt länger als die Sonne" : "mehr: Er verbraucht seinen Brennstoff schneller und lebt kürzer als die Sonne"}.`,
+        none: (name) => `Für ${name} nennt die Tabelle keine Masse.`,
+      },
+      lifeGiant: {
+        title: "Der Rote Riese", goal: "Du weißt, was passiert, wenn einem Stern im Kern der Wasserstoff ausgeht.",
+        text: [
+          "Geht dem Kern eines Sterns der Wasserstoff aus, den er zu Helium verschmelzen kann, beginnt der Kern einzustürzen, und der Stern bläht sich langsam auf. Laut NASA ist das Ergebnis ein Roter Riese.",
+          "Das passiert auch der Sonne: Laut NASA wird sie in etwa 5 Milliarden Jahren ein Roter Riese.",
+        ],
+        task: "Sieh dir die Sonne an: In etwa 5 Milliarden Jahren wird sie ein Roter Riese.",
+        remember: [
+          "Ohne Wasserstoff im Kern stürzt der Kern ein, und der Stern bläht sich auf.",
+          "Das Ergebnis ist ein Roter Riese.",
+          "Die Sonne wird in etwa 5 Milliarden Jahren ein Roter Riese.",
+        ],
+        you: (n) => `5 Milliarden Jahre bis zum Roten Riesen sind etwa ${n}-mal dein bisheriges Leben.`,
+        ref: (n) => `5 Milliarden Jahre bis zum Roten Riesen sind etwa ${n}-mal ein Leben von 30 Jahren.`,
+      },
+      lifeWhite: {
+        title: "Weiße Zwerge", goal: "Du weißt, wie Sterne wie die Sonne enden.",
+        text: [
+          "Hat ein Roter Riese seine ganze Hülle abgestoßen, bleibt nur der Kern: ein Weißer Zwerg. Laut NASA ist er meist so groß wie die Erde, und ein Teelöffel seines Materials wöge mehr als ein Pick-up. Er kühlt über Milliarden Jahre langsam ab; die abgestoßene Hülle bildet eine wachsende Wolke, einen planetarischen Nebel.",
+          "Laut NASA enden Sterne bis etwa zur siebenfachen Sonnenmasse als Weiße Zwerge, auch die Sonne. Die Karte hat Weiße Zwerge mit Planeten: Um WD 1856+534 kennt die NASA-Tabelle einen, gefunden 2020.",
+        ],
+        task: "Sieh dir WD 1856+534 an, einen Weißen Zwerg mit einem Planeten.",
+        remember: [
+          "Ein Weißer Zwerg ist der übrige Kern eines Sterns, meist so groß wie die Erde.",
+          "Ein Teelöffel seines Materials wöge mehr als ein Pick-up.",
+          "Sterne bis etwa zur siebenfachen Sonnenmasse enden als Weiße Zwerge.",
+        ],
+        you: (name, m, fate) => `Dein Stern ${name} hat das ${m}-Fache der Sonnenmasse: ${fate === "white" ? "Er wird einmal als Weißer Zwerg enden." : fate === "nova" ? "Er ist schwer genug für eine Supernova." : "Er liegt an der Grenze zwischen Weißem Zwerg und Supernova."}`,
+        ref: (name, m, fate) => `${name} hat das ${m}-Fache der Sonnenmasse: ${fate === "white" ? "Er wird einmal als Weißer Zwerg enden." : fate === "nova" ? "Er ist schwer genug für eine Supernova." : "Er liegt an der Grenze zwischen Weißem Zwerg und Supernova."}`,
+        none: (name) => `Für ${name} nennt die Tabelle keine Masse.`,
+      },
+      lifeNova: {
+        title: "Supernova und Sternenstaub", goal: "Du weißt, wie schwere Sterne enden und woher die Elemente kommen.",
+        text: [
+          "Laut NASA explodiert ein Stern mit mehr als der achtfachen Sonnenmasse an seinem Ende als Supernova; eine andere NASA-Seite setzt die Grenze bei sieben. Sein Kern kann zu einem Schwarzen Loch einstürzen: mehr dazu im nächsten Pfad.",
+          "In ihrem Kern verschmelzen Sterne Kohlenstoff zu schwereren Elementen wie Sauerstoff, Neon und Magnesium, und Supernovae verstreuen die Elemente im All. Laut NASA besteht alles auf der Erde, auch unser Körper, aus Elementen, die in den Kernen von Sternen entstanden sind.",
+        ],
+        task: "Zu diesem Schritt gibt es keine Aufgabe in der 3D-Ansicht. Beantworte die Fragen, dann ist der Schritt geschafft.",
+        remember: [
+          "Sterne mit mehr als etwa der achtfachen Sonnenmasse enden in einer Supernova.",
+          "Sterne verschmelzen schwerere Elemente wie Sauerstoff; Supernovae verstreuen sie.",
+          "Laut NASA besteht auch unser Körper aus Elementen aus Sternen.",
+        ],
+        you: (name, m, fate) => `Die Elemente deines Körpers sind in Sternen entstanden. Dein Stern ${name} (${m} Sonnenmassen) ${fate === "nova" ? "wird selbst einmal explodieren." : "ist zu leicht, um als Supernova zu explodieren."}`,
+        ref: (name, m, fate) => `Die Elemente jedes menschlichen Körpers sind in Sternen entstanden. ${name} (${m} Sonnenmassen) ${fate === "nova" ? "wird selbst einmal explodieren." : "ist zu leicht, um als Supernova zu explodieren."}`,
+        none: () => "Die Elemente deines Körpers sind in Sternen entstanden.",
       },
       birthCloud: {
         title: "Wolken aus Gas und Staub", goal: "Du weißt, wo Sterne geboren werden.",
@@ -2289,6 +2502,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Etwa wie oft ist TRAPPIST-1 b seit deiner Geburt um seinen Stern gelaufen?", ref: "Etwa wie oft läuft TRAPPIST-1 b in 30 Jahren um seinen Stern?", e: (n) => `Etwa ${n}-mal: Ein Jahr dort dauert 1,5 Tage.` },
       kepler16Age: { you: "Wie alt wärst du auf Kepler-16 b?", ref: "Wie alt wäre ein Mensch von 30 auf Kepler-16 b?", e: (n) => `${n}: Ein Jahr auf Kepler-16 b dauert 229 Tage.` },
       rockFactor: { you: "Etwa wie viele Male so alt wie du ist das Gestein, in dem Curiosity organische Moleküle fand?", ref: "Etwa wie viele Male so alt wie ein Mensch von 30 ist das Gestein, in dem Curiosity organische Moleküle fand?", e: (n) => `Etwa ${n}-mal: Es ist rund drei Milliarden Jahre alt.` },
+      mainSequence: { q: "Was macht ein Stern auf der Hauptreihe?", o: ["Er verschmilzt gleichmäßig Wasserstoff zu Helium", "Er explodiert", "Er kühlt langsam ab"], e: "Er verschmilzt in seinem Kern gleichmäßig Wasserstoff zu Helium." },
+      longestPhase: { q: "Welches ist die längste Phase im Leben eines Sterns?", o: ["Die Hauptreihe", "Der Rote Riese", "Die Supernova"], e: "Die Hauptreihe." },
+      sunMidway: { q: "Wo steht die Sonne in ihrem Leben?", o: ["Etwa in der Mitte ihrer Hauptreihe", "Ganz am Ende", "Gerade geboren"], e: "Etwa in der Mitte ihrer rund 10 Milliarden Jahre auf der Hauptreihe." },
+      massFuel: { q: "Welcher Stern verbraucht seinen Brennstoff schneller?", o: ["Der massereichere", "Der leichtere", "Beide gleich"], e: "Der massereichere." },
+      massiveShort: { q: "Wie lange leben die schwersten Sterne?", o: ["Nur wenige Millionen Jahre", "Billionen Jahre", "Ewig"], e: "Nur wenige Millionen Jahre." },
+      lowMassLong: { q: "Wie lange können manche massearme Sterne laut NASA leuchten?", o: ["Billionen Jahre", "Ein paar tausend Jahre", "Ein paar Tage"], e: "Billionen Jahre." },
+      noHydrogen: { q: "Was passiert, wenn dem Kern eines Sterns der Wasserstoff ausgeht?", o: ["Der Kern stürzt ein und der Stern bläht sich auf", "Der Stern erlischt sofort", "Nichts ändert sich"], e: "Der Kern beginnt einzustürzen, und der Stern bläht sich langsam auf." },
+      redGiant: { q: "Was wird ein Stern wie die Sonne nach der Hauptreihe?", o: ["Ein Roter Riese", "Ein Schwarzes Loch", "Ein Planet"], e: "Ein Roter Riese." },
+      giantWhen: { q: "Wann wird die Sonne laut NASA ein Roter Riese?", o: ["In etwa 5 Milliarden Jahren", "In etwa 5.000 Jahren", "Im nächsten Jahrhundert"], e: "In etwa 5 Milliarden Jahren." },
+      whiteDwarf: { q: "Was ist ein Weißer Zwerg?", o: ["Der übrige Kern eines Sterns, meist so groß wie die Erde", "Ein kleiner weißer Planet", "Ein junger Stern"], e: "Der Kern, der bleibt, wenn ein Roter Riese seine Hülle abgestoßen hat, meist so groß wie die Erde." },
+      teaspoon: { q: "Wie schwer wäre laut NASA ein Teelöffel Material eines Weißen Zwergs?", o: ["Schwerer als ein Pick-up", "So schwer wie Zucker", "Leichter als Luft"], e: "Schwerer als ein Pick-up." },
+      planetaryNebula: { q: "Was bilden die Schichten, die ein sterbender sonnenähnlicher Stern abstößt?", o: ["Einen planetarischen Nebel", "Sofort neue Planeten", "Ein Schwarzes Loch"], e: "Eine wachsende Wolke aus Staub und Gas, einen planetarischen Nebel." },
+      supernova: { q: "Was ist eine Supernova?", o: ["Die Explosion eines Sterns", "Die Geburt eines neuen Sterns", "Ein heller Planet"], e: "Die Explosion eines Sterns." },
+      novaMass: { q: "Welche Sterne enden laut NASA in einer Supernova?", o: ["Sterne mit mehr als etwa der achtfachen Sonnenmasse", "Jeder Stern", "Nur rote Zwerge"], e: "Sterne mit mehr als etwa der achtfachen Sonnenmasse; eine andere NASA-Seite sagt sieben." },
+      stardust: { q: "Wo sind laut NASA die Elemente unseres Körpers entstanden?", o: ["In den Kernen von Sternen", "Auf dem Mond", "In den Meeren der Erde"], e: "In den Kernen von Sternen; Supernovae haben sie verstreut." },
       molecularCloud: { q: "Wo entstehen Sterne laut NASA?", o: ["In großen Wolken aus Gas und Staub, den Molekülwolken", "Im Inneren von Planeten", "In den Ringen des Saturn"], e: "In großen, kalten Wolken aus Gas und Staub, den Molekülwolken." },
       clumpCollapse: { q: "Was bringt Klumpen in einer Molekülwolke zum Einstürzen?", o: ["Die Schwerkraft", "Wind von der Erde", "Licht vom Mond"], e: "Die Schwerkraft." },
       orionNursery: { q: "Was ist der Orionnebel?", o: ["Das nächste große Sternentstehungsgebiet, etwa 1.500 Lichtjahre entfernt", "Ein Planet des Sonnensystems", "Ein Schwarzes Loch"], e: "Das nächste große Sternentstehungsgebiet bei der Erde, etwa 1.500 Lichtjahre entfernt." },
@@ -2369,6 +2597,7 @@ export const LEARN_TEXT = {
       names: { title: "宇宙の名前", goal: "惑星や恒星の名前が読めます。アルファベット、ギリシャ文字、カタログ、そして物語のある名前です。" },
       stars: { title: "恒星を知る", goal: "恒星とは何か、色が何を語るか、恒星をどう分けるか、そしてどの恒星が惑星にとってよい家なのかを説明できます。" },
       birth: { title: "星の誕生", goal: "ガスとちりの雲から恒星がどう生まれ、そのまわりで惑星がどう育ち、太陽がどう生まれたのかを説明できます。" },
+      life: { title: "星の一生と死", goal: "恒星がどう生き、なぜ質量が一生を決め、恒星がどう終わるのか（白色わい星か超新星か）を説明できます。" },
     },
     path: {
       meta: (m) => `約${m}分 · 初心者向け`,
@@ -2655,6 +2884,84 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `太陽が2つある世界Kepler-16 bでは、あなたは${n}歳です。そこでは1年が229日です。`,
         ref: (n) => `30歳の人は、太陽が2つある世界Kepler-16 bでは${n}歳です。そこでは1年が229日です。`,
+      },
+      lifeMain: {
+        title: "主系列", goal: "恒星の一生でいちばん長い時期を知っています。",
+        text: [
+          "NASAによると、中心で水素をヘリウムに安定して融合している恒星を主系列星とよびます。恒星の一生でいちばん長い時期で、恒星の約90 %がこの時期にあります。",
+          "太陽もそのひとつで、主系列の時期のほぼまんなかにいます。NASAによると、太陽は約100億年を主系列ですごします。",
+        ],
+        task: "主系列のまんなかにいる太陽を見てみましょう。",
+        remember: [
+          "主系列では、恒星は水素を安定してヘリウムに融合しています。",
+          "恒星の一生でいちばん長い時期です。",
+          "太陽は、約100億年の主系列のほぼまんなかにいます。",
+        ],
+        you: (sec) => `太陽の主系列の100億年を1年とすると、あなたのこれまでの人生は約${sec}秒です。（計算）`,
+        ref: (sec) => `太陽の主系列の100億年を1年とすると、30年の人生は約${sec}秒です。（計算）`,
+      },
+      lifeMass: {
+        title: "質量が決める", goal: "重い恒星は短く、軽い恒星は長く生きる理由を知っています。",
+        text: [
+          "NASAによると、質量の大きい恒星ほど燃料を速く使います。だから、いちばん重い恒星は数百万年しか生きません。",
+          "軽い恒星は節約家です。NASAによると、質量の小さい恒星の中には何兆年も輝くものがあります。プロキシマ・ケンタウリはそんな軽い恒星で、この地図のNASAの表では太陽の約8分の1の質量の赤色わい星です。",
+        ],
+        task: "とても長い一生がこれから待つ軽い赤色わい星、プロキシマ・ケンタウリを見てみましょう。",
+        remember: [
+          "質量の大きい恒星ほど、燃料を速く使います。",
+          "いちばん重い恒星は数百万年しか生きません。",
+          "軽い恒星の中には何兆年も輝くものがあります。",
+        ],
+        you: (name, m, light) => `あなたの星${name}の質量は太陽の${m}倍で、${light ? "太陽より軽いので、燃料をゆっくり使い、太陽より長く生きます" : "太陽より重いので、燃料を速く使い、太陽より短く生きます"}。`,
+        ref: (name, m, light) => `${name}の質量は太陽の${m}倍で、${light ? "太陽より軽いので、燃料をゆっくり使い、太陽より長く生きます" : "太陽より重いので、燃料を速く使い、太陽より短く生きます"}。`,
+        none: (name) => `表には${name}の質量がありません。`,
+      },
+      lifeGiant: {
+        title: "赤色巨星", goal: "恒星の中心の水素がなくなると何が起きるかを知っています。",
+        text: [
+          "恒星の中心で、ヘリウムに融合する水素がなくなると、中心はちぢみはじめ、恒星はゆっくりふくらみます。NASAによると、こうして赤色巨星になります。",
+          "太陽にも同じことが起きます。NASAによると、太陽は約50億年後に赤色巨星になります。",
+        ],
+        task: "太陽を見てみましょう。約50億年後には赤色巨星になります。",
+        remember: [
+          "中心の水素がなくなると、中心はちぢみ、恒星はふくらみます。",
+          "こうして赤色巨星になります。",
+          "太陽は約50億年後に赤色巨星になります。",
+        ],
+        you: (n) => `赤色巨星までの50億年は、あなたのこれまでの人生の約${n}倍です。`,
+        ref: (n) => `赤色巨星までの50億年は、30年の人生の約${n}倍です。`,
+      },
+      lifeWhite: {
+        title: "白色わい星", goal: "太陽のような恒星がどう終わるのかを知っています。",
+        text: [
+          "赤色巨星が外側の層をすべて放り出すと、中心だけが残ります。白色わい星です。NASAによると、ふつう地球くらいの大きさで、その物質はティースプーン1杯でピックアップトラックより重くなります。何十億年もかけてゆっくり冷え、放り出された層は広がる雲、惑星状星雲になります。",
+          "NASAによると、太陽の約7倍までの質量の恒星は白色わい星で終わります。太陽もそうです。地図には惑星をもつ白色わい星があります。WD 1856+534のまわりには、NASAの表で2020年に見つかった惑星が1つあります。",
+        ],
+        task: "惑星をもつ白色わい星、WD 1856+534を見てみましょう。",
+        remember: [
+          "白色わい星は恒星の残った中心で、ふつう地球くらいの大きさです。",
+          "その物質はティースプーン1杯でピックアップトラックより重くなります。",
+          "太陽の約7倍までの質量の恒星は、白色わい星で終わります。",
+        ],
+        you: (name, m, fate) => `あなたの星${name}の質量は太陽の${m}倍です。${fate === "white" ? "いつか白色わい星で終わります。" : fate === "nova" ? "超新星になれるほど重い恒星です。" : "白色わい星と超新星の境目にいます。"}`,
+        ref: (name, m, fate) => `${name}の質量は太陽の${m}倍です。${fate === "white" ? "いつか白色わい星で終わります。" : fate === "nova" ? "超新星になれるほど重い恒星です。" : "白色わい星と超新星の境目にいます。"}`,
+        none: (name) => `表には${name}の質量がありません。`,
+      },
+      lifeNova: {
+        title: "超新星と星くず", goal: "重い恒星がどう終わり、元素がどこから来るのかを知っています。",
+        text: [
+          "NASAによると、太陽の8倍をこえる質量の恒星は、最後に超新星として爆発します。NASAの別のページは、その境目を7倍としています。中心はつぶれてブラックホールになることがあります。くわしくは次のパスで。",
+          "恒星は中心で炭素を、酸素、ネオン、マグネシウムのようなもっと重い元素に融合し、超新星はその元素を宇宙にまき散らします。NASAによると、地球のすべてのもの、私たちの体も、恒星の中心でできた元素からできています。",
+        ],
+        task: "このステップには3Dのタスクはありません。質問に答えれば完了です。",
+        remember: [
+          "太陽の約8倍をこえる質量の恒星は、超新星で終わります。",
+          "恒星は酸素のような重い元素をつくり、超新星がそれをまき散らします。",
+          "NASAによると、私たちの体も恒星でできた元素からできています。",
+        ],
+        you: (name, m, fate) => `あなたの体の元素は恒星の中でできました。あなたの星${name}（太陽の${m}倍の質量）は${fate === "nova" ? "いつか自分も爆発します。" : "超新星として爆発するには軽すぎます。"}`,
+        ref: (name, m, fate) => `すべての人の体の元素は恒星の中でできました。${name}（太陽の${m}倍の質量）は${fate === "nova" ? "いつか自分も爆発します。" : "超新星として爆発するには軽すぎます。"}`,
+        none: () => "あなたの体の元素は恒星の中でできました。",
       },
       birthCloud: {
         title: "ガスとちりの雲", goal: "恒星がどこで生まれるかを知っています。",
@@ -3163,6 +3470,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "あなたが生まれてから、TRAPPIST-1 bは恒星のまわりを約何回まわりましたか？", ref: "30年のあいだに、TRAPPIST-1 bは恒星のまわりを約何回まわりますか？", e: (n) => `約${n}回です。そこでは1年が1.5日です。` },
       kepler16Age: { you: "Kepler-16 bでは、あなたは何歳ですか？", ref: "30歳の人は、Kepler-16 bでは何歳ですか？", e: (n) => `${n}歳です。Kepler-16 bの1年は229日です。` },
       rockFactor: { you: "キュリオシティが有機分子を見つけた岩石は、あなたの年齢の約何倍古いですか？", ref: "キュリオシティが有機分子を見つけた岩石は、30歳の人の年齢の約何倍古いですか？", e: (n) => `約${n}倍です。約30億年前の岩石です。` },
+      mainSequence: { q: "主系列の恒星は何をしていますか？", o: ["水素を安定してヘリウムに融合している", "爆発している", "ゆっくり冷えている"], e: "中心で水素を安定してヘリウムに融合しています。" },
+      longestPhase: { q: "恒星の一生でいちばん長い時期はどれですか？", o: ["主系列", "赤色巨星", "超新星"], e: "主系列です。" },
+      sunMidway: { q: "太陽は一生のどこにいますか？", o: ["主系列のほぼまんなか", "いちばん最後", "生まれたばかり"], e: "約100億年の主系列のほぼまんなかです。" },
+      massFuel: { q: "燃料を速く使うのはどちらの恒星ですか？", o: ["質量の大きい恒星", "軽い恒星", "どちらも同じ"], e: "質量の大きい恒星です。" },
+      massiveShort: { q: "いちばん重い恒星はどれくらい生きますか？", o: ["数百万年だけ", "何兆年", "永遠に"], e: "数百万年だけです。" },
+      lowMassLong: { q: "NASAによると、質量の小さい恒星の中には、どれくらい輝くものがありますか？", o: ["何兆年", "数千年", "数日"], e: "何兆年です。" },
+      noHydrogen: { q: "恒星の中心の水素がなくなると、どうなりますか？", o: ["中心がちぢみ、恒星がふくらむ", "すぐに消える", "何も変わらない"], e: "中心がちぢみはじめ、恒星はゆっくりふくらみます。" },
+      redGiant: { q: "太陽のような恒星は、主系列のあと何になりますか？", o: ["赤色巨星", "ブラックホール", "惑星"], e: "赤色巨星です。" },
+      giantWhen: { q: "NASAによると、太陽が赤色巨星になるのはいつですか？", o: ["約50億年後", "約5,000年後", "次の世紀"], e: "約50億年後です。" },
+      whiteDwarf: { q: "白色わい星とは何ですか？", o: ["恒星の残った中心で、ふつう地球くらいの大きさ", "小さな白い惑星", "若い恒星"], e: "赤色巨星が外側の層を放り出したあとに残る中心で、ふつう地球くらいの大きさです。" },
+      teaspoon: { q: "NASAによると、白色わい星の物質ティースプーン1杯の重さは？", o: ["ピックアップトラックより重い", "砂糖と同じくらい", "空気より軽い"], e: "ピックアップトラックより重くなります。" },
+      planetaryNebula: { q: "死にゆく太陽のような恒星が放り出した層は、何になりますか？", o: ["惑星状星雲", "すぐに新しい惑星", "ブラックホール"], e: "広がるちりとガスの雲、惑星状星雲になります。" },
+      supernova: { q: "超新星とは何ですか？", o: ["恒星の爆発", "新しい恒星の誕生", "明るい惑星"], e: "恒星の爆発です。" },
+      novaMass: { q: "NASAによると、超新星で終わるのはどの恒星ですか？", o: ["太陽の約8倍をこえる質量の恒星", "すべての恒星", "赤色わい星だけ"], e: "太陽の約8倍をこえる質量の恒星です。NASAの別のページは7倍としています。" },
+      stardust: { q: "NASAによると、私たちの体の元素はどこでできましたか？", o: ["恒星の中心", "月", "地球の海"], e: "恒星の中心です。超新星がそれをまき散らしました。" },
       molecularCloud: { q: "NASAによると、恒星はどこで生まれますか？", o: ["ガスとちりの大きな雲、分子雲の中", "惑星の内部", "土星の環の中"], e: "ガスとちりの冷たい大きな雲、分子雲の中です。" },
       clumpCollapse: { q: "分子雲の中のかたまりをつぶすのは何ですか？", o: ["重力", "地球からの風", "月の光"], e: "重力です。" },
       orionNursery: { q: "オリオン大星雲とは何ですか？", o: ["いちばん近い大きな星形成領域、約1,500光年", "太陽系の惑星", "ブラックホール"], e: "地球にいちばん近い大きな星形成領域で、約1,500光年はなれています。" },
@@ -3243,6 +3565,7 @@ export const LEARN_TEXT = {
       names: { title: "Имена в космоса", goal: "Можеш да четеш имената на планети и звезди: буквите, гръцките букви, каталозите и имената с история." },
       stars: { title: "Да разберем звездите", goal: "Можеш да обясниш какво е звезда, какво казва цветът ѝ, как се подреждат звездите и кои звезди са добър дом за планети." },
       birth: { title: "Раждането на звездите", goal: "Можеш да обясниш как от облак газ и прах се ражда звезда, как около нея растат планети и как се е родило Слънцето." },
+      life: { title: "Животът и смъртта на звездите", goal: "Можеш да обясниш как живее една звезда, защо масата ѝ решава живота ѝ и как свършват звездите: като бели джуджета или в свръхнова." },
     },
     path: {
       meta: (m) => `около ${m} минути · за начинаещи`,
@@ -3529,6 +3852,84 @@ export const LEARN_TEXT = {
         ],
         you: (n) => `На Kepler-16 b, светът с две слънца, щеше да си на ${n} години: една година там трае 229 дни.`,
         ref: (n) => `Човек на 30 години щеше да е на ${n} на Kepler-16 b, светът с две слънца: една година там трае 229 дни.`,
+      },
+      lifeMain: {
+        title: "Главната последователност", goal: "Знаеш най-дългата фаза в живота на една звезда.",
+        text: [
+          "Според НАСА звездите, които стабилно сливат водород в хелий в ядрото си, се наричат звезди от главната последователност. Това е най-дългата фаза в живота на звездата и около 90 % от звездите са в нея.",
+          "Слънцето е една от тях, приблизително в средата на тази фаза. Според НАСА то ще прекара около 10 милиарда години в главната последователност.",
+        ],
+        task: "Разгледай Слънцето, в средата на главната си последователност.",
+        remember: [
+          "В главната последователност звездата стабилно слива водород в хелий.",
+          "Това е най-дългата фаза в живота на звездата.",
+          "Слънцето е приблизително в средата на своите около 10 милиарда години там.",
+        ],
+        you: (sec) => `Ако 10-те милиарда години на Слънцето в главната последователност бяха една година, досегашният ти живот щеше да е траял около ${sec} секунди. (Изчислено.)`,
+        ref: (sec) => `Ако 10-те милиарда години на Слънцето в главната последователност бяха една година, един живот от 30 години щеше да е траял около ${sec} секунди. (Изчислено.)`,
+      },
+      lifeMass: {
+        title: "Масата решава", goal: "Знаеш защо тежките звезди живеят кратко, а леките дълго.",
+        text: [
+          "Според НАСА по-масивната звезда изразходва горивото си по-бързо. Затова най-тежките звезди живеят само няколко милиона години.",
+          "Леките звезди са пестеливи: според НАСА някои звезди с малка маса ще светят трилиони години. Проксима Кентавър е такава лека звезда: червено джудже с около една осма от масата на Слънцето според таблицата на НАСА в тази карта.",
+        ],
+        task: "Разгледай Проксима Кентавър, леко червено джудже с много дълъг живот пред себе си.",
+        remember: [
+          "По-масивната звезда изразходва горивото си по-бързо.",
+          "Най-тежките звезди живеят само няколко милиона години.",
+          "Някои леки звезди светят трилиони години.",
+        ],
+        you: (name, m, light) => `Твоята звезда ${name} има ${m} пъти масата на Слънцето, ${light ? "по-малко: изразходва горивото си по-бавно и живее по-дълго от Слънцето" : "повече: изразходва горивото си по-бързо и живее по-кратко от Слънцето"}.`,
+        ref: (name, m, light) => `${name} има ${m} пъти масата на Слънцето, ${light ? "по-малко: изразходва горивото си по-бавно и живее по-дълго от Слънцето" : "повече: изразходва горивото си по-бързо и живее по-кратко от Слънцето"}.`,
+        none: (name) => `Таблицата не дава маса за ${name}.`,
+      },
+      lifeGiant: {
+        title: "Червеният гигант", goal: "Знаеш какво става, когато в ядрото на звездата свърши водородът.",
+        text: [
+          "Когато в ядрото на звездата свърши водородът за сливане в хелий, ядрото започва да се свива, а звездата бавно се раздува. Според НАСА резултатът е червен гигант.",
+          "Това ще се случи и със Слънцето: според НАСА то ще стане червен гигант след около 5 милиарда години.",
+        ],
+        task: "Разгледай Слънцето: след около 5 милиарда години то ще е червен гигант.",
+        remember: [
+          "Без водород в ядрото ядрото се свива, а звездата се раздува.",
+          "Резултатът е червен гигант.",
+          "Слънцето ще стане червен гигант след около 5 милиарда години.",
+        ],
+        you: (n) => `5-те милиарда години до червения гигант са около ${n} пъти досегашния ти живот.`,
+        ref: (n) => `5-те милиарда години до червения гигант са около ${n} пъти един живот от 30 години.`,
+      },
+      lifeWhite: {
+        title: "Бели джуджета", goal: "Знаеш как свършват звезди като Слънцето.",
+        text: [
+          "Когато червеният гигант изхвърли цялата си атмосфера, остава само ядрото: бяло джудже. Според НАСА то обикновено е голямо колкото Земята, а една чаена лъжичка от материята му би тежала повече от пикап. То бавно изстива милиарди години; изхвърлените слоеве образуват разширяващ се облак, планетарна мъглявина.",
+          "Според НАСА звездите до около 7 пъти масата на Слънцето свършват като бели джуджета, и Слънцето. Картата има бели джуджета с планети: около WD 1856+534 таблицата на НАСА познава една, открита през 2020 г.",
+        ],
+        task: "Разгледай WD 1856+534, бяло джудже с планета.",
+        remember: [
+          "Бялото джудже е останалото ядро на звезда, обикновено голямо колкото Земята.",
+          "Една чаена лъжичка от материята му би тежала повече от пикап.",
+          "Звездите до около 7 пъти масата на Слънцето свършват като бели джуджета.",
+        ],
+        you: (name, m, fate) => `Твоята звезда ${name} има ${m} пъти масата на Слънцето: ${fate === "white" ? "тя ще свърши като бяло джудже." : fate === "nova" ? "тя е достатъчно тежка за свръхнова." : "тя е на границата между бяло джудже и свръхнова."}`,
+        ref: (name, m, fate) => `${name} има ${m} пъти масата на Слънцето: ${fate === "white" ? "тя ще свърши като бяло джудже." : fate === "nova" ? "тя е достатъчно тежка за свръхнова." : "тя е на границата между бяло джудже и свръхнова."}`,
+        none: (name) => `Таблицата не дава маса за ${name}.`,
+      },
+      lifeNova: {
+        title: "Свръхнова и звезден прах", goal: "Знаеш как свършват тежките звезди и откъде идват елементите.",
+        text: [
+          "Според НАСА звезда с повече от осем пъти масата на Слънцето избухва накрая като свръхнова; друга страница на НАСА поставя границата при седем. Ядрото ѝ може да се свие в черна дупка: повече за това в следващата пътека.",
+          "В ядрото си звездите сливат въглерод в по-тежки елементи като кислород, неон и магнезий, а свръхновите разпръскват елементите в космоса. Според НАСА всичко на Земята, и телата ни, е от елементи, създадени в ядрата на звездите.",
+        ],
+        task: "За тази стъпка няма задача в 3D изгледа. Отговори на въпросите и стъпката е изпълнена.",
+        remember: [
+          "Звездите с повече от около осем пъти масата на Слънцето свършват в свръхнова.",
+          "Звездите създават по-тежки елементи като кислород; свръхновите ги разпръскват.",
+          "Според НАСА и телата ни са от елементи от звездите.",
+        ],
+        you: (name, m, fate) => `Елементите на тялото ти са създадени в звезди. Твоята звезда ${name} (${m} слънчеви маси) ${fate === "nova" ? "един ден сама ще избухне." : "е твърде лека, за да избухне като свръхнова."}`,
+        ref: (name, m, fate) => `Елементите на всяко човешко тяло са създадени в звезди. ${name} (${m} слънчеви маси) ${fate === "nova" ? "един ден сама ще избухне." : "е твърде лека, за да избухне като свръхнова."}`,
+        none: () => "Елементите на тялото ти са създадени в звезди.",
       },
       birthCloud: {
         title: "Облаци от газ и прах", goal: "Знаеш къде се раждат звездите.",
@@ -4037,6 +4438,21 @@ export const LEARN_TEXT = {
       trappistBLaps: { you: "Около колко пъти е обиколил TRAPPIST-1 b звездата си от раждането ти?", ref: "Около колко пъти обикаля TRAPPIST-1 b звездата си за 30 години?", e: (n) => `Около ${n} пъти: една година там трае 1,5 дни.` },
       kepler16Age: { you: "На колко години щеше да си на Kepler-16 b?", ref: "На колко години щеше да е на Kepler-16 b човек на 30?", e: (n) => `${n}: една година на Kepler-16 b трае 229 дни.` },
       rockFactor: { you: "Около колко пъти по-стари от теб са скалите, в които „Кюриосити“ откри органични молекули?", ref: "Около колко пъти по-стари от човек на 30 са скалите, в които „Кюриосити“ откри органични молекули?", e: (n) => `Около ${n} пъти: те са на около три милиарда години.` },
+      mainSequence: { q: "Какво прави звездата в главната последователност?", o: ["Стабилно слива водород в хелий", "Избухва", "Бавно изстива"], e: "Стабилно слива водород в хелий в ядрото си." },
+      longestPhase: { q: "Коя е най-дългата фаза в живота на звездата?", o: ["Главната последователност", "Червеният гигант", "Свръхновата"], e: "Главната последователност." },
+      sunMidway: { q: "Къде е Слънцето в живота си?", o: ["Приблизително в средата на главната си последователност", "Съвсем в края", "Току-що родено"], e: "Приблизително в средата на около 10-те си милиарда години в главната последователност." },
+      massFuel: { q: "Коя звезда изразходва горивото си по-бързо?", o: ["По-масивната", "По-леката", "Еднакво"], e: "По-масивната." },
+      massiveShort: { q: "Колко дълго живеят най-тежките звезди?", o: ["Само няколко милиона години", "Трилиони години", "Вечно"], e: "Само няколко милиона години." },
+      lowMassLong: { q: "Колко дълго може да светят някои звезди с малка маса според НАСА?", o: ["Трилиони години", "Няколко хиляди години", "Няколко дни"], e: "Трилиони години." },
+      noHydrogen: { q: "Какво става, когато в ядрото на звездата свърши водородът?", o: ["Ядрото се свива, а звездата се раздува", "Звездата веднага угасва", "Нищо не се променя"], e: "Ядрото започва да се свива, а звездата бавно се раздува." },
+      redGiant: { q: "Какво става звезда като Слънцето след главната последователност?", o: ["Червен гигант", "Черна дупка", "Планета"], e: "Червен гигант." },
+      giantWhen: { q: "Кога Слънцето ще стане червен гигант според НАСА?", o: ["След около 5 милиарда години", "След около 5000 години", "През следващия век"], e: "След около 5 милиарда години." },
+      whiteDwarf: { q: "Какво е бяло джудже?", o: ["Останалото ядро на звезда, обикновено голямо колкото Земята", "Малка бяла планета", "Млада звезда"], e: "Ядрото, което остава, след като червеният гигант изхвърли атмосферата си, обикновено голямо колкото Земята." },
+      teaspoon: { q: "Колко би тежала според НАСА една чаена лъжичка материя от бяло джудже?", o: ["Повече от пикап", "Колкото захар", "По-малко от въздух"], e: "Повече от пикап." },
+      planetaryNebula: { q: "Какво образуват слоевете, които изхвърля умираща звезда като Слънцето?", o: ["Планетарна мъглявина", "Веднага нови планети", "Черна дупка"], e: "Разширяващ се облак от прах и газ, планетарна мъглявина." },
+      supernova: { q: "Какво е свръхнова?", o: ["Избухването на звезда", "Раждането на нова звезда", "Ярка планета"], e: "Избухването на звезда." },
+      novaMass: { q: "Кои звезди свършват в свръхнова според НАСА?", o: ["Звездите с повече от около 8 пъти масата на Слънцето", "Всяка звезда", "Само червените джуджета"], e: "Звездите с повече от около осем пъти масата на Слънцето; друга страница на НАСА казва седем." },
+      stardust: { q: "Къде са създадени елементите на телата ни според НАСА?", o: ["В ядрата на звездите", "На Луната", "В моретата на Земята"], e: "В ядрата на звездите; свръхновите са ги разпръснали." },
       molecularCloud: { q: "Къде се образуват звездите според НАСА?", o: ["В големи облаци от газ и прах, молекулярните облаци", "Във вътрешността на планети", "В пръстените на Сатурн"], e: "В големи студени облаци от газ и прах, молекулярните облаци." },
       clumpCollapse: { q: "Какво кара бучките в молекулярния облак да се свиват?", o: ["Гравитацията", "Вятър от Земята", "Светлина от Луната"], e: "Гравитацията." },
       orionNursery: { q: "Какво е мъглявината Орион?", o: ["Най-близката голяма област на звездообразуване, на около 1500 светлинни години", "Планета от Слънчевата система", "Черна дупка"], e: "Най-близката до Земята голяма област на звездообразуване, на около 1500 светлинни години." },
@@ -4119,6 +4535,18 @@ export function personalLine(step, nums, lang) {
   if (step === "moons") return (nums.you ? s.you : s.ref)(fmt(nums.moonLaps));
   if (step === "exoWhat") return (nums.you ? s.you : s.ref)(fmt(nums.knownAtBirth), fmt(nums.knownNow), String(nums.birthYear)); // a year without a thousands separator
   if (step === "habLife") return (nums.you ? s.you : s.ref)(fmt(nums.candidatesAtBirth), fmt(nums.candidatesNow), String(nums.birthYear));
+  if (PATHS.life.steps.includes(step)) {
+    if (step === "lifeMain") return (nums.you ? s.you : s.ref)(fmt(nums.sunYearSeconds, 2));
+    if (step === "lifeGiant") return (nums.you ? s.you : s.ref)(fmt(nums.giantLives));
+    // the visitor's star with its mass from the table, or Proxima Centauri
+    const mine = nums.starName != null;
+    const name = mine ? nums.starName : "Proxima Centauri";
+    const mass = mine ? nums.starMass : PROXIMA_INFO.mass;
+    if (mass == null) return s.none(name);
+    const f = mine ? s.you : s.ref;
+    if (step === "lifeMass") return f(name, fmt(mass, 2), mass < 1);
+    return f(name, fmt(mass, 2), fateOf(mass));
+  }
   if (PATHS.birth.steps.includes(step)) {
     const f = nums.you ? s.you : s.ref;
     if (step === "birthCloud") return f(fmt(nums.orionBefore));
@@ -4233,12 +4661,14 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const HAB_PICTURE = { habWhat: { name: "Earth" }, habZone: { temp: 269 }, habWater: { name: "Jupiter" }, habAtmos: { name: "Venus" }, habIngredients: { name: "Mars" }, habExtreme: { name: "Earth" }, habLife: { temp: 218 } };
   const EXO_PICTURE = { exoWhat: 1329, exoHow: 279, exoRocky: 250, exoGiants: 1459, exoStrange: 1958, exoSystems: 398, exoFamous: 1209 }; // the temperatures of their planets (K)
   const ALPHA_PICTURE = { neighbors: 3000, pair: 5790, proxima: 3000, travel: 5772 }; // the temperature of the star drawn
+  const LIFE_PICTURE = { lifeMain: 5772, lifeMass: 2900, lifeGiant: 3500, lifeWhite: 9000, lifeNova: 25000 }; // the temperatures of the stars drawn
   const BIRTH_PICTURE = { birthCloud: 20000, birthProto: 3540, birthDisk: 4109, birthCluster: 12000, birthSun: 5772 }; // the temperatures of the stars drawn
   const STAR_PICTURE = { starWhat: 5772, starColor: 2566, starClass: 5761, starSize: 2900, starHosts: 3459 }; // the temperatures of the stars drawn
   const NAME_PICTURE = { nameLetters: 3050, nameStars: 5790, nameGreek: 9600, nameCatalog: 2566, nameStories: 5770 }; // the temperatures of the stars drawn
   const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
-    BIRTH_PICTURE[step] ? starCanvas(BIRTH_PICTURE[step], "uni-orb small star", 28)
+    LIFE_PICTURE[step] ? starCanvas(LIFE_PICTURE[step], "uni-orb small star", 28)
+    : BIRTH_PICTURE[step] ? starCanvas(BIRTH_PICTURE[step], "uni-orb small star", 28)
     : STAR_PICTURE[step] ? starCanvas(STAR_PICTURE[step], "uni-orb small star", 28)
     : NAME_PICTURE[step] ? starCanvas(NAME_PICTURE[step], "uni-orb small star", 28)
     : ZOD_PICTURE[step] ? starCanvas(ZOD_PICTURE[step], "uni-orb small star", 28)
@@ -4327,6 +4757,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     : path === "names" ? starCanvas(3050, `${cls} star`, size)
     : path === "stars" ? starCanvas(9000, `${cls} star`, size)
     : path === "birth" ? starCanvas(4109, `${cls} star`, size)
+    : path === "life" ? starCanvas(3500, `${cls} star`, size)
     : path === "exo" ? planetCanvas({ temp: 1329 }, cls, size)
     : path === "hab" ? planetCanvas({ name: "Earth" }, cls, size)
     : planetCanvas({ name: "Saturn" }, cls, size);

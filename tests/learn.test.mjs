@@ -3,7 +3,7 @@
 // Run with: node --test tests/*.test.mjs
 import test from "node:test";
 import assert from "node:assert/strict";
-import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES, GENITIVE, catalogOf, celsius, starClassOf, PROXIMA_INFO } from "../web/learn.js";
+import { PATHS, TASKS, VIEWS, PATH_VIEWS, QUESTIONS, LEARN_TEXT, SOURCES, TRAVEL_YEARS, personalNumbers, distractors, seededOrder, buildQuestions, testQuestions, passed, personalLine, stepsForPlace, placePieces, PLACE_WORDS, ZOD_NAMES, GENITIVE, catalogOf, celsius, starClassOf, PROXIMA_INFO, fateOf } from "../web/learn.js";
 
 const YEARS = { Mercury: 0.241, Venus: 0.615, Earth: 1, Mars: 1.881, Jupiter: 11.86 }; // as in main.js
 const STAR = { name: "HD 3651", dist: 36.3, year: 1991 };
@@ -366,5 +366,25 @@ test("the birth of stars: the light of the Orion Nebula and the Pleiades, AU Mic
     assert.ok(line && !/undefined|null|NaN|-0/.test(line), `${lang} ${step}: ${line}`);
   }
   const t = testQuestions("birth", you, "en", 0);
+  assert.equal(new Set(t.map((q) => q.id)).size, 10);
+});
+
+test("life and death of stars: the visitor's life against the Sun's, and the fate of the visitor's star by its mass", () => {
+  assert.deepEqual([0.46, 1, 7, 7.5, 8.2, null].map(fateOf), ["white", "white", "white", "edge", "nova", null]);
+  const info = { "GJ 680": { mass: 0.456 }, Big: { mass: 9.1 }, Edge: { mass: 7.4 }, Sunny: { mass: 1.07 } };
+  const of = (name) => personalNumbers({ age: 31, years: YEARS, star: { name, dist: 31, year: 1995 }, starInfo: (h) => info[h] ?? null });
+  assert.ok(personalLine("lifeMain", of("GJ 680"), "de").includes("etwa 0,10 Sekunden"));
+  assert.ok(personalLine("lifeGiant", of("GJ 680"), "de").includes("etwa 160.000.000-mal"));
+  assert.ok(personalLine("lifeMass", of("GJ 680"), "de").includes("0,46-Fache der Sonnenmasse, weniger"));
+  assert.ok(personalLine("lifeMass", of("Sunny"), "de").includes("mehr:"));
+  assert.ok(personalLine("lifeWhite", of("GJ 680"), "de").includes("als Weißer Zwerg enden"));
+  assert.ok(personalLine("lifeWhite", of("Edge"), "de").includes("an der Grenze"));
+  assert.ok(personalLine("lifeNova", of("Big"), "de").includes("wird selbst einmal explodieren"));
+  assert.ok(personalLine("lifeNova", nobody, "en").includes("Proxima Centauri (0.12 masses of the Sun) is too light"));
+  for (const lang of LANGS) for (const step of PATHS.life.steps) for (const nums of [you, nobody, of("GJ 680"), of("Big"), of("Edge"), of("Nowhere")]) {
+    const line = personalLine(step, nums, lang);
+    assert.ok(line && !/undefined|null|NaN/.test(line), `${lang} ${step}: ${line}`);
+  }
+  const t = testQuestions("life", you, "de", 0);
   assert.equal(new Set(t.map((q) => q.id)).size, 10);
 });

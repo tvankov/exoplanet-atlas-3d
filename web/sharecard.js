@@ -465,6 +465,11 @@ const EMBLEM = {
     g.stroke();
     for (const [i, [x, y]] of stars.entries()) drawStar(g, r * x, r * y, r * (i === 2 ? 0.16 : 0.1), starColor(i === 2 ? 4000 : 9600));
   },
+  // life and death of stars: a big red giant and the small white dwarf it will leave
+  "life-scholar": (g, r) => {
+    drawStar(g, r * 0.85, r * 1.0, r * 0.48, starColor(3300));
+    drawStar(g, r * 1.55, r * 0.7, r * 0.1, starColor(12000));
+  },
   // the birth of stars: a young star in its disk of gas and dust, with a small planet growing in it
   "birth-scholar": async (g, r) => {
     g.save();
