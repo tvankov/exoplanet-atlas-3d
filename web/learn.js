@@ -8198,6 +8198,37 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     return box;
   }
 
+  // the task of a step in the 3D view, with its button; close: the panel closes, so that the 3D view is free (the copy at the top of the
+  // real scale step keeps it open)
+  function taskBlock(step, s, questions, close, onChange) {
+    const tx = t();
+    const task = el("div", `learn-task${taskDone(step) ? " done" : ""}`);
+    const tt = el("div", "");
+    tt.append(el("small", "", tx.taskLabel), el("p", "", s.task));
+    const buttons = el("div", "learn-task-buttons");
+    buttons.append(
+      button(taskDone(step) ? `✓ ${tx.taskDone}` : tx.taskGo, taskDone(step) ? "uni-link" : "uni-primary", () => {
+        explorer.emit("learnTask", `${PATH}/${step}`);
+        maybeFinish(step, questions);
+        track(`learn-task-${step}`);
+        stopSpeaking();
+        if (close) closePanel?.();
+        act(taskOf(step));
+        if (!close) onChange?.();
+      })
+    );
+    // the real scale is switched back here too, not only in the menu
+    if (TASKS[step] === "realScale" && isRealScale?.())
+      buttons.append(
+        button(tx.scaleBack, "uni-link", () => {
+          if (close) closePanel?.();
+          act("explanationScale");
+          if (!close) onChange?.();
+        })
+      );
+    task.append(tt, buttons);
+    return task;
+  }
   function stepView(step, onChange) {
     const tx = t();
     const s = tx.steps[step];
@@ -8219,6 +8250,9 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     goal.append(el("strong", "", `${tx.goalLabel}: `), s.goal);
     parts.push(goal);
     // what it means for the visitor: their own numbers, or an example
+    // the real scale can be switched on before reading, so that the text is read with the real distances in view: the task a second time
+    // at the top, and here the panel stays open
+    if (TASKS[step] === "realScale") parts.push(taskBlock(step, s, questions, false, onChange));
     const you = el("div", "learn-you");
     const own = n.you || (step === "scale" && n.star);
     you.append(el("small", "", own ? tx.forYou : tx.example), el("p", "", personalLine(step, n, getLang())));
@@ -8246,29 +8280,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     parts.push(remember);
     // the task in the 3D view (a step without one says so)
     if (!TASKS[step]) parts.push(el("p", "hint", s.task));
-    const task = el("div", `learn-task${taskDone(step) ? " done" : ""}`);
-    const tt = el("div", "");
-    tt.append(el("small", "", tx.taskLabel), el("p", "", s.task));
-    const buttons = el("div", "learn-task-buttons");
-    buttons.append(
-      button(taskDone(step) ? `✓ ${tx.taskDone}` : tx.taskGo, taskDone(step) ? "uni-link" : "uni-primary", () => {
-        explorer.emit("learnTask", `${PATH}/${step}`);
-        maybeFinish(step, questions);
-        track(`learn-task-${step}`);
-        stopSpeaking();
-        closePanel?.();
-        act(taskOf(step));
-      })
-    );
-    // the real scale is switched back here too, not only in the menu
-    if (TASKS[step] === "realScale" && isRealScale?.())
-      buttons.append(
-        button(tx.scaleBack, "uni-link", () => {
-          closePanel?.();
-          act("explanationScale");
-        })
-      );
-    task.append(tt, buttons);
+    const task = taskBlock(step, s, questions, true, onChange);
     if (TASKS[step]) parts.push(task);
     // the questions: an answer can be changed until it is right; the explanation comes with every answer
     parts.push(el("h3", "learn-check", tx.check));

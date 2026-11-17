@@ -3597,9 +3597,16 @@ function flyInward(name) {
   const at = follow.getWorldPosition(new THREE.Vector3());
   const toSun = centre.clone().sub(at).normalize();
   const side = toSun.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
-  const direction = toSun.multiplyScalar(-0.8).addScaledVector(side, 0.55).add(new THREE.Vector3(0, 0.15, 0)).normalize();
   const radius = follow.geometry.parameters.radius * follow.scale.x;
-  startFlight(() => follow.getWorldPosition(new THREE.Vector3()), radius * 5, direction, false);
+  // The camera stands outside, 55 degrees to the side of the line to the Sun: more of the lit half shows than from straight behind (a dark
+  // body like Ceres was nearly black there). It looks between the body and the Sun, nearer the body, so that both are in the picture.
+  const far = radius * 6;
+  const from = at.clone().addScaledVector(toSun.clone().multiplyScalar(-Math.cos(0.96)).addScaledVector(side, Math.sin(0.96)).add(new THREE.Vector3(0, 0.15, 0)).normalize(), far);
+  const look = at.clone().sub(from).normalize().multiplyScalar(1.8).add(centre.clone().sub(from).normalize()).normalize();
+  const target = from.clone().addScaledVector(look, far);
+  const aim = target.clone().sub(at);
+  current.aim = aim;
+  startFlight(() => follow.getWorldPosition(new THREE.Vector3()).add(aim), far, from.clone().sub(target).normalize(), false);
 }
 
 // The deep Gaia layer: about a million bright stars (G < 11, up to 16,000 light years away) from src/fetch_gaia_bright.py and
@@ -4162,6 +4169,7 @@ function stepSoft(now, dt) {
 }
 
 const trackTmp = new THREE.Vector3();
+const ZERO_AIM = new THREE.Vector3();
 let lastFrame = performance.now() / 1000;
 function animate() {
   requestAnimationFrame(animate);
@@ -4205,7 +4213,8 @@ function animate() {
   if (closeup && !flight) {
     // After the flight the camera and its target move with the planet, so the view stays on it
     // while the user can still turn around it with the mouse.
-    const delta = current.follow.getWorldPosition(trackTmp).sub(controls.target);
+    // (aim: a close-up that looks a little beside the planet, see flyInward)
+    const delta = current.follow.getWorldPosition(trackTmp).add(current.aim ?? ZERO_AIM).sub(controls.target);
     camera.position.add(delta);
     controls.target.add(delta);
   }
