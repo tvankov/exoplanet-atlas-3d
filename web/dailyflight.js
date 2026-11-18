@@ -1,8 +1,10 @@
-// "Your flight of the day": a short guided flight through the 3D map, about a minute, with three stops that change every day: the discovery of
-// the day, the next event in the sky, and a place for the visitor (their star if they gave a year of birth, a planet of the Solar System or a
-// habitable candidate depending on their interest). Every stop flies the camera there and shows a card with a short text built from the data of
-// the map; the browser's voice can read it, the sound of the page can play under it. The stops go on by themselves after a while, or with
-// "Next". At the end a card says what was seen. Flying it counts for a daily mission (explorer.js). Nothing is stored about the flight itself.
+// "Your flight of the day": a guided flight through the 3D map with three stops that change every day: the discovery of the day, the next
+// event in the sky, and a place for the visitor (their star if they gave a year of birth, a planet of the Solar System or a habitable candidate
+// depending on their interest). It starts on the Earth and flies from stop to stop with the travel planner at the speed of light (Earth to A,
+// A to B, B to C), through hyperspace when the way leads to another star; where there is no trip (the same place again) the camera flies
+// there. At every stop a card shows a short text built from the data of the map; the browser's voice can read it, the sound of the page can
+// play under it. The stops go on by themselves after a while, or with "Next". At the end a card says what was seen. Flying it counts for a
+// daily mission (explorer.js). Nothing is stored about the flight itself.
 
 import { track } from "./stats.js";
 
@@ -16,7 +18,7 @@ export const FLIGHT_TEXT = {
     star: (name, year) => `Your star: ${name}. The light of it that arrives today set off around ${year}, about when you were born.`,
     candidate: (name, dist, total) => `${name}, ${dist} light years away: one of the ${total} candidates in the habitable zone of their star.`,
     solar: (name, au) => `${name}, ${au} times as far from the Sun as the Earth.`,
-    hint: "The flight takes about a minute and changes every day.",
+    hint: "Three legs from the Earth at the speed of light, about three minutes, different every day.",
   },
   de: {
     title: "Dein Flug des Tages", start: "Flug des Tages starten", kicker: (i, n) => `Flug des Tages · ${i} von ${n}`,
@@ -27,7 +29,7 @@ export const FLIGHT_TEXT = {
     star: (name, year) => `Dein Stern: ${name}. Sein Licht, das heute ankommt, brach um ${year} auf, etwa zu deiner Geburt.`,
     candidate: (name, dist, total) => `${name}, ${dist} Lichtjahre entfernt: einer der ${total} Kandidaten in der bewohnbaren Zone ihres Sterns.`,
     solar: (name, au) => `${name}, ${au}-mal so weit von der Sonne entfernt wie die Erde.`,
-    hint: "Der Flug dauert etwa eine Minute und ist jeden Tag anders.",
+    hint: "Drei Etappen von der Erde aus mit Lichtgeschwindigkeit, etwa drei Minuten, jeden Tag anders.",
   },
   ja: {
     title: "今日のフライト", start: "今日のフライトを始める", kicker: (i, n) => `今日のフライト · ${n}中${i}`,
@@ -38,7 +40,7 @@ export const FLIGHT_TEXT = {
     star: (name, year) => `あなたの星：${name}。今日届くその光は、あなたが生まれた頃の${year}年ごろに出発しました。`,
     candidate: (name, dist, total) => `${name}、${dist}光年先。恒星のハビタブルゾーンにある${total}個の候補の1つです。`,
     solar: (name, au) => `${name}。太陽からの距離は地球の${au}倍です。`,
-    hint: "フライトは約1分で、毎日変わります。",
+    hint: "地球から光の速さで3区間、約3分。毎日変わります。",
   },
   bg: {
     title: "Твоят полет на деня", start: "Започни полета на деня", kicker: (i, n) => `Полет на деня · ${i} от ${n}`,
@@ -49,15 +51,17 @@ export const FLIGHT_TEXT = {
     star: (name, year) => `Твоята звезда: ${name}. Светлината ѝ, която пристига днес, е тръгнала около ${year} г., приблизително когато си роден.`,
     candidate: (name, dist, total) => `${name}, на ${dist} светлинни години: един от ${total} кандидата в обитаемата зона на звездата си.`,
     solar: (name, au) => `${name}, ${au} пъти по-далеч от Слънцето от Земята.`,
-    hint: "Полетът трае около минута и е различен всеки ден.",
+    hint: "Три етапа от Земята със скоростта на светлината, около три минути, различни всеки ден.",
   },
 };
 
 const STOP_SECONDS = 14; // a stop goes on by itself after this (or after the voice, with a short pause)
 
 // getLang(), speechLang(): the language of the page and of the voice. stops(): the three stops of today, each { kind, place, label, text } with
-// the place to fly to (a name for explore). explore(name) flies there. onDone(): the flight was flown to the end.
-export function initDailyFlight({ getLang, speechLang, stops, explore, onDone }) {
+// the place to fly to (a name for explore). explore(name) flies there. travel(from, to, arrived, aborted) starts a trip of the planner and
+// gives true, or false when there is none (then explore is used); arrived() comes after the arrival, aborted() when the trip was stopped on
+// the way. cancelTravel() stops a trip that is under way. onDone(): the flight was flown to the end.
+export function initDailyFlight({ getLang, speechLang, stops, explore, travel, cancelTravel, onDone }) {
   const t = () => FLIGHT_TEXT[getLang()] ?? FLIGHT_TEXT.en;
   const card = document.getElementById("day-flight");
   const el = (tag, cls, content) => {
@@ -74,6 +78,8 @@ export function initDailyFlight({ getLang, speechLang, stops, explore, onDone })
   };
   let list = [];
   let index = -1;
+  let here = "Earth"; // where the flight is now: it starts on the Earth
+  let travelling = false; // on the way to the stop of index (the box of the trip is shown, not this card)
   let timer = 0;
   let voice = false;
   try {
@@ -104,7 +110,9 @@ export function initDailyFlight({ getLang, speechLang, stops, explore, onDone })
   }
 
   function render() {
-    if (card.hidden || index < 0) return;
+    if (index < 0) return;
+    card.hidden = travelling;
+    if (travelling) return;
     const tx = t();
     if (index >= list.length) {
       const names = list.map((s) => s.short ?? s.label).join(", "); // the names only, not the countdown
@@ -161,22 +169,32 @@ export function initDailyFlight({ getLang, speechLang, stops, explore, onDone })
       return;
     }
     const s = list[index];
+    const arrive = () => {
+      if (index !== i) return; // the flight was ended or went on meanwhile
+      travelling = false;
+      here = s.place;
+      render();
+      if (!speak(`${s.heading}. ${s.text}`)) schedule(STOP_SECONDS * 1000);
+    };
+    travelling = !!travel?.(here, s.place, arrive, () => index === i && stop());
+    if (travelling) return render();
     explore(s.place);
-    render();
-    if (!speak(`${s.heading}. ${s.text}`)) schedule(STOP_SECONDS * 1000);
+    arrive();
   }
   function start() {
     list = stops().filter(Boolean);
     if (!list.length) return;
     track("daily-flight-start");
-    card.hidden = false;
+    here = "Earth";
     go(0);
   }
   function stop() {
     clear();
+    if (travelling) cancelTravel?.();
+    travelling = false;
     index = -1;
     card.hidden = true;
   }
-  window.addEventListener("keydown", (e) => e.key === "Escape" && !card.hidden && stop());
+  window.addEventListener("keydown", (e) => e.key === "Escape" && index >= 0 && !travelling && stop());
   return { start, stop, render, label: () => t().start, hint: () => t().hint, title: () => t().title };
 }

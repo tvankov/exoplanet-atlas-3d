@@ -4625,7 +4625,10 @@ function restoreTimeSpeed() {
   updateSpeedText();
 }
 
+let tripAbort = null; // a leg of the flight of the day under way: told when its trip is stopped on the way
 function clearTrip() {
+  const abort = tripAbort;
+  tripAbort = null;
   showSoft(performance.now() / 1000); // a stopped trip brings them straight back, there is nothing to land on
   // A route that was only drawn never touched the clock, so there is nothing to put back.
   if (trip && !trip.arrived && trip.tookClock) restoreTimeSpeed(); // only a trip that took the clock gives it back
@@ -4643,6 +4646,7 @@ function clearTrip() {
   tripTitle.textContent = "";
   tripKpis.replaceChildren();
   warp = 0;
+  abort?.(); // the flight of the day ends with its trip
 }
 planStop.addEventListener("click", clearTrip);
 
@@ -5831,6 +5835,30 @@ dayFlight = initDailyFlight({
     if (place) showPlace(place);
   },
   onDone: () => explorer?.emit("dailyFlight"),
+  // a leg of the flight is a trip of the planner at the speed of light, like "Fly there" of a discovery (discoveryFly)
+  travel: (from, to, arrived, aborted) => {
+    const a = resolvePlace(from);
+    const b = resolvePlace(to);
+    if (!a || !b || realScale || placeLabel(a) === placeLabel(b)) return false;
+    if (trip) clearTrip();
+    planFrom.value = placeLabel(a);
+    planTo.value = placeLabel(b);
+    planSpeed.value = "c1";
+    planSpeed.dispatchEvent(new Event("change"));
+    afterTrip = () => {
+      tripAbort = null;
+      tripHud.hidden = true; // the card of the stop takes its place
+      arrived();
+    };
+    planGo.click();
+    if (!trip) return (afterTrip = null), false;
+    tripAbort = aborted;
+    return true;
+  },
+  cancelTravel: () => {
+    tripAbort = null;
+    if (trip) clearTrip();
+  },
   stops: () => {
     const tx = FLIGHT_TEXT[lang] ?? FLIGHT_TEXT.en;
     const fmt = (x, d = 1) => x.toLocaleString(lang, { maximumFractionDigits: d, minimumFractionDigits: d });
