@@ -6019,10 +6019,10 @@ function learnShow(where) {
 }
 // SPACE DISCOVERIES, the library in the area Explore of My Universe (discoveries.js): a link of an entry flies to the map like the places
 // in the texts of the learning steps (learnShow)
-// A link of an entry ({ kind, id }) flown to softly, with the motion blur of the first flight of the page (stepMotionBlur).
+// A link of an entry ({ kind, id }) flown to softly, without motion blur: the blur pointed away from the camera while the camera also
+// turned, and the short flights between the stages need none (removed in November 2026).
 function discoveryShow(link) {
   learnShow(link.kind === "moon" ? `moon:${link.id}` : link.kind === "sky" ? `sky:${link.id}` : link.id);
-  if (flight) flight.blur = true;
 }
 // "Fly there": the trip of the planner from the Earth to the star of the place, at the speed of light (hyperspace, the real travel time in
 // its box); done() a moment after the arrival. A place of the Solar System, a moon or a constellation has no such trip: a soft flight.

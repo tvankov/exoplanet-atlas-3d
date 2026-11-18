@@ -1,6 +1,6 @@
 // SPACE DISCOVERIES: a library of discoveries in My Universe (area Explore). A discovery is a flight with a story: "Fly there" starts the
 // real trip of the planner from the Earth to it (hyperspace, the travel time at the speed of light) when the map has its star, otherwise a
-// soft flight with motion blur; after the arrival the story runs in stages, each with its own view of the camera (a soft flight again), two
+// soft flight; after the arrival the story runs in stages, each with its own view of the camera (a soft flight again), two
 // or three sentences and a number. The science stays, folded under "How sure is this?": the status (confirmed, candidate, open question),
 // the facts with the kind of evidence of each (observed, measured, interpreted, unknown) and its source, the dates and the sources.
 // Each discovery is one file in web/data/discoveries/entries/ (reviewed like code: a pull request is the review, git is the history);
@@ -276,7 +276,7 @@ export function initDiscoveries({ getLang, fly, show, openStep, stepTitle, close
     head.append(picture(e.picture, "disc-pic", 72), ht);
     parts.push(head);
     if (!e.text[lang]) parts.push(el("p", "hint", tx.onlyEnglish));
-    // the story: one stage at a time, its view flown to with the soft motion blur
+    // the story: one stage at a time, its view flown to softly
     const i = stageOf[id] ?? 0;
     const stage = e.stages[i];
     const card = el("div", "disc-stage");
