@@ -961,20 +961,16 @@ scene.add(starGlow(SUN_COLOR, SUN_RADIUS * 7));
 const EARTH_RADII_PER_SUN = 109.1;
 const MIN_PLANET_PER_VIEW_DISTANCE = 0.009; // a planet without a known radius is drawn this big (relative to the view)
 
-// One scale for every system in the explanation mode. The drawn radius of a planet follows its own radius in Earth
-// radii, squeezed with a square root, so Jupiter is about three Earths wide on the screen instead of eleven and
-// still fits between the orbits. Everything below Earth size lands on the same smallest size, otherwise it would
-// be a single pixel. What this buys: two planets drawn the same size really are about the same size, wherever they
-// are. Before this, a planet was drawn in proportion to its own star and to how far its system was spread out, so
-// 82 % of all planets ended up on a minimum size that differed from system to system by a factor of eight.
-const PLANET_DRAW = 0.009; // the drawn radius of a planet of one Earth radius
-const PLANET_DRAW_MIN = 0.008; // nothing is drawn smaller, Mercury and Mars land here
+// One rule for the size of every body in the explanation mode, stars and planets alike, the Sun included: the drawn radius is the
+// square root of the real radius, scaled so that the Sun is SUN_RADIUS. A planet is therefore drawn against its own star exactly as
+// Jupiter is drawn against the Sun (about a third of it), in every system, and two bodies drawn the same size really are about the
+// same size. Everything below Earth size lands on the same smallest size, otherwise it would be a single pixel. (Until November 2026
+// the host stars had a scale of their own, about half as big and held below 0.09, so that a giant planet came out nearly as big as
+// its star.)
+const PLANET_DRAW = SUN_RADIUS / Math.sqrt(EARTH_RADII_PER_SUN); // the drawn radius of a body of one Earth radius, about 0.0077
+const PLANET_DRAW_MIN = 0.008; // nothing is drawn smaller, Mercury, Venus, Earth and Mars land here
 const drawnPlanetRadius = (earthRadii) => Math.max(PLANET_DRAW_MIN, PLANET_DRAW * Math.sqrt(earthRadii || 0));
-// The host star in the same spirit, but squeezed much harder: the real radii run from 0.01 to 88 suns, and a star
-// drawn to that scale would either swallow the innermost orbit (drawn at 0.15) or be invisible. The square root is
-// therefore held between half and double the old fixed size. It shows which star is a dwarf and which is a giant,
-// it is not a measurement.
-const drawnStarRadius = (solarRadii) => Math.min(0.09, Math.max(0.025, EXO_STAR_RADIUS * Math.sqrt(solarRadii || 1)));
+const drawnStarRadius = (solarRadii) => SUN_RADIUS * Math.sqrt(solarRadii || 1);
 
 // Our own solar system. The map is in light years, where all of it (Neptune is 0.0005 ly out)
 // would be a single point, so this is a separate display that is only drawn up close.
@@ -2614,16 +2610,30 @@ const beltLabel = labelSprite("Asteroid belt", 288);
 beltLabel.position.set(0.3 * Math.sqrt(2.7) * Math.cos(2.5), 0, 0.3 * Math.sqrt(2.7) * Math.sin(2.5));
 solar.group.add(beltLabel);
 
-// The NASA table has no orbit radius in our export, so it is derived from Kepler's third
-// law: a^3 = M * P^2 (AU, solar masses, years). The innermost planet gets a fixed radius
-// and the rest follow the same square root idea as above. Not to scale, for orientation.
-const MAX_ORBIT = 1.6;
-const EXO_STAR_RADIUS = 0.05; // every host star is drawn this size, planets are sized against it
+// The distances of an exoplanet system follow the rule of the Solar System: a semi-major axis of a AU is drawn at 0.3 * sqrt(a), so
+// PDS 70 b at 20.8 AU lies about as far out as Uranus. Many planets have no axis in the NASA table: it then comes from Kepler's third
+// law, a^3 = M * P^2 (AU, solar masses, years). Most planets circle so close to their star that on this rule they would lie inside
+// the drawn star (the stars are drawn far bigger than the distances, the Sun too). Then the whole system is spread out by one factor
+// so that the innermost planet clears its star (in November 2026: 3,418 of 4,819 systems, by 1.5 in the middle and 5.8 at most), and
+// the story of a planet says by how much. The proportions within a system stay right.
+const EXO_STAR_RADIUS = 0.05; // a star of the Gaia sky without a known radius is drawn this size
 const UNKNOWN_ORBIT = 0.6; // map units, where a planet of unknown orbit is drawn (a picture place, not a distance)
+const SYSTEM_GAP = 0.02; // the room between the drawn star and the innermost planet
+const axisOf = (p, mass) => (p.pl_orbper ? Math.cbrt(mass * (p.pl_orbper / 365.25) ** 2) : p.pl_orbsmax);
+function exoLayout(star) {
+  const starRadius = drawnStarRadius(star.st_rad);
+  const mass = star.st_mass ?? 1; // sun-like fallback, only changes the drawn orbit radii
+  const au = star.planets.filter((p) => p.pl_orbper || p.pl_orbsmax).map((p) => axisOf(p, mass));
+  const biggest = Math.max(PLANET_DRAW_MIN, ...star.planets.map((p) => drawnPlanetRadius(p.pl_rade)));
+  const clear = starRadius + 2 * biggest + SYSTEM_GAP;
+  const stretch = au.length ? Math.max(1, clear / (0.3 * Math.sqrt(Math.min(...au)))) : 1;
+  return { starRadius, stretch, au, orbitOf: (a) => stretch * 0.3 * Math.sqrt(a), unknownOrbit: Math.max(UNKNOWN_ORBIT, 2 * clear) };
+}
 function exoSystem(star) {
   const real = realScale;
-  const starRadius = real ? (star.st_rad ?? 1) * SUN_RADIUS : drawnStarRadius(star.st_rad); // real: the star radius in solar radii, a missing one counts as 1
-  const mass = star.st_mass ?? 1; // sun-like fallback, only changes the drawn orbit radii
+  const layout = exoLayout(star);
+  const starRadius = real ? (star.st_rad ?? 1) * SUN_RADIUS : layout.starRadius; // real: the star radius in solar radii, a missing one counts as 1
+  const mass = star.st_mass ?? 1;
   const planets = star.planets
     .map((p) => {
       // A planet with neither a period nor an axis (7 of them) has no known orbit. It is drawn at a marked place next to the star, without
@@ -2647,10 +2657,9 @@ function exoSystem(star) {
       };
     });
   const knownAu = planets.filter((p) => p.au).map((p) => p.au);
-  const auMin = knownAu.length ? Math.min(...knownAu) : 1;
   for (const p of planets) {
     if (real) p.orbit = p.orbitUnknown ? Math.max(UNKNOWN_ORBIT, 4 * starRadius) : p.au * REAL_K; // real: the semi-major axis in AU
-    else p.orbit = p.orbitUnknown ? UNKNOWN_ORBIT : Math.min(MAX_ORBIT, 0.15 * Math.sqrt(p.au / auMin));
+    else p.orbit = p.orbitUnknown ? layout.unknownOrbit : layout.orbitOf(p.au);
   }
   const outer = Math.max(0.15, ...planets.map((p) => p.orbit));
 
@@ -2659,7 +2668,7 @@ function exoSystem(star) {
     starColor: star.color,
     starRadius,
     planets,
-    viewDistance: real ? Math.max(2 * outer, 30 * starRadius, 0.5) : Math.max(0.4, 2 * outer),
+    viewDistance: real ? Math.max(2 * outer, 30 * starRadius, 0.5) : Math.max(0.6, 2 * outer), // a compact system keeps room round its star
   });
   if (real) for (const b of system.bodies) applyBodyScale(b, true);
 
@@ -2667,7 +2676,7 @@ function exoSystem(star) {
   // in the zone in reality sits in the drawn band too.
   const zone = zoneAu(star);
   if (zone && knownAu.length) {
-    const toMap = (au) => (real ? REAL_K * au : Math.min(MAX_ORBIT, 0.15 * Math.sqrt(au / auMin)));
+    const toMap = (au) => (real ? REAL_K * au : layout.orbitOf(au));
     addZone(system, toMap(zone.inner), toMap(zone.outer));
   }
   if (star.companion && !real) {
@@ -3136,6 +3145,11 @@ function showStory(star, planet, quiet = false) {
   storyParagraphs = story.paragraphs;
   if (star.planets?.includes(planet) && !planet.pl_orbper && !planet.pl_orbsmax) {
     storyParagraphs = [...storyParagraphs, TRAVEL_UI[lang].orbitUnknown]; // see exoSystem
+  }
+  // a system spread out so that its planets clear the drawn star (exoLayout): the story says by how much
+  if (!star.solarSystem && star.planets?.includes(planet) && !realScale) {
+    const { stretch } = exoLayout(star);
+    if (stretch >= 1.05) storyParagraphs = [...storyParagraphs, TRAVEL_UI[lang].stretched(fmt(stretch, 1))];
   }
   listenButton.hidden = storyParagraphs.length === 0;
   document.getElementById("story-title").textContent = story.title;
@@ -4774,14 +4788,11 @@ planRoute.addEventListener("click", () => {
 // (1.5 first, 5 % more after a first test: still a bit too close).
 const TRIP_CLEAR = 1.575;
 const SYSTEM_EDGE = 1.8;
-// The outer orbit as drawn for an exoplanet system, worked out like in exoSystem (without building it). Proxima Cen is tiny (0.2),
-// a system with a long period planet is up to 1.6.
+// The outer orbit as drawn for an exoplanet system, worked out like in exoSystem (without building it).
 function exoOuter(star) {
-  const mass = star.st_mass ?? 1;
-  const au = star.planets.filter((p) => p.pl_orbper || p.pl_orbsmax).map((p) => (p.pl_orbper ? Math.cbrt(mass * (p.pl_orbper / 365.25) ** 2) : p.pl_orbsmax));
-  if (!au.length) return UNKNOWN_ORBIT;
-  const auMin = Math.min(...au);
-  return Math.max(0.15, ...au.map((a) => Math.min(MAX_ORBIT, 0.15 * Math.sqrt(a / auMin))));
+  const layout = exoLayout(star);
+  if (!layout.au.length) return layout.unknownOrbit;
+  return Math.max(0.15, ...layout.au.map((a) => layout.orbitOf(a)));
 }
 // How far out the edge of a system is: a bit beyond its outer orbit, so the ship comes out of hyperspace just outside of the system.
 function edgeOf(place) {
@@ -4848,7 +4859,7 @@ function placeRadius(place) {
     return mesh.geometry.parameters.radius * mesh.scale.x;
   }
   if (realScale && place.star !== SUN_POINT) return (place.star.st_rad ?? 1) * SUN_RADIUS; // the real radius of the host star
-  return place.star === SUN_POINT ? SUN_RADIUS : EXO_STAR_RADIUS;
+  return place.star === SUN_POINT ? SUN_RADIUS : drawnStarRadius(place.star.st_rad);
 }
 function stopFraction() {
   const radius = placeRadius(trip.to);

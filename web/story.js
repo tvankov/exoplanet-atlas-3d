@@ -58,7 +58,7 @@ export const UI = {
     beltNote:
       "Asteroid belt: schematic. The points are placed at random. Real are its extent, the tilt of the orbits, the gaps Jupiter has cleared and the distances of five known asteroid families.",
     scaleNote:
-      "Sizes: one scale in every system, so planets can be compared. Squeezed (square root), and everything below Earth size is drawn at the same smallest size. Planet and star are not to scale with each other, and the distances are squeezed as well, each system for itself.",
+      "Sizes: one rule for every body, stars and planets, the Sun included: the square root of the real radius. So in every system a planet is drawn against its star as Jupiter is against the Sun, and everything below Earth size is drawn at the same smallest size. Distances: the rule of the Solar System (square root). A system whose planets circle so close that they would lie inside the drawn star is spread out as a whole by one factor, and the story of a planet says by how much.",
     types: {
       rocky: "Rocky planet",
       miniNeptune: "Mini-Neptune",
@@ -202,7 +202,7 @@ export const UI = {
     beltNote:
       "Asteroidengürtel: schematisch. Die Punkte liegen zufällig. Echt sind seine Ausdehnung, die Neigung der Bahnen, die Lücken, die Jupiter freigeräumt hat, und die Abstände von fünf bekannten Asteroidenfamilien.",
     scaleNote:
-      "Größen: ein Maßstab in jedem System, damit Planeten vergleichbar sind. Gestaucht (Wurzel), und alles unter Erdgröße wird gleich klein gezeichnet. Planet und Stern sind untereinander nicht maßstäblich, und die Abstände sind ebenfalls gestaucht, jedes System für sich.",
+      "Größen: eine Regel für jeden Körper, Sterne und Planeten, die Sonne eingeschlossen: die Wurzel des echten Radius. So ist in jedem System ein Planet gegenüber seinem Stern gezeichnet wie Jupiter gegenüber der Sonne, und alles unter Erdgröße wird gleich klein gezeichnet. Abstände: die Regel des Sonnensystems (Wurzel). Ein System, dessen Planeten so nah kreisen, dass sie im gezeichneten Stern lägen, wird als Ganzes um einen Faktor gestreckt, und die Beschreibung des Planeten sagt, um wie viel.",
     types: {
       rocky: "Gesteinsplanet",
       miniNeptune: "Mini-Neptun",
