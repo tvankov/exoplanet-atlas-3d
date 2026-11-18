@@ -5888,6 +5888,14 @@ birthSky = initBirthSky({
 let discoveries = null; // made once the catalogue is loaded, for the path Exoplanets
 const learn = initLearn({
   getLang: () => lang,
+  // the pieces of the atlas inside the steps of the constellations: the twelve figures in 3D, the flashcards (a figure shown counts as
+  // a figure of the learning step, so that it goes again with the step)
+  widget: (step, { first }) => {
+    const used = () => (learnFigure = true);
+    if (step === "zodSide") return atlas?.zodiacPicker(first[0], used) ?? null;
+    if (step === "zodCards") return atlas?.zodiacCards(first, used) ?? null;
+    return null;
+  },
   explorer,
   personal: () => ({
     age: myStar?.age() ?? null,
@@ -5913,8 +5921,6 @@ const learn = initLearn({
     if (task === "realScale") return realScale || setRealScale(true);
     if (task === "explanationScale") return realScale && setRealScale(false);
     if (task.startsWith("figure:")) return atlas?.showFigure(task.slice(7)); // a constellation in the sky
-    if (task.startsWith("figureSide:")) return atlas?.showFigure(task.slice(11), "side"); // the same, seen from the side
-    if (task.startsWith("cards:")) return atlas?.zodiacCards(task.slice(6).split(",")); // the flashcards, these figures first
     if (task.startsWith("plan:")) {
       // the trip planner, from the Earth to the place
       planFrom.value = planetLabel("Earth");

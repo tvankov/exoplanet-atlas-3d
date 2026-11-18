@@ -41,7 +41,7 @@ export const TASKS = {
   neighbors: "figure:Cen", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
-  zodWhat: "figure:birth", zodPath: "figure:Oph", zodShift: "figure:birthSign", zodScience: null, zodLight: "figure:birth", zodSide: "figureSide:birth", zodCards: "cards:zodiac",
+  zodWhat: "figure:birth", zodPath: "figure:Oph", zodShift: "figure:birthSign", zodScience: null, zodLight: "figure:birth", zodSide: null, zodCards: null,
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "figure:Cen", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
   starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
   birthCloud: "figure:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "figure:Tau", birthSun: "Sun",
@@ -2121,7 +2121,7 @@ export const LEARN_TEXT = {
           "The map shows every star of a constellation in its real direction and at its real distance, by the Hipparcos data. Seen from the Earth the figure looks as we know it.",
           "Turn the view to the side and the figure falls apart: according to NASA some stars of a constellation are close, others very far away. Only from our direction do they make a picture together.",
         ],
-        task: "Look at your constellation from the side: the figure falls apart.",
+        task: "Choose one of the twelve signs, and switch between the view from the Earth and the view from the side.",
         remember: [
           "Seen from the Earth a constellation looks like a figure.",
           "Seen from the side the figure falls apart.",
@@ -2136,7 +2136,7 @@ export const LEARN_TEXT = {
           "Astrology has twelve signs, and the Sun passes through the twelve constellations of the zodiac that have their names, and through Ophiuchus.",
           "The front of each flashcard shows the figure as it looks in the sky, without its name. Guess, turn the card and count what you already know. What you do not know yet comes back at the end.",
         ],
-        task: "Learn one round of flashcards with the twelve constellations of the zodiac.",
+        task: "Learn one round of the flashcards with the twelve constellations of the zodiac.",
         remember: [
           "The zodiac has twelve constellations named like the signs.",
           "The Sun also passes through Ophiuchus.",
@@ -3855,7 +3855,7 @@ export const LEARN_TEXT = {
           "Die Karte zeigt jeden Stern eines Sternbilds in seiner echten Richtung und Entfernung, nach den Hipparcos-Daten. Von der Erde aus sieht die Figur so aus, wie wir sie kennen.",
           "Dreht man die Ansicht zur Seite, fällt die Figur auseinander: Laut NASA sind manche Sterne eines Sternbilds nah, andere sehr weit weg. Nur aus unserer Richtung ergeben sie zusammen ein Bild.",
         ],
-        task: "Sieh dir dein Sternbild von der Seite an: Die Figur fällt auseinander.",
+        task: "Wähle eins der zwölf Sternzeichen und schalte zwischen dem Blick von der Erde und dem von der Seite um.",
         remember: [
           "Von der Erde aus sieht ein Sternbild wie eine Figur aus.",
           "Von der Seite fällt die Figur auseinander.",
@@ -5589,7 +5589,7 @@ export const LEARN_TEXT = {
           "この地図は、星座のひとつひとつの星を、ヒッパルコスのデータによる本当の方向と距離で表しています。地球から見ると、形はよく知っているとおりに見えます。",
           "横から見ると、形はばらばらになります。NASAによると、星座の星には近いものもあれば、とても遠いものもあります。私たちの方向から見たときだけ、いっしょに絵になるのです。",
         ],
-        task: "あなたの星座を横から見てみましょう。形がばらばらになります。",
+        task: "12の星座から1つ選び、地球からの眺めと横からの眺めを切りかえてみましょう。",
         remember: [
           "地球から見ると、星座は形に見えます。",
           "横から見ると、形はばらばらになります。",
@@ -7323,7 +7323,7 @@ export const LEARN_TEXT = {
           "Картата показва всяка звезда на едно съзвездие в истинската ѝ посока и на истинското ѝ разстояние, по данните на „Хипаркос“. Погледната от Земята, фигурата изглежда такава, каквато я познаваме.",
           "Завърти изгледа настрани и фигурата се разпада: според НАСА някои звезди на едно съзвездие са близо, други много далеч. Само от нашата посока заедно образуват картина.",
         ],
-        task: "Разгледай своето съзвездие отстрани: фигурата се разпада.",
+        task: "Избери една от дванайсетте зодии и превключвай между изгледа от Земята и отстрани.",
         remember: [
           "Погледнато от Земята, съзвездието изглежда като фигура.",
           "Погледнато отстрани, фигурата се разпада.",
@@ -8064,7 +8064,7 @@ export function personalLine(step, nums, lang) {
 // The area Learn: the path with its steps, a step, or the final test. personal(): the context of personalNumbers; act(task): do a task
 // (TASKS) in the 3D view, or "explanationScale" (back from the real scale); isRealScale(): whether the real scale is on; closePanel():
 // close My Universe.
-export function initLearn({ getLang, explorer, personal, act, show, isRealScale, closePanel }) {
+export function initLearn({ getLang, explorer, personal, act, show, isRealScale, closePanel, widget }) {
   const t = () => LEARN_TEXT[getLang()] ?? LEARN_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -8209,11 +8209,6 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     const task = TASKS[step];
     // "yourStar": the visitor's star (from the year of birth), or Proxima Centauri without one
     if (task === "yourStar") return personalNumbers(personal()).star?.name ?? "Proxima Cen";
-    if (task === "figureSide:birth") return `figureSide:${personalNumbers(personal()).zodReal}`;
-    if (task === "cards:zodiac") {
-      const n = personalNumbers(personal());
-      return `cards:${n.zodReal},${n.zodSign}`;
-    }
     if (task !== "figure:birth" && task !== "figure:birthSign") return task;
     const n = personalNumbers(personal());
     return `figure:${task === "figure:birth" ? n.zodReal : n.zodSign}`;
@@ -8399,6 +8394,12 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     task.append(tt, buttons);
     return task;
   }
+  const pieces = {};
+  const widgetOf = (step, n) => {
+    const key = `${getLang()}:${step}`;
+    if (!(key in pieces)) pieces[key] = widget?.(step, { first: [n.zodReal, n.zodSign] }) ?? null;
+    return pieces[key];
+  };
   function stepView(step, onChange) {
     const tx = t();
     const s = tx.steps[step];
@@ -8428,6 +8429,16 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     you.append(el("small", "", own ? tx.forYou : tx.example), el("p", "", personalLine(step, n, getLang())));
     if (!own) you.append(el("p", "hint", tx.exampleHint));
     parts.push(you);
+    // a step that has its own piece of the 3D view (the twelve figures, the flashcards): it comes right here, with its task as the title;
+    // the piece is kept, so that it keeps its state while the step is drawn again
+    const piece = widgetOf(step, n);
+    if (piece) {
+      const box = el("div", "learn-task learn-widget");
+      const tt = el("div", "");
+      tt.append(el("small", "", tx.taskLabel), el("p", "", s.task));
+      box.append(tt, piece);
+      parts.push(box);
+    }
     // the text, with the places of the map in it as links: a click flies there, the step stays open
     const seen = new Set();
     for (const text of s.text) {
@@ -8449,7 +8460,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     remember.append(el("small", "", tx.rememberLabel), facts);
     parts.push(remember);
     // the task in the 3D view (a step without one says so)
-    if (!TASKS[step]) parts.push(el("p", "hint", s.task));
+    if (!TASKS[step] && !piece) parts.push(el("p", "hint", s.task));
     // the real scale step keeps the panel open: its bar of planets belongs to the open step (main.js, buildBodyBar)
     const task = taskBlock(step, s, questions, TASKS[step] !== "realScale", onChange);
     if (TASKS[step]) parts.push(task);

@@ -653,11 +653,71 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goT
       toggle(true);
       openFigure(id, "list", where);
     },
-    // the flashcards of the twelve zodiac signs, the given figures first (a learning step: the visitor's own constellation and sign)
-    zodiacCards: (first = []) => {
-      deck = "zodiac";
-      toggle(true);
-      startCards(first);
+    // Two pieces of the atlas drawn into another panel (the learning path of the constellations, learn.js): the twelve zodiac figures as
+    // buttons, each seen from the Earth or from the side, and the flashcards of the twelve. used(): a figure was shown.
+    zodiacPicker: (first, used) => {
+      const box = el("div", "atlas-embed");
+      let chosen = first ?? null;
+      let where = "earth";
+      const show = () => {
+        look(chosen, where);
+        used?.();
+      };
+      const draw = () => {
+        const tx = t();
+        const grid = el("div", "atlas-grid");
+        for (const id of ZODIAC_ORDER) grid.append(button(nameOf(id), id === chosen ? "on" : "", () => ((chosen = id), show(), draw())));
+        const views = el("div", "atlas-views");
+        for (const [key, label] of [["earth", tx.earth], ["side", tx.side]])
+          views.append(button(label, key === where ? "on" : "", () => ((where = key), chosen && show(), draw())));
+        const parts = [grid, views];
+        if (chosen) {
+          const info = getSky().data.info(chosen);
+          parts.push(el("p", "atlas-facts", `${nameOf(chosen)}: ${tx.facts(info.stars.length, number(info.nearest.dist), number(info.farthest.dist), unit())}`));
+        }
+        box.replaceChildren(...parts);
+      };
+      draw();
+      return box;
+    },
+    zodiacCards: (first = [], used) => {
+      const box = el("div", "atlas-embed");
+      const front = [...new Set(first)].filter((id) => ZODIAC_ORDER.includes(id));
+      const fresh = () => ({ queue: [...front, ...ZODIAC_ORDER.filter((id) => !front.includes(id))], known: 0, flipped: false });
+      let deckState = fresh();
+      const draw = () => {
+        const tx = t();
+        if (!deckState.queue.length) {
+          return box.replaceChildren(el("p", "atlas-score", tx.deckDone), el("p", "", tx.deckDoneText), button(tx.again, "atlas-wide", () => ((deckState = fresh()), draw())));
+        }
+        const id = deckState.queue[0];
+        const parts = [el("p", "atlas-round", tx.progress(deckState.known, ZODIAC_ORDER.length)), el("p", "atlas-q", tx.frontZodiac), figure(id)];
+        if (!deckState.flipped) parts.push(button(tx.flip, "atlas-main", () => ((deckState.flipped = true), draw())));
+        else {
+          const info = getSky().data.info(id);
+          parts.push(el("h3", "atlas-name", nameOf(id)), el("p", "", tx.facts(info.stars.length, number(info.nearest.dist), number(info.farthest.dist), unit())));
+          const views = el("div", "atlas-views");
+          views.append(button(tx.earth, "", () => (look(id, "earth"), used?.())), button(tx.side, "", () => (look(id, "side"), used?.())));
+          const answer = el("div", "atlas-views");
+          answer.append(
+            button(tx.practise, "", () => {
+              deckState.queue.push(deckState.queue.shift());
+              deckState.flipped = false;
+              draw();
+            }),
+            button(tx.known, "right-btn", () => {
+              deckState.queue.shift();
+              deckState.known += 1;
+              deckState.flipped = false;
+              draw();
+            })
+          );
+          parts.push(views, answer);
+        }
+        box.replaceChildren(...parts);
+      };
+      draw();
+      return box;
     },
     // a click on the map: true if it hit a star of the figure that is shown
     pick: (x, y, camera) => {

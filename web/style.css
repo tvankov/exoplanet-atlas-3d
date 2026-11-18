@@ -4813,3 +4813,52 @@ input.uni-date {
     bottom: 150px;
   }
 }
+
+/* pieces of the atlas inside a learning step (the twelve figures, the flashcards; atlas.js, zodiacPicker and zodiacCards) */
+.atlas-embed {
+  margin-top: 10px;
+}
+.atlas-embed button {
+  padding: 8px 10px;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+.atlas-embed button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.atlas-embed button.on {
+  color: #0b1020;
+  background: #7cffb2;
+  border-color: #7cffb2;
+}
+.atlas-embed .atlas-main,
+.atlas-embed .atlas-wide {
+  display: block;
+  width: 100%;
+  margin: 10px 0 6px;
+  background: rgba(124, 255, 178, 0.16);
+  border-color: rgba(124, 255, 178, 0.5);
+}
+.atlas-embed .atlas-views {
+  margin-top: 6px;
+}
+.atlas-embed .atlas-facts,
+.atlas-embed .atlas-round,
+.atlas-embed .atlas-q {
+  margin: 8px 0 4px;
+  font-size: 13px;
+}
+.atlas-embed .atlas-name {
+  margin: 4px 0;
+  font-size: 17px;
+}
+.atlas-embed button.right-btn {
+  background: rgba(124, 255, 178, 0.2);
+  border-color: rgba(124, 255, 178, 0.5);
+}
