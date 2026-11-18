@@ -350,15 +350,16 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goT
       b.setAttribute("aria-pressed", String(deck === key));
       row.append(b);
     }
-    parts.push(row, button(tx.learn, "atlas-main", startCards), button(tx.view3d, "atlas-wide", () => ((screen = "list"), render())), button(tx.testName, "atlas-wide", startName), button(tx.testStar, "atlas-wide", startStar));
+    parts.push(row, button(tx.learn, "atlas-main", () => startCards()), button(tx.view3d, "atlas-wide", () => ((screen = "list"), render())), button(tx.testName, "atlas-wide", startName), button(tx.testStar, "atlas-wide", startStar));
     body.replaceChildren(...parts);
     return sky;
   }
 
   // ---- the flashcards
-  function startCards() {
+  function startCards(first = []) {
     const ids = deckIds();
-    cards = { queue: [...ids], total: ids.length, known: 0, flipped: false };
+    const front = [...new Set(first)].filter((id) => ids.includes(id));
+    cards = { queue: [...front, ...ids.filter((id) => !front.includes(id))], total: ids.length, known: 0, flipped: false };
     screen = "cards";
     track("atlas-cards-start");
     render();
@@ -367,7 +368,7 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goT
     const tx = t();
     if (!cards.queue.length) {
       const end = el("div", "atlas-end");
-      end.append(el("p", "atlas-score", tx.deckDone), el("p", "", tx.deckDoneText), button(tx.testName, "atlas-main", startName), button(tx.again, "atlas-wide", startCards), button(tx.back, "atlas-wide", () => ((screen = "home"), render())));
+      end.append(el("p", "atlas-score", tx.deckDone), el("p", "", tx.deckDoneText), button(tx.testName, "atlas-main", startName), button(tx.again, "atlas-wide", () => startCards()), button(tx.back, "atlas-wide", () => ((screen = "home"), render())));
       return body.replaceChildren(end);
     }
     const id = cards.queue[0];
@@ -519,12 +520,12 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goT
     parts.push(choose, button(tx.back, "atlas-wide", () => ((screen = "home"), getSky().clearFocus(), render())));
     body.replaceChildren(...parts);
   }
-  function openFigure(id, from) {
+  function openFigure(id, from, where = "earth") {
     stopReading();
     selected = id;
     figureBack = from;
     screen = "figure";
-    look(id, "earth");
+    look(id, where);
     render();
   }
   // a click on a star (in the list, or in the picture): a ring around it, the camera to it, and its card
@@ -647,10 +648,16 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goT
   return {
     open: () => toggle(true),
     // one constellation, opened from elsewhere ("the sky at your birth"): the panel with its figure, the map with it in view
-    showFigure: (id) => {
+    showFigure: (id, where = "earth") => {
       if (!getSky()?.data.constellations.some((c) => c.id === id)) return;
       toggle(true);
-      openFigure(id, "list");
+      openFigure(id, "list", where);
+    },
+    // the flashcards of the twelve zodiac signs, the given figures first (a learning step: the visitor's own constellation and sign)
+    zodiacCards: (first = []) => {
+      deck = "zodiac";
+      toggle(true);
+      startCards(first);
     },
     // a click on the map: true if it hit a star of the figure that is shown
     pick: (x, y, camera) => {

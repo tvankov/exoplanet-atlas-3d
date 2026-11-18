@@ -296,7 +296,7 @@ test("constellations and zodiac signs: the sign and the constellation of the Sun
   const near = personalNumbers({ age: 30, years: YEARS, star: null, birthDate: { year: 1995, month: 5, day: 20 }, figureInfo: () => ({ near: 46, far: 484 }) });
   assert.ok(personalLine("zodLight", near, "de").includes("16 Jahre vor deiner Geburt"));
   for (const id of Object.keys(ZOD_NAMES)) assert.equal(ZOD_NAMES[id].length, 4, id);
-  assert.equal(PATHS.zod.steps.length, 5);
+  assert.equal(PATHS.zod.steps.length, 7);
   const t = testQuestions("zod", you, "ja", 0);
   assert.equal(new Set(t.map((q) => q.id)).size, 10);
 });
@@ -443,4 +443,24 @@ test("part IV: galaxies, clusters, the observable universe and the Big Bang, eac
   }
   for (const path of ["galaxies", "clusters", "observable", "bigbang"]) assert.equal(new Set(testQuestions(path, you, "ja", 0).map((q) => q.id)).size, 10, path);
   assert.equal(TASKS.obsBack, "yourStar");
+});
+
+test("constellations, steps 6 and 7: the figure from the side, the flashcards, and at most one flashcard question in the final test", () => {
+  const born = personalNumbers({ age: 31, years: YEARS, star: null, birthDate: { year: 1995, month: 6, day: 14 }, figureInfo: () => ({ near: 46, far: 484 }) });
+  assert.ok(personalLine("zodSide", born, "de").includes("zwischen 46 und 484 Lichtjahren") && personalLine("zodSide", born, "de").includes("438 Lichtjahre"));
+  assert.ok(personalLine("zodCards", born, "de").includes("Stier") && personalLine("zodCards", born, "de").includes("Zwillinge"));
+  const none = personalNumbers({ age: null, years: YEARS, star: null });
+  assert.ok(personalLine("zodCards", none, "de").startsWith("Ein Beispiel für den 1. April"));
+  for (const lang of LANGS) for (const step of ["zodSide", "zodCards"]) for (const nums of [you, nobody, born]) {
+    const line = personalLine(step, nums, lang);
+    assert.ok(line && !/undefined|null|NaN/.test(line), `${lang} ${step}: ${line}`);
+  }
+  const cardIds = QUESTIONS.zodCards.map((q) => q.id);
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const t = testQuestions("zod", you, "de", attempt);
+    assert.equal(t.length, 10);
+    assert.ok(t.filter((q) => cardIds.includes(q.id)).length <= 1, `attempt ${attempt}`);
+  }
+  // other paths are picked as before (no limit): ten different questions
+  assert.equal(new Set(testQuestions("solar", you, "de", 3).map((q) => q.id)).size, 10);
 });

@@ -5913,6 +5913,8 @@ const learn = initLearn({
     if (task === "realScale") return realScale || setRealScale(true);
     if (task === "explanationScale") return realScale && setRealScale(false);
     if (task.startsWith("figure:")) return atlas?.showFigure(task.slice(7)); // a constellation in the sky
+    if (task.startsWith("figureSide:")) return atlas?.showFigure(task.slice(11), "side"); // the same, seen from the side
+    if (task.startsWith("cards:")) return atlas?.zodiacCards(task.slice(6).split(",")); // the flashcards, these figures first
     if (task.startsWith("plan:")) {
       // the trip planner, from the Earth to the place
       planFrom.value = planetLabel("Earth");

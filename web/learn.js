@@ -19,7 +19,8 @@ export const PATHS = {
   alpha: { steps: ["neighbors", "pair", "proxima", "proximaB", "travel"], minutes: 25, testSize: 10, pass: 0.7 },
   exo: { steps: ["exoWhat", "exoHow", "exoRocky", "exoGiants", "exoStrange", "exoSystems", "exoFamous"], minutes: 35, testSize: 10, pass: 0.7 },
   hab: { steps: ["habWhat", "habZone", "habWater", "habAtmos", "habIngredients", "habExtreme", "habLife"], minutes: 35, testSize: 10, pass: 0.7 },
-  zod: { steps: ["zodWhat", "zodPath", "zodShift", "zodScience", "zodLight"], minutes: 25, testSize: 10, pass: 0.7 },
+  // testMax: at most so many questions of a step in the final test (the flashcards: one question about the twelve signs)
+  zod: { steps: ["zodWhat", "zodPath", "zodShift", "zodScience", "zodLight", "zodSide", "zodCards"], minutes: 35, testSize: 10, pass: 0.7, testMax: { zodCards: 1 } },
   names: { steps: ["nameLetters", "nameStars", "nameGreek", "nameCatalog", "nameStories"], minutes: 25, testSize: 10, pass: 0.7 },
   stars: { steps: ["starWhat", "starColor", "starClass", "starSize", "starHosts"], minutes: 25, testSize: 10, pass: 0.7 },
   birth: { steps: ["birthCloud", "birthProto", "birthDisk", "birthCluster", "birthSun"], minutes: 25, testSize: 10, pass: 0.7 },
@@ -40,7 +41,7 @@ export const TASKS = {
   neighbors: "figure:Cen", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "plan:Proxima Cen b",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
-  zodWhat: "figure:birth", zodPath: "figure:Oph", zodShift: "figure:birthSign", zodScience: null, zodLight: "figure:birth",
+  zodWhat: "figure:birth", zodPath: "figure:Oph", zodShift: "figure:birthSign", zodScience: null, zodLight: "figure:birth", zodSide: "figureSide:birth", zodCards: "cards:zodiac",
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "figure:Cen", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
   starWhat: "Sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
   birthCloud: "figure:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "figure:Tau", birthSun: "Sun",
@@ -62,7 +63,7 @@ export const VIEWS = {
   neighbors: "view:neighborhood", pair: "Alpha Centauri A", proxima: "Proxima Cen", proximaB: "Proxima Cen b", travel: "Proxima Cen",
   exoWhat: "51 Peg b", exoHow: "Kepler-22 b", exoRocky: "TRAPPIST-1 e", exoGiants: "HD 209458 b", exoStrange: "55 Cnc e", exoSystems: "KOI-351", exoFamous: "HD 189733 b",
   habWhat: "Earth", habZone: "TOI-700 d", habWater: "Jupiter", habAtmos: "Venus", habIngredients: "Mars", habExtreme: "moon:Europa", habLife: "Proxima Cen b",
-  zodWhat: "sky:birth", zodPath: "sky:Oph", zodShift: "sky:birthSign", zodScience: "Earth", zodLight: "sky:birth",
+  zodWhat: "sky:birth", zodPath: "sky:Oph", zodShift: "sky:birthSign", zodScience: "Earth", zodLight: "sky:birth", zodSide: "sky:birth", zodCards: "sky:birthSign",
   nameLetters: "Proxima Cen", nameStars: "Alpha Centauri A", nameGreek: "sky:Cen", nameCatalog: "TRAPPIST-1", nameStories: "51 Peg b",
   starWhat: "view:sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
   birthCloud: "sky:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "sky:Tau", birthSun: "view:solar",
@@ -517,6 +518,12 @@ export const SOURCES = {
   zodScience: [
     { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
   ],
+  zodSide: [
+    { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
+  ],
+  zodCards: [
+    { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
+  ],
   zodLight: [
     { label: "NASA Space Place: What Are Constellations?", url: "https://spaceplace.nasa.gov/constellations/en/" },
   ],
@@ -910,6 +917,8 @@ export const QUESTIONS = {
   zodShift: [{ id: "wobble" }, { id: "wobbleTime" }, { id: "signSize" }],
   zodScience: [{ id: "astronomyMethod" }, { id: "astroEvidence" }, { id: "astroBelief" }],
   zodLight: [{ id: "lightTravel" }, { id: "starsSpread" }, { id: "nightSky" }],
+  zodSide: [{ id: "sideView" }, { id: "figureFromEarth" }, { id: "sideWhy" }],
+  zodCards: [{ id: "signCount" }, { id: "cardFront" }, { id: "pathExtra" }],
   exoSystems: [{ id: "trappistFit" }, { id: "kepler90Eight" }, { id: "kepler90AI" }, { id: "trappistBLaps", number: "trappistBLaps" }],
   exoFamous: [{ id: "hdBlue" }, { id: "kepler16Suns" }, { id: "kepler16Saturn" }, { id: "kepler16Age", number: "kepler16Age" }],
   // the search for habitable worlds
@@ -947,8 +956,17 @@ export function buildQuestions(step, nums, lang) {
 
 // The final test: `size` questions from all steps, a different choice and order for every attempt.
 export function testQuestions(path, nums, lang, attempt) {
-  const all = PATHS[path].steps.flatMap((step) => buildQuestions(step, nums, lang));
-  return seededOrder(all, `test-${attempt}`).slice(0, PATHS[path].testSize);
+  const all = PATHS[path].steps.flatMap((step) => buildQuestions(step, nums, lang).map((q) => ({ q, step })));
+  const max = PATHS[path].testMax ?? {};
+  const count = {};
+  const picked = [];
+  for (const { q, step } of seededOrder(all, `test-${attempt}`)) {
+    if (picked.length === PATHS[path].testSize) break;
+    if ((count[step] ?? 0) >= (max[step] ?? Infinity)) continue;
+    count[step] = (count[step] ?? 0) + 1;
+    picked.push(q);
+  }
+  return picked;
 }
 export const passed = (right, total, path) => total > 0 && right / total >= PATHS[path].pass;
 
@@ -2097,6 +2115,36 @@ export const LEARN_TEXT = {
         ref: (name, cls, hint) => `${name} is a star of class ${cls}, and two planets go round it. ${hint}`.trim(),
         none: (name) => `The table gives no type for ${name}.`,
       },
+      zodSide: {
+        title: "The figures in 3D", goal: "You see for yourself that a constellation is a figure only as seen from the Earth.",
+        text: [
+          "The map shows every star of a constellation in its real direction and at its real distance, by the Hipparcos data. Seen from the Earth the figure looks as we know it.",
+          "Turn the view to the side and the figure falls apart: according to NASA some stars of a constellation are close, others very far away. Only from our direction do they make a picture together.",
+        ],
+        task: "Look at your constellation from the side: the figure falls apart.",
+        remember: [
+          "Seen from the Earth a constellation looks like a figure.",
+          "Seen from the side the figure falls apart.",
+          "The stars of a constellation are at very different distances.",
+        ],
+        you: (name, near, far, gap) => (gap ? `The stars of your constellation ${name} lie between ${near} and ${far} light years from us: from the side, ${gap} light years separate the nearest and the farthest.` : `Look at your constellation ${name} from the side: its stars are at different distances.`),
+        ref: (name, near, far, gap) => (gap ? `On the 1st of April the Sun stands in ${name}. Its stars lie between ${near} and ${far} light years from us: from the side, ${gap} light years separate the nearest and the farthest.` : `On the 1st of April the Sun stands in ${name}; from the side its figure falls apart.`),
+      },
+      zodCards: {
+        title: "Learning with flashcards", goal: "You recognise the twelve constellations of the zodiac by their figure.",
+        text: [
+          "Astrology has twelve signs, and the Sun passes through the twelve constellations of the zodiac that have their names, and through Ophiuchus.",
+          "The front of each flashcard shows the figure as it looks in the sky, without its name. Guess, turn the card and count what you already know. What you do not know yet comes back at the end.",
+        ],
+        task: "Learn one round of flashcards with the twelve constellations of the zodiac.",
+        remember: [
+          "The zodiac has twelve constellations named like the signs.",
+          "The Sun also passes through Ophiuchus.",
+          "A flashcard shows the figure as it looks in the sky.",
+        ],
+        you: (real, sign, same) => (same ? `Your first card: ${real}, your constellation and your sign at once.` : `Your first cards: ${real}, where the Sun stood at your birth, and ${sign}, your sign.`),
+        ref: (real, sign) => `An example for the 1st of April: first ${real}, where the Sun stands, then ${sign}, the sign.`,
+      },
       nameLetters: {
         title: "Planets get letters", goal: "You can read the name of an exoplanet: the star and a letter.",
         text: [
@@ -2613,6 +2661,12 @@ export const LEARN_TEXT = {
       orangeLife: { q: "Which stars does NASA consider better for advanced life?", o: ["Orange dwarfs of class K", "Blue giants of class O", "No star at all"], e: "Orange dwarfs of class K, a little cooler than the Sun." },
       redLong: { q: "Which stars live the longest?", o: ["Red dwarfs, more than 100 billion years", "Blue giants", "Stars like the Sun"], e: "Red dwarfs: NASA gives more than 100 billion years." },
       bakedDry: { q: "What can happen to planets in the habitable zone of a red dwarf?", o: ["They can be baked bone dry", "They turn into stars", "Nothing at all"], e: "They can be baked bone dry." },
+      sideView: { q: "What do you see when you look at a constellation from the side?", o: ["The figure falls apart", "The same figure, only smaller", "Nothing at all"], e: "The figure falls apart: its stars are at very different distances." },
+      figureFromEarth: { q: "From where does a constellation look like its figure?", o: ["From the Earth", "From every place in space", "Only from the Moon"], e: "From the Earth: only from our direction do its stars make a picture." },
+      sideWhy: { q: "Why does the figure fall apart from the side?", o: ["Its stars are at very different distances", "The stars move away at once", "The map is wrong"], e: "Some stars of a constellation are close, others very far away." },
+      signCount: { q: "How many signs does astrology have?", o: ["12", "13", "88"], e: "12: each a twelfth of the Sun's path." },
+      cardFront: { q: "What does the front of a flashcard show?", o: ["The figure as in the sky, without its name", "Only the name", "A photo of a planet"], e: "The figure as it looks in the sky, without its name." },
+      pathExtra: { q: "Which constellation does the Sun pass besides the twelve of the zodiac?", o: ["Ophiuchus", "Orion", "Ursa Major"], e: "Ophiuchus, the Serpent Bearer." },
       firstLetter: { q: "What is the first planet found round a star called?", o: ["The star's name with b", "The star's name with a", "The star's name with 1"], e: "b: the star itself is the undeclared A." },
       sameTime: { q: "Several planets of a star are found at the same time. Which one gets the b?", o: ["The one closest to the star", "The biggest", "The one farthest out"], e: "The one closest to the star." },
       letterOrder: { q: "What do the letters b, c, d follow?", o: ["The order of discovery", "The size of the planets", "Their colour"], e: "The order of discovery: Proxima d goes round closer than b, but was found later." },
@@ -3795,6 +3849,36 @@ export const LEARN_TEXT = {
         ref: (name, cls, hint) => `${name} ist ein Stern der Klasse ${cls}, und zwei Planeten kreisen um ihn. ${hint}`.trim(),
         none: (name) => `Für ${name} nennt die Tabelle keinen Typ.`,
       },
+      zodSide: {
+        title: "Die Figuren in 3D ansehen", goal: "Du siehst selbst, dass ein Sternbild nur von der Erde aus eine Figur ist.",
+        text: [
+          "Die Karte zeigt jeden Stern eines Sternbilds in seiner echten Richtung und Entfernung, nach den Hipparcos-Daten. Von der Erde aus sieht die Figur so aus, wie wir sie kennen.",
+          "Dreht man die Ansicht zur Seite, fällt die Figur auseinander: Laut NASA sind manche Sterne eines Sternbilds nah, andere sehr weit weg. Nur aus unserer Richtung ergeben sie zusammen ein Bild.",
+        ],
+        task: "Sieh dir dein Sternbild von der Seite an: Die Figur fällt auseinander.",
+        remember: [
+          "Von der Erde aus sieht ein Sternbild wie eine Figur aus.",
+          "Von der Seite fällt die Figur auseinander.",
+          "Die Sterne eines Sternbilds sind sehr verschieden weit entfernt.",
+        ],
+        you: (name, near, far, gap) => (gap ? `Die Sterne deines Sternbilds ${name} liegen zwischen ${near} und ${far} Lichtjahren von uns: Von der Seite trennen den nächsten und den fernsten ${gap} Lichtjahre.` : `Sieh dir dein Sternbild ${name} von der Seite an: Seine Sterne sind verschieden weit entfernt.`),
+        ref: (name, near, far, gap) => (gap ? `Am 1. April steht die Sonne im Sternbild ${name}. Seine Sterne liegen zwischen ${near} und ${far} Lichtjahren von uns: Von der Seite trennen den nächsten und den fernsten ${gap} Lichtjahre.` : `Am 1. April steht die Sonne im Sternbild ${name}; von der Seite fällt seine Figur auseinander.`),
+      },
+      zodCards: {
+        title: "Mit Karteikarten lernen", goal: "Du erkennst die zwölf Sternbilder des Tierkreises an ihrer Figur.",
+        text: [
+          "Die Astrologie kennt zwölf Sternzeichen, und die Sonne zieht durch die zwölf gleichnamigen Sternbilder des Tierkreises und durch den Schlangenträger.",
+          "Auf der Vorderseite jeder Karteikarte steht die Figur, wie sie am Himmel aussieht, ohne ihren Namen. Rate, dreh die Karte um und zähle mit, was du schon kennst. Was du noch nicht weißt, kommt am Ende noch einmal.",
+        ],
+        task: "Lerne eine Runde Karteikarten mit den zwölf Sternbildern des Tierkreises.",
+        remember: [
+          "Der Tierkreis hat zwölf Sternbilder, die wie die Sternzeichen heißen.",
+          "Die Sonne zieht außerdem durch den Schlangenträger.",
+          "Eine Karteikarte zeigt die Figur, wie sie am Himmel aussieht.",
+        ],
+        you: (real, sign, same) => (same ? `Deine erste Karte: ${real}, dein Sternbild und dein Sternzeichen zugleich.` : `Deine ersten Karten: ${real}, wo die Sonne bei deiner Geburt stand, und ${sign}, dein Sternzeichen.`),
+        ref: (real, sign) => `Ein Beispiel für den 1. April: zuerst ${real}, wo die Sonne steht, dann ${sign}, das Sternzeichen.`,
+      },
       nameLetters: {
         title: "Planeten bekommen Buchstaben", goal: "Du kannst den Namen eines Exoplaneten lesen: Stern und Buchstabe.",
         text: [
@@ -4311,6 +4395,12 @@ export const LEARN_TEXT = {
       orangeLife: { q: "Welche Sterne hält die NASA für besser für höheres Leben?", o: ["Orange Zwerge der Klasse K", "Blaue Riesen der Klasse O", "Gar keine"], e: "Orange Zwerge der Klasse K, etwas kühler als die Sonne." },
       redLong: { q: "Welche Sterne leben am längsten?", o: ["Rote Zwerge, mehr als 100 Milliarden Jahre", "Blaue Riesen", "Sterne wie die Sonne"], e: "Rote Zwerge: Die NASA nennt mehr als 100 Milliarden Jahre." },
       bakedDry: { q: "Was kann Planeten in der bewohnbaren Zone eines roten Zwergs passieren?", o: ["Sie können völlig austrocknen", "Sie werden zu Sternen", "Gar nichts"], e: "Sie können völlig austrocknen." },
+      sideView: { q: "Was siehst du, wenn du ein Sternbild von der Seite ansiehst?", o: ["Die Figur fällt auseinander", "Dieselbe Figur, nur kleiner", "Gar nichts"], e: "Die Figur fällt auseinander: Ihre Sterne sind sehr verschieden weit entfernt." },
+      figureFromEarth: { q: "Von wo aus sieht ein Sternbild wie seine Figur aus?", o: ["Von der Erde aus", "Von jedem Ort im All", "Nur vom Mond aus"], e: "Von der Erde aus: Nur aus unserer Richtung ergeben seine Sterne ein Bild." },
+      sideWhy: { q: "Warum fällt die Figur von der Seite auseinander?", o: ["Ihre Sterne sind sehr verschieden weit entfernt", "Die Sterne fliegen sofort weg", "Die Karte ist falsch"], e: "Manche Sterne eines Sternbilds sind nah, andere sehr weit weg." },
+      signCount: { q: "Wie viele Sternzeichen hat die Astrologie?", o: ["12", "13", "88"], e: "12: jedes ein Zwölftel des Weges der Sonne." },
+      cardFront: { q: "Was zeigt die Vorderseite einer Karteikarte?", o: ["Die Figur wie am Himmel, ohne ihren Namen", "Nur den Namen", "Ein Foto eines Planeten"], e: "Die Figur, wie sie am Himmel aussieht, ohne ihren Namen." },
+      pathExtra: { q: "Durch welches Sternbild zieht die Sonne außer den zwölf des Tierkreises?", o: ["Den Schlangenträger", "Den Orion", "Den Großen Bären"], e: "Durch den Schlangenträger." },
       firstLetter: { q: "Wie heißt der erste gefundene Planet eines Sterns?", o: ["Name des Sterns mit b", "Name des Sterns mit a", "Name des Sterns mit 1"], e: "b: Der Stern selbst ist das ungenannte A." },
       sameTime: { q: "Mehrere Planeten eines Sterns werden zur gleichen Zeit gefunden. Welcher bekommt das b?", o: ["Der dem Stern am nächsten ist", "Der größte", "Der äußerste"], e: "Der Planet, der dem Stern am nächsten ist." },
       letterOrder: { q: "Wonach richten sich die Buchstaben b, c, d?", o: ["Nach der Reihenfolge der Entdeckung", "Nach der Größe der Planeten", "Nach ihrer Farbe"], e: "Nach der Reihenfolge der Entdeckung: Proxima d kreist näher als b, wurde aber später gefunden." },
@@ -5493,6 +5583,36 @@ export const LEARN_TEXT = {
         ref: (name, cls, hint) => `${name}は${cls}型の恒星で、2つの惑星がまわっています。${hint}`,
         none: (name) => `表には${name}のタイプがありません。`,
       },
+      zodSide: {
+        title: "星座を3Dで見る", goal: "星座が地球から見たときだけ形になることを、自分の目でたしかめます。",
+        text: [
+          "この地図は、星座のひとつひとつの星を、ヒッパルコスのデータによる本当の方向と距離で表しています。地球から見ると、形はよく知っているとおりに見えます。",
+          "横から見ると、形はばらばらになります。NASAによると、星座の星には近いものもあれば、とても遠いものもあります。私たちの方向から見たときだけ、いっしょに絵になるのです。",
+        ],
+        task: "あなたの星座を横から見てみましょう。形がばらばらになります。",
+        remember: [
+          "地球から見ると、星座は形に見えます。",
+          "横から見ると、形はばらばらになります。",
+          "星座の星は、それぞれとてもちがう距離にあります。",
+        ],
+        you: (name, near, far, gap) => (gap ? `あなたの星座${name}の星は、私たちから${near}光年から${far}光年のところにあります。横から見ると、いちばん近い星といちばん遠い星は${gap}光年はなれています。` : `あなたの星座${name}を横から見てみましょう。星はそれぞれちがう距離にあります。`),
+        ref: (name, near, far, gap) => (gap ? `4月1日、太陽は${name}にあります。その星は私たちから${near}光年から${far}光年のところにあり、横から見ると、いちばん近い星といちばん遠い星は${gap}光年はなれています。` : `4月1日、太陽は${name}にあります。横から見ると形はばらばらになります。`),
+      },
+      zodCards: {
+        title: "カードでおぼえる", goal: "黄道の12星座を、その形で見分けられます。",
+        text: [
+          "星占いには12の星座（黄道十二宮）があり、太陽は同じ名前の黄道の12星座と、へびつかい座を通ります。",
+          "カードの表には、空で見えるとおりの形が、名前なしで描かれています。考えてからカードをめくり、もう知っているものを数えましょう。まだ知らないものは、最後にもう一度出てきます。",
+        ],
+        task: "黄道の12星座のカードを1回ひととおり学びましょう。",
+        remember: [
+          "黄道には、星占いと同じ名前の12の星座があります。",
+          "太陽はへびつかい座も通ります。",
+          "カードは、空で見えるとおりの形を表しています。",
+        ],
+        you: (real, sign, same) => (same ? `あなたの最初のカード：${real}。あなたの星座で、星占いの星座でもあります。` : `あなたの最初のカード：生まれたとき太陽があった${real}と、星占いの星座の${sign}です。`),
+        ref: (real, sign) => `4月1日の例：まず太陽がある${real}、次に星占いの星座の${sign}です。`,
+      },
       nameLetters: {
         title: "惑星にはアルファベット", goal: "系外惑星の名前が読めます。恒星の名前とアルファベットです。",
         text: [
@@ -6009,6 +6129,12 @@ export const LEARN_TEXT = {
       orangeLife: { q: "NASAが高度な生命により向いていると考える恒星はどれですか？", o: ["K型のオレンジわい星", "O型の青色巨星", "どれもない"], e: "太陽より少し冷たい、K型のオレンジわい星です。" },
       redLong: { q: "いちばん長生きなのはどの恒星ですか？", o: ["赤色わい星、1000億年以上", "青色巨星", "太陽のような恒星"], e: "赤色わい星です。NASAは1000億年以上としています。" },
       bakedDry: { q: "赤色わい星のハビタブルゾーンの惑星には、何が起こることがありますか？", o: ["からからに干上がる", "恒星になる", "何も起こらない"], e: "からからに干上がることがあります。" },
+      sideView: { q: "星座を横から見ると、何が見えますか？", o: ["形がばらばらになる", "同じ形が小さくなるだけ", "何も見えない"], e: "形がばらばらになります。星がそれぞれとてもちがう距離にあるからです。" },
+      figureFromEarth: { q: "星座がその形に見えるのは、どこから見たときですか？", o: ["地球から", "宇宙のどこからでも", "月からだけ"], e: "地球からです。私たちの方向から見たときだけ、星が絵になります。" },
+      sideWhy: { q: "横から見ると形がばらばらになるのはなぜですか？", o: ["星がとてもちがう距離にあるから", "星がすぐに飛んでいくから", "地図がまちがっているから"], e: "星座の星には近いものもあれば、とても遠いものもあるからです。" },
+      signCount: { q: "星占いの星座（黄道十二宮）はいくつありますか？", o: ["12", "13", "88"], e: "12です。それぞれ太陽の通り道の12分の1です。" },
+      cardFront: { q: "カードの表には何が描かれていますか？", o: ["空で見えるとおりの形、名前なし", "名前だけ", "惑星の写真"], e: "空で見えるとおりの形が、名前なしで描かれています。" },
+      pathExtra: { q: "太陽は黄道の12星座のほかに、どの星座を通りますか？", o: ["へびつかい座", "オリオン座", "おおぐま座"], e: "へびつかい座です。" },
       firstLetter: { q: "ある恒星のまわりで最初に見つかった惑星は、何と呼ばれますか？", o: ["恒星の名前＋b", "恒星の名前＋a", "恒星の名前＋1"], e: "bです。恒星そのものが書かれないAです。" },
       sameTime: { q: "ひとつの恒星の惑星がいくつか同時に見つかりました。bになるのはどれですか？", o: ["恒星にいちばん近い惑星", "いちばん大きい惑星", "いちばん外側の惑星"], e: "恒星にいちばん近い惑星です。" },
       letterOrder: { q: "b、c、dの文字は何の順番ですか？", o: ["見つかった順番", "惑星の大きさの順番", "色の順番"], e: "見つかった順番です。プロキシマdはbより近くを回っていますが、あとから見つかりました。" },
@@ -7191,6 +7317,36 @@ export const LEARN_TEXT = {
         ref: (name, cls, hint) => `${name} е звезда от клас ${cls} и около нея обикалят две планети. ${hint}`.trim(),
         none: (name) => `Таблицата не дава тип за ${name}.`,
       },
+      zodSide: {
+        title: "Фигурите в 3D", goal: "Сам виждаш, че съзвездието е фигура само погледнато от Земята.",
+        text: [
+          "Картата показва всяка звезда на едно съзвездие в истинската ѝ посока и на истинското ѝ разстояние, по данните на „Хипаркос“. Погледната от Земята, фигурата изглежда такава, каквато я познаваме.",
+          "Завърти изгледа настрани и фигурата се разпада: според НАСА някои звезди на едно съзвездие са близо, други много далеч. Само от нашата посока заедно образуват картина.",
+        ],
+        task: "Разгледай своето съзвездие отстрани: фигурата се разпада.",
+        remember: [
+          "Погледнато от Земята, съзвездието изглежда като фигура.",
+          "Погледнато отстрани, фигурата се разпада.",
+          "Звездите на едно съзвездие са на много различни разстояния.",
+        ],
+        you: (name, near, far, gap) => (gap ? `Звездите на твоето съзвездие ${name} са между ${near} и ${far} светлинни години от нас: отстрани най-близката и най-далечната делят ${gap} светлинни години.` : `Разгледай своето съзвездие ${name} отстрани: звездите му са на различни разстояния.`),
+        ref: (name, near, far, gap) => (gap ? `На 1 април Слънцето е в съзвездието ${name}. Звездите му са между ${near} и ${far} светлинни години от нас: отстрани най-близката и най-далечната делят ${gap} светлинни години.` : `На 1 април Слънцето е в съзвездието ${name}; отстрани фигурата му се разпада.`),
+      },
+      zodCards: {
+        title: "Учене с карти", goal: "Разпознаваш дванайсетте съзвездия на зодиака по фигурата им.",
+        text: [
+          "Астрологията има дванайсет зодии, а Слънцето минава през дванайсетте едноименни съзвездия на зодиака и през Змиеносец.",
+          "На лицето на всяка карта е фигурата, както изглежда на небето, без името ѝ. Познай, обърни картата и брой какво вече знаеш. Това, което още не знаеш, идва пак накрая.",
+        ],
+        task: "Научи един кръг карти с дванайсетте съзвездия на зодиака.",
+        remember: [
+          "Зодиакът има дванайсет съзвездия с имената на зодиите.",
+          "Слънцето минава и през Змиеносец.",
+          "Картата показва фигурата, както изглежда на небето.",
+        ],
+        you: (real, sign, same) => (same ? `Първата ти карта: ${real}, твоето съзвездие и твоята зодия едновременно.` : `Първите ти карти: ${real}, където е било Слънцето при раждането ти, и ${sign}, твоята зодия.`),
+        ref: (real, sign) => `Пример за 1 април: първо ${real}, където е Слънцето, после ${sign}, зодията.`,
+      },
       nameLetters: {
         title: "Планетите получават букви", goal: "Можеш да прочетеш името на екзопланета: звездата и една буква.",
         text: [
@@ -7707,6 +7863,12 @@ export const LEARN_TEXT = {
       orangeLife: { q: "Кои звезди НАСА смята за по-добри за развит живот?", o: ["Оранжевите джуджета от клас K", "Сините гиганти от клас O", "Никои"], e: "Оранжевите джуджета от клас K, малко по-хладни от Слънцето." },
       redLong: { q: "Кои звезди живеят най-дълго?", o: ["Червените джуджета, над 100 милиарда години", "Сините гиганти", "Звездите като Слънцето"], e: "Червените джуджета: НАСА дава над 100 милиарда години." },
       bakedDry: { q: "Какво може да се случи с планетите в обитаемата зона на червено джудже?", o: ["Може напълно да изсъхнат", "Стават звезди", "Нищо"], e: "Може напълно да изсъхнат." },
+      sideView: { q: "Какво виждаш, когато гледаш съзвездие отстрани?", o: ["Фигурата се разпада", "Същата фигура, само по-малка", "Нищо"], e: "Фигурата се разпада: звездите ѝ са на много различни разстояния." },
+      figureFromEarth: { q: "Откъде съзвездието изглежда като своята фигура?", o: ["От Земята", "От всяко място в космоса", "Само от Луната"], e: "От Земята: само от нашата посока звездите му образуват картина." },
+      sideWhy: { q: "Защо фигурата се разпада отстрани?", o: ["Звездите ѝ са на много различни разстояния", "Звездите веднага отлитат", "Картата е грешна"], e: "Някои звезди на едно съзвездие са близо, други много далеч." },
+      signCount: { q: "Колко зодии има астрологията?", o: ["12", "13", "88"], e: "12: всяка е една дванайсета от пътя на Слънцето." },
+      cardFront: { q: "Какво показва лицето на една карта?", o: ["Фигурата както на небето, без името ѝ", "Само името", "Снимка на планета"], e: "Фигурата, както изглежда на небето, без името ѝ." },
+      pathExtra: { q: "През кое съзвездие минава Слънцето освен дванайсетте на зодиака?", o: ["Змиеносец", "Орион", "Голямата мечка"], e: "През Змиеносец." },
       firstLetter: { q: "Как се казва първата открита планета около една звезда?", o: ["Името на звездата с b", "Името на звездата с a", "Името на звездата с 1"], e: "b: самата звезда е неизписаното A." },
       sameTime: { q: "Няколко планети на една звезда са открити едновременно. Коя получава b?", o: ["Най-близката до звездата", "Най-голямата", "Най-външната"], e: "Най-близката до звездата." },
       letterOrder: { q: "По какво се подреждат буквите b, c, d?", o: ["По реда на откриване", "По големината на планетите", "По цвета им"], e: "По реда на откриване: Проксима d обикаля по-близо от b, но е открита по-късно." },
@@ -7880,6 +8042,8 @@ export function personalLine(step, nums, lang) {
     if (step === "zodPath") return (nums.you ? s.you : s.ref)(fmt(nums.orbits));
     if (step === "zodShift") return f(name(nums.zodSign), name(nums.zodReal), nums.zodSign === nums.zodReal);
     if (step === "zodScience") return f(name(nums.zodSign));
+    if (step === "zodSide") return f(name(nums.zodReal), ly(nums.zodNear), ly(nums.zodFar), nums.zodNear != null && nums.zodFar != null ? fmt(Math.round(nums.zodFar - nums.zodNear)) : null);
+    if (step === "zodCards") return f(name(nums.zodReal), name(nums.zodSign), nums.zodReal === nums.zodSign);
     // the light of the nearest star of the constellation: how long before the birth it set off, or at what age of the visitor
     const near = nums.zodNear == null ? null : Math.round(nums.zodNear);
     const before = near != null && nums.you && near > nums.orbits ? fmt(near - nums.orbits) : null;
@@ -7959,7 +8123,7 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
   const BIRTH_PICTURE = { birthCloud: 20000, birthProto: 3540, birthDisk: 4109, birthCluster: 12000, birthSun: 5772 }; // the temperatures of the stars drawn
   const STAR_PICTURE = { starWhat: 5772, starColor: 2566, starClass: 5761, starSize: 2900, starHosts: 3459 }; // the temperatures of the stars drawn
   const NAME_PICTURE = { nameLetters: 3050, nameStars: 5790, nameGreek: 9600, nameCatalog: 2566, nameStories: 5770 }; // the temperatures of the stars drawn
-  const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600 }; // the temperatures of the stars drawn
+  const ZOD_PICTURE = { zodWhat: 9600, zodPath: 5772, zodShift: 5772, zodScience: 4200, zodLight: 9600, zodSide: 7000, zodCards: 12000 }; // the temperatures of the stars drawn
   const pictureOf = (step) =>
     BEYOND_PICTURE[step] ? starCanvas(BEYOND_PICTURE[step], "uni-orb small star", 28)
     : GALAXY_PICTURE[step] ? starCanvas(GALAXY_PICTURE[step], "uni-orb small star", 28)
@@ -8045,6 +8209,11 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     const task = TASKS[step];
     // "yourStar": the visitor's star (from the year of birth), or Proxima Centauri without one
     if (task === "yourStar") return personalNumbers(personal()).star?.name ?? "Proxima Cen";
+    if (task === "figureSide:birth") return `figureSide:${personalNumbers(personal()).zodReal}`;
+    if (task === "cards:zodiac") {
+      const n = personalNumbers(personal());
+      return `cards:${n.zodReal},${n.zodSign}`;
+    }
     if (task !== "figure:birth" && task !== "figure:birthSign") return task;
     const n = personalNumbers(personal());
     return `figure:${task === "figure:birth" ? n.zodReal : n.zodSign}`;
