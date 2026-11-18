@@ -5829,7 +5829,6 @@ function renderDock() {
 // The flight of the day: three stops built from the data of today (the discovery, the next event in the sky, and a place for the visitor).
 dayFlight = initDailyFlight({
   getLang: () => lang,
-  speechLang: () => UI[lang].speech,
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);
