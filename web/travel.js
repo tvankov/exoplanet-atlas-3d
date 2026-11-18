@@ -62,14 +62,16 @@ export function boardSeconds(seconds, beta) {
 }
 
 // How long the flight itself runs on the screen, from the real travel time in seconds: the longer the trip, the longer the film, on a
-// logarithmic scale like the map (every factor of ten in travel time adds 3 seconds), between FILM_MIN and FILM_MAX. At the speed of light:
-// Mars about 8 s, Neptune about 12, Proxima Centauri about 23, PDS 70 about 29. (Until November 2026 every trip ran about 20 seconds,
-// whatever its length.)
-export const FILM_MIN = 5;
-export const FILM_MAX = 40;
+// logarithmic scale like the map, between FILM_MIN and FILM_MAX. Set so that at the speed of light Mars (about 11 light minutes) takes
+// 6 s and Kepler-452 (1,800 light years) 40 s: every factor of ten in travel time adds FILM_STEP seconds. Neptune then takes about 12 s,
+// Proxima Centauri 29, PDS 70 37. (Until November 2026 every trip ran about 20 seconds, whatever its length.)
+export const FILM_MIN = 4;
+export const FILM_MAX = 50;
+const FILM_STEP = 4.3;
+const FILM_MARS = { seconds: 6, log: 2.8 }; // 6 s on the screen for 10^2.8 s, about 10.5 minutes
 export function filmSeconds(realSeconds) {
   if (!(realSeconds > 0)) return FILM_MIN;
-  return Math.min(FILM_MAX, Math.max(FILM_MIN, FILM_MIN + 3 * (Math.log10(realSeconds) - 2)));
+  return Math.min(FILM_MAX, Math.max(FILM_MIN, FILM_MARS.seconds + FILM_STEP * (Math.log10(realSeconds) - FILM_MARS.log)));
 }
 
 // Spectral classes from the effective temperature of the star. The limits are the usual rounded ones of the
@@ -125,7 +127,7 @@ export const TRAVEL_UI = {
     note: [
       "Course: a straight line, aimed at the place where the target will be on arrival. The ring marks it. Gravity is left out, the planets stand where they really stand today.",
       "The line looks bent because the map squeezes distances. Between stars the ship flies straight through real space; the stars count as standing still and a planet counts as its star, because planets are tiny against light years.",
-      "The trip runs as a short film: the start is in view, the ship turns, jumps into hyperspace and comes out at the target, which is in sight long before and grows during the approach. The film is sped up: the longer the real trip, the longer it runs, from 5 to 40 seconds (every factor of ten in travel time adds 3 seconds). The box shows the real travel time and the length of the film.",
+      "The trip runs as a short film: the start is in view, the ship turns, jumps into hyperspace and comes out at the target, which is in sight long before and grows during the approach. The film is sped up: the longer the real trip, the longer it runs, from 4 to 50 seconds (every factor of ten in travel time adds about 4 seconds: Mars 6 seconds, Kepler-452 40 at the speed of light). The box shows the real travel time and the length of the film.",
       "Invented: the turn and the hyperspace. Real: the distance, and the travel time for the speed chosen.",
     ],
     view: "View",
@@ -216,7 +218,7 @@ export const TRAVEL_UI = {
     note: [
       "Kurs: eine gerade Linie, gezielt auf die Stelle, wo das Ziel bei der Ankunft steht. Der Ring markiert sie. Schwerkraft bleibt außen vor, die Planeten stehen dort, wo sie heute wirklich stehen.",
       "Die Linie wirkt gebogen, weil die Karte Entfernungen staucht. Zwischen Sternen fliegt das Schiff gerade durch den echten Raum, die Sterne gelten als ruhend und ein Planet zählt als sein Stern, weil Planeten gegen Lichtjahre winzig sind.",
-      "Die Reise läuft als kurzer Film: Start im Blick, Drehung, Sprung in den Hyperraum, Ankunft am Ziel, das lange vorher zu sehen ist und beim Anflug wächst. Der Film ist gerafft: Je länger die echte Reise, desto länger läuft er, von 5 bis 40 Sekunden (jede Verzehnfachung der Reisezeit gibt 3 Sekunden mehr). Die Box zeigt die echte Reisezeit und die Länge des Films.",
+      "Die Reise läuft als kurzer Film: Start im Blick, Drehung, Sprung in den Hyperraum, Ankunft am Ziel, das lange vorher zu sehen ist und beim Anflug wächst. Der Film ist gerafft: Je länger die echte Reise, desto länger läuft er, von 4 bis 50 Sekunden (jede Verzehnfachung der Reisezeit gibt etwa 4 Sekunden mehr: bei Lichtgeschwindigkeit Mars 6 Sekunden, Kepler-452 40). Die Box zeigt die echte Reisezeit und die Länge des Films.",
       "Erfunden: die Drehung und der Hyperraum. Echt: die Entfernung und die Reisezeit für das gewählte Tempo.",
     ],
     view: "Ansicht",
