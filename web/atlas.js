@@ -667,10 +667,18 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goT
         const tx = t();
         const grid = el("div", "atlas-grid");
         for (const id of ZODIAC_ORDER) grid.append(button(nameOf(id), id === chosen ? "on" : "", () => ((chosen = id), show(), draw())));
+        const lang = getLang();
+        const { constellations, nameOf: name } = getSky().data;
+        const others = el("select", "atlas-select");
+        others.setAttribute("aria-label", tx.others);
+        others.append(new Option(`${tx.others} (${constellations.filter((c) => !c.zodiac).length}) ...`, ""));
+        for (const c of [...constellations].filter((x) => !x.zodiac).sort((a, b) => name(a, lang).localeCompare(name(b, lang), lang)))
+          others.append(new Option(name(c, lang), c.id, false, c.id === chosen));
+        others.addEventListener("change", () => others.value && ((chosen = others.value), show(), draw()));
         const views = el("div", "atlas-views");
         for (const [key, label] of [["earth", tx.earth], ["side", tx.side]])
           views.append(button(label, key === where ? "on" : "", () => ((where = key), chosen && show(), draw())));
-        const parts = [grid, views];
+        const parts = [grid, others, views];
         if (chosen) {
           const info = getSky().data.info(chosen);
           parts.push(el("p", "atlas-facts", `${nameOf(chosen)}: ${tx.facts(info.stars.length, number(info.nearest.dist), number(info.farthest.dist), unit())}`));
@@ -682,16 +690,23 @@ export function initAtlas({ getSky, getLang, speechLang, unit, flyTo, panTo, goT
     },
     zodiacCards: (first = [], used) => {
       const box = el("div", "atlas-embed");
-      const front = [...new Set(first)].filter((id) => ZODIAC_ORDER.includes(id));
-      const fresh = () => ({ queue: [...front, ...ZODIAC_ORDER.filter((id) => !front.includes(id))], known: 0, flipped: false });
+      let which = "zodiac"; // the deck: the twelve zodiac signs, or the other constellations
+      const fresh = () => {
+        const ids = deckIds(which);
+        const front = [...new Set(first)].filter((id) => ids.includes(id)); // the visitor's own figures first
+        return { queue: [...front, ...ids.filter((id) => !front.includes(id))], total: ids.length, known: 0, flipped: false };
+      };
       let deckState = fresh();
       const draw = () => {
         const tx = t();
+        const decks = el("div", "atlas-views");
+        for (const [key, label] of [["zodiac", tx.deckZodiac], ["others", tx.deckOthers(deckIds("others").length)]])
+          decks.append(button(label, key === which ? "on" : "", () => ((which = key), (deckState = fresh()), draw())));
         if (!deckState.queue.length) {
-          return box.replaceChildren(el("p", "atlas-score", tx.deckDone), el("p", "", tx.deckDoneText), button(tx.again, "atlas-wide", () => ((deckState = fresh()), draw())));
+          return box.replaceChildren(decks, el("p", "atlas-score", tx.deckDone), el("p", "", tx.deckDoneText), button(tx.again, "atlas-wide", () => ((deckState = fresh()), draw())));
         }
         const id = deckState.queue[0];
-        const parts = [el("p", "atlas-round", tx.progress(deckState.known, ZODIAC_ORDER.length)), el("p", "atlas-q", tx.frontZodiac), figure(id)];
+        const parts = [decks, el("p", "atlas-round", tx.progress(deckState.known, deckState.total)), el("p", "atlas-q", which === "zodiac" ? tx.frontZodiac : tx.frontOther), figure(id)];
         if (!deckState.flipped) parts.push(button(tx.flip, "atlas-main", () => ((deckState.flipped = true), draw())));
         else {
           const info = getSky().data.info(id);

@@ -8429,14 +8429,12 @@ export function initLearn({ getLang, explorer, personal, act, show, isRealScale,
     you.append(el("small", "", own ? tx.forYou : tx.example), el("p", "", personalLine(step, n, getLang())));
     if (!own) you.append(el("p", "hint", tx.exampleHint));
     parts.push(you);
-    // a step that has its own piece of the 3D view (the twelve figures, the flashcards): it comes right here, with its task as the title;
-    // the piece is kept, so that it keeps its state while the step is drawn again
+    // a step that has its own piece of the 3D view (the figures, the flashcards): it comes right here, in a frame of its own; the piece is
+    // kept, so that it keeps its state while the step is drawn again
     const piece = widgetOf(step, n);
     if (piece) {
-      const box = el("div", "learn-task learn-widget");
-      const tt = el("div", "");
-      tt.append(el("small", "", tx.taskLabel), el("p", "", s.task));
-      box.append(tt, piece);
+      const box = el("div", "learn-widget");
+      box.append(piece);
       parts.push(box);
     }
     // the text, with the places of the map in it as links: a click flies there, the step stays open
