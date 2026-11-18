@@ -11,7 +11,8 @@ import { initMyStar } from "./mystar.js";
 import { initBirthSky, sunConstellation, storedBirthDate } from "./birthsky.js";
 import { drawDock, drawLevel } from "./dockart.js";
 import { MOONS, moonScale, moonName, facingRotation } from "./moons.js";
-import { initLearn } from "./learn.js";
+import { initLearn, LEARN_TEXT } from "./learn.js";
+import { initDiscoveries } from "./discoveries.js";
 import { initAmbient } from "./atmosphere.js";
 import { initDailyFlight, FLIGHT_TEXT } from "./dailyflight.js";
 import { initRecommendations } from "./recommend.js"; // also writes a fact on the loading screen at once
@@ -5998,9 +5999,18 @@ function learnShow(where) {
   const place = resolvePlace(where);
   if (place) showPlace(place);
 }
+// SPACE DISCOVERIES, the library in the area Explore of My Universe (discoveries.js): a link of an entry flies to the map like the places
+// in the texts of the learning steps (learnShow)
+const library = initDiscoveries({
+  getLang: () => lang,
+  show: (link) => learnShow(link.kind === "moon" ? `moon:${link.id}` : link.kind === "sky" ? `sky:${link.id}` : link.id),
+  openStep: (step) => universe?.openLearnStep(step),
+  stepTitle: (step) => (LEARN_TEXT[lang] ?? LEARN_TEXT.en).steps[step]?.title,
+});
 universe = initUniverse({
   getLang: () => lang,
   learn,
+  discoveries: library,
   explorer,
   daily,
   journal,
@@ -6199,11 +6209,15 @@ function closeWelcome() {
   setTimeout(() => {
     universe?.maybeOnboard(); // the first visit: a small card, only if the visitor has not been through it or skipped it
     // the link of a shared certificate leads into its learning path; the address loses the parameter, a reload starts as usual
+    // the same for the link of a discovery (?d=<id>): My Universe opens on it
     const params = new URLSearchParams(location.search);
     const path = params.get("learn");
-    if (!path) return;
-    universe?.openLearnPath(path);
+    const discovery = params.get("d");
+    if (!path && !discovery) return;
+    if (path) universe?.openLearnPath(path);
+    else universe?.openDiscovery(discovery);
     params.delete("learn");
+    params.delete("d");
     const rest = params.toString();
     history.replaceState(history.state, "", `${location.pathname}${rest ? `?${rest}` : ""}${location.hash}`);
   }, 800);

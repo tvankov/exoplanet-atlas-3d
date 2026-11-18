@@ -1,0 +1,79 @@
+{
+ "note": "Made by src/build_discoveries.py from the files in entries/. Do not change by hand.",
+ "entries": [
+  {
+   "id": "sagittarius-a-star",
+   "categories": [
+    "mysteries"
+   ],
+   "type": "object",
+   "status": "confirmed",
+   "dates": {
+    "discovered": null,
+    "published": "2026-11-18",
+    "updated": "2026-11-18"
+   },
+   "aliases": [
+    "Sagittarius A*",
+    "Sgr A*",
+    "black hole",
+    "Schwarzes Loch",
+    "Milky Way",
+    "Milchstraße"
+   ],
+   "explorer": [
+    {
+     "kind": "sky",
+     "id": "Sgr",
+     "label": {
+      "en": "Sagittarius",
+      "de": "Sternbild Schütze"
+     }
+    }
+   ],
+   "title": {
+    "en": "Sagittarius A*: the black hole at the heart of the Milky Way",
+    "de": "Sagittarius A*: das Schwarze Loch im Herzen der Milchstraße"
+   },
+   "summary": {
+    "en": "A supermassive black hole four million times more massive than the Sun, first photographed in 2022.",
+    "de": "Ein supermassereiches Schwarzes Loch, viermillionenmal massereicher als die Sonne, 2022 zum ersten Mal fotografiert."
+   }
+  },
+  {
+   "id": "pds-70-b",
+   "categories": [
+    "exoplanets"
+   ],
+   "type": "object",
+   "status": "confirmed",
+   "dates": {
+    "discovered": "2018",
+    "published": "2026-11-18",
+    "updated": "2026-11-18"
+   },
+   "aliases": [
+    "PDS 70 b",
+    "PDS 70"
+   ],
+   "explorer": [
+    {
+     "kind": "place",
+     "id": "PDS 70 b",
+     "label": {
+      "en": "PDS 70 b",
+      "de": "PDS 70 b"
+     }
+    }
+   ],
+   "title": {
+    "en": "PDS 70 b: a planet caught while forming",
+    "de": "PDS 70 b: ein Planet, ertappt beim Entstehen"
+   },
+   "summary": {
+    "en": "The first confirmed image of a planet that is still forming in the disc round its young star.",
+    "de": "Das erste bestätigte Bild eines Planeten, der noch in der Scheibe um seinen jungen Stern entsteht."
+   }
+  }
+ ]
+}

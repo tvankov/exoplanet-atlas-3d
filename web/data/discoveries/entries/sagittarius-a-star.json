@@ -1,0 +1,59 @@
+{
+  "id": "sagittarius-a-star",
+  "categories": ["mysteries"],
+  "type": "object",
+  "status": "confirmed",
+  "dates": { "discovered": null, "published": "2026-11-18", "updated": "2026-11-18" },
+  "aliases": ["Sagittarius A*", "Sgr A*", "black hole", "Schwarzes Loch", "Milky Way", "Milchstraße"],
+  "explorer": [{ "kind": "sky", "id": "Sgr", "label": { "en": "Sagittarius", "de": "Sternbild Schütze" } }],
+  "learn": ["bhCenter", "bhImage"],
+  "related": [],
+  "sources": [
+    { "id": "eso2208", "publisher": "ESO", "title": "Astronomers reveal first image of the black hole at the heart of our galaxy", "url": "https://www.eso.org/public/news/eso2208-eht-mw/", "published": "2022-05-12", "accessed": "2026-11-17" },
+    { "id": "eso1907", "publisher": "ESO", "title": "Astronomers Capture First Image of a Black Hole", "url": "https://www.eso.org/public/news/eso1907/", "published": "2019-04-10", "accessed": "2026-11-17" },
+    { "id": "nasa-black-holes", "publisher": "NASA", "title": "Black Holes", "url": "https://science.nasa.gov/universe/black-holes/", "accessed": "2026-11-17" },
+    { "id": "nasa-black-hole-types", "publisher": "NASA", "title": "Black Hole Types", "url": "https://science.nasa.gov/universe/black-holes/types/", "accessed": "2026-11-17" }
+  ],
+  "facts": [
+    { "key": "mass", "evidence": "measured", "source": "eso2208", "label": { "en": "Mass", "de": "Masse" }, "value": { "en": "four million times the Sun", "de": "viermillionenmal die Sonne" } },
+    { "key": "distance", "evidence": "measured", "source": "eso2208", "label": { "en": "Distance", "de": "Entfernung" }, "value": { "en": "about 27,000 light years", "de": "etwa 27.000 Lichtjahre" } },
+    { "key": "direction", "evidence": "observed", "source": "eso2208", "label": { "en": "Direction", "de": "Richtung" }, "value": { "en": "the constellation Sagittarius", "de": "das Sternbild Schütze" } },
+    { "key": "image", "evidence": "observed", "source": "eso2208", "label": { "en": "First image", "de": "Erstes Bild" }, "value": { "en": "12 May 2022", "de": "12. Mai 2022" } }
+  ],
+  "text": {
+    "en": {
+      "title": "Sagittarius A*: the black hole at the heart of the Milky Way",
+      "summary": "A supermassive black hole four million times more massive than the Sun, first photographed in 2022.",
+      "overview": "Sagittarius A* is the supermassive black hole at the centre of our Milky Way. According to ESO it is four million times more massive than the Sun and about 27,000 light years away, in the direction of the constellation Sagittarius.",
+      "history": "On 12 May 2022 the Event Horizon Telescope collaboration showed the first image of Sagittarius A*. Three years earlier, on 10 April 2019, it had shown the first image of any black hole, the one in the galaxy M87.",
+      "explanation": "According to NASA a black hole's gravity is so strong that nothing, not even light, can escape. Supermassive black holes have hundreds of thousands to billions of times the mass of the Sun, and galaxies have one at their centre.",
+      "howWeKnow": "The image of 2022 was made by the Event Horizon Telescope collaboration; ESO announced it with the mass and the distance given here.",
+      "special": "It is the black hole of our own galaxy, and the second black hole ever photographed.",
+      "openQuestions": [],
+      "takeaways": [
+        "Sagittarius A* is the supermassive black hole at the centre of the Milky Way.",
+        "It is four million times more massive than the Sun.",
+        "It is about 27,000 light years away, towards Sagittarius.",
+        "Its first image was shown on 12 May 2022.",
+        "Nothing escapes a black hole, not even light."
+      ]
+    },
+    "de": {
+      "title": "Sagittarius A*: das Schwarze Loch im Herzen der Milchstraße",
+      "summary": "Ein supermassereiches Schwarzes Loch, viermillionenmal massereicher als die Sonne, 2022 zum ersten Mal fotografiert.",
+      "overview": "Sagittarius A* ist das supermassereiche Schwarze Loch im Zentrum unserer Milchstraße. Laut ESO ist es viermillionenmal massereicher als die Sonne und etwa 27.000 Lichtjahre entfernt, in Richtung des Sternbilds Schütze.",
+      "history": "Am 12. Mai 2022 zeigte die Zusammenarbeit des Event Horizon Telescope das erste Bild von Sagittarius A*. Drei Jahre vorher, am 10. April 2019, hatte sie das erste Bild eines Schwarzen Lochs überhaupt gezeigt, des Schwarzen Lochs in der Galaxie M87.",
+      "explanation": "Laut NASA ist die Schwerkraft eines Schwarzen Lochs so stark, dass nichts entkommt, nicht einmal Licht. Supermassereiche Schwarze Löcher haben das Hunderttausend- bis Milliardenfache der Sonnenmasse, und Galaxien haben eines in ihrem Zentrum.",
+      "howWeKnow": "Das Bild von 2022 stammt von der Zusammenarbeit des Event Horizon Telescope; die ESO hat es mit der Masse und der Entfernung vorgestellt, die hier stehen.",
+      "special": "Es ist das Schwarze Loch unserer eigenen Galaxie und das zweite Schwarze Loch, das je fotografiert wurde.",
+      "openQuestions": [],
+      "takeaways": [
+        "Sagittarius A* ist das supermassereiche Schwarze Loch im Zentrum der Milchstraße.",
+        "Es ist viermillionenmal massereicher als die Sonne.",
+        "Es ist etwa 27.000 Lichtjahre entfernt, in Richtung Schütze.",
+        "Sein erstes Bild wurde am 12. Mai 2022 gezeigt.",
+        "Aus einem Schwarzen Loch entkommt nichts, nicht einmal Licht."
+      ]
+    }
+  }
+}

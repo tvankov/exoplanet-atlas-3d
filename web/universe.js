@@ -269,7 +269,7 @@ export const UNIVERSE_TEXT = {
 // explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. describe(name): what the map
 // knows of a place ({ kind: "solar" | "exo" | "star" | "sun", id, name, color, au, dist, temp, teff, planets }) or null. openSky(), openAtlas(),
 // openZoneQuiz(), closePanel(): open the events, the zodiac, the zone quiz, close the profile panel.
-export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, learn, explore, describe, openSky, openAtlas, openZoneQuiz, openPanel, closePanel }) {
+export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, learn, discoveries, explore, describe, openSky, openAtlas, openZoneQuiz, openPanel, closePanel }) {
   const t = () => UNIVERSE_TEXT[getLang()] ?? UNIVERSE_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -383,6 +383,13 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     openPanel?.();
     renderAll();
     track(`arrival-learn-${path}`);
+  }
+  // the link of a discovery (?d=<id>): My Universe opens in Explore, on that entry
+  function openDiscovery(id) {
+    if (!discoveries?.open(id)) return;
+    area = "explore";
+    openPanel?.();
+    renderAll();
   }
   // from the info of a place: My Universe opens in Learn, on the step that fits the place
   function openLearnStep(step) {
@@ -712,9 +719,12 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
   }
 
   function exploreArea(tx, last) {
+    // the library of discoveries (discoveries.js): its list here, or one entry alone
+    const own = discoveries?.area(() => renderAll());
+    if (own && !own.overview) return own.nodes;
     const quick = el("div", "uni-list");
     quick.append(wide(item(dockPicture("dock-sky") ?? icon("☄︎"), tx.qSky, tx.qSkySub, () => (closePanel?.(), openSky?.()))));
-    return [nextPart(tx, last, true), section(tx.quick, quick)];
+    return [nextPart(tx, last, true), ...(own ? [section(discoveries.title(), ...own.nodes)] : []), section(tx.quick, quick)];
   }
 
   function learnArea(tx) {
@@ -1022,5 +1032,5 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     else render();
   }
   let onChange = null;
-  return { render, buttonLabel, maybeOnboard, openLearnPath, openLearnStep, title: () => t().title, setOnChange: (fn) => (onChange = fn) };
+  return { render, buttonLabel, maybeOnboard, openLearnPath, openLearnStep, openDiscovery, title: () => t().title, setOnChange: (fn) => (onChange = fn) };
 }
