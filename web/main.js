@@ -6031,6 +6031,7 @@ universe = initUniverse({
   discoveries: library,
   explorer,
   daily,
+  flight: dayFlight,
   journal,
   myStar,
   birthSky,

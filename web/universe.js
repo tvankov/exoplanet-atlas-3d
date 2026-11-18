@@ -10,6 +10,7 @@ import { disclosure } from "./disclosure.js";
 import { planetCanvas, starCanvas, medalCanvas, roundRect, drawCertificate, sharePicture, SITE } from "./sharecard.js";
 import { dockPicture } from "./dockart.js";
 import { storeBirthDate, storedBirthDate } from "./birthsky.js";
+import { dayNumber } from "./daily.js";
 
 export const UNIVERSE_TEXT = {
   en: {
@@ -50,7 +51,7 @@ export const UNIVERSE_TEXT = {
     discoveries: "Your discoveries", favourites: "Favourites", recent: "Seen lately", emptyDiscoveries: "Planets that you save or look at appear here.",
     statPlanets: "Planets seen", statFavourites: "Favourites", statMissions: "Missions finished", statBadges: "Badges",
     quick: "Quick actions", qMissions: "Missions and badges", qSky: "Sky events", qZodiac: "Zodiac signs",
-    qSkySub: "Eclipses, meteor showers and more, with a countdown", qZodiacSub: "The twelve constellations in 3D, with a quiz",
+    qSkySub: "Eclipses, meteor showers and more, with a countdown", quickNew: "New today", qFlight: "Flight of the day", qDaily: "Discovery of the day", qZodiacSub: "The twelve constellations in 3D, with a quiz",
     journalSub: (n, c) => `${n} ${n === 1 ? "note" : "notes"} · ${c} ${c === 1 ? "collection" : "collections"}`,
     profileSub: "Name, interest and how much you know",
     profile: "Your profile", name: "Explorer name", nameHint: "Optional. Any name, no real name needed.",
@@ -107,7 +108,7 @@ export const UNIVERSE_TEXT = {
     discoveries: "Deine Entdeckungen", favourites: "Favoriten", recent: "Zuletzt angesehen", emptyDiscoveries: "Planeten, die du speicherst oder ansiehst, erscheinen hier.",
     statPlanets: "Planeten gesehen", statFavourites: "Favoriten", statMissions: "Missionen erledigt", statBadges: "Abzeichen",
     quick: "Schnellzugriff", qMissions: "Missionen und Abzeichen", qSky: "Himmelsereignisse", qZodiac: "Sternzeichen",
-    qSkySub: "Finsternisse, Sternschnuppen und mehr, mit Countdown", qZodiacSub: "Die zwölf Sternbilder in 3D, mit Quiz",
+    qSkySub: "Finsternisse, Sternschnuppen und mehr, mit Countdown", quickNew: "Neu heute", qFlight: "Flug des Tages", qDaily: "Entdeckung des Tages", qZodiacSub: "Die zwölf Sternbilder in 3D, mit Quiz",
     journalSub: (n, c) => `${n} ${n === 1 ? "Notiz" : "Notizen"} · ${c} ${c === 1 ? "Sammlung" : "Sammlungen"}`,
     profileSub: "Name, Interesse und Wissensstand",
     profile: "Dein Profil", name: "Explorer-Name", nameHint: "Freiwillig. Irgendein Name, ein echter Name ist nicht nötig.",
@@ -164,7 +165,7 @@ export const UNIVERSE_TEXT = {
     discoveries: "あなたの発見", favourites: "お気に入り", recent: "最近見たもの", emptyDiscoveries: "保存した惑星や見た惑星がここに表示されます。",
     statPlanets: "見た惑星", statFavourites: "お気に入り", statMissions: "完了したミッション", statBadges: "バッジ",
     quick: "ショートカット", qMissions: "ミッションとバッジ", qSky: "天文イベント", qZodiac: "黄道十二星座",
-    qSkySub: "日食・月食や流星群など、カウントダウン付き", qZodiacSub: "12星座を3Dで、クイズ付き",
+    qSkySub: "日食・月食や流星群など、カウントダウン付き", quickNew: "今日の新着", qFlight: "今日のフライト", qDaily: "今日の発見", qZodiacSub: "12星座を3Dで、クイズ付き",
     journalSub: (n, c) => `メモ${n}件 · コレクション${c}件`,
     profileSub: "名前、興味、知識レベル",
     profile: "プロフィール", name: "エクスプローラー名", nameHint: "任意です。好きな名前で、本名は不要です。",
@@ -221,7 +222,7 @@ export const UNIVERSE_TEXT = {
     discoveries: "Твоите открития", favourites: "Любими", recent: "Разгледани наскоро", emptyDiscoveries: "Планетите, които запазиш или разгледаш, се появяват тук.",
     statPlanets: "Разгледани планети", statFavourites: "Любими", statMissions: "Изпълнени мисии", statBadges: "Значки",
     quick: "Бързи връзки", qMissions: "Мисии и значки", qSky: "Събития в небето", qZodiac: "Зодиакални знаци",
-    qSkySub: "Затъмнения, метеорни потоци и още, с обратно броене", qZodiacSub: "Дванадесетте съзвездия в 3D, с викторина",
+    qSkySub: "Затъмнения, метеорни потоци и още, с обратно броене", quickNew: "Ново днес", qFlight: "Полет на деня", qDaily: "Откритие на деня", qZodiacSub: "Дванадесетте съзвездия в 3D, с викторина",
     journalSub: (n, c) => `${n} ${n === 1 ? "бележка" : "бележки"} · ${c} ${c === 1 ? "колекция" : "колекции"}`,
     profileSub: "Име, интерес и ниво на знания",
     profile: "Твоят профил", name: "Име на изследовател", nameHint: "По желание. Което и да е име, истинско не е нужно.",
@@ -245,7 +246,7 @@ export const UNIVERSE_TEXT = {
 // explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. describe(name): what the map
 // knows of a place ({ kind: "solar" | "exo" | "star" | "sun", id, name, color, au, dist, temp, teff, planets }) or null. openSky(), openAtlas(),
 // openZoneQuiz(), closePanel(): open the events, the zodiac, the zone quiz, close the profile panel.
-export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, learn, discoveries, explore, describe, openSky, openAtlas, openZoneQuiz, openPanel, closePanel }) {
+export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, learn, discoveries, explore, describe, openSky, openAtlas, openZoneQuiz, openPanel, closePanel }) {
   const t = () => UNIVERSE_TEXT[getLang()] ?? UNIVERSE_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -617,9 +618,41 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     // the library of discoveries (discoveries.js): its list first, or one entry alone
     const own = discoveries?.area(() => renderAll());
     if (own && !own.overview) return own.nodes;
-    const quick = el("div", "uni-list");
-    quick.append(wide(item(dockPicture("dock-sky") ?? icon("☄︎"), tx.qSky, tx.qSkySub, () => (closePanel?.(), openSky?.()))));
-    return [...(own ? [section(discoveries.title(), ...own.nodes)] : []), section(tx.quick, quick)];
+    const quick = el("div", "uni-quick-grid");
+    if (flight) quick.append(quickCard(tx, "flight", dockPicture("dock-plan") ?? icon("✈︎"), tx.qFlight, flight.hint(), !seenToday("flight"), () => flight.start()));
+    if (daily?.entry)
+      quick.append(quickCard(tx, "daily", dockPicture("dock-daily") ?? icon("✦"), tx.qDaily, (daily.entry[getLang()] ?? daily.entry.en).title, readStored("daily-seen") !== dayNumber(), () => daily.open()));
+    quick.append(quickCard(tx, "sky", dockPicture("dock-sky") ?? icon("☄︎"), tx.qSky, tx.qSkySub, !seenToday("sky"), () => openSky?.()));
+    return [section(tx.quick, quick), ...(own ? [section(discoveries.title(), ...own.nodes)] : [])];
+  }
+  // The quick actions as cards with the picture of their dock card. A card not opened today is lit up with "New today" (the discovery of the
+  // day counts as opened when its panel was opened from anywhere, see daily.js). What was opened is kept in this browser only ("quick-seen").
+  const readStored = (key) => {
+    try {
+      return JSON.parse(localStorage.getItem(key));
+    } catch {
+      return null;
+    }
+  };
+  const seenToday = (id) => readStored("quick-seen")?.[id] === dayNumber();
+  function quickCard(tx, id, picture, title, sub, fresh, go) {
+    const b = el("button", `uni-quick${fresh ? " fresh" : ""}`);
+    b.type = "button";
+    const text = el("span", "uni-quick-text");
+    if (fresh) text.append(el("small", "uni-quick-new", tx.quickNew));
+    text.append(el("strong", "", title), el("span", "", sub));
+    b.append(picture, text);
+    b.addEventListener("click", () => {
+      try {
+        localStorage.setItem("quick-seen", JSON.stringify({ ...readStored("quick-seen"), [id]: dayNumber() }));
+      } catch {
+        // not remembered: the card stays lit
+      }
+      track(`quick-${id}`);
+      closePanel?.();
+      go();
+    });
+    return b;
   }
 
   function learnArea(tx) {
