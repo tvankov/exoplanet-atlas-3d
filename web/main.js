@@ -25,7 +25,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import {
   C_AU_PER_DAY, C_KMS, LY_PER_AU, SPECTRAL, SPEEDS, TRAVEL_UI,
-  boardSeconds, lorentz, solveIntercept, spectralClass,
+  boardSeconds, filmSeconds, lorentz, solveIntercept, spectralClass,
 } from "./travel.js";
 import { buildStory, duration, planetType, PLANET_TYPES, slug, solarName, UI } from "./story.js";
 
@@ -4546,7 +4546,7 @@ function showTripResult() {
   const cells = [
     kpiCell(t.distance, value, sub),
     kpiCell(t.speed, speedName, fiction ? t.fictionTag : "", fiction),
-    kpiCell(t.travelTime, duration(seconds, lang), ""),
+    kpiCell(t.travelTime, duration(seconds, lang), t.film(fmt(trip.film ?? filmSeconds(seconds), 0))),
   ];
   // Below the speed of light the clock on board runs slower, and that is worth a figure of its own. At it and
   // above it there is nothing to show but a sentence about why there is nothing, so the figure is left out.
@@ -4745,15 +4745,16 @@ planGo.addEventListener("click", () => {
   planStop.title = stopLabel();
   // The trip is a short film: the start is in view (intro), the ship turns towards the target (turn), jumps into
   // hyperspace (jump), flies (cruise) and comes out at the target (exit), where the target gets its view (done).
-  // The cruise is made watchable: its time speed is set so that it takes about 20 seconds on the screen (never
-  // slower than real time). Before it the clock runs in real time, so the planets stay where the course was worked out.
+  // The cruise is made watchable: its time speed is set so that it takes trip.film seconds on the screen, longer for a
+  // longer trip (filmSeconds in travel.js; never slower than real time). Before it the clock runs in real time, so the planets stay where the course was worked out.
   // Between planets the ship rides on the clock of the world: the course is aimed at the place where the target
   // will be, so the clock has to run fast enough for the target to get there while we watch. Between stars it does
   // not: the course only has the two stars in it, and winding the clock forward would make every planet in sight
-  // race around its star for no reason. There the film simply runs for CRUISE_SECONDS of real time.
+  // race around its star for no reason. There the film simply runs for trip.film seconds of real time.
   trip.tookClock = trip.mode === "solar"; // mode itself is a local of planCourse
+  trip.film = filmSeconds(days * 86400); // the longer the real trip, the longer the film (travel.js)
   if (trip.tookClock) {
-    trip.watchScale = Math.min(1e8, Math.max(1, (days * 86400) / 20));
+    trip.watchScale = Math.min(1e8, Math.max(1, (days * 86400) / trip.film));
     timeScale = 1;
     speedSlider.value = "0";
     updateSpeedText();
@@ -5206,7 +5207,6 @@ function setNear(value) {
   camera.updateProjectionMatrix();
 }
 
-const CRUISE_SECONDS = 20; // how long the journey between two stars runs on the screen
 const TRIP_INTRO = 2.5; // seconds of the film, real time
 const TRIP_TURN = 2.5;
 const TRIP_JUMP = 1.2;
@@ -5289,7 +5289,7 @@ function stepTrip(now) {
         : 0
       : trip.tookClock
         ? (jd - trip.jd0) / trip.days
-        : (now - trip.cruiseStart) / CRUISE_SECONDS;
+        : (now - trip.cruiseStart) / trip.film;
   const t = Math.min(1, Math.max(0, share));
   trip.speedFactor = rampSpeed(t);
   trip.share = rampDistance(t); // the share of the hyperspace part, the ship starts and stops softly

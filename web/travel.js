@@ -61,6 +61,17 @@ export function boardSeconds(seconds, beta) {
   return beta < 1 ? seconds / lorentz(beta) : null;
 }
 
+// How long the flight itself runs on the screen, from the real travel time in seconds: the longer the trip, the longer the film, on a
+// logarithmic scale like the map (every factor of ten in travel time adds 3 seconds), between FILM_MIN and FILM_MAX. At the speed of light:
+// Mars about 8 s, Neptune about 12, Proxima Centauri about 23, PDS 70 about 29. (Until November 2026 every trip ran about 20 seconds,
+// whatever its length.)
+export const FILM_MIN = 5;
+export const FILM_MAX = 40;
+export function filmSeconds(realSeconds) {
+  if (!(realSeconds > 0)) return FILM_MIN;
+  return Math.min(FILM_MAX, Math.max(FILM_MIN, FILM_MIN + 3 * (Math.log10(realSeconds) - 2)));
+}
+
 // Spectral classes from the effective temperature of the star. The limits are the usual rounded ones of the
 // Harvard classes (O, B, A, F, G, K, M). They are applied to st_teff, not to the spectral type of the
 // catalogue, which many stars do not have.
@@ -114,7 +125,7 @@ export const TRAVEL_UI = {
     note: [
       "Course: a straight line, aimed at the place where the target will be on arrival. The ring marks it. Gravity is left out, the planets stand where they really stand today.",
       "The line looks bent because the map squeezes distances. Between stars the ship flies straight through real space; the stars count as standing still and a planet counts as its star, because planets are tiny against light years.",
-      "The trip runs as a short film: the start is in view, the ship turns, jumps into hyperspace and comes out at the target, which is in sight long before and grows during the approach.",
+      "The trip runs as a short film: the start is in view, the ship turns, jumps into hyperspace and comes out at the target, which is in sight long before and grows during the approach. The film is sped up: the longer the real trip, the longer it runs, from 5 to 40 seconds (every factor of ten in travel time adds 3 seconds). The box shows the real travel time and the length of the film.",
       "Invented: the turn and the hyperspace. Real: the distance, and the travel time for the speed chosen.",
     ],
     view: "View",
@@ -149,6 +160,7 @@ export const TRAVEL_UI = {
     between: (a, b) => `${a} to ${b}`,
     distance: "Distance",
     travelTime: "Travel time",
+    film: (s) => `film: ${s} s`,
     boardLabel: "On board",
     lightYears: (n) => `${n} light years`,
     parsec: (n) => `${n} parsecs`,
@@ -204,7 +216,7 @@ export const TRAVEL_UI = {
     note: [
       "Kurs: eine gerade Linie, gezielt auf die Stelle, wo das Ziel bei der Ankunft steht. Der Ring markiert sie. Schwerkraft bleibt außen vor, die Planeten stehen dort, wo sie heute wirklich stehen.",
       "Die Linie wirkt gebogen, weil die Karte Entfernungen staucht. Zwischen Sternen fliegt das Schiff gerade durch den echten Raum, die Sterne gelten als ruhend und ein Planet zählt als sein Stern, weil Planeten gegen Lichtjahre winzig sind.",
-      "Die Reise läuft als kurzer Film: Start im Blick, Drehung, Sprung in den Hyperraum, Ankunft am Ziel, das lange vorher zu sehen ist und beim Anflug wächst.",
+      "Die Reise läuft als kurzer Film: Start im Blick, Drehung, Sprung in den Hyperraum, Ankunft am Ziel, das lange vorher zu sehen ist und beim Anflug wächst. Der Film ist gerafft: Je länger die echte Reise, desto länger läuft er, von 5 bis 40 Sekunden (jede Verzehnfachung der Reisezeit gibt 3 Sekunden mehr). Die Box zeigt die echte Reisezeit und die Länge des Films.",
       "Erfunden: die Drehung und der Hyperraum. Echt: die Entfernung und die Reisezeit für das gewählte Tempo.",
     ],
     view: "Ansicht",
@@ -239,6 +251,7 @@ export const TRAVEL_UI = {
     between: (a, b) => `${a} nach ${b}`,
     distance: "Entfernung",
     travelTime: "Reisezeit",
+    film: (s) => `im Film ${s} s`,
     boardLabel: "An Bord",
     lightYears: (n) => `${n} Lichtjahre`,
     parsec: (n) => `${n} Parsec`,
