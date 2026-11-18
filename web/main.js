@@ -580,6 +580,93 @@ const NOISE_GLSL = `
     return sqrt(d);
   }`;
 
+// Hyperspace: soft, uneven clouds of mist in two layers, with dark lanes of dust, that rush past while the ship flies through it, in both views. A tunnel seen along the direction
+// of flight: the clouds come out of the point we fly towards and grow towards the edges; the middle stays clear, so the target can be seen.
+// Faint and coloured, laid over the picture. Invented like the hyperspace itself (the planner says so). Fades in and out with the jump,
+// see stepNebula; switched off when it is not needed, then it costs nothing.
+const nebulaPass = new ShaderPass({
+  uniforms: {
+    tDiffuse: { value: null },
+    uStrength: { value: 0 },
+    uTime: { value: 0 },
+    uAspect: { value: 1 },
+    uCenter: { value: new THREE.Vector2(0.5, 0.5) },
+    uObj: { value: Array.from({ length: 12 }, () => new THREE.Vector4(0, 0, 0, 0)) },
+  },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float uStrength;
+    uniform float uTime;
+    uniform float uAspect;
+    uniform vec2 uCenter;
+    uniform vec4 uObj[12]; // the near objects: angle, progress (0 to 1), size, brightness (0 = none)
+    varying vec2 vUv;
+    ${NOISE_GLSL}
+    void main() {
+      vec3 base = texture2D(tDiffuse, vUv).rgb;
+      vec2 p = (vUv - uCenter) * vec2(uAspect, 1.0);
+      float r = length(p);
+      float a = atan(p.y, p.x);
+      // depth along the tunnel: far away in the middle, near at the edge; it runs with the time, so the clouds come towards us
+      float depth = 0.45 / max(r, 0.03);
+      float clear = smoothstep(0.04, 0.3, r); // the middle stays clear
+      // two layers of mist: large slow clouds, and finer faster ones in front of them, each with its own colours
+      vec3 q1 = vec3(cos(a) * 1.3, sin(a) * 1.3, depth * 0.6 + uTime * 0.55);
+      vec3 q2 = vec3(cos(a) * 2.4, sin(a) * 2.4, depth * 1.1 + uTime * 0.95 + 20.0);
+      float c1 = smoothstep(0.36, 0.76, fbm(q1));
+      float c2 = smoothstep(0.44, 0.82, fbm(q2)) * 0.75;
+      vec3 colA = mix(vec3(0.2, 0.35, 0.95), vec3(0.75, 0.3, 0.85), smoothstep(0.3, 0.7, fbm(q1 * 0.4 + 11.0)));
+      vec3 colB = mix(vec3(0.15, 0.75, 0.8), vec3(0.95, 0.45, 0.55), smoothstep(0.35, 0.65, fbm(q2 * 0.5 + 5.0)));
+      // dark lanes of dust between them, which dim the picture a little
+      float dust = smoothstep(0.55, 0.85, fbm(q2 * 0.7 + 31.0)) * clear * uStrength;
+      vec3 mist = (colA * c1 + colB * c2) * clear * uStrength * 0.38;
+      // a few near objects that pass close by: they come out of the middle, grow and speed up as they come near, with a tail of motion blur
+      // behind them (towards the middle), and leave the picture at the edge
+      vec3 near = vec3(0.0);
+      for (int i = 0; i < 12; i++) {
+        vec4 o = uObj[i];
+        if (o.w <= 0.0) continue;
+        float ro = 0.03 * exp(o.y * 3.2);          // the distance from the middle grows faster and faster
+        float da = mod(a - o.x + 3.14159265, 6.2831853) - 3.14159265;
+        float side = r * da;                        // across the path
+        float along = r - ro;                       // along the path: the head at 0, the tail behind it
+        float tail = 0.03 + 0.15 * ro;              // the faster, the longer the blur
+        float width = o.z * (0.002 + 0.008 * ro);   // and the nearer, the bigger; they pass far off, not close by
+        float blur = exp(-pow(side / width, 2.0)) * smoothstep(-tail, 0.0, along) * (1.0 - smoothstep(0.0, width, along)) * 0.7;
+        float head = exp(-(side * side + along * along) / (width * width)) * 1.1; // the object itself, a bright round body
+        float fade = smoothstep(0.0, 0.15, o.y) * (1.0 - smoothstep(0.8, 1.0, o.y));
+        near += mix(vec3(0.7, 0.85, 1.0), vec3(1.0, 0.8, 0.6), fract(o.x * 3.7)) * (blur + head) * fade * o.w;
+      }
+      gl_FragColor = vec4(base * (1.0 - 0.35 * dust) + mist + near * uStrength, 1.0);
+    }`,
+});
+nebulaPass.enabled = false;
+composer.insertPass(nebulaPass, composer.passes.indexOf(bloomPass));
+
+// The pull of Sagittarius A* (see showSgrA): the picture turns slowly round the point where it is and is drawn a little towards it. A picture effect for the feeling, not physics: from 27,000 light years the black hole pulls on nothing we could see.
+const pullPass = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uStrength: { value: 0 }, uAspect: { value: 1 }, uCenter: { value: new THREE.Vector2(0.5, 0.5) } },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float uStrength;
+    uniform float uAspect;
+    uniform vec2 uCenter;
+    varying vec2 vUv;
+    void main() {
+      vec2 p = (vUv - uCenter) * vec2(uAspect, 1.0);
+      float r = length(p);
+      float turn = uStrength * 0.55 * exp(-r / 0.2);      // turns most near the point
+      float pull = 1.0 + uStrength * 0.12 * exp(-r / 0.3); // reads from further out: the picture seems to flow in
+      vec2 q = vec2(cos(turn) * p.x - sin(turn) * p.y, sin(turn) * p.x + cos(turn) * p.y) * pull;
+      vec3 col = texture2D(tDiffuse, uCenter + q / vec2(uAspect, 1.0)).rgb;
+      gl_FragColor = vec4(col, 1.0);
+    }`,
+});
+pullPass.enabled = false;
+composer.insertPass(pullPass, composer.passes.indexOf(bloomPass));
+
 // The surface is a "heat" value from 0 to 1 that is turned into colour with a ramp from the
 // star colour: dark and deep, the star colour itself, then nearly white for the hottest parts.
 // That is how false colour images of the Sun look. Heat comes from granules, soft mottling,
@@ -1218,6 +1305,7 @@ function labelSprite(text, width = Math.max(128, Math.ceil((text.length * 11 + 2
   );
   sprite.scale.set(0.16 * (width / 128), 0.04, 1);
   sprite.center.set(0.5, -0.3); // the text sits above the planet
+  sprite.renderOrder = 5; // drawn last, so no picture lies over a name (the dark edge of the black hole)
   sprite.userData.fade = 1; // 1 shown, 0 hidden because another label is in the way, see declutterLabels
   allLabels.add(sprite);
   // The text can be changed later, the labels of our own system follow the language of the page.
@@ -1246,6 +1334,15 @@ const startupPictures = [];
       (error) => (onError?.(error), settle())
     );
   };
+}
+// The photo of the Milky Way (the 360 degree sky) loads behind the loading screen like the Earth, instead of after the first flight
+// (November 2026: it came in too late). The start waits for it (at most 5 s, see the first flight at the end of this file).
+{
+  const i = lateQueue.findIndex((x) => x.file === "textures/milkyway.jpg");
+  if (i >= 0) {
+    const [item] = lateQueue.splice(i, 1);
+    textureLoader.load(item.file, (texture) => item.ready(texture, () => renderer.initTexture(texture)));
+  }
 }
 
 // Look of an exoplanet. Nobody has seen the surface of one, so this is a schematic that only
@@ -2629,6 +2726,7 @@ function exoLayout(star) {
   return { starRadius, stretch, au, orbitOf: (a) => stretch * 0.3 * Math.sqrt(a), unknownOrbit: Math.max(UNKNOWN_ORBIT, 2 * clear) };
 }
 function exoSystem(star) {
+  if (star.blackHole) return blackHoleSystem(star);
   const real = realScale;
   const layout = exoLayout(star);
   const starRadius = real ? (star.st_rad ?? 1) * SUN_RADIUS : layout.starRadius; // real: the star radius in solar radii, a missing one counts as 1
@@ -2867,6 +2965,7 @@ function panToPoint(point) {
 
 // The target is a function because a planet keeps moving while the camera flies to it.
 function startFlight(getTarget, distance, direction = VIEW_DIRECTION, spherical = false) {
+  hideSgrA(); // any other flight ends the look at Sagittarius A*
   flight = {
     start: performance.now(),
     fromPos: camera.position.clone(),
@@ -4243,6 +4342,9 @@ function animate() {
   stepView(now);
   stepKeys(dt);
   controls.update();
+  stepJumpRoll(now, dt);
+  stepNebula(now, dt);
+  stepSgrA(now, dt);
   declutterLabels();
   adaptDeepQuality(dt);
   composer.render();
@@ -4379,6 +4481,11 @@ function showCaption(text, fadeAfter = 0) {
   // Sits on the box with the figures and is exactly as wide as it, so the two read as one thing.
   caption.style.bottom = `${tripHud.hidden ? 20 : tripHud.offsetHeight + 12}px`;
   caption.style.width = tripHud.hidden ? "" : `${tripHud.offsetWidth}px`;
+  // My Universe open at the right (a wide screen): the line sits in the middle of the free part, not half under the panel
+  const panel = document.getElementById("profile-panel");
+  const panelLeft = !panel.hidden && window.innerWidth > 640 ? panel.getBoundingClientRect().left : 0;
+  caption.style.left = panelLeft ? `${panelLeft / 2}px` : "";
+  caption.style.maxWidth = panelLeft ? `${Math.min(520, panelLeft - 32)}px` : "";
   if (fadeAfter) captionTimer = setTimeout(() => caption.classList.add("away"), fadeAfter * 1000);
 }
 function hideCaption() {
@@ -4574,6 +4681,7 @@ function resolvePlace(text) {
   );
   if (planet) return { kind: "planet", name: planet.name };
   if (q === "sun" || Object.values(TRAVEL_UI).some((u) => u.sun.toLowerCase() === q)) return { kind: "star", star: SUN_POINT };
+  if (!realScale && (q === "sagittarius a*" || q === "sgr a*")) return { kind: "star", star: SGR_STAR };
   starByName ??= new Map(stars.map((s) => [s.hostname.toLowerCase(), s]));
   const star = starByName.get(q);
   if (star) return { kind: "star", star };
@@ -4594,6 +4702,7 @@ function fillPlaces() {
     sunLabel(),
     ...stars.map((s) => s.hostname),
     ...stars.flatMap((s) => s.planets.map((p) => p.pl_name)),
+    SGR_STAR.hostname,
   ];
   planPlaces.replaceChildren(...names.map((n) => new Option("", n)));
   for (const [input, fallback] of [[planFrom, "Earth"], [planTo, "Mars"]]) {
@@ -4636,6 +4745,7 @@ function clearTrip() {
   setNear(0.01);
   leaveEgo();
   trip = null;
+  ambient.jumpSound("stop");
   afterTrip = null; // a trip stopped on the way: no story afterwards
   tripTarget = null; // the target system goes back to the normal rule: drawn when the camera is near it
   for (const o of [ship, shipLine, shipTarget]) o.visible = false;
@@ -5166,6 +5276,7 @@ function showArrival() {
   showSoft(now, SOFT_WAIT);
 }
 const arriveTmp = new THREE.Vector3();
+
 function showPlace(to, keepView = false, systemOnly = false) {
   if (to.kind === "planet") {
     const body = solar.bodies.find((b) => b.name === to.name);
@@ -5196,7 +5307,11 @@ function showLoneStar(star) {
   }
   const target = toMapPosition(star, new THREE.Vector3());
   activeExo.group.position.copy(target);
-  startFlight(() => target, activeExo.viewDistance, viewDirectionOf(activeExo));
+  // the black hole is seen from the side the trip came from (its disc is tilted towards the Earth), a little from above: at a slant, not
+  // straight down on the disc
+  const side = star.blackHole ? target.clone().negate().normalize().add(new THREE.Vector3(0, 0.25, 0)).normalize() : null;
+  startFlight(() => target, activeExo.viewDistance, side ?? viewDirectionOf(activeExo));
+  if (star.blackHole) showCaption(TRAVEL_UI[lang].sgrHere, 14); // the black hole: a picture, not to scale
 }
 
 // The camera cuts away everything closer than its near plane (0.01). A trip ends 1.5 radii from a planet that is 0.0135 wide
@@ -5216,6 +5331,10 @@ function setPhase(name, now) {
   trip.phase = name;
   trip.phaseStart = now;
   trip.warpTarget = name === "jump" || name === "cruise" ? 1 : 0; // hyperspace: the stars are streaks all the time
+  // the sounds of the jump (atmosphere.js): a rising tone from the turn to the jump, the thump of the jump, the hiss of the arrival
+  if (name === "turn" && !trip.log) ambient.jumpSound("spool", TRIP_TURN + (trip.mode === "star" ? TRIP_DEPART : 0));
+  if (name === "jump") ambient.jumpSound("jump");
+  if (name === "exit" && !trip.log) ambient.jumpSound("exit");
   if (name === "turn") {
     hideSoft(); // the orbit lines and the zone are in the way of the flight
     leaveCloseup(); // the close-up would pull the camera back to the start planet
@@ -5344,6 +5463,7 @@ function stepWarp(dt) {
   // The hyperspace streaks are only seen from inside the ship (first person); from outside there is no motion blur.
   if (trip && planView.value === "ego") target = Math.max(target, trip.warpTarget ?? 0);
   warp += (target - warp) * Math.min(1, dt * 3);
+  ambient.hyperspace(trip?.warpTarget ?? 0); // the sound of hyperspace, in both views (atmosphere.js)
   warpPass.enabled = warp > 0.01;
   warpPass.uniforms.uStrength.value = warp;
   stepWarpField(dt);
@@ -5356,6 +5476,427 @@ function stepWarp(dt) {
   }
 }
 const warpAhead = new THREE.Vector3();
+
+// During the jump and in hyperspace the camera rolls a little round the direction of view (up to about 3 degrees, swaying slowly), and back
+// to level at the arrival. After controls.update, which sets the view afresh every frame, so the roll does not add up. Not for a visitor who
+// asked for less motion.
+let jumpRoll = 0;
+function stepJumpRoll(now, dt) {
+  const inJump = trip && (trip.phase === "jump" || trip.phase === "cruise") && !REDUCED_MOTION;
+  const target = inJump ? (trip.warpTarget ?? 0) * (0.035 + 0.02 * Math.sin(now * 0.45)) : 0;
+  jumpRoll += (target - jumpRoll) * Math.min(1, dt * 1.5);
+  if (Math.abs(jumpRoll) > 1e-4) camera.rotateZ(jumpRoll);
+}
+
+// Sagittarius A*, the black hole at the centre of the Milky Way. Its place in the sky from SIMBAD (ICRS, J2000: RA 17h 45m 40.036s, Dec
+// -29 deg 00 min 28.17 s; galactic l = 359.944, b = -0.046 deg, 0.07 deg from the origin of the galactic coordinates, so it lies in the middle
+// of the bright centre of the Milky Way photo, among the dark clouds of dust), its distance about 27,000 light years (ESO, eso2208). The view
+// "view:sgrA" (a discovery and the learning step bhCenter): the camera on the Earth turns towards it, an artist's 3D picture of the black
+// hole with its disc of gas (blackHoleModel) and its name mark the spot, the constellation Sagittarius is drawn around it for orientation, and the caption says why it cannot be seen with the eyes (ESO,
+// eso0846: dust blocks the visible light of the centre of the Milky Way). Then the picture is slowly pulled in (pullPass) and the view
+// narrows a little, as if it drew us in; the caption says that this is only a picture effect. Any other view or flight ends it softly.
+const SGR_A = { ra: (17 + 45 / 60 + 40.036 / 3600) * 15, dec: -(29 + 28.17 / 3600), ly: 27000 };
+const SGR_FOV = 46; // the view narrows to this (from 60) while it pulls
+let sgrA = null; // { start, marks, point } while it is shown
+// Sagittarius A* as a place of the planner, so that a trip can go there from the Earth (at the speed of light about 27,000 years). A star
+// of its own in the data of a trip (x, y, z in light years, like the stars of the NASA list), without planets; its system is the 3D
+// picture of the black hole (blackHoleSystem). Only in the explanation mode.
+const SGR_STAR = (() => {
+  const ra = SGR_A.ra * DEG;
+  const dec = SGR_A.dec * DEG;
+  return {
+    hostname: "Sagittarius A*",
+    blackHole: true,
+    ra: SGR_A.ra,
+    dec: SGR_A.dec,
+    x: SGR_A.ly * Math.cos(dec) * Math.cos(ra),
+    y: SGR_A.ly * Math.cos(dec) * Math.sin(ra),
+    z: SGR_A.ly * Math.sin(dec),
+    dist_ly: SGR_A.ly,
+    planets: [],
+    st_rad: 1,
+    color: 0xffb070,
+  };
+})();
+// The system of the black hole on the map: no star and no planets, the 3D picture (0.6 map units wide on each side of the core) instead.
+function blackHoleSystem(star) {
+  const system = makeSystem({ starName: star.hostname, starColor: star.color, starRadius: 0, planets: [], viewDistance: 1.6 });
+  const at = toMapPosition(star, new THREE.Vector3());
+  const hole = blackHoleModel(new THREE.Vector3(), at.clone().negate(), 0.1); // tilted towards the Earth side, where a trip comes from
+  system.group.add(hole);
+  system.hole = hole;
+  system.star = star;
+  return system;
+}
+// the gas of a picture of the black hole turns, and its thin ring faces the camera
+function animateHole(hole, now, grow = 1) {
+  const { disk, halo, size, dust, mist, infall } = hole.userData;
+  disk.material.uniforms.uTime.value = now % 1000;
+  dust.material.uniforms.uTime.value = now % 1000;
+  if (mist.visible) {
+    mist.material.uniforms.uTime.value = now % 1000;
+    mist.updateMatrixWorld();
+    mist.worldToLocal(mist.material.uniforms.uEye.value.copy(camera.position)); // the camera in the space of the fog, where the rays start
+  }
+  infall.material.uniforms.uTime.value = now % 1000;
+  infall.material.uniforms.uScale.value = size * grow * (hole.parent?.scale.x ?? 1);
+  infall.material.uniforms.uPx.value = renderer.domElement.height / 2;
+  hole.updateMatrixWorld();
+  const world = new THREE.Quaternion();
+  hole.getWorldQuaternion(world);
+  halo.quaternion.copy(world.invert().multiply(camera.quaternion));
+  hole.scale.setScalar(size * grow);
+}
+let sgrPull = 0;
+function showSgrA() {
+  if (sgrA) return; // already shown (the next stage of the same story): the pull goes on
+  hideSgrA(true);
+  const dir = skyDirection(SGR_A);
+  const ra = SGR_A.ra * DEG;
+  const dec = SGR_A.dec * DEG;
+  const point = toMapPosition({ x: SGR_A.ly * Math.cos(dec) * Math.cos(ra), y: SGR_A.ly * Math.cos(dec) * Math.sin(ra), z: SGR_A.ly * Math.sin(dec) }, new THREE.Vector3());
+  if (!realScale && sky?.views("Sgr")) {
+    sky.focus("Sgr");
+    learnFigure = true;
+  }
+  const eye = dir.clone().multiplyScalar(0.35);
+  const label = labelSprite(`Sagittarius A* · ${fmt(SGR_A.ly, 0)} ${UI[lang].lightYears}`);
+  label.position.copy(point);
+  label.center.set(0.5, -4.2); // above the disc, not across it
+  const hole = blackHoleModel(point, eye); // marks the spot
+  scene.add(hole, label);
+  sgrA = { start: performance.now() / 1000 + 2.6, marks: [hole, label], point, hole };
+  flyToView({ position: eye, target: point });
+  showCaption(TRAVEL_UI[lang].sgrA, 16);
+  track("sgr-a-view");
+}
+// The black hole drawn at its place, an artist's picture in 3D (our own, made in the browser): a black core, a thin bright ring right round
+// it, and a wide disc of gas that turns round it, faster inside than outside, bright and bluish white inside, warm and brown at the edge.
+// The jet of many such pictures is left out: it is not clear for Sagittarius A*. Far too big: in the sky the real one is as small as a
+// doughnut on the Moon (ESO, eso2208), and the caption says so. eye: where the camera will stand; the picture is made about 14 degrees wide
+// from there and tilted, so the disc is seen at a slant.
+const DISK_FRAGMENT = `
+  uniform float uTime;
+  varying vec3 vPos;
+  ${NOISE_GLSL}
+  void main() {
+    float r = length(vPos.xy);
+    float a = atan(vPos.y, vPos.x);
+    float t = clamp((r - 1.6) / 4.4, 0.0, 1.0); // 0 at the inner edge, 1 at the outer
+    float ang = a - uTime * 0.2 / (0.4 + r * r * 0.12); // the inner gas goes round faster (slowly, it is a calm picture); all parts turn the same way
+    vec3 q = vec3(cos(ang) * r, sin(ang) * r, r * 1.3);
+    float n = fbm(q * 0.9);
+    float bands = 0.5 + 0.5 * sin(r * 8.0 + n * 7.0);
+    float gas = smoothstep(0.2, 0.85, n * 0.95 + bands * 0.22); // more cloud than rings
+    vec3 col = mix(vec3(0.95, 0.97, 1.0), vec3(0.62, 0.72, 0.88), smoothstep(0.0, 0.45, t));
+    col = mix(col, vec3(0.8, 0.5, 0.28), smoothstep(0.28, 0.8, t));
+    float alpha = (0.35 + 0.65 * gas) * smoothstep(0.0, 0.06, t) * (1.0 - smoothstep(0.75, 1.0, t));
+    vec3 lit = col * mix(1.5, 0.65, t) * (0.45 + 0.55 * gas);
+    gl_FragColor = vec4(pow(lit, vec3(2.2)), alpha);
+    #include <colorspace_fragment>
+  }`;
+// Dust round the disc of the picture of the black hole: a wide, dark, cloudy ring of dust outside the bright gas, turning slowly.
+const DUST_FRAGMENT = `
+  uniform float uTime;
+  varying vec3 vPos;
+  ${NOISE_GLSL}
+  void main() {
+    float r = length(vPos.xy);
+    float a = atan(vPos.y, vPos.x) - uTime * 0.08 / (0.5 + r * 0.25);
+    vec3 q = vec3(cos(a) * r * 0.7, sin(a) * r * 0.7, r * 0.5);
+    float n = fbm(q + 4.0);
+    float t = clamp((r - 4.5) / 6.5, 0.0, 1.0);
+    float cloud = smoothstep(0.35, 0.8, n) * smoothstep(0.0, 0.25, t) * (1.0 - smoothstep(0.6, 1.0, t));
+    vec3 col = mix(vec3(0.55, 0.32, 0.18), vec3(0.3, 0.22, 0.2), t);
+    gl_FragColor = vec4(pow(col, vec3(2.2)), cloud * 0.6);
+    #include <colorspace_fragment>
+  }`;
+// Grains of dust and gas that fall in: each goes round on a spiral from the outer edge of the dust to the core, faster and faster, glows
+// brighter as it comes in and is gone at the core; then it starts again outside. Worked out on the graphics card from the time.
+const INFALL_VERTEX = `
+  uniform float uTime;
+  uniform float uScale;
+  uniform float uPx;
+  attribute vec4 aSeed; // phase of the life, angle, height, speed
+  attribute float aSize; // three sizes: 1, 0.6, 0.35
+  varying float vLife;
+  void main() {
+    float life = fract(aSeed.x + uTime * aSeed.w);
+    float r = mix(10.0, 1.3, pow(life, 0.6));
+    float ang = aSeed.y + 9.0 * (1.0 / r - 0.1) * 6.0; // the angle grows faster towards the middle: a spiral
+    vec3 p = vec3(cos(ang) * r, sin(ang) * r, aSeed.z * r * 0.06);
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    gl_Position = projectionMatrix * mv;
+    gl_PointSize = clamp(uPx * 0.07 * aSize * uScale * projectionMatrix[1][1] / -mv.z, 1.0, 5.0);
+    vLife = life;
+  }`;
+const INFALL_FRAGMENT = `
+  varying float vLife;
+  void main() {
+    vec2 c = gl_PointCoord - 0.5;
+    float d = dot(c, c);
+    if (d > 0.25) discard;
+    vec3 col = mix(vec3(0.75, 0.45, 0.25), vec3(1.0, 0.95, 0.85), smoothstep(0.4, 1.0, vLife));
+    float alpha = smoothstep(0.0, 0.1, vLife) * (1.0 - smoothstep(0.92, 1.0, vLife)) * (1.0 - d * 4.0);
+    gl_FragColor = vec4(pow(col, vec3(2.2)) * (0.6 + 1.2 * vLife), alpha);
+    #include <colorspace_fragment>
+  }`;
+// The fog round the black hole as a real volume: for each point of the screen a ray goes through a flat box round the disc, and on the
+// way the density of the fog is summed up from 3D noise (raymarching). The fog lies in arms that wind in towards the middle (a spiral, the
+// same way round as the gas), is thin near the middle and thicker further out, deep red, orange and yellow, brighter near the middle,
+// with gaps and streaks. Lit from inside only by its own glow (no shadows). It turns very slowly. Costly: fewer steps on a phone.
+const FOG_STEPS = IS_MOBILE ? 14 : 28;
+const FOG_VOLUME_FRAGMENT = `
+  uniform float uTime;
+  uniform vec3 uEye;   // the camera, in the space of the box
+  varying vec3 vLocal;
+  ${NOISE_GLSL}
+  const float R = 26.0;  // the box: R wide on each side, H high above and below the plane
+  const float H = 7.0;
+  float fbm3(vec3 p) {
+    return 0.5 * noise(p) + 0.25 * noise(p * 2.03) + 0.125 * noise(p * 4.1);
+  }
+  float density(vec3 p) {
+    float r = length(p.xy);
+    if (r < 2.4 || r > R) return 0.0;
+    float thick = 0.35 + 0.09 * r;                       // thicker further out
+    float vertical = exp(-pow(p.z / thick, 2.0));
+    float radial = smoothstep(2.4, 4.5, r) * (1.0 - smoothstep(17.0, R, r));
+    float swirl = atan(p.y, p.x) + 2.2 * log(r) - uTime * 0.02 / (0.6 + r * 0.08);
+    vec3 q = vec3(cos(swirl) * 1.3, sin(swirl) * 1.3, r * 0.13 + p.z * 0.35);
+    float n = fbm3(q * 1.6 + 3.0);
+    return smoothstep(0.42, 0.75, n) * vertical * radial; // clouds with gaps between them
+  }
+  void main() {
+    vec3 ro = uEye;
+    vec3 rd = normalize(vLocal - uEye);
+    // where the ray is inside the box
+    vec3 inv = 1.0 / rd;
+    vec3 t0 = (vec3(-R, -R, -H) - ro) * inv;
+    vec3 t1 = (vec3(R, R, H) - ro) * inv;
+    vec3 tmin = min(t0, t1);
+    vec3 tmax = max(t0, t1);
+    float tNear = max(max(max(tmin.x, tmin.y), tmin.z), 0.0);
+    float tFar = min(min(tmax.x, tmax.y), tmax.z);
+    if (tFar <= tNear) discard;
+    float dt = (tFar - tNear) / float(${FOG_STEPS});
+    float t = tNear + dt * fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453); // a different start per pixel: no rings
+    vec3 col = vec3(0.0);
+    float alpha = 0.0;
+    for (int i = 0; i < ${FOG_STEPS}; i++) {
+      vec3 p = ro + rd * t;
+      float d = density(p);
+      if (d > 0.001) {
+        float r = length(p.xy);
+        float k = clamp((r - 2.4) / 20.0, 0.0, 1.0);
+        vec3 c = mix(vec3(1.0, 0.85, 0.45), vec3(1.0, 0.42, 0.1), smoothstep(0.0, 0.35, k));
+        c = mix(c, vec3(0.5, 0.09, 0.05), smoothstep(0.3, 0.9, k));
+        c *= mix(1.6, 0.55, k);
+        float a = 1.0 - exp(-d * dt * 0.28);
+        col += (1.0 - alpha) * a * pow(c, vec3(2.2));
+        alpha += (1.0 - alpha) * a;
+        if (alpha > 0.96) break;
+      }
+      t += dt;
+    }
+    gl_FragColor = vec4(col, alpha); // premultiplied, see the blending of fogVolume
+  }`;
+function fogVolume() {
+  const box = new THREE.Mesh(
+    new THREE.BoxGeometry(52, 52, 14),
+    new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uEye: { value: new THREE.Vector3() } },
+      vertexShader: `varying vec3 vLocal; void main() { vLocal = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: FOG_VOLUME_FRAGMENT,
+      side: THREE.BackSide, // the back of the box: it is drawn also when the camera is inside it
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.CustomBlending,
+      blendSrc: THREE.OneFactor,
+      blendDst: THREE.OneMinusSrcAlphaFactor,
+    })
+  );
+  box.renderOrder = -3;
+  return box;
+}
+function infallParticles(count) {
+  const geometry = new THREE.BufferGeometry();
+  const seeds = new Float32Array(count * 4);
+  for (let i = 0; i < count; i++) {
+    seeds[i * 4] = Math.random();
+    seeds[i * 4 + 1] = Math.random() * Math.PI * 2;
+    seeds[i * 4 + 2] = Math.random() * 2 - 1;
+    seeds[i * 4 + 3] = (0.0015 + Math.random() * 0.0025) * 0.75; // one fall in 5 to 15 minutes
+  }
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+  geometry.setAttribute("aSeed", new THREE.BufferAttribute(seeds, 4));
+  const sizes = new Float32Array(count);
+  for (let i = 0; i < count; i++) sizes[i] = [1, 0.6, 0.35][i % 3]; // a third of each size, the big ones as before
+  geometry.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+  const points = new THREE.Points(
+    geometry,
+    new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uScale: { value: 1 }, uPx: { value: 400 } },
+      vertexShader: INFALL_VERTEX,
+      fragmentShader: INFALL_FRAGMENT,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    })
+  );
+  points.frustumCulled = false; // the positions are made in the shader, the bounds of the geometry are empty
+  return points;
+}
+function blackHoleModel(point, eye, fixedSize = 0) {
+  const group = new THREE.Group();
+  const disk = new THREE.Mesh(
+    new THREE.RingGeometry(1.6, 6, 160, 24),
+    new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 } },
+      vertexShader: `varying vec3 vPos; void main() { vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: DISK_FRAGMENT,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    })
+  );
+  const core = new THREE.Mesh(new THREE.SphereGeometry(1.25, 48, 32), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+  // round the core a soft black edge that fades out into the gas and the fog (instead of a bright ring); it always faces the camera
+  const halo = new THREE.Mesh(
+    new THREE.PlaneGeometry(6, 6),
+    new THREE.ShaderMaterial({
+      vertexShader: `varying vec2 vXY; void main() { vXY = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `
+        varying vec2 vXY;
+        void main() {
+          float r = length(vXY);
+          gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0 - smoothstep(1.2, 2.7, r));
+        }`,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      depthTest: false, // also over the gas in front of the core: otherwise the core cuts the dark edge off, and a hard bright circle shows
+    })
+  );
+  halo.renderOrder = 1; // over the gas and the fog round the core
+  const dust = new THREE.Mesh(
+    new THREE.RingGeometry(4.5, 11, 160, 16),
+    new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 } },
+      vertexShader: `varying vec3 vPos; void main() { vPos = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: DUST_FRAGMENT,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    })
+  );
+  dust.renderOrder = -1; // behind the bright gas
+  // the mist as a real volume of fog (fogVolume), only at the black hole of a trip: seen from the Earth it would cover half the sky
+  const mist = fogVolume();
+  mist.visible = !!fixedSize;
+  const infall = infallParticles(2600);
+  disk.add(mist, dust, infall); // in the plane of the disc, tilted with it
+  group.add(disk, core, halo);
+  group.position.copy(point);
+  const size = fixedSize || (point.distanceTo(eye) * Math.tan(7 * DEG)) / 6;
+  group.scale.setScalar(size);
+  group.lookAt(eye);
+  disk.rotation.x = -1.15; // the disc tilted, seen at a slant
+  group.userData = { size, disk, halo, dust, mist, infall };
+  return group;
+}
+// ends it: the marks go at once, the pull and the narrow view fade out (stepSgrA); quiet: no caption to take away
+function hideSgrA(quiet = false) {
+  if (!sgrA) return;
+  for (const o of sgrA.marks) o.removeFromParent();
+  sgrA = null;
+  if (!quiet) hideCaption();
+}
+// At the black hole of a trip (or of a step of the discovery that shows it): while the camera rests on it, it is drawn in very slowly, a
+// little closer every second, never closer than HOLE_NEAREST; and the picture is pulled softly round it (pullPass, at most half as strong
+// as from the Earth). A picture effect like the rest. Any flight or trip ends it.
+const HOLE_NEAREST = 0.75; // map units from the core (the bright gas reaches 0.6, the dust 1.1)
+let holeSince = 0;
+function stepHoleApproach(now, dt) {
+  const at = activeExo?.hole ? activeExo.group.position : null;
+  const resting = at && !flight && (!trip || trip.phase === "done") && controls.target.distanceTo(at) < 0.05;
+  if (!resting) return (holeSince = 0);
+  if (!holeSince) holeSince = now;
+  const d = camera.position.distanceTo(at);
+  if (!REDUCED_MOTION && d > HOLE_NEAREST) camera.position.addScaledVector(camera.position.clone().sub(at).normalize(), -Math.min(d - HOLE_NEAREST, dt * 0.012));
+}
+function stepSgrA(now, dt) {
+  if (sgrA?.hole) animateHole(sgrA.hole, now, 1 + 0.3 * sgrPull); // grows a little with the pull
+  if (activeExo?.hole) animateHole(activeExo.hole, now);
+  stepHoleApproach(now, dt);
+  const atHole = holeSince && !sgrA && !REDUCED_MOTION ? Math.min(0.5, (now - holeSince) / 40) : 0; // in over twenty seconds
+  const target = sgrA && !REDUCED_MOTION ? Math.min(1, Math.max(0, (now - sgrA.start) / 10)) : atHole; // in over ten seconds after the flight
+  sgrPull += (target - sgrPull) * Math.min(1, dt * (sgrA || holeSince ? 0.8 : 2));
+  if (sgrPull < 0.002) {
+    if (pullPass.enabled || camera.fov !== 60) {
+      pullPass.enabled = false;
+      camera.fov = 60;
+      camera.updateProjectionMatrix();
+    }
+    return;
+  }
+  const centre = sgrA ? sgrA.point : activeExo?.hole ? activeExo.group.position : null;
+  if (centre) {
+    const s = centre.clone().project(camera);
+    pullPass.uniforms.uCenter.value.set(s.x * 0.5 + 0.5, s.y * 0.5 + 0.5);
+  }
+  pullPass.enabled = true;
+  pullPass.uniforms.uStrength.value = sgrPull;
+  pullPass.uniforms.uAspect.value = camera.aspect;
+  camera.fov = 60 - (60 - SGR_FOV) * sgrPull;
+  camera.updateProjectionMatrix();
+}
+
+// The clouds of hyperspace (nebulaPass): in slowly with the jump, out slowly before the arrival, following the streaks of the trip.
+// With them, 4 to 12 near objects per trip pass close by at random moments of the flight through hyperspace, each for about a second and
+// a half, for a feeling of depth; they are planned when the trip enters hyperspace and gone when it ends. Invented like the hyperspace.
+let nebula = 0;
+let nearPlan = null; // { trip, objects: [{ start, life, angle, size, bright }] }
+function planNearObjects(now) {
+  const count = 4 + Math.floor(Math.random() * 9);
+  const span = Math.max(3, (trip.film ?? 10) * 0.85);
+  nearPlan = {
+    trip,
+    objects: Array.from({ length: count }, () => ({
+      start: now + 0.5 + Math.random() * span,
+      life: 1.1 + Math.random() * 0.6,
+      angle: Math.random() * Math.PI * 2,
+      size: 0.6 + Math.random() * 0.9,
+      bright: 0.5 + Math.random() * 0.5,
+    })),
+  };
+}
+function stepNearObjects(now) {
+  const slots = nebulaPass.uniforms.uObj.value;
+  if (trip && trip.phase === "cruise" && nearPlan?.trip !== trip) planNearObjects(now);
+  if (nearPlan && nearPlan.trip !== trip) nearPlan = null; // the trip is over: the objects are gone
+  for (let i = 0; i < slots.length; i++) {
+    const o = nearPlan?.objects[i];
+    const p = o ? (now - o.start) / o.life : -1;
+    if (o && p >= 0 && p <= 1) slots[i].set(o.angle, p, o.size, o.bright);
+    else slots[i].set(0, 0, 0, 0);
+  }
+}
+const nebulaAhead = new THREE.Vector3();
+function stepNebula(now, dt) {
+  // within the Solar System only a faint trace of it (a quarter), the full tunnel belongs to the trips between stars
+  const target = trip && !REDUCED_MOTION ? (trip.warpTarget ?? 0) * (trip.mode === "solar" ? 0.25 : 1) : 0;
+  nebula += (target - nebula) * Math.min(1, dt * 0.9);
+  nebulaPass.enabled = nebula > 0.01;
+  stepNearObjects(now);
+  if (!nebulaPass.enabled) return;
+  nebulaPass.uniforms.uStrength.value = nebula;
+  nebulaPass.uniforms.uTime.value = now % 1000;
+  nebulaPass.uniforms.uAspect.value = camera.aspect;
+  camera.updateMatrixWorld();
+  camera.getWorldDirection(nebulaAhead).multiplyScalar(1000).add(camera.position).project(camera);
+  nebulaPass.uniforms.uCenter.value.set(nebulaAhead.x * 0.5 + 0.5, nebulaAhead.y * 0.5 + 0.5);
+}
 
 // The strength of the motion blur follows the speed of the flight (the slope of its smooth start and stop: zero at both ends, highest in the
 // middle). Not for a visitor who asked for less motion.
@@ -5852,7 +6393,7 @@ dayFlight = initDailyFlight({
     planGo.click();
     if (!trip) return (afterTrip = null), false;
     tripAbort = aborted;
-    return true;
+    return trip.distanceAu; // the length of the leg, for "You flew ..." at the end
   },
   cancelTravel: () => {
     tripAbort = null;
@@ -5988,6 +6529,8 @@ function clearLearnFigure() {
   if (document.getElementById("atlas-panel").hidden) sky?.clearFocus();
 }
 function learnShow(where) {
+  if (where !== "view:sgrA") hideSgrA();
+  if (where === "view:sgrA") return showSgrA();
   const view = showNeighborhood(where === "view:neighborhood");
   if (view) return flyToView(view);
   if (where.startsWith("sky:")) {
@@ -6022,7 +6565,7 @@ function learnShow(where) {
 // A link of an entry ({ kind, id }) flown to softly, without motion blur: the blur pointed away from the camera while the camera also
 // turned, and the short flights between the stages need none (removed in November 2026).
 function discoveryShow(link) {
-  learnShow(link.kind === "moon" ? `moon:${link.id}` : link.kind === "sky" ? `sky:${link.id}` : link.id);
+  learnShow(link.kind === "moon" ? `moon:${link.id}` : link.kind === "sky" ? `sky:${link.id}` : link.kind === "view" ? `view:${link.id}` : link.id);
 }
 // "Fly there": the trip of the planner from the Earth to the star of the place, at the speed of light (hyperspace, the real travel time in
 // its box); done() a moment after the arrival. A place of the Solar System, a moon or a constellation has no such trip: a soft flight.

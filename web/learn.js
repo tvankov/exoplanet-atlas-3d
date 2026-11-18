@@ -68,7 +68,7 @@ export const VIEWS = {
   starWhat: "view:sun", starColor: "TRAPPIST-1", starClass: "51 Peg", starSize: "Proxima Cen", starHosts: "TOI-700",
   birthCloud: "sky:Ori", birthProto: "AU Mic", birthDisk: "PDS 70", birthCluster: "sky:Tau", birthSun: "view:solar",
   lifeMain: "view:sun", lifeMass: "Proxima Cen", lifeGiant: "view:sun", lifeWhite: "WD 1856+534", lifeNova: "sky:Tau",
-  nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: "sky:Sgr", bhCenter: "sky:Sgr", bhImage: "sky:Vir",
+  nsWhat: "PSR B0329+54", nsPulsar: "PSR B1257+12", bhWhat: "sky:Sgr", bhCenter: "view:sgrA", bhImage: "sky:Vir",
   nebWhat: "sky:Ori", nebPillars: "sky:Ser", nebDark: "sky:Ori", nebRing: "sky:Lyr", nebCrab: "sky:Tau",
   mwWhat: "sky:Sgr", mwArm: "view:solar", mwOrbit: "view:solar", mwBand: "sky:Sgr", mwGaia: "view:solar",
   locGroup: "sky:Tri", locMagellan: "sky:Tuc", locAndromeda: "sky:And", locApproach: "sky:And", locFuture: "sky:And",

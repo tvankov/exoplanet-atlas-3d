@@ -622,8 +622,10 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     if (flight) quick.append(quickCard(tx, "flight", dockPicture("dock-plan") ?? icon("✈︎"), tx.qFlight, flight.hint(), !seenToday("flight"), () => flight.start()));
     if (daily?.entry)
       quick.append(quickCard(tx, "daily", dockPicture("dock-daily") ?? icon("✦"), tx.qDaily, (daily.entry[getLang()] ?? daily.entry.en).title, readStored("daily-seen") !== dayNumber(), () => daily.open()));
-    quick.append(quickCard(tx, "sky", dockPicture("dock-sky") ?? icon("☄︎"), tx.qSky, tx.qSkySub, !seenToday("sky"), () => openSky?.()));
-    return [section(tx.quick, quick), ...(own ? [section(discoveries.title(), ...own.nodes)] : [])];
+    // the sky events at the very bottom, under the discoveries
+    const events = el("div", "uni-quick-grid");
+    events.append(quickCard(tx, "sky", dockPicture("dock-sky") ?? icon("☄︎"), tx.qSky, tx.qSkySub, !seenToday("sky"), () => openSky?.()));
+    return [section(tx.quick, quick), ...(own ? [section(discoveries.title(), ...own.nodes)] : []), section(tx.qSky, events)];
   }
   // The quick actions as cards with the picture of their dock card. A card not opened today is lit up with "New today" (the discovery of the
   // day counts as opened when its panel was opened from anywhere, see daily.js). What was opened is kept in this browser only ("quick-seen").

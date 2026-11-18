@@ -20,6 +20,7 @@ const stars = read("data/stars.json");
 const starList = stars.stars ?? stars;
 const places = new Set(starList.flatMap((s) => [s.hostname, ...s.planets.map((p) => p.pl_name)]));
 for (const name of ["Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Ceres", "Pluto"]) places.add(name);
+places.add("Sagittarius A*"); // a place of the planner of its own (SGR_STAR in main.js)
 const moons = new Set(Object.values(MOONS).flat().map((m) => m.id));
 const constellations = read("data/constellations.json");
 const figures = new Set((constellations.constellations ?? constellations).map((c) => c.id));

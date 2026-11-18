@@ -1,44 +1,191 @@
 {
   "id": "sagittarius-a-star",
-  "categories": ["mysteries"],
+  "categories": [
+    "mysteries"
+  ],
   "type": "object",
   "status": "confirmed",
-  "dates": { "discovered": null, "published": "2026-11-18", "updated": "2026-11-18" },
-  "aliases": ["Sagittarius A*", "Sgr A*", "black hole", "Schwarzes Loch", "Milky Way", "Milchstraße"],
-  "picture": { "medal": "compact-scholar" },
-  "fly": { "kind": "sky", "id": "Sgr" },
-  "learn": ["bhCenter", "bhImage"],
+  "dates": {
+    "discovered": null,
+    "published": "2026-11-18",
+    "updated": "2026-11-18"
+  },
+  "aliases": [
+    "Sagittarius A*",
+    "Sgr A*",
+    "black hole",
+    "Schwarzes Loch",
+    "Milky Way",
+    "Milchstraße"
+  ],
+  "picture": {
+    "medal": "compact-scholar"
+  },
+  "fly": {
+    "kind": "place",
+    "id": "Sagittarius A*"
+  },
+  "learn": [
+    "bhCenter",
+    "bhImage"
+  ],
   "related": [],
   "sources": [
-    { "id": "eso2208", "publisher": "ESO", "title": "Astronomers reveal first image of the black hole at the heart of our galaxy", "url": "https://www.eso.org/public/news/eso2208-eht-mw/", "published": "2022-05-12", "accessed": "2026-11-17" },
-    { "id": "eso1907", "publisher": "ESO", "title": "Astronomers Capture First Image of a Black Hole", "url": "https://www.eso.org/public/news/eso1907/", "published": "2019-04-10", "accessed": "2026-11-17" },
-    { "id": "nasa-black-holes", "publisher": "NASA", "title": "Black Holes", "url": "https://science.nasa.gov/universe/black-holes/", "accessed": "2026-11-17" },
-    { "id": "nasa-black-hole-types", "publisher": "NASA", "title": "Black Hole Types", "url": "https://science.nasa.gov/universe/black-holes/types/", "accessed": "2026-11-17" }
+    {
+      "id": "eso2208",
+      "publisher": "ESO",
+      "title": "Astronomers reveal first image of the black hole at the heart of our galaxy",
+      "url": "https://www.eso.org/public/news/eso2208-eht-mw/",
+      "published": "2022-05-12",
+      "accessed": "2026-11-17"
+    },
+    {
+      "id": "eso1907",
+      "publisher": "ESO",
+      "title": "Astronomers Capture First Image of a Black Hole",
+      "url": "https://www.eso.org/public/news/eso1907/",
+      "published": "2019-04-10",
+      "accessed": "2026-11-17"
+    },
+    {
+      "id": "nasa-black-holes",
+      "publisher": "NASA",
+      "title": "Black Holes",
+      "url": "https://science.nasa.gov/universe/black-holes/",
+      "accessed": "2026-11-17"
+    },
+    {
+      "id": "nasa-black-hole-types",
+      "publisher": "NASA",
+      "title": "Black Hole Types",
+      "url": "https://science.nasa.gov/universe/black-holes/types/",
+      "accessed": "2026-11-17"
+    }
   ],
   "facts": [
-    { "key": "mass", "evidence": "measured", "source": "eso2208", "label": { "en": "Mass", "de": "Masse" }, "value": { "en": "four million times the Sun", "de": "viermillionenmal die Sonne" } },
-    { "key": "distance", "evidence": "measured", "source": "eso2208", "label": { "en": "Distance", "de": "Entfernung" }, "value": { "en": "about 27,000 light years", "de": "etwa 27.000 Lichtjahre" } },
-    { "key": "direction", "evidence": "observed", "source": "eso2208", "label": { "en": "Direction", "de": "Richtung" }, "value": { "en": "the constellation Sagittarius", "de": "das Sternbild Schütze" } },
-    { "key": "image", "evidence": "observed", "source": "eso2208", "label": { "en": "First image", "de": "Erstes Bild" }, "value": { "en": "12 May 2022", "de": "12. Mai 2022" } }
+    {
+      "key": "mass",
+      "evidence": "measured",
+      "source": "eso2208",
+      "label": {
+        "en": "Mass",
+        "de": "Masse"
+      },
+      "value": {
+        "en": "four million times the Sun",
+        "de": "viermillionenmal die Sonne"
+      }
+    },
+    {
+      "key": "distance",
+      "evidence": "measured",
+      "source": "eso2208",
+      "label": {
+        "en": "Distance",
+        "de": "Entfernung"
+      },
+      "value": {
+        "en": "about 27,000 light years",
+        "de": "etwa 27.000 Lichtjahre"
+      }
+    },
+    {
+      "key": "direction",
+      "evidence": "observed",
+      "source": "eso2208",
+      "label": {
+        "en": "Direction",
+        "de": "Richtung"
+      },
+      "value": {
+        "en": "the constellation Sagittarius",
+        "de": "das Sternbild Schütze"
+      }
+    },
+    {
+      "key": "image",
+      "evidence": "observed",
+      "source": "eso2208",
+      "label": {
+        "en": "First image",
+        "de": "Erstes Bild"
+      },
+      "value": {
+        "en": "12 May 2022",
+        "de": "12. Mai 2022"
+      }
+    }
   ],
   "stages": [
     {
-      "view": { "kind": "sky", "id": "Sgr" },
-      "sources": ["eso2208"],
-      "en": { "title": "Look towards Sagittarius", "text": "From the Earth you are looking towards the constellation Sagittarius. Behind these stars, about {years:27000} light years away, lies the centre of our Milky Way. Its light that arrives today set off about {years:27000} years ago." },
-      "de": { "title": "Blick in Richtung Schütze", "text": "Von der Erde aus blickst du in Richtung des Sternbilds Schütze. Hinter diesen Sternen, etwa {years:27000} Lichtjahre entfernt, liegt das Zentrum unserer Milchstraße. Sein Licht, das heute ankommt, flog vor etwa {years:27000} Jahren los." }
+      "view": {
+        "kind": "place",
+        "id": "Sagittarius A*"
+      },
+      "sources": [
+        "eso2208"
+      ],
+      "en": {
+        "title": "At the heart of the Milky Way",
+        "text": "You are at Sagittarius A*, in the centre of our Milky Way, about {years:27000} light years from the Earth. Even at the speed of light the trip takes about {years:27000} years."
+      },
+      "de": {
+        "title": "Im Herzen der Milchstraße",
+        "text": "Du bist bei Sagittarius A*, im Zentrum unserer Milchstraße, etwa {years:27000} Lichtjahre von der Erde entfernt. Selbst mit Lichtgeschwindigkeit dauert die Reise etwa {years:27000} Jahre."
+      }
     },
     {
-      "view": { "kind": "sky", "id": "Sgr" },
-      "sources": ["eso2208", "nasa-black-holes"],
-      "en": { "title": "A giant you cannot see", "text": "There sits Sagittarius A*, a black hole four million times more massive than the Sun. Its gravity is so strong that nothing escapes it, not even light: you cannot see the black hole itself." },
-      "de": { "title": "Ein Riese, den man nicht sieht", "text": "Dort sitzt Sagittarius A*, ein Schwarzes Loch, viermillionenmal massereicher als die Sonne. Seine Schwerkraft ist so stark, dass ihm nichts entkommt, nicht einmal Licht: Das Schwarze Loch selbst kann man nicht sehen." }
+      "view": {
+        "kind": "view",
+        "id": "sgrA"
+      },
+      "sources": [
+        "eso2208"
+      ],
+      "en": {
+        "title": "Seen from the Earth",
+        "text": "From the Earth you are looking towards the constellation Sagittarius. Behind these stars, about {years:27000} light years away, lies the centre of our Milky Way. Its light that arrives today set off about {years:27000} years ago."
+      },
+      "de": {
+        "title": "Von der Erde aus gesehen",
+        "text": "Von der Erde aus blickst du in Richtung des Sternbilds Schütze. Hinter diesen Sternen, etwa {years:27000} Lichtjahre entfernt, liegt das Zentrum unserer Milchstraße. Sein Licht, das heute ankommt, flog vor etwa {years:27000} Jahren los."
+      }
     },
     {
-      "view": { "kind": "sky", "id": "Vir" },
-      "sources": ["eso1907", "eso2208"],
-      "en": { "title": "The first pictures", "text": "Now you look towards Virgo, where the galaxy M87 lies. On 10 April 2019 the Event Horizon Telescope showed its black hole: the first image of a black hole ever. On 12 May 2022 followed Sagittarius A*, the one of our own galaxy." },
-      "de": { "title": "Die ersten Bilder", "text": "Jetzt blickst du in Richtung Jungfrau, dort liegt die Galaxie M87. Am 10. April 2019 zeigte das Event Horizon Telescope ihr Schwarzes Loch: das erste Bild eines Schwarzen Lochs überhaupt. Am 12. Mai 2022 folgte Sagittarius A*, das unserer eigenen Galaxie." }
+      "view": {
+        "kind": "place",
+        "id": "Sagittarius A*"
+      },
+      "sources": [
+        "eso2208",
+        "nasa-black-holes"
+      ],
+      "en": {
+        "title": "A giant you cannot see",
+        "text": "There sits Sagittarius A*, a black hole four million times more massive than the Sun. Its gravity is so strong that nothing escapes it, not even light: you cannot see the black hole itself."
+      },
+      "de": {
+        "title": "Ein Riese, den man nicht sieht",
+        "text": "Dort sitzt Sagittarius A*, ein Schwarzes Loch, viermillionenmal massereicher als die Sonne. Seine Schwerkraft ist so stark, dass ihm nichts entkommt, nicht einmal Licht: Das Schwarze Loch selbst kann man nicht sehen."
+      }
+    },
+    {
+      "view": {
+        "kind": "sky",
+        "id": "Vir"
+      },
+      "sources": [
+        "eso1907",
+        "eso2208"
+      ],
+      "en": {
+        "title": "The first pictures",
+        "text": "Now you look towards Virgo, where the galaxy M87 lies. On 10 April 2019 the Event Horizon Telescope showed its black hole: the first image of a black hole ever. On 12 May 2022 followed Sagittarius A*, the one of our own galaxy."
+      },
+      "de": {
+        "title": "Die ersten Bilder",
+        "text": "Jetzt blickst du in Richtung Jungfrau, dort liegt die Galaxie M87. Am 10. April 2019 zeigte das Event Horizon Telescope ihr Schwarzes Loch: das erste Bild eines Schwarzen Lochs überhaupt. Am 12. Mai 2022 folgte Sagittarius A*, das unserer eigenen Galaxie."
+      }
     }
   ],
   "text": {

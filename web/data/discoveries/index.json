@@ -25,8 +25,8 @@
     "medal": "compact-scholar"
    },
    "fly": {
-    "kind": "sky",
-    "id": "Sgr"
+    "kind": "place",
+    "id": "Sagittarius A*"
    },
    "title": {
     "en": "Sagittarius A*, the black hole at the heart of the Milky Way",

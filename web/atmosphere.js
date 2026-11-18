@@ -1,7 +1,7 @@
-// Atmosphere: a short true fact on the loading screen, and a calm sound of space. The sound is on by default and starts with the first click or
-// key of the visit, because browsers do not allow sound before that; one click on the button switches it off. The sound is made in the browser
-// (Web Audio: two tones a fifth apart, a slowly moving filter and a soft hiss), so there is no sound file and nothing to license. The choice is
-// remembered in this browser (localStorage "sound").
+// Atmosphere: a short true fact on the loading screen, and the sounds of a trip through hyperspace (a rising tone before the jump, a thump at
+// the jump, a rushing in hyperspace, a falling hiss at the arrival). The sound is on by default and can play after the first click or key of
+// the visit, because browsers do not allow sound before that; one click on the button switches it off. The sounds are made in the browser
+// (Web Audio), so there is no sound file and nothing to license. The choice is remembered in this browser (localStorage "sound").
 
 import { track } from "./stats.js";
 
@@ -87,77 +87,154 @@ export function initAmbient({ getLang }) {
     // storage blocked: on, as for everyone
   }
   let ctx = null;
-  let master = null;
   let playing = false;
 
+  // The steady sound of space in the background is gone (November 2026: found unpleasant). The button now switches the sounds of the
+  // trips: the jump into hyperspace, the rushing in it and the arrival (below). The context is made at the first click of the visit.
   function build() {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
-    master = ctx.createGain();
-    master.gain.value = 0;
-    master.connect(ctx.destination);
-    // a low filter that opens and closes very slowly
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = 650;
-    filter.Q.value = 0.6;
-    filter.connect(master);
-    const lfo = ctx.createOscillator();
-    lfo.frequency.value = 0.04;
-    const lfoDepth = ctx.createGain();
-    lfoDepth.gain.value = 200;
-    lfo.connect(lfoDepth).connect(filter.frequency);
-    lfo.start();
-    // two tones a fifth apart, and a third one a little out of tune, so that it moves. An octave higher than a deep drone would be, because the
-    // small speakers of laptops and phones hardly play anything below 100 Hz (the first version was too quiet there). All sine waves and a dark
-    // filter: the second version, with a brighter third tone, was found a little tiring.
-    for (const [freq, type, level] of [[110, "sine", 0.5], [164.81, "sine", 0.3], [220.8, "sine", 0.1]]) {
-      const osc = ctx.createOscillator();
-      osc.type = type;
-      osc.frequency.value = freq;
-      const g = ctx.createGain();
-      g.gain.value = level;
-      osc.connect(g).connect(filter);
-      osc.start();
-    }
-    // a soft hiss: brown noise through a band filter
-    const length = ctx.sampleRate * 4;
-    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    let last = 0;
-    for (let i = 0; i < length; i++) {
-      last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
-      data[i] = last * 3.5;
-    }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    noise.loop = true;
-    const band = ctx.createBiquadFilter();
-    band.type = "bandpass";
-    band.frequency.value = 700;
-    band.Q.value = 0.7;
-    const hiss = ctx.createGain();
-    hiss.gain.value = 0.03;
-    noise.connect(band).connect(hiss).connect(master);
-    noise.start();
-  }
-  function fadeTo(value, seconds) {
-    const now = ctx.currentTime;
-    master.gain.cancelScheduledValues(now);
-    master.gain.setValueAtTime(master.gain.value, now);
-    master.gain.linearRampToValueAtTime(value, now + seconds);
   }
   async function start() {
     if (playing) return;
     if (!ctx) build();
     await ctx.resume();
     playing = true;
-    fadeTo(0.07, 4);
     render();
+  }
+  // Hyperspace: a soft rushing while the ship flies through it, faded in and out with the streaks. main.js gives the level (0 to 1) every
+  // frame. Made in the browser like the rest: dark (brown) noise through a gentle filter that opens a little with the speed, swaying slowly.
+  // (A deep hum under it, and a brighter white noise, were found unpleasant over the length of a trip and taken out.) Only with the sound on;
+  // built at the first jump.
+  let warp = null;
+  let warpLevel = 0;
+  // brown noise: each value a small random step from the one before, so the low sounds are strong and the hiss is weak
+  const brownNoise = (seconds) => {
+    const buffer = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < data.length; i++) {
+      last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
+      data[i] = last * 3.5;
+    }
+    return buffer;
+  };
+  function buildWarp() {
+    const out = ctx.createGain();
+    out.gain.value = 0;
+    out.connect(ctx.destination);
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 200;
+    filter.Q.value = 0.5;
+    filter.connect(out);
+    const noise = ctx.createBufferSource();
+    noise.buffer = brownNoise(4);
+    noise.loop = true;
+    noise.connect(filter);
+    noise.start();
+    const wobble = ctx.createOscillator();
+    wobble.frequency.value = 0.15;
+    const depth = ctx.createGain();
+    depth.gain.value = 60;
+    wobble.connect(depth).connect(filter.frequency);
+    wobble.start();
+    warp = { out, filter };
+  }
+  function hyperspace(level) {
+    level = Math.max(0, Math.min(1, level || 0));
+    if (Math.abs(level - warpLevel) < 0.02 && (level > 0 || warpLevel === 0)) return;
+    warpLevel = level;
+    if (!ctx || !playing) return;
+    if (!warp) {
+      if (level === 0) return;
+      buildWarp();
+    }
+    const now = ctx.currentTime;
+    warp.out.gain.setTargetAtTime(0.14 * level, now, 1.2); // in and out over about three to four seconds
+    warp.filter.frequency.setTargetAtTime(180 + 550 * level, now, 1.2);
+  }
+  // The jump in four parts, our own sounds made in the browser (no recording of a film): before it a rushing that swells and rises in pitch
+  // while the ship turns, the mirror of the arrival ("spool", over the seconds until the jump; rising tones were found artificial); the jump
+  // itself a short, very soft low thump ("jump"); then the rushing of hyperspace above; at the arrival a hiss that falls in pitch ("exit"). "stop"
+  // ends the swell of a trip that was stopped.
+  let fx = null;
+  let spool = null;
+  const noiseBuffer = (seconds) => {
+    const buffer = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    return buffer;
+  };
+  function endSpool(seconds) {
+    if (!spool) return;
+    const now = ctx.currentTime;
+    spool.gain.gain.cancelScheduledValues(now);
+    spool.gain.gain.setValueAtTime(spool.gain.gain.value, now);
+    spool.gain.gain.linearRampToValueAtTime(0, now + seconds);
+    spool.src.stop(now + seconds + 0.05);
+    spool = null;
+  }
+  function jumpSound(part, seconds = 3) {
+    if (!ctx || !playing) return;
+    if (!fx) {
+      fx = ctx.createGain();
+      fx.gain.value = 1;
+      fx.connect(ctx.destination);
+    }
+    const now = ctx.currentTime;
+    if (part === "stop") return endSpool(0.3);
+    if (part === "spool") {
+      endSpool(0.1);
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(Math.ceil(seconds) + 1);
+      const band = ctx.createBiquadFilter();
+      band.type = "bandpass";
+      band.Q.value = 0.7;
+      band.frequency.setValueAtTime(150, now);
+      band.frequency.exponentialRampToValueAtTime(1100, now + seconds);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.06, now + seconds); // quiet for long, then swelling, as a sound coming nearer
+      src.connect(band).connect(gain).connect(fx);
+      src.start(now);
+      spool = { gain, src };
+      return;
+    }
+    if (part === "jump") {
+      endSpool(0.12);
+      const thump = ctx.createOscillator();
+      thump.frequency.setValueAtTime(95, now);
+      thump.frequency.exponentialRampToValueAtTime(32, now + 0.7);
+      const tg = ctx.createGain();
+      tg.gain.setValueAtTime(0.0001, now);
+      tg.gain.exponentialRampToValueAtTime(0.12, now + 0.08); // a soft start, no click
+      tg.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
+      thump.connect(tg).connect(fx);
+      thump.start(now);
+      thump.stop(now + 1.7);
+      return;
+    }
+    if (part === "exit") {
+      const hiss = ctx.createBufferSource();
+      hiss.buffer = noiseBuffer(2.5);
+      const band = ctx.createBiquadFilter();
+      band.type = "bandpass";
+      band.Q.value = 1.5;
+      band.frequency.setValueAtTime(2600, now);
+      band.frequency.exponentialRampToValueAtTime(180, now + 2);
+      const hg = ctx.createGain();
+      hg.gain.setValueAtTime(0, now);
+      hg.gain.linearRampToValueAtTime(0.14, now + 0.15);
+      hg.gain.linearRampToValueAtTime(0, now + 2.1);
+      hiss.connect(band).connect(hg).connect(fx);
+      hiss.start(now);
+    }
   }
   function stop() {
     if (!playing) return;
     playing = false;
-    fadeTo(0, 1.5);
+    warp?.out.gain.setTargetAtTime(0, ctx.currentTime, 0.3);
+    endSpool(0.3);
     setTimeout(() => !playing && ctx?.suspend(), 1700);
     render();
   }
@@ -192,5 +269,5 @@ export function initAmbient({ getLang }) {
     window.addEventListener("keydown", first);
   }
   render();
-  return { render };
+  return { render, hyperspace, jumpSound };
 }

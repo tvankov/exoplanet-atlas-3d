@@ -45,8 +45,9 @@ export const EVIDENCE = [
   { id: "unknown", en: "Unknown", de: "Unbekannt", ja: "不明", bg: "Неизвестно" },
 ];
 // the kinds of link into the 3D explorer: a place resolvePlace knows (a planet, a star, an exoplanet), a moon of moons.js, a constellation
-// (the view from the Earth into it)
-export const EXPLORER_KINDS = ["place", "moon", "sky"];
+// (the view from the Earth into it), or one of the views of the map that main.js draws itself (MAP_VIEWS)
+export const EXPLORER_KINDS = ["place", "moon", "sky", "view"];
+export const MAP_VIEWS = ["sgrA"]; // Sagittarius A* at its place in the sky (showSgrA in main.js)
 // the languages a text of a discovery must have; the others show English
 export const ENTRY_LANGS = ["en", "de"];
 
@@ -101,6 +102,7 @@ export function validEntry(e, { knownSteps = null, knownPlace = null, ids = null
   const errors = [];
   const link = (where, l) => {
     if (!EXPLORER_KINDS.includes(l?.kind)) errors.push(`${where} kind ${l?.kind}`);
+    else if (l.kind === "view") !MAP_VIEWS.includes(l.id) && errors.push(`${where} view ${l.id}`);
     else if (knownPlace && !knownPlace(l.kind, l.id)) errors.push(`${where} ${l.kind} ${l.id}`);
   };
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(e.id ?? "")) errors.push("id");
@@ -171,7 +173,7 @@ export function initDiscoveries({ getLang, fly, show, openStep, stepTitle, close
   const entries = {}; // the opened entries, by id
   let view = "list"; // "list" or the id of an entry
   const stageOf = {}; // the stage shown, by entry
-  const flown = new Set(); // the entries flown to: their big "Fly there" goes
+  const flown = new Set(); // the entries flown to: their big button then says "Fly there again"
   const filter = { query: "", category: null };
   let redraw = null;
 
@@ -208,7 +210,8 @@ export function initDiscoveries({ getLang, fly, show, openStep, stepTitle, close
     closePanel?.();
     fly?.(e.fly, () => {
       openEntry?.(id);
-      show?.(e.stages[0].view);
+      const first = e.stages[0].view;
+      if (first.kind !== e.fly.kind || first.id !== e.fly.id) show?.(first); // already there after the trip
     });
   }
   function goStage(e, i) {
@@ -299,7 +302,7 @@ export function initDiscoveries({ getLang, fly, show, openStep, stepTitle, close
     );
     card.append(nav);
     parts.push(card);
-    if (i === 0 && !flown.has(id)) parts.push(button(`${tx.fly} ›`, "uni-primary disc-fly-big", () => flyTo(id)));
+    if (i === 0) parts.push(button(`${flown.has(id) ? tx.flyAgain : tx.fly} ›`, "uni-primary disc-fly-big", () => flyTo(id)));
     const short = el("ul", "learn-remember-list");
     for (const k of text.takeaways) short.append(el("li", "", k));
     parts.push(el("h4", "learn-part", tx.takeaways), short);

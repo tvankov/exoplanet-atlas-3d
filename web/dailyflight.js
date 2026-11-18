@@ -13,7 +13,7 @@ export const FLIGHT_TEXT = {
   en: {
     title: "Your flight of the day", start: "Start the flight of the day", kicker: (i, n) => `Flight of the day · ${i} of ${n}`,
     next: "Next", end: "End", voice: "Read aloud", done: "Flight done",
-    seen: (list) => `Today you saw: ${list}.`, home: "Back on the Earth.",
+    seen: (list) => `Today you saw: ${list}.`, home: "Back on the Earth.", flown: (d) => `You flew ${d}.`, ly: (x) => `${x} light years`, au: (x) => `${x} AU`,
     stopDaily: "Discovery of the day", stopEvent: "Next in the sky", stopYours: "For you",
     event: (title, when) => `${title}, ${when}.`,
     star: (name, year) => `Your star: ${name}. The light of it that arrives today set off around ${year}, about when you were born.`,
@@ -24,7 +24,7 @@ export const FLIGHT_TEXT = {
   de: {
     title: "Dein Flug des Tages", start: "Flug des Tages starten", kicker: (i, n) => `Flug des Tages · ${i} von ${n}`,
     next: "Weiter", end: "Beenden", voice: "Vorlesen", done: "Flug beendet",
-    seen: (list) => `Heute gesehen: ${list}.`, home: "Zurück auf der Erde.",
+    seen: (list) => `Heute gesehen: ${list}.`, home: "Zurück auf der Erde.", flown: (d) => `Du bist ${d} geflogen.`, ly: (x) => `${x} Lichtjahre`, au: (x) => `${x} AE`,
     stopDaily: "Entdeckung des Tages", stopEvent: "Als Nächstes am Himmel", stopYours: "Für dich",
     event: (title, when) => `${title}, ${when}.`,
     star: (name, year) => `Dein Stern: ${name}. Sein Licht, das heute ankommt, brach um ${year} auf, etwa zu deiner Geburt.`,
@@ -35,7 +35,7 @@ export const FLIGHT_TEXT = {
   ja: {
     title: "今日のフライト", start: "今日のフライトを始める", kicker: (i, n) => `今日のフライト · ${n}中${i}`,
     next: "次へ", end: "終了", voice: "読み上げる", done: "フライト完了",
-    seen: (list) => `今日見たもの：${list}。`, home: "地球に戻りました。",
+    seen: (list) => `今日見たもの：${list}。`, home: "地球に戻りました。", flown: (d) => `飛んだ距離は${d}です。`, ly: (x) => `${x}光年`, au: (x) => `${x}天文単位`,
     stopDaily: "今日の発見", stopEvent: "次の天文イベント", stopYours: "あなたへ",
     event: (title, when) => `${title}、${when}。`,
     star: (name, year) => `あなたの星：${name}。今日届くその光は、あなたが生まれた頃の${year}年ごろに出発しました。`,
@@ -46,7 +46,7 @@ export const FLIGHT_TEXT = {
   bg: {
     title: "Твоят полет на деня", start: "Започни полета на деня", kicker: (i, n) => `Полет на деня · ${i} от ${n}`,
     next: "Напред", end: "Край", voice: "Прочети на глас", done: "Полетът приключи",
-    seen: (list) => `Днес видя: ${list}.`, home: "Обратно на Земята.",
+    seen: (list) => `Днес видя: ${list}.`, home: "Обратно на Земята.", flown: (d) => `Прелетя ${d}.`, ly: (x) => `${x} светлинни години`, au: (x) => `${x} а.е.`,
     stopDaily: "Откритие на деня", stopEvent: "Следва в небето", stopYours: "За теб",
     event: (title, when) => `${title}, ${when}.`,
     star: (name, year) => `Твоята звезда: ${name}. Светлината ѝ, която пристига днес, е тръгнала около ${year} г., приблизително когато си роден.`,
@@ -60,7 +60,7 @@ const STOP_SECONDS = 14; // a stop goes on by itself after this (or after the vo
 
 // getLang(): the language of the page. stops(): the three stops of today, each { kind, place, label, text } with
 // the place to fly to (a name for explore). explore(name) flies there. travel(from, to, arrived, aborted) starts a trip of the planner and
-// gives true, or false when there is none (then explore is used); arrived() comes after the arrival, aborted() when the trip was stopped on
+// gives its length in AU, or false when there is none (then explore is used); arrived() comes after the arrival, aborted() when the trip was stopped on
 // the way. cancelTravel() stops a trip that is under way. onDone(): the flight was flown to the end.
 export function initDailyFlight({ getLang, stops, explore, travel, cancelTravel, onDone }) {
   const t = () => FLIGHT_TEXT[getLang()] ?? FLIGHT_TEXT.en;
@@ -81,6 +81,19 @@ export function initDailyFlight({ getLang, stops, explore, travel, cancelTravel,
   let index = -1;
   let here = "Earth"; // where the flight is now: it starts on the Earth
   let travelling = false; // on the way to the stop of index (the box of the trip is shown, not this card)
+  let flownAu = 0; // the length of all the trips of the flight, real (the straight line through space between the stars)
+  // "You flew 82 light years", or in AU when the whole flight stayed in the Solar System
+  const flownText = () => {
+    const tx = t();
+    const ly = flownAu / 63241.077;
+    const n = (x, d) => x.toLocaleString(getLang(), { maximumFractionDigits: d });
+    return tx.flown(ly >= 0.01 ? tx.ly(n(ly, ly < 100 ? 1 : 0)) : tx.au(n(flownAu, flownAu < 100 ? 1 : 0)));
+  };
+  const leg = (from, to, arrived, aborted) => {
+    const au = travel?.(from, to, arrived, aborted);
+    if (au) flownAu += au;
+    return !!au;
+  };
   let timer = 0;
   let voice = true; // read aloud, unless the visitor switched it off
   try {
@@ -123,7 +136,7 @@ export function initDailyFlight({ getLang, stops, explore, travel, cancelTravel,
       card.replaceChildren(
         el("small", "", tx.title),
         el("strong", "", tx.done),
-        el("p", "", `${tx.home} ${tx.seen(names)}`),
+        el("p", "", `${tx.home} ${tx.seen(names)}${flownAu ? ` ${flownText()}` : ""}`),
         (() => {
           const row = el("div", "day-flight-actions");
           row.append(button(tx.end, "account-main", stop));
@@ -177,9 +190,9 @@ export function initDailyFlight({ getLang, stops, explore, travel, cancelTravel,
         onDone?.();
         render();
         const tx = t();
-        speak(`${tx.done}. ${tx.home} ${tx.seen(list.map((s) => s.short ?? s.label).join(", "))}`);
+        speak(`${tx.done}. ${tx.home} ${tx.seen(list.map((s) => s.short ?? s.label).join(", "))}${flownAu ? ` ${flownText()}` : ""}`);
       };
-      travelling = here !== "Earth" && !!travel?.(here, "Earth", finish, () => index === i && stop());
+      travelling = here !== "Earth" && leg(here, "Earth", finish, () => index === i && stop());
       if (travelling) return render();
       if (here !== "Earth") explore("Earth");
       finish();
@@ -193,7 +206,7 @@ export function initDailyFlight({ getLang, stops, explore, travel, cancelTravel,
       render();
       if (!speak(`${s.heading}. ${s.text}`)) schedule(STOP_SECONDS * 1000);
     };
-    travelling = !!travel?.(here, s.place, arrive, () => index === i && stop());
+    travelling = leg(here, s.place, arrive, () => index === i && stop());
     if (travelling) return render();
     explore(s.place);
     arrive();
@@ -203,6 +216,7 @@ export function initDailyFlight({ getLang, stops, explore, travel, cancelTravel,
     if (!list.length) return;
     track("daily-flight-start");
     here = "Earth";
+    flownAu = 0;
     go(0);
   }
   function stop() {
