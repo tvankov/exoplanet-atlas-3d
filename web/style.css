@@ -4862,3 +4862,8 @@ input.uni-date {
   background: rgba(124, 255, 178, 0.2);
   border-color: rgba(124, 255, 178, 0.5);
 }
+
+/* a step with its own piece (the twelve figures, the flashcards): the task above the piece, not beside it */
+.learn-task.learn-widget {
+  grid-template-columns: minmax(0, 1fr);
+}
