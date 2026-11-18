@@ -10,6 +10,7 @@
 // tested in tests/discoveries.test.mjs.
 
 import { track } from "./stats.js";
+import { speakButton, stopReading } from "./speak.js";
 import { starCanvas, medalCanvas } from "./sharecard.js";
 
 export const CATEGORIES = [
@@ -211,6 +212,7 @@ export function initDiscoveries({ getLang, fly, show, openStep, stepTitle, close
     });
   }
   function goStage(e, i) {
+    stopReading();
     stageOf[e.id] = i;
     show?.(e.stages[i].view);
     redraw?.();
@@ -280,7 +282,9 @@ export function initDiscoveries({ getLang, fly, show, openStep, stepTitle, close
     const i = stageOf[id] ?? 0;
     const stage = e.stages[i];
     const card = el("div", "disc-stage");
-    card.append(el("small", "", tx.stage(i + 1, e.stages.length)), el("h4", "", local(stage).title), el("p", "learn-text", fillNumbers(local(stage).text, lang)));
+    const stageText = fillNumbers(local(stage).text, lang);
+    card.append(el("small", "", tx.stage(i + 1, e.stages.length)), el("h4", "", local(stage).title), el("p", "learn-text", stageText));
+    card.append(speakButton(e.text[lang] ? lang : "en", [local(stage).title, stageText], "discovery"));
     const steps = el("div", "disc-steps");
     for (let k = 0; k < e.stages.length; k++) {
       const dot = button(String(k + 1), `disc-dot${k === i ? " on" : ""}`, () => goStage(e, k));

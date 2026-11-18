@@ -13,9 +13,8 @@ import { drawDock, drawLevel } from "./dockart.js";
 import { MOONS, moonScale, moonName, facingRotation } from "./moons.js";
 import { initLearn, LEARN_TEXT } from "./learn.js";
 import { initDiscoveries } from "./discoveries.js";
-import { initAmbient } from "./atmosphere.js";
+import { initAmbient } from "./atmosphere.js"; // also writes a fact on the loading screen at once
 import { initDailyFlight, FLIGHT_TEXT } from "./dailyflight.js";
-import { initRecommendations } from "./recommend.js"; // also writes a fact on the loading screen at once
 import { initZoneGame, ZONE_TEXT } from "./zonegame.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -5703,7 +5702,6 @@ let journal = null; // notes and collections, see journal.js
 let myStar = null; // the star of the year of birth, see mystar.js
 let birthSky = null; // astrology next to the real sky, see birthsky.js
 let dayFlight = null; // the flight of the day, see dailyflight.js
-let reco = null; // recommendations with a reason, see recommend.js
 let zoneGame = null; // the zone quiz, see zonegame.js
 let sky = null; // the constellations, see constellations.js
 let atlas = null; // the constellation atlas, see atlas.js
@@ -5761,6 +5759,7 @@ daily = await initDaily({
 explorer = initExplorer({
   getLang: () => lang,
   text: (key) => UI[lang][key],
+  actions: { "d-answer": () => daily?.open(), "d-flight": () => dayFlight?.start() },
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);
@@ -5864,32 +5863,6 @@ dayFlight = initDailyFlight({
     }
     return out.map((s) => ({ ...s, label: isSolar(s.label) ? solarName(s.label, lang) : s.label }));
   },
-});
-// Recommendations with a reason: from the exoplanets of the NASA list, the planets of the Solar System, the constellations and the next event.
-let exoList = null;
-reco = initRecommendations({
-  getLang: () => lang,
-  explorer,
-  data: () => ({
-    exo: (exoList ??= stars.flatMap((s) =>
-      s.planets.map((p) => ({ name: p.pl_name, host: s.hostname, dist: s.dist_ly, radius: p.pl_rade, radiusCalc: !!p.radius_calculated, temp: p.pl_eqt, habitable: !!p.habitable }))
-    )),
-    solar: PLANETS.map((p) => p.name).filter((n) => n !== "Earth"),
-  }),
-  nameOf: (item) => {
-    if (item.kind === "constellation") {
-      const c = sky?.data.constellations.find((x) => x.id === item.name);
-      return c ? sky.data.nameOf(c, lang) : item.name;
-    }
-    return PLANETS.some((p) => p.name === item.name) ? solarName(item.name, lang) : item.name;
-  },
-  act: (item) => {
-    if (item.kind === "constellation") return atlas?.showFigure(item.name);
-    if (item.kind === "event") return skyEvents?.open();
-    const place = resolvePlace(item.name);
-    if (place) showPlace(place);
-  },
-  nextEvent: () => skyEvents?.nextInfo() ?? null,
 });
 birthSky = initBirthSky({
   getLang: () => lang,
@@ -6061,8 +6034,6 @@ universe = initUniverse({
   journal,
   myStar,
   birthSky,
-  flight: dayFlight,
-  reco,
   explore: (name) => {
     const place = resolvePlace(name);
     if (place) showPlace(place);

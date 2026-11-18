@@ -15,7 +15,7 @@ export const UNIVERSE_TEXT = {
   en: {
     title: "My Universe",
     areas: { home: "Overview", explore: "Explore", learn: "Learn", self: "You in the cosmos", collection: "Collection", certs: "Certificates" },
-    tileSub: { explore: "Flight of the day, discoveries and recommendations", learn: "Learning paths and quizzes", self: "Your star, your age on the planets, the sky at your birth", collection: "Progress, badges, favourites, journal and account", certs: "Your learning certificates" },
+    tileSub: { explore: "Discoveries to fly to, and the sky events", learn: "Learning paths and quizzes", self: "Your star, your age on the planets, the sky at your birth", collection: "Progress, badges, favourites, journal and account", certs: "Your learning certificates" },
     yourStar: (name) => `Your star: ${name}`,
     paths: "Learning paths", learnSoon: "The first learning path, Our Solar System, is being built: short steps with a goal, a task in the 3D view and a test.",
     practice: "Quizzes and practice", qZone: "Habitable zone quiz", qZoneSub: "Which planet lies in the green zone of its star?", qDaily: "Question of the day", qDailySub: "One question every day, with the answer explained",
@@ -41,16 +41,10 @@ export const UNIVERSE_TEXT = {
     certLinkedInPost: "Post on LinkedIn", certMail: "E-mail", certCopy: "Copy the link", certCopied: "Link copied.",
     certLinkHint: "The link leads straight to this learning path, so that others can try it.",
     heroBack: (name) => (name ? `Welcome back, ${name}` : "Welcome back"),
-    next: "What next", continueGo: "Continue exploring", discover: "Discover", lastSeen: (when) => `Seen last · ${when}`, forYou: "For you",
-    kindSolar: (au) => `Planet of the Solar System · ${au} AU from the Sun`,
-    kindExo: (dist, temp) => `Exoplanet · ${dist} light years${temp ? ` · ${temp} K` : ""}`,
-    kindStar: (dist, n) => `Star · ${dist} light years · ${n} ${n === 1 ? "planet" : "planets"}`, kindSun: "Our star, the Sun",
     progress: "Your progress",
     hello: (name) => (name ? `Welcome, ${name}` : "Welcome, Explorer"),
     back: (name) => (name ? `Welcome back, ${name}.` : "Welcome back."),
     levelLine: (level, xp) => `Level ${level} · ${xp} XP`,
-    continueEmpty: "The last place you look at will be here.",
-    today: "today", daysAgo: (n) => `${n} days ago`, yesterday: "yesterday",
     daily: "Discovery of the day", open: "Open",
     missions: "Missions", missionsLine: (done, total) => `${done} of ${total} done`, nextMission: (label) => `Next: ${label}`, allDone: "All missions done.",
     discoveries: "Your discoveries", favourites: "Favourites", recent: "Seen lately", emptyDiscoveries: "Planets that you save or look at appear here.",
@@ -78,7 +72,7 @@ export const UNIVERSE_TEXT = {
   de: {
     title: "Mein Universum",
     areas: { home: "Übersicht", explore: "Entdecken", learn: "Lernen", self: "Du im Kosmos", collection: "Sammlung", certs: "Zertifikate" },
-    tileSub: { explore: "Flug des Tages, Entdeckungen und Empfehlungen", learn: "Lernpfade und Quiz", self: "Dein Stern, dein Alter auf den Planeten, dein Himmel bei der Geburt", collection: "Fortschritt, Abzeichen, Favoriten, Journal und Konto", certs: "Deine Lernzertifikate" },
+    tileSub: { explore: "Entdeckungen zum Hinfliegen und Himmelsereignisse", learn: "Lernpfade und Quiz", self: "Dein Stern, dein Alter auf den Planeten, dein Himmel bei der Geburt", collection: "Fortschritt, Abzeichen, Favoriten, Journal und Konto", certs: "Deine Lernzertifikate" },
     yourStar: (name) => `Dein Stern: ${name}`,
     paths: "Lernpfade", learnSoon: "Der erste Lernpfad, „Unser Sonnensystem“, ist in Arbeit: kurze Schritte mit einem Ziel, einer Aufgabe in der 3D-Ansicht und einem Test.",
     practice: "Quiz und Übungen", qZone: "Quiz zur bewohnbaren Zone", qZoneSub: "Welcher Planet liegt in der grünen Zone seines Sterns?", qDaily: "Frage des Tages", qDailySub: "Jeden Tag eine Frage, mit erklärter Antwort",
@@ -104,16 +98,10 @@ export const UNIVERSE_TEXT = {
     certLinkedInPost: "Auf LinkedIn posten", certMail: "E-Mail", certCopy: "Link kopieren", certCopied: "Link kopiert.",
     certLinkHint: "Der Link führt direkt zu diesem Lernpfad, damit andere ihn selbst ausprobieren können.",
     heroBack: (name) => (name ? `Willkommen zurück, ${name}` : "Willkommen zurück"),
-    next: "Als Nächstes", continueGo: "Weiter erkunden", discover: "Entdecken", lastSeen: (when) => `Zuletzt angesehen · ${when}`, forYou: "Für dich",
-    kindSolar: (au) => `Planet des Sonnensystems · ${au} AE von der Sonne`,
-    kindExo: (dist, temp) => `Exoplanet · ${dist} Lichtjahre${temp ? ` · ${temp} K` : ""}`,
-    kindStar: (dist, n) => `Stern · ${dist} Lichtjahre · ${n} ${n === 1 ? "Planet" : "Planeten"}`, kindSun: "Unser Stern, die Sonne",
     progress: "Dein Fortschritt",
     hello: (name) => (name ? `Willkommen, ${name}` : "Willkommen, Explorer"),
     back: (name) => (name ? `Willkommen zurück, ${name}.` : "Willkommen zurück."),
     levelLine: (level, xp) => `Stufe ${level} · ${xp} XP`,
-    continueEmpty: "Der Ort, den du dir zuletzt ansiehst, steht hier.",
-    today: "heute", daysAgo: (n) => `vor ${n} Tagen`, yesterday: "gestern",
     daily: "Entdeckung des Tages", open: "Öffnen",
     missions: "Missionen", missionsLine: (done, total) => `${done} von ${total} erledigt`, nextMission: (label) => `Als Nächstes: ${label}`, allDone: "Alle Missionen erledigt.",
     discoveries: "Deine Entdeckungen", favourites: "Favoriten", recent: "Zuletzt angesehen", emptyDiscoveries: "Planeten, die du speicherst oder ansiehst, erscheinen hier.",
@@ -141,7 +129,7 @@ export const UNIVERSE_TEXT = {
   ja: {
     title: "マイ・ユニバース",
     areas: { home: "概要", explore: "探検", learn: "学ぶ", self: "宇宙の中のあなた", collection: "コレクション", certs: "修了証" },
-    tileSub: { explore: "今日のフライト、発見、おすすめ", learn: "学習コースとクイズ", self: "あなたの星、惑星での年齢、生まれた日の空", collection: "進み具合、バッジ、お気に入り、ジャーナル、アカウント", certs: "あなたの修了証" },
+    tileSub: { explore: "飛んで行ける発見と天文現象", learn: "学習コースとクイズ", self: "あなたの星、惑星での年齢、生まれた日の空", collection: "進み具合、バッジ、お気に入り、ジャーナル、アカウント", certs: "あなたの修了証" },
     yourStar: (name) => `あなたの星：${name}`,
     paths: "学習コース", learnSoon: "最初の学習コース「私たちの太陽系」を準備中です。目標のある短いステップ、3D表示での課題、テストで構成されます。",
     practice: "クイズと練習", qZone: "ハビタブルゾーン・クイズ", qZoneSub: "恒星のグリーンゾーンにある惑星はどれ？", qDaily: "今日の質問", qDailySub: "毎日ひとつの質問と、答えの解説",
@@ -167,16 +155,10 @@ export const UNIVERSE_TEXT = {
     certLinkedInPost: "LinkedInに投稿", certMail: "メール", certCopy: "リンクをコピー", certCopied: "リンクをコピーしました。",
     certLinkHint: "リンクはこの学習コースに直接つながるので、ほかの人もためせます。",
     heroBack: (name) => (name ? `おかえりなさい、${name}さん` : "おかえりなさい"),
-    next: "次はこちら", continueGo: "探検をつづける", discover: "発見する", lastSeen: (when) => `最後に見たもの · ${when}`, forYou: "あなたへ",
-    kindSolar: (au) => `太陽系の惑星 · 太陽から${au} au`,
-    kindExo: (dist, temp) => `系外惑星 · ${dist}光年${temp ? ` · ${temp} K` : ""}`,
-    kindStar: (dist, n) => `恒星 · ${dist}光年 · 惑星${n}個`, kindSun: "わたしたちの恒星、太陽",
     progress: "あなたの進み具合",
     hello: (name) => (name ? `ようこそ、${name}さん` : "ようこそ、エクスプローラー"),
     back: (name) => (name ? `おかえりなさい、${name}さん。` : "おかえりなさい。"),
     levelLine: (level, xp) => `レベル${level} · ${xp} XP`,
-    continueEmpty: "最後に見た場所がここに表示されます。",
-    today: "今日", daysAgo: (n) => `${n}日前`, yesterday: "昨日",
     daily: "今日の発見", open: "開く",
     missions: "ミッション", missionsLine: (done, total) => `${total}件中${done}件完了`, nextMission: (label) => `次は：${label}`, allDone: "すべてのミッションを完了しました。",
     discoveries: "あなたの発見", favourites: "お気に入り", recent: "最近見たもの", emptyDiscoveries: "保存した惑星や見た惑星がここに表示されます。",
@@ -204,7 +186,7 @@ export const UNIVERSE_TEXT = {
   bg: {
     title: "Моята вселена",
     areas: { home: "Преглед", explore: "Откривай", learn: "Учи", self: "Ти в космоса", collection: "Колекция", certs: "Сертификати" },
-    tileSub: { explore: "Полет на деня, открития и препоръки", learn: "Учебни пътеки и викторини", self: "Твоята звезда, възрастта ти на планетите, небето при раждането ти", collection: "Напредък, значки, любими, дневник и акаунт", certs: "Твоите учебни сертификати" },
+    tileSub: { explore: "Открития, до които да полетиш, и небесни събития", learn: "Учебни пътеки и викторини", self: "Твоята звезда, възрастта ти на планетите, небето при раждането ти", collection: "Напредък, значки, любими, дневник и акаунт", certs: "Твоите учебни сертификати" },
     yourStar: (name) => `Твоята звезда: ${name}`,
     paths: "Учебни пътеки", learnSoon: "Първата учебна пътека, „Нашата Слънчева система“, се подготвя: кратки стъпки с цел, задача в 3D изгледа и тест.",
     practice: "Викторини и упражнения", qZone: "Викторина за обитаемата зона", qZoneSub: "Коя планета е в зелената зона на звездата си?", qDaily: "Въпрос на деня", qDailySub: "Всеки ден по един въпрос, с обяснен отговор",
@@ -230,16 +212,10 @@ export const UNIVERSE_TEXT = {
     certLinkedInPost: "Публикувай в LinkedIn", certMail: "Имейл", certCopy: "Копирай връзката", certCopied: "Връзката е копирана.",
     certLinkHint: "Връзката води направо към тази учебна пътека, за да могат и други да я опитат.",
     heroBack: (name) => (name ? `Добре дошъл отново, ${name}` : "Добре дошъл отново"),
-    next: "Следва", continueGo: "Продължи изследването", discover: "Открий", lastSeen: (when) => `Разгледано последно · ${when}`, forYou: "За теб",
-    kindSolar: (au) => `Планета от Слънчевата система · ${au} а.е. от Слънцето`,
-    kindExo: (dist, temp) => `Екзопланета · ${dist} светлинни години${temp ? ` · ${temp} K` : ""}`,
-    kindStar: (dist, n) => `Звезда · ${dist} светлинни години · ${n} ${n === 1 ? "планета" : "планети"}`, kindSun: "Нашата звезда, Слънцето",
     progress: "Твоят напредък",
     hello: (name) => (name ? `Добре дошъл, ${name}` : "Добре дошъл, изследователю"),
     back: (name) => (name ? `Добре дошъл отново, ${name}.` : "Добре дошъл отново."),
     levelLine: (level, xp) => `Ниво ${level} · ${xp} XP`,
-    continueEmpty: "Мястото, което разгледаш последно, ще е тук.",
-    today: "днес", daysAgo: (n) => `преди ${n} дни`, yesterday: "вчера",
     daily: "Откритие на деня", open: "Отвори",
     missions: "Мисии", missionsLine: (done, total) => `${done} от ${total} изпълнени`, nextMission: (label) => `Следва: ${label}`, allDone: "Всички мисии са изпълнени.",
     discoveries: "Твоите открития", favourites: "Любими", recent: "Разгледани наскоро", emptyDiscoveries: "Планетите, които запазиш или разгледаш, се появяват тук.",
@@ -269,7 +245,7 @@ export const UNIVERSE_TEXT = {
 // explorer: the log module (explorer.js). daily: the discovery of the day (daily.js). explore(name): fly to a place. describe(name): what the map
 // knows of a place ({ kind: "solar" | "exo" | "star" | "sun", id, name, color, au, dist, temp, teff, planets }) or null. openSky(), openAtlas(),
 // openZoneQuiz(), closePanel(): open the events, the zodiac, the zone quiz, close the profile panel.
-export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, flight, reco, learn, discoveries, explore, describe, openSky, openAtlas, openZoneQuiz, openPanel, closePanel }) {
+export function initUniverse({ getLang, explorer, daily, journal, myStar, birthSky, learn, discoveries, explore, describe, openSky, openAtlas, openZoneQuiz, openPanel, closePanel }) {
   const t = () => UNIVERSE_TEXT[getLang()] ?? UNIVERSE_TEXT.en;
   const el = (tag, cls, content) => {
     const e = document.createElement(tag);
@@ -284,10 +260,6 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     return b;
   };
   const MS_DAY = 86400000;
-  const ago = (time) => {
-    const days = Math.floor((Date.now() - time) / MS_DAY);
-    return days <= 0 ? t().today : days === 1 ? t().yesterday : t().daysAgo(days);
-  };
   const goTo = (name) => {
     closePanel?.();
     explore(name);
@@ -455,25 +427,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     i.setAttribute("aria-hidden", "true");
     return i;
   }
-  function contextOf(info) {
-    const tx = t();
-    if (!info) return "";
-    if (info.kind === "solar") return tx.kindSolar(fmt(info.au, info.au < 10 ? 2 : 1));
-    if (info.kind === "exo") return tx.kindExo(fmt(info.dist), info.temp ? fmt(Math.round(info.temp), 0) : null);
-    if (info.kind === "star") return tx.kindStar(fmt(info.dist), info.planets);
-    return tx.kindSun;
-  }
-  // the big card: a picture, a label, the name, one line of context and the main action
-  function discoverCard({ picture, label, title, context, action, go }) {
-    const c = el("div", "uni-discover");
-    const text = el("div", "uni-discover-text");
-    text.append(el("small", "", label), el("strong", "", title));
-    if (context) text.append(el("span", "hint", context));
-    text.append(button(action, "uni-primary", go));
-    c.append(picture, text);
-    return c;
-  }
-  // one row of the list "What next": the whole row is the button
+  // one row of a list: the whole row is the button
   function item(picture, title, sub, go) {
     const b = el("button", "uni-item");
     b.type = "button";
@@ -608,65 +562,6 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     return hero;
   }
 
-  // what next: the last place (or the first recommendation) as a card; with `full` also the flight of the day, the discovery of the day and
-  // the recommendations as a short list
-  function nextPart(tx, last, full) {
-    const next = el("section", "uni-section uni-next");
-    next.append(el("h3", "", tx.next));
-    const recos = reco ? reco.items() : [];
-    let rest = recos;
-    if (last) {
-      const info = describe?.(last.name);
-      next.append(
-        discoverCard({
-          picture: orb(info),
-          label: tx.lastSeen(ago(last.t)),
-          title: info?.name ?? last.name,
-          context: contextOf(info),
-          action: tx.continueGo,
-          go: () => {
-            track("continue-click");
-            goTo(last.name);
-          },
-        })
-      );
-    } else if (recos.length) {
-      const first = recos[0];
-      rest = recos.slice(1);
-      const info = first.kind === "planet" ? describe?.(first.name) : null;
-      next.append(
-        discoverCard({
-          picture: info ? orb(info) : icon(first.kind === "event" ? "☄︎" : "✦"),
-          label: tx.forYou,
-          title: first.label,
-          context: first.reason,
-          action: tx.discover,
-          go: () => (closePanel?.(), first.go()),
-        })
-      );
-    } else next.append(el("p", "hint", tx.continueEmpty));
-    if (!full) return next;
-    const list = el("div", "uni-list");
-    if (flight)
-      list.append(
-        item(icon("✈︎"), flight.label(), flight.hint(), () => {
-          closePanel?.();
-          flight.start();
-        })
-      );
-    if (daily?.entry) {
-      const info = describe?.(daily.entry.target);
-      list.append(item(info ? orb(info, "small") : icon("✦"), tx.daily, (daily.entry[getLang()] ?? daily.entry.en).title, () => (closePanel?.(), daily.open())));
-    }
-    for (const r of rest) {
-      const info = r.kind === "planet" ? describe?.(r.name) : null;
-      list.append(item(info ? orb(info, "small") : icon(r.kind === "event" ? "☄︎" : "✦"), r.label, r.reason, () => (closePanel?.(), r.go())));
-    }
-    next.append(list);
-    if (reco) next.append(reco.about(() => renderAll()));
-    return next;
-  }
-
   // what is stored, with the link to the privacy notice
   function privacyPart(tx) {
     const privacy = el("p", "hint uni-privacy", `${tx.privacy} `);
@@ -714,7 +609,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
       ask.append(el("strong", "", tx.birthAskTitle), el("p", "", tx.birthWhy), row, el("p", "hint", tx.birthPrivacy));
       parts.push(ask);
     }
-    parts.push(nextPart(tx, last, false), tiles, privacyPart(tx));
+    parts.push(tiles, privacyPart(tx));
     return parts;
   }
 
@@ -724,7 +619,7 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
     if (own && !own.overview) return own.nodes;
     const quick = el("div", "uni-list");
     quick.append(wide(item(dockPicture("dock-sky") ?? icon("☄︎"), tx.qSky, tx.qSkySub, () => (closePanel?.(), openSky?.()))));
-    return [...(own ? [section(discoveries.title(), ...own.nodes)] : []), nextPart(tx, last, true), section(tx.quick, quick)];
+    return [...(own ? [section(discoveries.title(), ...own.nodes)] : []), section(tx.quick, quick)];
   }
 
   function learnArea(tx) {

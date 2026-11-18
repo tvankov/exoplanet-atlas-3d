@@ -5,6 +5,7 @@
 // nothing and the panel is empty. Times are stored in UT (UTC) and shown in the time zone of the browser.
 
 import { track } from "./stats.js";
+import { speakButton, stopReading } from "./speak.js";
 
 const DAY = 86400000;
 const ONGOING = 6 * 3600000; // an event with a time counts as running for six hours
@@ -178,7 +179,7 @@ export async function initEvents({ getLang, explore }) {
         toggle(false);
         explore("Earth");
       });
-      foot.append(show);
+      foot.append(show, speakButton(e.text?.[getLang()] ? getLang() : "en", [pick(e.title), pick(e.text)], "sky"));
       item.append(foot);
       parts.push(item);
     }
@@ -186,6 +187,7 @@ export async function initEvents({ getLang, explore }) {
   }
 
   function toggle(open = panel.hidden) {
+    if (!open) stopReading();
     panel.hidden = !open;
     card.setAttribute("aria-expanded", String(open));
     if (open) render();

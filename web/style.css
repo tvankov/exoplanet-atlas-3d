@@ -1463,6 +1463,18 @@ body:has(#flight-caption:not([hidden])) #dock {
 .mission.done .mission-text {
   opacity: 0.6;
 }
+.mission-go {
+  padding: 0;
+  font: inherit;
+  color: #7cffb2;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.mission-go:hover {
+  text-decoration: underline;
+}
 .mission-count {
   font-size: 12px;
   opacity: 0.7;
@@ -4282,6 +4294,29 @@ input.uni-date {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 12px;
+}
+/* "Read aloud" of speak.js, in the discoveries, the discovery of the day and the sky events */
+button.speak-button {
+  align-self: flex-start;
+  margin: 6px 0;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(124, 255, 178, 0.45);
+  border-radius: 999px;
+  cursor: pointer;
+}
+button.speak-button:hover {
+  background: rgba(124, 255, 178, 0.12);
+}
+button.speak-button.on {
+  background: rgba(124, 255, 178, 0.2);
+  border-color: rgba(124, 255, 178, 0.8);
+}
+button.speak-button[hidden] {
+  display: none;
 }
 #universe-body button.learn-speak {
   padding: 4px 10px;

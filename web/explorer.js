@@ -19,7 +19,7 @@ const HISTORY_MAX = 12;
 export const MISSIONS = [
   {
     id: "d-answer", period: "day", event: "answer", target: 1,
-    en: "Answer the question of the day", de: "Beantworte die Frage des Tages", ja: "今日の問いに答える", bg: "Отговори на въпроса на деня",
+    en: "Discovery of the day: answer its question", de: "Entdeckung des Tages: beantworte ihre Frage", ja: "今日の発見：その問いに答える", bg: "Откритие на деня: отговори на въпроса му",
   },
   {
     id: "d-planets", period: "day", event: "planet", target: 3, unique: true,
@@ -295,7 +295,8 @@ function load() {
 }
 
 // getLang() is the language of the page, text(key) the interface text, explore(name) flies to the planet on the map.
-export function initExplorer({ getLang, text, explore }) {
+// actions: what a mission starts when it is clicked ({ "d-flight": () => ..., ... }), for the ones that are a thing of the page of their own.
+export function initExplorer({ getLang, text, explore, actions = {} }) {
   let state = load();
   let current = null; // the planet whose story is shown
   let changeListener = null; // the account (auth.js) saves the log when it changes
@@ -481,7 +482,19 @@ export function initExplorer({ getLang, text, explore }) {
   function missionRow(m) {
     const v = isDone(m) ? m.target : Math.min(valueOf(m), m.target);
     const row = el("div", `mission${isDone(m) ? " done" : ""}`);
-    row.append(el("span", "mission-mark", isDone(m) ? "✓" : ""), el("span", "mission-text", label(m)));
+    const go = actions[m.id];
+    let name = el("span", "mission-text", label(m));
+    if (go) {
+      // the flight of the day and the discovery of the day start from here
+      name = el("button", "mission-text mission-go", `${label(m)} ›`);
+      name.type = "button";
+      name.addEventListener("click", () => {
+        toggle(false);
+        track(`mission-go-${m.id}`);
+        go();
+      });
+    }
+    row.append(el("span", "mission-mark", isDone(m) ? "✓" : ""), name);
     row.append(el("span", "mission-count", `${v} / ${m.target} · +${XP_MISSION[m.period]} XP`));
     const bar = el("div", "mission-bar");
     const fill = el("div", "mission-fill");

@@ -4,6 +4,7 @@
 // localStorage ("daily"), and the dot on the button says that today's entry has not been opened yet ("daily-seen").
 
 import { track } from "./stats.js";
+import { speakButton, stopReading } from "./speak.js";
 import { entryForInterest, readStoredProfile } from "./profile.js";
 
 const FALLBACK = {
@@ -81,6 +82,7 @@ export async function initDaily({ getLang, text, explore, onAnswer, flightLabel,
       return el;
     };
     parts.push(p("", content.text));
+    parts.push(speakButton(entry[lang] ? lang : "en", [content.title, content.text, content.q], "daily"));
     // Japanese and Bulgarian readers get the English text for now (the interface around it is translated).
     if (!entry[lang] && lang !== "en") parts.push(p("hint", t("dailyEnglishOnly")));
     parts.push(p("daily-q", content.q));
@@ -133,6 +135,7 @@ export async function initDaily({ getLang, text, explore, onAnswer, flightLabel,
   }
 
   function togglePanel(open = panel.hidden) {
+    if (!open) stopReading();
     panel.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
     if (open) {
