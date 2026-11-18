@@ -4,8 +4,9 @@
   "type": "object",
   "status": "confirmed",
   "dates": { "discovered": "2018", "published": "2026-11-18", "updated": "2026-11-18" },
-  "aliases": ["PDS 70 b", "PDS 70"],
-  "explorer": [{ "kind": "place", "id": "PDS 70 b", "label": { "en": "PDS 70 b", "de": "PDS 70 b" } }],
+  "aliases": ["PDS 70 b", "PDS 70", "planet birth", "Planetengeburt"],
+  "picture": { "star": 4109 },
+  "fly": { "kind": "place", "id": "PDS 70 b" },
   "learn": ["birthDisk"],
   "related": [],
   "sources": [
@@ -21,37 +22,47 @@
     { "key": "method", "evidence": "observed", "source": "nasa-exoplanet-archive", "label": { "en": "Found by", "de": "Gefunden durch" }, "value": { "en": "direct imaging, 2018", "de": "direkte Abbildung, 2018" } },
     { "key": "star", "evidence": "measured", "source": "nasa-exoplanet-archive", "label": { "en": "Temperature of its star", "de": "Temperatur seines Sterns" }, "value": { "en": "4,109 kelvin", "de": "4.109 Kelvin" } }
   ],
+  "stages": [
+    {
+      "view": { "kind": "place", "id": "PDS 70" },
+      "sources": ["nasa-exoplanet-archive", "eso2111"],
+      "en": { "title": "A young star far away", "text": "You are at PDS 70, 369 light years from the Earth by the NASA table (ESO says nearly 400). The light of this star that reaches the Earth today set off around the year {since:369}." },
+      "de": { "title": "Ein junger Stern, weit weg", "text": "Du bist bei PDS 70, nach der NASA-Tabelle 369 Lichtjahre von der Erde entfernt (die ESO sagt fast 400). Das Licht dieses Sterns, das heute auf der Erde ankommt, flog um das Jahr {since:369} los." }
+    },
+    {
+      "view": { "kind": "place", "id": "PDS 70 b" },
+      "sources": ["nasa-planetary-systems", "eso1821"],
+      "en": { "title": "A planet being born", "text": "PDS 70 b is still growing. Young stars are surrounded by a disc of gas and dust, where particles of rock and ice collide and merge into planets. In 2018 ESO showed the first confirmed image of such a planet: this one." },
+      "de": { "title": "Ein Planet wird geboren", "text": "PDS 70 b wächst noch. Junge Sterne sind von einer Scheibe aus Gas und Staub umgeben, in der Teilchen aus Gestein und Eis zusammenstoßen und zu Planeten verschmelzen. 2018 zeigte die ESO das erste bestätigte Bild eines solchen Planeten: dieses hier." }
+    },
+    {
+      "view": { "kind": "place", "id": "PDS 70 c" },
+      "sources": ["eso2111"],
+      "en": { "title": "A sibling with moons?", "text": "Further out goes its sibling PDS 70 c. In 2021 ALMA found a disc round it in which moons may form: a planet that may be getting moons of its own." },
+      "de": { "title": "Ein Geschwister mit Monden?", "text": "Weiter draußen kreist sein Geschwister PDS 70 c. 2021 fand ALMA um ihn eine Scheibe, in der Monde entstehen könnten: ein Planet, der vielleicht gerade eigene Monde bekommt." }
+    }
+  ],
   "text": {
     "en": {
-      "title": "PDS 70 b: a planet caught while forming",
+      "hook": "Watch a planet being born",
+      "title": "PDS 70 b, the first planet caught while forming",
       "summary": "The first confirmed image of a planet that is still forming in the disc round its young star.",
-      "overview": "PDS 70 b goes round the young star PDS 70. In 2018 ESO showed it as the first confirmed image of a planet caught in the act of forming in the dusty disc round its star.",
-      "history": "ESO announced the image on 2 July 2018, taken with its Very Large Telescope (VLT). The NASA Exoplanet Archive lists the planet as discovered in 2018 by direct imaging at the Paranal Observatory. In 2021 ALMA found a disc round its sibling PDS 70 c in which moons may form.",
-      "explanation": "According to NASA young stars are surrounded by a disc of gas and dust left over from their birth. In such a disc solid particles of rock and ice collide and merge: so planets grow. PDS 70 b is such a growing planet, still inside the disc of its star.",
-      "howWeKnow": "The planet was seen directly, not inferred from the light of its star: the NASA table lists its method as imaging. The distance comes from the same table; ESO gives nearly 400 light years, the table 369.",
-      "special": "It is the first confirmed image of a planet that is still forming. It shows a stage in the birth of planets that is usually hidden in the disc.",
       "openQuestions": [],
       "takeaways": [
         "PDS 70 b is a young planet still forming in the disc round its star.",
         "In 2018 ESO showed the first confirmed image of such a planet.",
-        "It was found by direct imaging, at the Paranal Observatory.",
         "Planets grow in discs of gas and dust round young stars.",
         "A disc round its sibling PDS 70 c may be forming moons."
       ]
     },
     "de": {
-      "title": "PDS 70 b: ein Planet, ertappt beim Entstehen",
+      "hook": "Hier wird gerade ein Planet geboren",
+      "title": "PDS 70 b, der erste Planet, ertappt beim Entstehen",
       "summary": "Das erste bestätigte Bild eines Planeten, der noch in der Scheibe um seinen jungen Stern entsteht.",
-      "overview": "PDS 70 b kreist um den jungen Stern PDS 70. 2018 zeigte die ESO ihn als erstes bestätigtes Bild eines Planeten, der gerade in der staubigen Scheibe um seinen Stern entsteht.",
-      "history": "Die ESO stellte das Bild am 2. Juli 2018 vor, aufgenommen mit ihrem Very Large Telescope (VLT). Das NASA Exoplanet Archive führt den Planeten als 2018 durch direkte Abbildung am Paranal-Observatorium entdeckt. 2021 fand ALMA um seinen Geschwisterplaneten PDS 70 c eine Scheibe, in der Monde entstehen könnten.",
-      "explanation": "Laut NASA sind junge Sterne von einer Scheibe aus Gas und Staub umgeben, die von ihrer Geburt übrig ist. In so einer Scheibe stoßen feste Teilchen aus Gestein und Eis zusammen und verschmelzen: So wachsen Planeten. PDS 70 b ist so ein wachsender Planet, noch in der Scheibe seines Sterns.",
-      "howWeKnow": "Der Planet wurde direkt gesehen, nicht aus dem Licht seines Sterns erschlossen: Die NASA-Tabelle nennt als Methode die Abbildung. Die Entfernung stammt aus derselben Tabelle; die ESO nennt fast 400 Lichtjahre, die Tabelle 369.",
-      "special": "Es ist das erste bestätigte Bild eines Planeten, der noch entsteht. Es zeigt einen Abschnitt der Geburt von Planeten, der sonst in der Scheibe verborgen ist.",
       "openQuestions": [],
       "takeaways": [
         "PDS 70 b ist ein junger Planet, der noch in der Scheibe um seinen Stern entsteht.",
         "2018 zeigte die ESO das erste bestätigte Bild eines solchen Planeten.",
-        "Er wurde durch direkte Abbildung gefunden, am Paranal-Observatorium.",
         "Planeten wachsen in Scheiben aus Gas und Staub um junge Sterne.",
         "Eine Scheibe um seinen Geschwisterplaneten PDS 70 c könnte Monde bilden."
       ]

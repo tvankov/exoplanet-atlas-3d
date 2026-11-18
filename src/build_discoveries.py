@@ -4,8 +4,8 @@ Run from the src folder after adding or changing an entry:
     cd src && python build_discoveries.py
 
 Each entry is one JSON file named by its id. This script checks what the list needs (the id is the file name, no id or alias twice, the
-fields of the list are there) and writes the list: per entry its id, categories, type, status, dates, aliases, the title and the summary
-in each language, and the links into the 3D explorer. The full checks of an entry (sources of every fact, kinds of evidence, the links
+fields of the list are there) and writes the list: per entry its id, categories, type, status, dates, aliases, its picture, the place it flies
+to, and the hook, the title and the summary in each language. The full checks of an entry (sources of every fact, kinds of evidence, the links
 to the map and to the learning steps) are in tests/discoveries.test.mjs, which also checks that the list is up to date.
 """
 import json
@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ENTRIES = ROOT / "web" / "data" / "discoveries" / "entries"
 OUT = ROOT / "web" / "data" / "discoveries" / "index.json"
-LIST_FIELDS = ["id", "categories", "type", "status", "dates", "aliases", "explorer"]
+LIST_FIELDS = ["id", "categories", "type", "status", "dates", "aliases", "picture", "fly"]
 
 
 def main():
@@ -36,6 +36,7 @@ def main():
             seen[key] = entry.get("id")
         item = {field: entry.get(field) for field in LIST_FIELDS}
         item["title"] = {lang: t["title"] for lang, t in entry.get("text", {}).items()}
+        item["hook"] = {lang: t["hook"] for lang, t in entry.get("text", {}).items()}
         item["summary"] = {lang: t["summary"] for lang, t in entry.get("text", {}).items()}
         items.append(item)
     if problems:

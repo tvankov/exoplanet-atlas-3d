@@ -4620,6 +4620,7 @@ function clearTrip() {
   setNear(0.01);
   leaveEgo();
   trip = null;
+  afterTrip = null; // a trip stopped on the way: no story afterwards
   tripTarget = null; // the target system goes back to the normal rule: drawn when the camera is near it
   for (const o of [ship, shipLine, shipTarget]) o.visible = false;
   planRoute.textContent = routeLabel();
@@ -5256,6 +5257,12 @@ function stepTrip(now) {
     showTripResult();
     showCaption(TRAVEL_UI[lang].arrived, CAPTION_STAY);
     showArrival(); // out of hyperspace at the target system: now on to the planet if one was chosen
+    // a flight of a discovery goes on with its story (discoveries.js)
+    if (afterTrip) {
+      const story = afterTrip;
+      afterTrip = null;
+      setTimeout(story, 1800);
+    }
   }
   const jd = JD_AT_LOAD + solar.time * 365.25;
   // How much of the way is behind us. On the clock of the world between planets, on the clock of the film
@@ -6001,11 +6008,38 @@ function learnShow(where) {
 }
 // SPACE DISCOVERIES, the library in the area Explore of My Universe (discoveries.js): a link of an entry flies to the map like the places
 // in the texts of the learning steps (learnShow)
+// A link of an entry ({ kind, id }) flown to softly, with the motion blur of the first flight of the page (stepMotionBlur).
+function discoveryShow(link) {
+  learnShow(link.kind === "moon" ? `moon:${link.id}` : link.kind === "sky" ? `sky:${link.id}` : link.id);
+  if (flight) flight.blur = true;
+}
+// "Fly there": the trip of the planner from the Earth to the star of the place, at the speed of light (hyperspace, the real travel time in
+// its box); done() a moment after the arrival. A place of the Solar System, a moon or a constellation has no such trip: a soft flight.
+let afterTrip = null;
+function discoveryFly(link, done) {
+  if (trip) clearTrip(); // the box of an earlier trip goes
+  const to = link.kind === "place" ? resolvePlace(link.id) : null;
+  if (to && to.kind !== "planet" && !realScale) {
+    planFrom.value = planetLabel("Earth");
+    planTo.value = link.id;
+    planSpeed.value = "c1";
+    planSpeed.dispatchEvent(new Event("change"));
+    afterTrip = done;
+    planGo.click();
+    if (trip) return;
+    afterTrip = null; // the planner found no trip: fly softly instead
+  }
+  discoveryShow(link);
+  setTimeout(done, 3200);
+}
 const library = initDiscoveries({
   getLang: () => lang,
-  show: (link) => learnShow(link.kind === "moon" ? `moon:${link.id}` : link.kind === "sky" ? `sky:${link.id}` : link.id),
+  fly: discoveryFly,
+  show: discoveryShow,
   openStep: (step) => universe?.openLearnStep(step),
   stepTitle: (step) => (LEARN_TEXT[lang] ?? LEARN_TEXT.en).steps[step]?.title,
+  closePanel: () => auth?.close(),
+  openEntry: (id) => universe?.openDiscovery(id),
 });
 universe = initUniverse({
   getLang: () => lang,

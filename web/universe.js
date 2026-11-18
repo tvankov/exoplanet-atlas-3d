@@ -719,12 +719,12 @@ export function initUniverse({ getLang, explorer, daily, journal, myStar, birthS
   }
 
   function exploreArea(tx, last) {
-    // the library of discoveries (discoveries.js): its list here, or one entry alone
+    // the library of discoveries (discoveries.js): its list first, or one entry alone
     const own = discoveries?.area(() => renderAll());
     if (own && !own.overview) return own.nodes;
     const quick = el("div", "uni-list");
     quick.append(wide(item(dockPicture("dock-sky") ?? icon("☄︎"), tx.qSky, tx.qSkySub, () => (closePanel?.(), openSky?.()))));
-    return [nextPart(tx, last, true), ...(own ? [section(discoveries.title(), ...own.nodes)] : []), section(tx.quick, quick)];
+    return [...(own ? [section(discoveries.title(), ...own.nodes)] : []), nextPart(tx, last, true), section(tx.quick, quick)];
   }
 
   function learnArea(tx) {

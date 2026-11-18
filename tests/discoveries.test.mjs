@@ -5,7 +5,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { CATEGORIES, TYPES, STATUS, EVIDENCE, DISCOVERY_TEXT, validEntry, matches } from "../web/discoveries.js";
+import { CATEGORIES, TYPES, STATUS, EVIDENCE, DISCOVERY_TEXT, validEntry, matches, fillNumbers } from "../web/discoveries.js";
 import { PATHS } from "../web/learn.js";
 import { MOONS } from "../web/moons.js";
 
@@ -36,7 +36,7 @@ test("the eight categories, seven kinds, three states and four kinds of evidence
   for (const lang of ["de", "ja", "bg"]) assert.deepEqual(Object.keys(DISCOVERY_TEXT[lang]).sort(), keys, lang);
 });
 
-test("every entry is complete: sources for every fact, the kind of evidence, both texts, and links only to what the map and the paths have", () => {
+test("every entry is complete: a hook, three to five stages with their sources, a source for every fact, and flights only to what the map has", () => {
   assert.ok(entries.length >= 2);
   const ids = new Set(entries.map((e) => e.id));
   assert.equal(ids.size, entries.length, "no id twice");
@@ -56,11 +56,17 @@ test("validEntry finds what is missing or wrong", () => {
   bad2.status = "proven";
   assert.ok(validEntry(bad2).includes("status"));
   const bad3 = copy();
-  bad3.explorer = [{ kind: "place", id: "Planet Nine" }];
+  bad3.stages[1].view = { kind: "place", id: "Planet Nine" };
   assert.ok(validEntry(bad3, { knownPlace }).some((x) => x.includes("Planet Nine")));
   const bad4 = copy();
-  bad4.text.de.takeaways = ["one"];
-  assert.ok(validEntry(bad4).includes("text de takeaways"));
+  bad4.stages = bad4.stages.slice(0, 2);
+  assert.ok(validEntry(bad4).includes("stages"));
+  const bad6 = copy();
+  delete bad6.text.de.hook;
+  assert.ok(validEntry(bad6).includes("text de"));
+  const bad7 = copy();
+  bad7.stages[0].sources = [];
+  assert.ok(validEntry(bad7).includes("stage 1 sources"));
   const bad5 = copy();
   bad5.learn = ["noSuchStep"];
   assert.ok(validEntry(bad5, { knownSteps }).includes("learn noSuchStep"));
@@ -70,15 +76,16 @@ test("the list (index.json) is up to date with the entries: run src/build_discov
   assert.deepEqual(index.entries.map((i) => i.id).sort(), entries.map((e) => e.id).sort());
   for (const item of index.entries) {
     const e = entries.find((x) => x.id === item.id);
-    for (const field of ["categories", "type", "status", "dates", "aliases", "explorer"]) assert.deepEqual(item[field], e[field], `${item.id} ${field}`);
+    for (const field of ["categories", "type", "status", "dates", "aliases", "picture", "fly"]) assert.deepEqual(item[field], e[field], `${item.id} ${field}`);
     for (const lang of Object.keys(e.text)) {
       assert.equal(item.title[lang], e.text[lang].title, `${item.id} title ${lang}`);
+      assert.equal(item.hook[lang], e.text[lang].hook, `${item.id} hook ${lang}`);
       assert.equal(item.summary[lang], e.text[lang].summary, `${item.id} summary ${lang}`);
     }
   }
 });
 
-test("search and filters: words in the title, the summary or the aliases; category, kind and status", () => {
+test("search and the category filter: words in the hook, the title, the summary or the aliases", () => {
   const sgr = index.entries.find((i) => i.id === "sagittarius-a-star");
   const pds = index.entries.find((i) => i.id === "pds-70-b");
   assert.ok(matches(sgr, { query: "sgr a*" }));
@@ -86,7 +93,12 @@ test("search and filters: words in the title, the summary or the aliases; catego
   assert.ok(!matches(pds, { query: "black hole" }));
   assert.ok(matches(pds, { category: "exoplanets" }));
   assert.ok(!matches(pds, { category: "mysteries" }));
-  assert.ok(matches(pds, { status: "confirmed", type: "object" }));
-  assert.ok(!matches(pds, { status: "candidate" }));
+  assert.ok(matches(pds, { query: "geboren" }, "de"));
   assert.ok(matches(pds, {}));
+});
+
+test("the numbers of a stage: the year the light set off, and a number of years for the language", () => {
+  assert.equal(fillNumbers("um das Jahr {since:369}", "de", 2026), "um das Jahr 1657");
+  assert.equal(fillNumbers("vor {years:27000} Jahren", "de", 2026), "vor 27.000 Jahren");
+  assert.equal(fillNumbers("{years:27000} years", "en", 2026), "27,000 years");
 });

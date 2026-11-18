@@ -21,19 +21,20 @@
     "Milky Way",
     "Milchstraße"
    ],
-   "explorer": [
-    {
-     "kind": "sky",
-     "id": "Sgr",
-     "label": {
-      "en": "Sagittarius",
-      "de": "Sternbild Schütze"
-     }
-    }
-   ],
+   "picture": {
+    "medal": "compact-scholar"
+   },
+   "fly": {
+    "kind": "sky",
+    "id": "Sgr"
+   },
    "title": {
-    "en": "Sagittarius A*: the black hole at the heart of the Milky Way",
-    "de": "Sagittarius A*: das Schwarze Loch im Herzen der Milchstraße"
+    "en": "Sagittarius A*, the black hole at the heart of the Milky Way",
+    "de": "Sagittarius A*, das Schwarze Loch im Herzen der Milchstraße"
+   },
+   "hook": {
+    "en": "A giant you cannot see",
+    "de": "Ein Riese, den man nicht sieht"
    },
    "summary": {
     "en": "A supermassive black hole four million times more massive than the Sun, first photographed in 2022.",
@@ -54,21 +55,24 @@
    },
    "aliases": [
     "PDS 70 b",
-    "PDS 70"
+    "PDS 70",
+    "planet birth",
+    "Planetengeburt"
    ],
-   "explorer": [
-    {
-     "kind": "place",
-     "id": "PDS 70 b",
-     "label": {
-      "en": "PDS 70 b",
-      "de": "PDS 70 b"
-     }
-    }
-   ],
+   "picture": {
+    "star": 4109
+   },
+   "fly": {
+    "kind": "place",
+    "id": "PDS 70 b"
+   },
    "title": {
-    "en": "PDS 70 b: a planet caught while forming",
-    "de": "PDS 70 b: ein Planet, ertappt beim Entstehen"
+    "en": "PDS 70 b, the first planet caught while forming",
+    "de": "PDS 70 b, der erste Planet, ertappt beim Entstehen"
+   },
+   "hook": {
+    "en": "Watch a planet being born",
+    "de": "Hier wird gerade ein Planet geboren"
    },
    "summary": {
     "en": "The first confirmed image of a planet that is still forming in the disc round its young star.",

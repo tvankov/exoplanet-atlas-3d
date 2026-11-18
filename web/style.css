@@ -5010,3 +5010,123 @@ input.uni-date {
   display: block;
   opacity: 0.6;
 }
+
+/* SPACE DISCOVERIES as flights (discoveries.js): the cards with a picture and "Fly there", the hero of an entry, the stages */
+#universe-body .disc-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 14px;
+  align-items: center;
+  padding: 14px;
+  background: radial-gradient(circle at 12% 30%, rgba(120, 160, 255, 0.16), transparent 60%), rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  cursor: pointer;
+}
+#universe-body .disc-card:hover {
+  border-color: rgba(124, 255, 178, 0.4);
+}
+#universe-body .disc-card .disc-pic {
+  grid-row: span 2;
+}
+#universe-body .disc-card-text {
+  display: grid;
+  gap: 3px;
+}
+#universe-body .disc-card-text small {
+  font-size: 11px;
+  opacity: 0.6;
+}
+#universe-body .disc-card-text strong {
+  font-size: 17px;
+  line-height: 1.25;
+}
+#universe-body .disc-card-text span {
+  font-size: 13px;
+  opacity: 0.75;
+}
+#universe-body .disc-card .disc-fly {
+  justify-self: start;
+  grid-column: 2;
+}
+#universe-body .disc-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin: 6px 0 12px;
+}
+#universe-body .disc-hero small {
+  font-size: 11px;
+  opacity: 0.6;
+}
+#universe-body .disc-hero .learn-title {
+  margin: 2px 0;
+  font-size: 21px;
+}
+#universe-body .disc-title {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.75;
+}
+#universe-body .disc-stage {
+  margin: 8px 0 14px;
+  padding: 14px 16px;
+  background: rgba(124, 255, 178, 0.06);
+  border: 1px solid rgba(124, 255, 178, 0.3);
+  border-radius: 16px;
+}
+#universe-body .disc-stage small {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7cffb2;
+}
+#universe-body .disc-stage h4 {
+  margin: 4px 0 6px;
+  font-size: 17px;
+}
+#universe-body .disc-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+#universe-body .disc-steps {
+  display: flex;
+  gap: 6px;
+}
+#universe-body button.disc-dot {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+}
+#universe-body button.disc-dot.on {
+  color: #0b1020;
+  background: #7cffb2;
+  border-color: #7cffb2;
+}
+#universe-body .disc-fly-big {
+  display: block;
+  width: 100%;
+  margin: 0 0 14px;
+}
+#universe-body details.disc-sure {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+}
+#universe-body details.disc-sure summary {
+  cursor: pointer;
+  font-weight: 600;
+}
